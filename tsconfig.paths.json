@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "paths": {
+      // "@": ["src"],
+      // "@/*": ["./src/*"],
+      // "@core": ["src/core"],
+      // "@core/*": ["src/core/*"],
+      // "@api": ["src/api/*"],
+      // "@api/*": ["src/api/*"],
+      // "@utils": ["src/core/utils"],
+      // "@utils/*": ["src/core/utils/*"],
+      // "@sol": ["src/core/sol"],
+      // "@sol/*": ["src/core/sol/*"],
+      // "@pre": ["src/core/pre"],
+      // "@pre/*": ["src/core/pre/*"],
+      // "@wallet": ["src/core/hdwallet"],
+      // "@wallet/*": ["src/core/hdwallet/*"],
+      // "@chainnet": ["src/core/chainnet"],
+      // "@chainnet/*": ["src/core/chainnet/*"],
+      // "@servernet": ["src/core/servernet"],
+      // "@servernet/*": ["src/core/servernet/*"],
+    }
+  }
+}

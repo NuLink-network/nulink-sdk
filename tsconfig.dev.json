@@ -1,0 +1,61 @@
+{
+  "compilerOptions": { // Reference: https://www.typescriptlang.org/tsconfig
+    "baseUrl": ".",
+    "outDir": "build/main",
+    "rootDir": ".",
+    "incremental": true,
+    "target": "esnext", //"es6", // to remove build files have 'awaiter' code, https://stackoverflow.com/questions/42415450/awaiter-is-not-defined-when-using-async-await-in-typescript
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "typeRoots": ["node_modules/@types"],
+    "strictPropertyInitialization": false, //https://stackoverflow.com/questions/49699067/property-has-no-initializer-and-is-not-definitely-assigned-in-the-construc
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    /* Debugging Options */
+    "traceResolution": true, //https://www.tslang.cn/docs/handbook/compiler-options.html
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+     /* Enables emit interoperability between CommonJS and ES Modules via creation of namespace objects for all imports. Implies 'allowSyntheticDefaultImports'. */
+    "resolveJsonModule": true,/* Ensure that casing is correct in imports. */
+    "isolatedModules": true, //https://blog.csdn.net/weixin_40013817/article/details/127125777
+    // "noEmit": true,
+    "diagnostics": true,
+    "removeComments": true,
+    "declaration": true,                   /* Generates corresponding '.d.ts' file. */
+    "declarationMap": true,                /* Generates a sourcemap for each corresponding '.d.ts' file. */
+    "inlineSourceMap": false,
+    "sourceMap": true, // for debug set sourceMap: true
+    "preserveConstEnums": true,
+    "noImplicitAny": false,
+
+    /* Report module resolution log messages. */
+    "listEmittedFiles": false,
+    /* Print names of generated files part of the compilation. */
+    "listFiles": false,
+    /* Print names of files part of the compilation. */
+    "pretty": true,
+    "downlevelIteration": true,
+  },
+  "include": [
+    "src/**/*.ts",
+    // "webpack.config.ts"
+  ],
+  "exclude": ["node_modules/**", 
+              //"test",  "**/__tests__/*"
+            ],
+  "compileOnSave": false,
+  "extends": "./tsconfig.paths.json",
+  "rules": {
+    "no-unused-vars": "off"
+  }
+}

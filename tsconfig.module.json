@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig",
+  "compilerOptions": {
+    "target": "esnext", //"es6", // to remove build files have 'awaiter' code, https://stackoverflow.com/questions/42415450/awaiter-is-not-defined-when-using-async-await-in-typescript
+    "outDir": "build/module",
+    "module": "esnext",
+  },
+  "exclude": ["node_modules/**"]
+}
