@@ -161,9 +161,10 @@ assert(uploadFileInfo["owner_id"] === accountAlice.id);
 ```
 
 ```javascript
+// Bob, far away on the other side of the ocean, wants to use Alice's uploaded file
 //  account Bob: as the user of the file (file requester)
 
-//import libirary ....
+//don' forget import libirary ....
 
 //Bob find the file on Internet
 const password: string = "1";
@@ -406,7 +407,7 @@ console.log("plainText2: ", plainText2);
 assert(fileContent2 === plainText2);
 
 //you can get all status files for mine apply: The files I applied for
-//status 0: all status, include:  applying，approved, rejected
+//status 0: all status, include:  applying, approved, rejected
 const data = (await getFilesByStatus(
   undefined,
   accountBob.id,
