@@ -11,8 +11,14 @@ import {
   encrypt as pwdEncrypt,
 } from "../../utils/passwordEncryption";
 
+/**
+ * @internal
+ */
 export type EthWallet = Wallet;
 
+/**
+ * @internal
+ */
 export abstract class IJson {
   public dump(): string {
     return JSON.stringify(this);

@@ -24,3 +24,6 @@ yarn-error.log*
 
 # git commit lint hook
 .husky
+
+# generate docs
+/docs

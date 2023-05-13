@@ -1,6 +1,9 @@
 // import {indexDBCache, createIndexDBCache} from '@void-cache/indexdb'
 //https://www.npmjs.com/package/@void-cache/indexdb
 
+/**
+ * @internal
+ */
 export const indexdbStore = {
   setItem: async (key: string, value: unknown): Promise<void> => {
     const { indexDBCache } = await import("@void-cache/indexdb");

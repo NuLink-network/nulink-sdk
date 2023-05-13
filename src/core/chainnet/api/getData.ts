@@ -3,8 +3,14 @@ import { store as storage } from "../../utils/storage";
 import { defaultChainNetWork, networkDetails } from "../config";
 import { NETWORK_LIST } from "../../sol"
 
+/**
+ * @internal
+ */
 export const CHAIN_NETWORK_LABEL = "chain_network";
 
+/**
+ * @internal
+ */
 export const CHAIN_NETWORK_CONFIG = "chain_network_config";
 
 export const getSettingsData = async (): Promise<NetworkConfigOptions> => {

@@ -1,3 +1,9 @@
+/**
+ * This comment will be used as the summary for the "wallet" module
+ * @packageDocumentation
+ * @module wallet
+ * @preferred
+ */
 import { createAccountIfNotExist, getPolicyLabelIdsByAccountId } from '../core/pre'
 import { isBlank, UserDataCorruptedError, UserDataVersionLowError, Account, NuLinkHDWallet } from '../core'
 import { decrypt as pwdDecrypt } from '../core/utils/passwordEncryption'

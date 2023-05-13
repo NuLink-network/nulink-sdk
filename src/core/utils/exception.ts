@@ -64,6 +64,9 @@ export class UserDataCorruptedError extends Error {
   }
 }
 
+/**
+ * @internal
+ */
 export class NotImplementError extends Error {
   constructor(message) {
     super(message); // (1)

@@ -1,3 +1,7 @@
+
+/**
+ * @internal
+ */
 export const localStore = {
   setItem: async (key: string, value: unknown): Promise<void> => {
     localStorage.setItem(key, value as string);

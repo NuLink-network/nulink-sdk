@@ -42,6 +42,7 @@
     "ipfs-http-client": "^60.0.0",
     "jimp": "^0.16.2",
     "keccak256": "^1.0.6",
+    "lint-staged": "^13.2.2",
     "md5": "^2.3.0",
     "multiformats": "^11.0.2",
     "nanoid": "^4.0.0",
@@ -76,6 +77,8 @@
   "typings": "build/main/src/index.d.ts",
   "module": "build/module/src/index.js",
   "scripts": {
+    "typedoc": "node node_modules/typedoc/bin/typedoc",
+    "//typedoc": "npx typedoc --plugin typedoc-plugin-markdown --excludePrivate",
     "//postbuild:module": "&& tsc-alias -p tsconfig.module.json",
     "build": "run-p build:*",
     "build:main": "rimraf build && tsc -p tsconfig.json",
@@ -147,7 +150,6 @@
     "eslint-webpack-plugin": "^4.0.1",
     "filemanager-webpack-plugin": "^8.0.0",
     "husky": "^8.0.3",
-    "lint-staged": "^13.1.0",
     "node-polyfill-webpack-plugin": "^2.0.1",
     "npm-dts-webpack-plugin": "^1.3.12",
     "prettier": "^2.8.7",
@@ -155,6 +157,11 @@
     "terser-webpack-plugin": "^5.3.7",
     "ts-loader": "^9.4.2",
     "ts-paths-transform": "^2.0.3",
+    "typedoc": "^0.24.7",
+    "typedoc-plugin-external-module-name": "^4.0.6",
+    "typedoc-plugin-markdown": "^3.15.3",
+    "typedoc-plugin-merge-modules": "^5.0.0",
+    "typedoc-plugin-not-exported": "^0.1.6",
     "webpack-build-log-plugin": "^1.0.6",
     "webpack-bundle-analyzer": "^4.8.0",
     "webpack-cli": "^5.0.1",
@@ -184,5 +191,6 @@
   },
   "lint-staged": {
     "**/*": "prettier --write --ignore-unknown .gitignore"
-  }
+  },
+  "license": "GPL-3.0-only"
 }

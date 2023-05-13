@@ -23,6 +23,9 @@ import md5 from "md5";
 
 
 //Temporarily set the data storage scheme as: generate a random string, encrypt it with the user's public key, and store it on the disk. This random string is used as a symmetric key to encrypt data.
+/**
+ * @internal
+ */
 export class CryptoBroker {
   private _symkey: null | Uint8Array = null //symkey is a 32-byte Uint8Array, iv is an 8-byte Uint8Array
   private _iv: null | Uint8Array = null //Random vector to ensure that the ciphertext encrypted by the unified symmetric key is different, and should be exported with iv

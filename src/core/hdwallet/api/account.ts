@@ -1,3 +1,10 @@
+/**
+ * message distribution
+ * This comment will be used as the summary for the "nulinkWallet" module
+ * @packageDocumentation
+ * @module nulinkWallet
+ * @preferred
+ */
 // Importing the Required pakages from various sources
 import { Buffer } from "buffer";
 import {
@@ -50,12 +57,18 @@ import { serverPost } from "../../servernet";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 
 //https://github.com/ChainSafe/web3.js
+/**
+ * @internal
+ */
 export let web3: Web3; // eslint-disable-line
 
 // const HDWALLET_ENCRYPT_STR = 'wallet.enc'
 const HDWALLET_INSTANCE_NAME = "hdwallet";
 const RESTORE_WALLET_TAG = "tag_restore_wallet_backend_db";
 
+/**
+ * @internal
+ */
 export const getHDWalletInstance = (): any => {
   // attention please -> Here take the data from memory, don't call loadHDWalletFromPersistence method
   return SingletonService.get<NuLinkHDWallet>(HDWALLET_INSTANCE_NAME);
@@ -118,6 +131,9 @@ const setHDWalletInstance = async (
 //If there are currently only 3 strategies (1, 2, 3) under the same account, but there are 5 strategy IDs (3, 4, 5, 6, 7) in the recovered data, the following situations exist
 //Union merge result is (1,2,3,4,5,6,7)
 //Cover coverage result is (3,4,5,6,7)
+/**
+ * @internal
+ */
 export enum DataStrategyRecoveryMode {
   Union,
   Cover,

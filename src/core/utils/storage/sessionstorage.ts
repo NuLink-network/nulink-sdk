@@ -1,3 +1,7 @@
+
+/**
+ * @internal
+ */
 export const sessionStore = {
     setItem: async (key: string, value: unknown): Promise<void> => {
         sessionStorage.setItem(key, value as string);

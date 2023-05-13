@@ -1,3 +1,9 @@
+/**
+ * This comment will be used as the summary for the "thing2" module
+ * @packageDocumentation
+ * @module pre
+ * @preferred
+ */
 import {
   getPolicyTokenCost,
   estimatePolicyGas as gasFee,
@@ -12,7 +18,6 @@ import { isBlank } from "../core/utils";
 import * as exception from '../core/utils/exception'
 
 export type { BigNumber } from "ethers";
-
 
 export const getPolicyServerGasFee = async (
   startSeconds: number,

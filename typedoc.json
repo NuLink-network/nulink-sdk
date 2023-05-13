@@ -1,0 +1,63 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "name": "NuLink SDK",
+  "entryPoints": [
+    //"./src",
+    "./src/api/index.ts", 
+    /* "./src/api/pre.ts", 
+    "./src/api/wallet.ts", */ 
+    /* "./src/core/utils/exception.ts", */ 
+    "./src/core/hdwallet/api/account.ts", 
+    "./src/core/pre/api/index.ts",
+  ],
+  "sort": ["source-order"],
+  // "media": "media",
+  "categorizeByGroup": false,
+  "excludePrivate": true,
+  // "excludeProtected": true,
+  "excludeInternal": true,
+  "includeVersion": true,
+  "readme": "readme.md",
+  "showConfig": false,
+  "hideGenerator": true,
+  "intentionallyNotExported": [],
+  "externalSymbolLinkMappings": {},
+  "pretty": true,
+  "exclude": [
+    "./node_modules/**" //exclude some class from npm package e.g.:
+    // "types/jsx.d.ts",
+    // "**/*+(e2e|spec|index).ts",
+    // "**/*spec.tsx",
+    // "**/*.model.ts",
+    // "**/environment/*.ts",
+    // "**/components.d.ts",
+    // "**/components/common/*",
+    // "**/*+(e2e|spec|index).ts",
+    // "**/*spec.tsx",
+    // "**/*.model.ts",
+    // "**/environment/*.ts",
+    // "**/core.d.ts"
+  ],
+  "plugin": [
+    "typedoc-plugin-markdown", 
+    "typedoc-plugin-not-exported",
+    // "typedoc-plugin-external-module-name",
+    "typedoc-plugin-merge-modules",
+   ],
+
+  "searchCategoryBoosts": {
+    "Component": 2,
+    "Model": 1.2
+  },
+  "searchGroupBoosts": {
+    "Classes": 1.5
+  },
+  "navigationLinks": {
+    "Docs": "https://docs.nulink.org/get-started/introduction",
+    "GitHub": "https://github.com/NuLink-network/nulink-sdk"
+  },
+  "sidebarLinks": {
+    "API": "https://docs.nulink.org/products/nulink_sdk"
+  },
+  "watch": true
+}

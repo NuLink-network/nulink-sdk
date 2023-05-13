@@ -1,3 +1,6 @@
+/**
+ * @internal
+ */
 export type NetworkConfigOptions = {
   web3RpcUrl: string;
   chainId: number;
@@ -9,9 +12,13 @@ export type NetworkConfigOptions = {
   token_symbol: string;
   nlk_token_symbol: string;
 };
-
+/**
+ * @internal
+ */
 export type NetworkConfigKeys = keyof NetworkConfigOptions;
-
+/**
+ * @internal
+ */
 export type AsyncConfigChangedCallbackFunction = (
   value: string,
   oldValue?: string

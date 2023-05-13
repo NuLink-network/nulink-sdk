@@ -73,6 +73,9 @@ import {
 } from "../../utils/exception";
 import { getWeb3 } from "../../hdwallet/api";
 
+/**
+ * @internal
+ */
 export const getServerTimeStamp = async (): Promise<string> => {
   //get golbal time from server
   const sendData = {};

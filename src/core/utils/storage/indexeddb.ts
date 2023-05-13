@@ -15,6 +15,9 @@ import { isBlank } from "../null";
 //   id?: number;
 // };
 
+/**
+ * @internal
+ */
 export const indexdb = {
   //https://www.npmjs.com/package/@nulink_network/ts-indexdb
 

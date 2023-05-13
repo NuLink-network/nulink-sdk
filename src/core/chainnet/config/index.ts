@@ -21,7 +21,15 @@ export const networkDetails = {
   },
 };
 
+/**
+ * @internal
+ */
 export const LOCK_TIMER = 60000 * 5 * 3; // one minute * 5 * 3
-
+/**
+ * @internal
+ */
 export const GAS_LIMIT_FACTOR = 1;
+/**
+ * @internal
+ */
 export const GAS_PRICE_FACTOR = 1;

@@ -1,5 +1,8 @@
 
 
+/**
+ * @internal
+ */
 //TODO: 
 export const diskStore = {
   setItem: async (key: string, value: unknown): Promise<void> => {

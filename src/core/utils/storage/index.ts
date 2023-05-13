@@ -18,6 +18,9 @@ export { sessionStore } from "./sessionstorage";
 const bDiskStore = process.env.REACT_APP_STORAGE === "disk";
 const blocalStore = process.env.REACT_APP_STORAGE === "localstorage";
 
+/**
+ * @internal
+ */
 export const store = bDiskStore
   ? diskStore
   : blocalStore
