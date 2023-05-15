@@ -19,6 +19,13 @@ import * as exception from '../core/utils/exception'
 
 export type { BigNumber } from "ethers";
 
+/**
+ *  get service fees (NLK/TNLK) for sharing files 
+ * @param startSeconds Start time of file usage application in seconds
+ * @param endSeconds End time of file usage application in seconds
+ * @param ursulaShares Number of service shares
+ * @returns the amount of NLK/TNLK in wei
+ */
 export const getPolicyServerGasFee = async (
   startSeconds: number,
   endSeconds: number,
@@ -36,7 +43,17 @@ export const getPolicyServerGasFee = async (
   // const gasValue = Web3.utils.fromWei(gasWei.toString(), "ether");
   return gasWei.toString();
 };
-
+/**
+ * get service gas fees for sharing files 
+ * @param userAccountId the account Id of the file applicant (Bob)
+ * @param applyId The application ID returned to the user by the interface when applying to use a specific file
+ * @param ursulaShares Number of service shares
+ * @param ursulaThreshold The file user can download the file after obtaining the specified number of service data shares
+ * @param startSeconds Start time of file usage application in seconds
+ * @param endSeconds End time of file usage application in seconds
+ * @param serverFee server fees by call function of `getPolicyServerGasFee`
+ * @returns the amount of bnb/tbnb in wei
+ */
 export const getPolicyGasFee = async (
   userAccountId: string,
   applyId: string,
@@ -81,9 +98,11 @@ export const getPolicyGasFee = async (
   }
 };
 
-/** 
+/**
+ * get information of the logged-in user
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @throws {UnauthorizedError} 
+ * @returns void
  */
 export const getLoginedUserInfo = async () => {
   //Web page Checks whether the user has logged in or get logined UserInfo. If so, the current login user name is returned
@@ -104,8 +123,10 @@ export const getLoginedUserInfo = async () => {
 };
 
 /**
+ * Retrieve if the default account is logged in
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @throws {UnauthorizedError} 
+ * @returns void
  */
 export const isUserLogined = async (): Promise<boolean> => {
   const account = await getWalletDefaultAccount();
@@ -113,8 +134,10 @@ export const isUserLogined = async (): Promise<boolean> => {
 };
 
 /**
+ * Retrieve user information details
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @throws {UnauthorizedError} 
+ * @returns User information details
  */
 export const getUserDetails = async () => {
   const account = await getWalletDefaultAccount();
@@ -126,6 +149,11 @@ export const getUserDetails = async () => {
   return await pre.getAccountInfo((account as Account).id);
 };
 
+/**
+ * Retrieve user information details by user account Id
+ * @param data Object be must be have the property of "accountId",  null otherwise
+ * @returns User information details
+ */
 export const getUserByAccountId = async (data) => {
   if (Object.prototype.hasOwnProperty.call(data, "accountId")) {
     return await pre.getAccountInfo(data["accountId"]);
@@ -133,9 +161,19 @@ export const getUserByAccountId = async (data) => {
   return null;
 };
 
-/**
+/** update info of current user account
+ * @param data the Object of update data. The input data must be one or more fields in the "data" section:
+ *            "avatar"
+ *            "nickname"
+ *            "userSite"
+ *            "twitter"
+ *            "instagram"
+ *            "facebook"
+ *            "personalProfile"                                               
+ *                                      
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @throws {UnauthorizedError} 
+ * @returns void
  */
 export const updateUserInfo = async (data) => {
   const account = await getWalletDefaultAccount();
@@ -143,7 +181,13 @@ export const updateUserInfo = async (data) => {
   return await pre.updateAccountInfo(account as Account, data as Record<string, string>);
 };
 
-export const IsApplyStatusOfBeingApprovedOrApproved = async (data) => {
+/**
+ * Check if the application status is "under review" or "approved"
+ * @param data Object be must be have the property of "applyId",  return null otherwise
+ * @returns  param data Object be must be have the property of "applyId",  return null otherwise. 
+ *           Return true if the status is "under review" or "approved", false otherwise
+ */
+export const checkFileApprovalStatusIsUnderReviewOrApproved = async (data) => {
   if (Object.prototype.hasOwnProperty.call(data, "applyId")) {
     return await pre.checkFileApprovalStatusIsApprovedOrApproving(data["applyId"]);
   }
@@ -151,8 +195,19 @@ export const IsApplyStatusOfBeingApprovedOrApproved = async (data) => {
 };
 
 /**
+ * Approve the user's file usage request
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
- * @throws {UnauthorizedError} 
+ * @param data the Object of update data. The input data must be one or more fields in the "data" section:
+ *            "avatar"
+ *            "nickname"
+ *            "userSite"
+ *            "twitter"
+ *            "instagram"
+ *            "facebook"
+ *            "personalProfile"                                               
+ * 
+ * @throws {UnauthorizedError}               
+ * @returns 
  */
 export const ApprovalUseFiles = async (data) => {
   if (
@@ -188,6 +243,12 @@ export const ApprovalUseFiles = async (data) => {
   return null;
 };
 
+/**
+ * @category File Publisher(Alice) Interface
+ * 
+ * @param data 
+ * @returns 
+ */
 export const getFilesForApprovedAsPublisher = async (data) => {
   return await pre.getApprovedFilesAsPublisher(
     data && Object.prototype.hasOwnProperty.call(data, "pageIndex") ? data["pageIndex"] : 1,
@@ -203,6 +264,7 @@ export const getFilesForApprovedAsUser = async (data) => {
 };
 
 /**
+ * @category File Publisher(Alice) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @throws {UnauthorizedError} 
  */

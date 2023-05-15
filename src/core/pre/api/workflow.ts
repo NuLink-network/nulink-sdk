@@ -1397,7 +1397,7 @@ export const approvalApplicationForUseFiles = async (
   gasFeeInWei: BigNumber = BigNumber.from("-1") //must be the token of the chain (e.g. bnb), not be the nlk
 ) => {
   //https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E6%89%B9%E5%87%86%E6%96%87%E4%BB%B6%E4%BD%BF%E7%94%A8%E7%94%B3%E8%AF%B7
-  //return {}
+  //return { txHash: enPolicy.txHash, from: publisher.address , data }
 
   // console.log("the account address is:", publisher.address);
   // console.log("the account key is:", pwdDecrypt(publisher.encryptedKeyPair._privateKey, true));
@@ -1465,7 +1465,7 @@ export const approvalApplicationForUseFiles = async (
   );
 
   // eslint-disable-next-line no-extra-boolean-cast
-  console.log(!!txHashOrEmpty ? `no need approve` : `txHash: ${txHashOrEmpty}`);
+  console.log(!txHashOrEmpty ? `no need approve` : `txHash: ${txHashOrEmpty}`);
 
   //wei can use  BigNumber.from(), ether can use ethers.utils.parseEther(), because the BigNumber.from("1.2"), the number can't not be decimals (x.x)
   //await publisher.getNLKBalance() return ethers

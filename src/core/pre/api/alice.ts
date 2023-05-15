@@ -184,9 +184,11 @@ export class BlockchainPolicy {
 
     const web3: Web3 = await getWeb3();
 
-    const gasPrice = BigNumber.from(await web3.eth.getGasPrice()).mul(
-      GAS_PRICE_FACTOR
-    );
+    const [GAS_PRICE_FACTOR_LEFT, GAS_PRICE_FACTOR_RIGHT] =
+        DecimalToInteger(GAS_PRICE_FACTOR);
+      //estimatedGas * gasPrice * factor
+    const gasPrice = BigNumber.from(await web3.eth.getGasPrice()).mul(GAS_PRICE_FACTOR_LEFT)
+        .div(GAS_PRICE_FACTOR_RIGHT);
 
     try {
       const estimatedGas =
