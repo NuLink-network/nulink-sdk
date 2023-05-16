@@ -1329,7 +1329,7 @@ export class NuLinkHDWallet {
    *  If it cannot be obtained, null is returned. In this case, the function needs to be called again with the user's password to retrieve the wallet object.
    * @throws {PasswordDecryptError}
    * @static
-   * @param {string} [password='']
+   * @param {String} [password='']
    * @return {*}  {(Promise<NuLinkHDWallet | null>)}
    * @memberof NuLinkHDWallet
    */
@@ -2354,7 +2354,7 @@ export class NuLinkHDWallet {
    * @throws {PasswordDecryptError}
    * @private
    * @static
-   * @param {string} password
+   * @param {String} password
    * @return {*}  {(Promise<NuLinkHDWallet | null>)}
    * @memberof NuLinkHDWallet
    */

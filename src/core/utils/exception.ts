@@ -88,3 +88,10 @@ export class RootExtendedPrivateKeyError extends Error {
     this.name = "RootExtendedPrivateKeyError"; // (2)
   }
 }
+
+export class ParameterError extends Error {
+  constructor(message) {
+    super(message); // (1)
+    this.name = "ParameterError"; // (2)
+  }
+}

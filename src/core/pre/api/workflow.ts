@@ -145,28 +145,30 @@ https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E5%88%9B%E5%BB%B
   return data;
 };
 
-export const getAccountInfo = async (accountId: string) => {
-  /*
-    https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E8%8E%B7%E5%8F%96%E7%94%A8%E6%88%B7%E4%BF%A1%E6%81%AF
 
-    
-     if success  return {
-      name	string	account name
-      account_id	string	account ID(UUID v4)
-      ethereum_addr	string	eth address
-      encrypted_pk	string	encrypted PK
-      verify_pk	string	verifyed PK
-      status	number	account state
-      created_at	number	account create time
-      avatar           string  IPFS address of avatar
-      name         string  nickname            
-      user_site         string  Address of the user's primary site   
-      twitter          string  twitter address     
-      instagram        string  instagram address  
-      facebook         string  facebook address    
-      profile string  personal data        
-    }
-*/
+/**
+ * get account info by account id
+ * @param {String} - accountId 
+ * @returns {Object} - account information details
+ *          {
+              name	string	account name
+              account_id	string	account ID(UUID v4)
+              ethereum_addr	string	eth address
+              encrypted_pk	string	encrypted PK
+              verify_pk	string	verifyed PK
+              status	number	account state 
+              created_at	number	account create time
+              avatar           string  IPFS address of avatar
+              name         string  nickname            
+              user_site         string  Address of the user's primary site   
+              twitter          string  twitter address     
+              instagram        string  instagram address  
+              facebook         string  facebook address    
+              profile string  personal data        
+          }
+ */
+export const getAccountInfo = async (accountId: string) => {
+  //https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E8%8E%B7%E5%8F%96%E7%94%A8%E6%88%B7%E4%BF%A1%E6%81%AF
 
   const sendData = {
     account_id: accountId,
@@ -177,6 +179,17 @@ export const getAccountInfo = async (accountId: string) => {
   return data;
 };
 
+/** update info of current user account
+ * @param {Account} account - the current account object 
+ * @param {String} avatar - the photo of current account
+ * @param {String} nickname - the nickname of current account
+ * @param {String} userSite - the user site of current account
+ * @param {String} twitter - the twitter of current account
+ * @param {String} instagram - the instagram of current account
+ * @param {String} facebook - the facebook of current account
+ * @param {String} personalProfile - the personal profile of current account
+ * @returns {void}
+ */
 export const updateAccountInfo = async (
   account: Account,
   updateData: Record<string, string>
@@ -224,12 +237,12 @@ export const updateAccountInfo = async (
 
   return data;
 };
+
 /*
 //The currently designed page calls the plugin logic
 //Click the button on the page: pass in the parameters and function name (or message name), call the plug-in authorization, the user clicks OK, the plug-in obtains the default account, splices the parameters and calls the incoming function, and calls the page function after completion, or sends a message to tell the calling interface As a result, the page performs the next action.
 return the strategy info
 */
-
 export const uploadFilesByCreatePolicy = async (
   account: Account,
   fileCategory: FileCategory | string, //File category, according to the design: only one category is allowed to be uploaded in batches, and different categories need to be uploaded separately
@@ -658,7 +671,33 @@ return data format: {}
   return data;
 };
 
-//get all status files as Publisher. This account acts as the publisher (Alice)
+
+/**
+ * The file publisher retrieves a list of files in all states.
+ * @category File Publisher(Alice) Interface  
+ * @param {Account} account - the current account object 
+ * @param {Number} pageIndex - (Optional) number default 1
+ * @param {Number} pageSize - (Optional) number default 10
+ * @returns {Object} - {
+                "list": [
+                  {
+                    "file_id": "8feS-wp5lYhGOCtOLTKZH",
+                    "file_name": "1.jpg",
+                    "address": " file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
+                    "category": "file type category",
+                    "format": "image",
+                    "suffix": "jpg",
+                    "owner": "account name",
+                    "owner_id": "1b79f5def27bebcc71a71058a7771cc476769fc5dba32f45bcdc1b8c6e353917",
+                    "owner_avatar": "Profile picture",
+                    "thumbnail": "thumbnail mimetype and ipfs address: image/jpeg|QmUmCdMxu2MnnCmodc5VvnLqqoJn21s2M2LQqV9T5zDgYy",
+                    "created_at": 1684116370
+                  },
+                  ...
+              ],
+              "total": total count
+            }
+ */
 export const getFilesAllStatusAsPublisher = async (
   account: Account,
   pageIndex = 1,
@@ -684,6 +723,33 @@ export const getFilesAllStatusAsPublisher = async (
   );
 };
 
+/**
+ * Retrieve a list of files in a specified state that need to be approved for use by others, for the file publisher.
+ * @category File Publisher(Alice) Interface
+ * @param {Account} account - the current account object 
+ * @param {Number} status - (Optional) default 0: All state 1: Under review, 2: Approved, 3: Rejected, 4: Under approval, 5: Expired
+ * @param {Number} pageIndex - (Optional) number default 1
+ * @param {Number} pageSize - (Optional) number default 10
+ * @returns {Object} - {
+                "list": [
+                  {
+                    "file_id": "8feS-wp5lYhGOCtOLTKZH",
+                    "file_name": "1.jpg",
+                    "address": " file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
+                    "category": "file type category",
+                    "format": "image",
+                    "suffix": "jpg",
+                    "owner": "account name",
+                    "owner_id": "1b79f5def27bebcc71a71058a7771cc476769fc5dba32f45bcdc1b8c6e353917",
+                    "owner_avatar": "Profile picture",
+                    "thumbnail": "thumbnail mimetype and ipfs address: image/jpeg|QmUmCdMxu2MnnCmodc5VvnLqqoJn21s2M2LQqV9T5zDgYy",
+                    "created_at": 1684116370
+                  },
+                  ...
+              ],
+              "total": total count
+            }
+ */
 export const getFilesByApplyStatusAsPublisher = async (
   account: Account,
   status = 0,
@@ -736,7 +802,33 @@ export const getFilesPendingApprovalAsPublisher = async (
   );
 };
 
-//get the Approved success status files  for others to use. This account acts as the publisher (Alice)
+
+/**
+ * get the Approved success status files for others to use. This account acts as the publisher (Alice)
+ * @category File Publisher(Alice) Interface
+ * @param {Account} account - Account the current account object
+ * @param {Number} pageIndex - (Optional) number default 1
+ * @param {Number} pageSize - (Optional) number default 10
+ * @returns {Object} - {
+                "list": [
+                  {
+                    "file_id": "8feS-wp5lYhGOCtOLTKZH",
+                    "file_name": "1.jpg",
+                    "address": " file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
+                    "category": "file type category",
+                    "format": "image",
+                    "suffix": "jpg",
+                    "owner": "account name",
+                    "owner_id": "1b79f5def27bebcc71a71058a7771cc476769fc5dba32f45bcdc1b8c6e353917",
+                    "owner_avatar": "Profile picture",
+                    "thumbnail": "thumbnail mimetype and ipfs address: image/jpeg|QmUmCdMxu2MnnCmodc5VvnLqqoJn21s2M2LQqV9T5zDgYy",
+                    "created_at": 1684116370
+                  },
+                  ...
+              ],
+              "total": total count
+            }
+ */
 export const getApprovedFilesAsPublisher = async (
   account: Account,
   pageIndex = 1,
@@ -814,7 +906,35 @@ export const getFilesAllStatusAsUser = async (
   );
 };
 
-//get all status files as User This account acts as user (Bob)
+/**
+ * The file applicant retrieves a list of files in a specified state that need to be approved by others.
+ * @category File User(Bob) Interface
+ * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
+ * @throws {UnauthorizedError} get logined account failed, must be login account first  
+ * @param {Account} account -  the current account object 
+ * @param status - (Optional) default 0: All state 1: Under review, 2: Approved, 3: Rejected, 4: Under approval, 5: Expired
+ * @param {Number} pageIndex - (Optional) number default 1
+ * @param {Number} pageSize - (Optional) number default 10
+ * @returns {Object} - {
+                "list": [
+                  {
+                    "file_id": "8feS-wp5lYhGOCtOLTKZH",
+                    "file_name": "1.jpg",
+                    "address": " file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
+                    "category": "file type category",
+                    "format": "image",
+                    "suffix": "jpg",
+                    "owner": "account name",
+                    "owner_id": "1b79f5def27bebcc71a71058a7771cc476769fc5dba32f45bcdc1b8c6e353917",
+                    "owner_avatar": "Profile picture",
+                    "thumbnail": "thumbnail mimetype and ipfs address: image/jpeg|QmUmCdMxu2MnnCmodc5VvnLqqoJn21s2M2LQqV9T5zDgYy",
+                    "created_at": 1684116370
+                  },
+                  ...
+              ],
+              "total": total count
+            }
+ */
 export const getFilesByApplyStatusAsUser = async (
   account: Account,
   status = 0,
@@ -867,7 +987,32 @@ export const getFilesPendingApprovalAsUser = async (
   );
 };
 
-//Obtain a list of approved documents (downloadable): get the Approved success status files, So that I can use it. This account acts as user (Bob), approved
+/**
+ * The file applicant retrieves a list of files that have been approved for their own use.
+ * @category File User(Bob) Interface
+ * @param {Account} account -  the current account object 
+ * @param {Number} pageIndex - (Optional) number default 1
+ * @param {Number} pageSize - (Optional) number default 10
+ * @returns {Object} - {
+                "list": [
+                  {
+                    "file_id": "8feS-wp5lYhGOCtOLTKZH",
+                    "file_name": "1.jpg",
+                    "address": " file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
+                    "category": "file type category",
+                    "format": "image",
+                    "suffix": "jpg",
+                    "owner": "account name",
+                    "owner_id": "1b79f5def27bebcc71a71058a7771cc476769fc5dba32f45bcdc1b8c6e353917",
+                    "owner_avatar": "Profile picture",
+                    "thumbnail": "thumbnail mimetype and ipfs address: image/jpeg|QmUmCdMxu2MnnCmodc5VvnLqqoJn21s2M2LQqV9T5zDgYy",
+                    "created_at": 1684116370
+                  },
+                  ...
+              ],
+              "total": total count
+            }
+ */
 export const getApprovedFilesAsUser = async (
   account: Account,
   pageIndex = 1,
@@ -918,17 +1063,46 @@ export const getUnapprovedFilesAsUser = async (
   );
 };
 
-//get files info by status This account acts as the user (Bob) or publisher (Alice)
+/**
+ * get files info by status This account acts as the user (Bob) or publisher (Alice)
+ * @category File Publisher(Alice)/User(Bob) Interface
+ * @param {String} fileld - (Optional)  file's id
+ * @param {String} proposerId - (Optional) proposer's account id
+ * @param {String} fileOwnerId - (Optional) account id of the file owner
+ * @param {String} applyId - (Optional) to apply for id
+ * @param {Number} status - (Optional) number default 1  1 - In progress, 2 - Approved, 3 - Rejected, 4 - Under review, 5 - Expired.
+ * @param {Number} pageIndex - (Optional) number default 1
+ * @param {Number} pageSize - (Optional) number default 10
+ * @returns {Object} - {
+                "list": [
+                  {
+                    "file_id": "8feS-wp5lYhGOCtOLTKZH",
+                    "file_name": "1.jpg",
+                    "address": " file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
+                    "category": "file type category",
+                    "format": "image",
+                    "suffix": "jpg",
+                    "owner": "account name",
+                    "owner_id": "1b79f5def27bebcc71a71058a7771cc476769fc5dba32f45bcdc1b8c6e353917",
+                    "owner_avatar": "Profile picture",
+                    "thumbnail": "thumbnail mimetype and ipfs address: image/jpeg|QmUmCdMxu2MnnCmodc5VvnLqqoJn21s2M2LQqV9T5zDgYy",
+                    "created_at": 1684116370
+                  },
+                  ...
+              ],
+              "total": total count
+            }
+ */
 export const getFilesByStatus = async (
   fileId?: string,
-  proposerId?: string, //	Proposer's account ID
-  fileOwnerId?: string, //Account ID of the file owner
-  applyId?: string, //To apply for ID
-  status = 1, //Application Status，0:all status 1: applying，2: approved, 3: rejected
+  proposerId?: string, //	Proposer's account id
+  fileOwnerId?: string, //Account id of the file owner
+  applyId?: string, //To apply for id
+  status = 1, //Application status: 1 - In progress, 2 - Approved, 3 - Rejected, 4 - Under review, 5 - Expired.
   pageIndex = 1,
   pageSize = 10
 ) => {
-  /*
+/*
 https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E7%94%B3%E8%AF%B7%E6%96%87%E4%BB%B6%E4%BD%BF%E7%94%A8%E5%88%97%E8%A1%A8
 return data format: {
   list: [
@@ -937,7 +1111,6 @@ return data format: {
   ],
   total: 300,
 }
-
 */
 
   if (isBlank(applyId) && isBlank(proposerId) && isBlank(fileOwnerId)) {
@@ -982,7 +1155,36 @@ return data format: {
   return data;
 };
 
-//get information about the current of all using policies by publiser others, the current account as Bob
+/**
+ * The applicant of the file obtains a list of the policy information. 
+ * get information about the current of all using policies by publiser others, the current account as Bob
+ * @category File User(Bob) Interface
+ * @param {Account} account -  current account object info      
+ * @param {Number} pageIndex - (Optional) number default 1
+ * @param {Number} pageSize - (Optional) number default 10
+ * @returns {Object} - {
+                "list": [
+                  {
+                    "hrac":"Policy hrac",
+                    "policy_id":"Policy ID",
+                    "creator":"Policy creator",
+                    "creator_id":"Policy creator ID",
+                    "creator_address":"Ethereum address of the policy creator",
+                    "consumer":"Policy consumer",
+                    "consumer_id":"Policy consumer ID",
+                    "consumer_address":"Ethereum address of the policy consumer",
+                    "gas":"Gas fee in wei",
+                    "tx_hash":"Transaction hash",
+                    "encrypted_pk":"Policy encryption public key",
+                    "start_at":"Policy start timestamp",
+                    "end_at":"Policy end timestamp",
+                    "created_at":"Policy creation timestamp"
+                  },
+                  ...
+              ],
+              "total": total count
+            }
+ */
 export const getInUsePoliciesInfo = async (
   account: Account,
   pageIndex = 1,
@@ -1009,7 +1211,35 @@ export const getInUsePoliciesInfo = async (
   return data;
 };
 
-//get information about all published policies under the account
+/**
+ * The publisher of the file obtains a list of the information of the policies published on the blockchain.
+ * @param {Account} account 
+ * @param {Number} pageIndex - (Optional) number default 1
+ * @param {Number} pageSize - (Optional) number default 10
+ * @returns {Object} - {
+                "list": [
+                  {
+                    "hrac":"Policy hrac",
+                    "policy_id":"Policy ID",
+                    "creator":"Policy creator",
+                    "creator_id":"Policy creator ID",
+                    "creator_address":"Ethereum address of the policy creator",
+                    "consumer":"Policy consumer",
+                    "consumer_id":"Policy consumer ID",
+                    "consumer_address":"Ethereum address of the policy consumer",
+                    "gas":"Gas fee in wei",
+                    "tx_hash":"Transaction hash",
+                    "encrypted_pk":"Policy encryption public key",
+                    "start_at":"Policy start timestamp",
+                    "end_at":"Policy end timestamp",
+                    "created_at":"Policy creation timestamp"
+                  },
+                  ...
+              ],
+              "total": total count
+            }
+
+ */
 export const getPublishedPoliciesInfo = async (
   account: Account,
   pageIndex = 1,
@@ -1036,7 +1266,38 @@ export const getPublishedPoliciesInfo = async (
   return data;
 };
 
-//get policy(published) informations by policy Id
+/**
+ * Obtains a list of the information of the policies published on the blockchain.
+ * @param {Number} policyId - policyId
+ * @param {String} creatorId - the publisher's account id of the file
+ * @param {String} consumerId - the user's account id of the file
+ * @param {String} policyLabelId - the `label` fields of the Strategy object in the Account Object
+ * @param {Number} pageIndex - (Optional) number default 1
+ * @param {Number} pageSize - (Optional) number default 10
+ * @returns {Object} - {
+                "list": [
+                  {
+                    "hrac":"Policy hrac",
+                    "policy_id":"Policy ID",
+                    "creator":"Policy creator",
+                    "creator_id":"Policy creator ID",
+                    "creator_address":"Ethereum address of the policy creator",
+                    "consumer":"Policy consumer",
+                    "consumer_id":"Policy consumer ID",
+                    "consumer_address":"Ethereum address of the policy consumer",
+                    "gas":"Gas fee in wei",
+                    "tx_hash":"Transaction hash",
+                    "encrypted_pk":"Policy encryption public key",
+                    "start_at":"Policy start timestamp",
+                    "end_at":"Policy end timestamp",
+                    "created_at":"Policy creation timestamp"
+                  },
+                  ...
+              ],
+              "total": total count
+            }
+
+ */
 export const getPoliciesInfo = async (
   policyId?: number,
   creatorId?: string, //ID of the policy creator account
@@ -1083,7 +1344,15 @@ export const getPoliciesInfo = async (
   return data;
 };
 
-//calcurate publish policy server fee (nlk/tnlk): By calling calcPolicyCost
+
+/**
+ * calcurate publish policy server fee (nlk/tnlk): By calling calcPolicyCost
+ * @param {Account} publisher - the current logined Account object
+ * @param {Number} startSeconds - Start time of file usage application in seconds
+ * @param {Number} endSeconds - End time of file usage application in seconds
+ * @param {Number} ursulaShares - Number of service shares
+ * @returns {Promise<BigNumber>} - the amount of NLK/TNLK in wei
+ */
 export const getPolicyTokenCost = async (
   publisher: Account,
   startDate: Date, //policy usage start date
@@ -1105,8 +1374,15 @@ export const getPolicyTokenCost = async (
   return gasWei;
 };
 
-//calcurate publish policy server fee (nlk/tnlk)
-//you can get ether: Web3.utils.fromWei(costGasWei.toNumber().toString(), "ether" )
+
+/**
+ * calcurate publish policy server fee (nlk/tnlk), you can get ether: Web3.utils.fromWei(costGasWei.toNumber().toString(), "ether" )
+ * @param {Account} alice - the current logined Account object as file publisher
+ * @param {Number} startSeconds - Start time of file usage application in seconds
+ * @param {Number} endSeconds - End time of file usage application in seconds
+ * @param {Number} ursulaShares - Number of service shares
+ * @returns {Promise<BigNumber>} - the amount of NLK/TNLK in wei
+ */
 const calcPolicyCost = async (
   alice: Alice,
   startDate: Date, //policy usage start date
@@ -1128,6 +1404,20 @@ const calcPolicyCost = async (
   return value;
 };
 
+
+/**
+ * estimate gas fees for sharing files
+ * @param {Account} publisher - Account the account object of the file publisher (Alice)
+ * @param {String} userAccountId - -the account Id of the file publisher (Alice)
+ * @param {String} applyId - - The application ID returned to the user by the interface when applying to use a specific file
+ * @param {Number} ursulaShares - Number of service shares
+ * @param {Number} ursulaThreshold - The file user can download the file after obtaining the specified number of service data shares
+ * @param {Number} startSeconds - Start time of file usage application in seconds
+ * @param {Number} endSeconds - End time of file usage application in seconds
+ * @param {BigNumber} serverFee - server fees by call function of `getPolicyServerGasFee`
+ * @param {String} porterUri - (Optional) the porter service url
+ * @returns {Promise<BigNumber>} - the amount of bnb/tbnb in wei
+ */
 export const estimatePolicyGas = async (
   publisher: Account,
   userAccountId: string, // proposer account id
@@ -1368,6 +1658,11 @@ const getBlockchainPolicy = async (
   };
 };
 
+/**
+ * Check if the application status is "under review" or "approved"
+ * @param {String} applyId - - string | number
+ * @returns  Promise<boolean>
+ */
 export const checkFileApprovalStatusIsApprovedOrApproving = async (
   applyId: string | number
 ): Promise<boolean> => {
@@ -1382,7 +1677,27 @@ export const checkFileApprovalStatusIsApprovedOrApproving = async (
   return false;
 };
 
-//Approval of application for use of Files, This account acts as Publisher (Alice) grant
+
+/**
+ * Approval of application for use of Files, This account acts as Publisher (Alice) grant
+ * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
+ * @param {Account} publisher - Account the current account object
+ * @param {String} userAccountId - string
+ * @param {String} applyId - string
+ * @param {Number} ursulaShares - number
+ * @param {Number} ursulaThreshold - number
+ * @param {Date} startDate - policy usage start date
+ * @param {Date} endDate - policy usage end date
+ * @param {String} remark - (Optional)
+ * @param {String} porterUri - (Optional) the porter services url
+
+ * @returns If the "userAccountId" and "applyId" properties are not included in the "data" parameter, return null.
+ *          Otherwise, return the object of
+ *          {
+ *            txHash: 'the transaction hash of the "approve" transaction',
+ *            from: 'publisher.address'
+ *          }
+ */
 export const approvalApplicationForUseFiles = async (
   publisher: Account,
   userAccountId: string, // proposer account id
@@ -1390,7 +1705,7 @@ export const approvalApplicationForUseFiles = async (
   ursulaShares: number, //n   m of n => 3 of 5
   ursulaThreshold: number, // m
   startDate: Date, //policy usage start date
-  endDate: Date, //policy usage start date
+  endDate: Date, //policy usage end date
   remark = "", //remark
   porterUri = "",
   //To handle whole numbers, Wei can be converted using BigNumber.from(), and Ether can be converted using ethers.utils.parseEther(). It's important to note that BigNumber.from("1.2") cannot handle decimal numbers (x.x).
@@ -1570,7 +1885,35 @@ export const refusalApplicationForUseFiles = async (
   return data;
 };
 
-//Gets the file information associated with the policy (so the policy has been published)
+/**
+ * Gets the file information associated with the published policy (so the policy has been published)
+ * @param {String} policyId - policyId
+ * @param {String} policyPublisherId - (Optional) The account id of the file publisher, acting as the role of file publisher
+ * @param {String} policyUserId - (Optional) The account id of the file user, acting as the role of file applicant
+ *                        Only one of the two parameters, "policyPublisherId" and "policyUserId", can be selected, or neither of them can be passed
+ * @param {Number} pageIndex - (Optional) number default 1
+ * @param {Number} pageSize - (Optional) number default 10
+ * @returns {Object} - {
+                "list": [
+                  {
+                    "file_id": "File ID",
+                    "file_name": "File name",
+                    "owner": "File owner",
+                    "owner_id": "File owner account ID",
+                    "owner_avatar": "File owner avatar",
+                    "address": "File address",
+                    "thumbnail": "File thumbnail",
+                    "created_at": "File upload timestamp",
+                    "policy_id": "Policy ID",
+                    "policy_hrac": "Policy HRAC",
+                    "policy_start_at": "Policy start timestamp",
+                    "policy_end_at": "Policy end timestamp",
+                  },
+                  ...
+              ],
+              "total": total count
+            }
+ */
 export const getFilesByPolicyId = async (
   policyId: string, // filter policyLabelId
   policyPublisherId?: string, // policy publisher id, This account acts as Alice account.id
@@ -1692,7 +2035,13 @@ export const getFileContentAsUser = async (
   // console.log("bobPlaintext: ", bobPlaintext);
 };
 
-//Get approved document content (downloadable), input parameter by call  getApprovedFilesAsUser (Account) return  file content
+/**
+ * Get approved document content (downloadable). The file applicant retrieves the content of a file that has been approved for their usage.
+ * @category File User(Bob) Interface
+ * @param {Account} userAccount - Account the current account object 
+ * @param {String} fileId - file's id           
+ * @returns {Promise<ArrayBuffer>}
+ */
 export const getFileContentByFileIdAsUser = async (
   userAccount: Account,
   fileId: string
@@ -1717,7 +2066,13 @@ export const getFileContentByFileIdAsUser = async (
   );
 };
 
-//file uploader as the file owner to download file  return file content
+/**
+ * The file publisher obtains the content of the file
+ * @category File Publisher(Alice) Interface 
+ * @param {Account} userAccount - Account the current account object 
+ * @param {String} fileId - file's id  
+ * @returns {Promise<ArrayBuffer>}
+ */
 export const getFileContentByFileIdAsPublisher = async (
   userAccount: Account,
   fileId: string
@@ -1803,8 +2158,37 @@ export const getApplyDetails = async (applyId: string) => {
   }
 };
 
-//get file detail info, include apply file info, file info, about policy info
-//fileUserAccountId: This parameter passes the file finder when the file consumer is not known, fileUserAccountId should be passed the current account Id
+
+/**
+Retrieves the details of a file (include apply file info, file info, about policy info) by its ID and user account ID.
+@param {String} fileId - The ID of the file to retrieve details for.
+@param {String} fileUserAccountId - This parameter passes the file finder when the file consumer is not known, fileUserAccountId should be passed the current account I
+@returns {Object} - The returned object contains the following properties:
+                    {
+                    file_id: string,
+                    file_name: string,
+                    thumbnail: string,
+                    file_created_at: number,
+                    apply_id: string,
+                    status: number,
+                    apply_start_at: number,
+                    apply_end_at: number,
+                    apply_created_at: number,
+                    policy_id: string,
+                    hrac: string,
+                    creator: string,
+                    creator_id: string,
+                    consumer: string,
+                    consumer_id: string,
+                    gas: number,
+                    tx_hash: string,
+                    policy_created_at: number,
+                    file_ipfs_address: string,
+                    policy_encrypted_pk: string,
+                    encrypted_treasure_map_ipfs_address: string,
+                    alice_verify_pk: string
+                    }
+*/
 export const getFileDetails = async (
   fileId: string,
   fileUserAccountId: string

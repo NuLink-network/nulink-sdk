@@ -189,7 +189,7 @@ export const logoutWallet = async () => {
  *  Note:  If no password is passed to the getWalletDefaultAccount function, it will attempt to obtain the wallet object from memory.
  *  If it cannot be obtained, null is returned. In this case, the function needs to be called again with the user's password to retrieve the wallet object.
  * @throws {PasswordDecryptError}
- * @param {string} [password='']
+ * @param {String} [password='']
  * @return {*}  {(Promise<Account | null>)}
  */
 export const getWalletDefaultAccount = async (password?: string): Promise<Account | null> => {
@@ -223,7 +223,7 @@ export const unlockWallet = async (password: string): Promise<boolean> => {
  *  Note:  If no password is passed to the getWalletDefaultAccount function, it will attempt to obtain the wallet object from memory.
  *  If it cannot be obtained, null is returned. In this case, the function needs to be called again with the user's password to retrieve the wallet object.
  * @throws {PasswordDecryptError}
- * @param {string} [password='']
+ * @param {String} [password='']
  * @return {*}
  */
 export const getMnemonic = async (password: string): Promise<string | null> => {
@@ -236,7 +236,7 @@ export const getMnemonic = async (password: string): Promise<string | null> => {
  *  Note:  If no password is passed to the getWalletDefaultAccount function, it will attempt to obtain the wallet object from memory.
  *  If it cannot be obtained, null is returned. In this case, the function needs to be called again with the user's password to retrieve the wallet object.
  * @throws {PasswordDecryptError}
- * @param {string} [password='']
+ * @param {String} [password='']
  * @return {*}
  */
 export const getDefaultAccountPrivateKey = async (password: string): Promise<string | null> => {

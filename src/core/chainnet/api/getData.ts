@@ -13,18 +13,28 @@ export const CHAIN_NETWORK_LABEL = "chain_network";
  */
 export const CHAIN_NETWORK_CONFIG = "chain_network_config";
 
+
+/**
+ * get current setting data
+ * @returns Promise<NetworkConfigOptions>
+ */
 export const getSettingsData = async (): Promise<NetworkConfigOptions> => {
   const data = await storage.getItem(CHAIN_NETWORK_CONFIG);
   return data || (await getCurrentNetworkInitialConfiguration());
 };
 
-//get the default network key
-
+/**
+ * get the default network key
+ * @returns Promise<NETWORK_LIST>
+ */
 export const getCurrentNetworkKey = async (): Promise<NETWORK_LIST> => {
   const network = await storage.getItem(CHAIN_NETWORK_LABEL);
   return network || defaultChainNetWork;
 };
 
+/**
+ * @internal
+ */
 export const getCurrentNetworkInitialConfiguration = async () => {
   const currentNetwork: NETWORK_LIST = await getCurrentNetworkKey();
 

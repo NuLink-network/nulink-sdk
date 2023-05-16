@@ -26,5 +26,5 @@ export const fromString = (string: string, encoding: SupportedEncodings = 'utf8'
   }
 
   // add multibase prefix
-  return base.decoder.decode(`${base.prefix}${string}`) // eslint-disable-line @typescript-eslint/restrict-template-expressions
+  return base.decoder.decode(`${base.prefix}${String}`) // eslint-disable-line @typescript-eslint/restrict-template-expressions
 }
