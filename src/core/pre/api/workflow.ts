@@ -65,6 +65,9 @@ export const getServerTimeStamp = async (): Promise<string> => {
   return data['timestamp'] as string
 }
 
+/**
+ * @internal
+ */
 export const signUpdateServerDataMessage = async (account: Account, data: 'dataDict') => {
   // Do not use local time. Gets UTC real time in milliseconds with 0.001 precision from http://worldtimeapi.org/api/timezone/Etc/UTC.
   //data["timestamp"] = (new Date().getTime() / 1000) | 0; // Discard the decimal number
@@ -340,13 +343,13 @@ export const uploadFilesByCreatePolicy = async (
   return strategy
 }
 /**
-Uploads files to the server by selecting an existing policy and uploading the files encrypted with the policy's public key to IPFS.
-@category File Publisher(Alice) Interface
-@param {Account} account - The account to use to upload the files.
-@param {FileCategory | string} fileCategory - The category of the files being uploaded. Must be a valid FileCategory value or a string.
-@param {FileInfo[]} fileList - The list of files to upload. Each element of the array must be an object with properties 'name' and 'fileBinaryArrayBuffer'.
-@param {number} policyId - The ID of the policy to use to encrypt and upload the files.
-@returns {Promise<string[]>} - Returns an array of file IDs uploaded to the server.
+* Uploads files to the server by selecting an existing policy and uploading the files encrypted with the policy's public key to IPFS.
+* @category File Publisher(Alice) Interface
+* @param {Account} account - The account to use to upload the files.
+* @param {FileCategory | string} fileCategory - The category of the files being uploaded. Must be a valid FileCategory value or a string.
+* @param {FileInfo[]} fileList - The list of files to upload. Each element of the array must be an object with properties 'name' and 'fileBinaryArrayBuffer'.
+* @param {number} policyId - The ID of the policy to use to encrypt and upload the files.
+* @returns {Promise<string[]>} - Returns an array of file IDs uploaded to the server.
 */
 export const uploadFilesBySelectPolicy = async (
   account: Account,
@@ -444,13 +447,13 @@ export const uploadFilesBySelectPolicy = async (
 }
 
 /**
-Gets a list of files uploaded by the specified account from the server. This account acts as the publisher
-@category File Publisher(Alice) Interface
-@param {Account} account - The account to retrieve the file list for.
-@param {string} fileName - (Optional) The name of the file to search for. Leave blank to retrieve all files.
-@param {number} pageIndex - (Optional) The index of the page to retrieve. Default is 1.
-@param {number} pageSize - (Optional) The number of files to retrieve per page. Default is 10.
-@returns {Promise<object>} - Returns an object containing the list of files and pagination information.
+* Gets a list of files uploaded by the specified account from the server. This account acts as the publisher
+* @category File Publisher(Alice) Interface
+* @param {Account} account - The account to retrieve the file list for.
+* @param {string} fileName - (Optional) The name of the file to search for. Leave blank to retrieve all files.
+* @param {number} pageIndex - (Optional) The index of the page to retrieve. Default is 1.
+* @param {number} pageSize - (Optional) The number of files to retrieve per page. Default is 10.
+* @returns {Promise<object>} - Returns an object containing the list of files and pagination information.
             {
                 list: [
                   {
@@ -472,13 +475,13 @@ export const getUploadedFiles = async (account: Account, fileName?: string, page
 }
 
 /**
-Gets a list of files uploaded by the specified account from the server. This account acts as the publisher
-@category File Publisher(Alice) Interface
-@param {Account} account - The account to retrieve the file list for.
-@param {string} fileName - (Optional) The name of the file to search for. Leave blank to retrieve all files.
-@param {number} pageIndex - (Optional) The index of the page to retrieve. Default is 1.
-@param {number} pageSize - (Optional) The number of files to retrieve per page. Default is 10.
-@returns {Promise<object>} - Returns an object containing the list of files and pagination information.
+* Gets a list of files uploaded by the specified account from the server. This account acts as the publisher
+* @category File Publisher(Alice) Interface
+* @param {Account} account - The account to retrieve the file list for.
+* @param {string} fileName - (Optional) The name of the file to search for. Leave blank to retrieve all files.
+* @param {number} pageIndex - (Optional) The index of the page to retrieve. Default is 1.
+* @param {number} pageSize - (Optional) The number of files to retrieve per page. Default is 10.
+* @returns {Promise<object>} - Returns an object containing the list of files and pagination information.
             {
                 list: [
                   {
@@ -497,17 +500,7 @@ Gets a list of files uploaded by the specified account from the server. This acc
 */
 export const getFileInfosByAccount = async (account: Account, fileName?: string, pageIndex = 1, pageSize = 10) => {
   //file_name support fuzzy query
-
-  /*
-https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E6%96%87%E4%BB%B6%E5%88%97%E8%A1%A8
-return data format: {
-  list: [
-    {file_id, file_name:, owner, owner_id, address:,thumbnail:,create_at}
-    ...
-  ],
-  total: 300,
-}
-*/
+  // https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E6%96%87%E4%BB%B6%E5%88%97%E8%A1%A8
 
   const sendData = {
     account_id: account.id,
@@ -527,14 +520,15 @@ return data format: {
 }
 
 /**
-Deletes the specified files uploaded by the account from the server, This account acts as the publisher
-@category File Publisher(Alice) Interface
-@param {Account} account - The account that owns the files to be deleted.
-@param {string[]} fileIds - An array of file IDs to delete.
-@returns {Promise<void>}
+* Deletes the specified files uploaded by the account from the server, This account acts as the publisher
+* @category File Publisher(Alice) Interface
+* @param {Account} account - The account that owns the files to be deleted.
+* @param {string[]} fileIds - An array of file IDs to delete.
+* @returns {Promise<void>}
 */
 export const deleteUploadedFiles = async (account: Account, fileIds: string[]) => {
-  /*  https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E5%88%A0%E9%99%A4%E6%96%87%E4%BB%B6
+  //https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E5%88%A0%E9%99%A4%E6%96%87%E4%BB%B6
+  /*  
           return the list of deleted files is displayed: [
               {"file_id": "", "file_name": ""},
               ...
@@ -554,17 +548,17 @@ export const deleteUploadedFiles = async (account: Account, fileIds: string[]) =
 }
 
 /**
-Gets a list of files shared by others (files uploaded by the current account are not included). This account acts as the user(Bob).
-@category File User(Bob) Interface
-@param {Account} account - The current account information.
-@param {string} fileName - (Optional) The name of the file to search for. support fuzzy query. Leave blank to retrieve all files.
-@param {boolean} include - Indicates whether the query result contains file list data of the current account.
-@param {FileCategory|string} fileCategory - (Optional) The category of the file to search for.
-@param {FileType} fileType - (Optional) The type of the file to search for.
-@param {boolean} descOrder - (Optional) Whether to sort by upload time in reverse order.
-@param {number} pageIndex - (Optional) The index of the page to retrieve. Default is 1.
-@param {number} pageSize - (Optional) The number of files to retrieve per page. Default is 10.
-@returns {Promise<object>} - Returns an object containing the list of files and pagination information.
+*Gets a list of files shared by others (files uploaded by the current account are not included). This account acts as the user(Bob).
+* @category File User(Bob) Interface
+* @param {Account} account - The current account information.
+* @param {string} fileName - (Optional) The name of the file to search for. support fuzzy query. Leave blank to retrieve all files.
+* @param {boolean} include - Indicates whether the query result contains file list data of the current account.
+* @param {FileCategory|string} fileCategory - (Optional) The category of the file to search for.
+* @param {FileType} fileType - (Optional) The type of the file to search for.
+* @param {boolean} descOrder - (Optional) Whether to sort by upload time in reverse order.
+* @param {number} pageIndex - (Optional) The index of the page to retrieve. Default is 1.
+* @param {number} pageSize - (Optional) The number of files to retrieve per page. Default is 10.
+* @returns {Promise<object>} - Returns an object containing the list of files and pagination information.
                         {
                             total: number
                             list: [{
@@ -632,13 +626,13 @@ return data format: {
 }
 
 /**
-Applies for file usage permission for the specified files, This account acts as the user(Bob).
-@category File User(Bob) Interface
-@param {string[]} fileIds - An array of file IDs to apply for usage permission.
-@param {Account} account - The account that applies for the permission.
-@param {number} usageDays - (Optional) The validity period of the application, in days. Default is 7.
-@returns {Promise<void>}
-*/
+ * Applies for file usage permission for the specified files, This account acts as the user(Bob).
+ * @category File User(Bob) Interface
+ * @param {string[]} fileIds - An array of file IDs to apply for usage permission.
+ * @param {Account} account - The account that applies for the permission.
+ * @param {number} usageDays - (Optional) The validity period of the application, in days. Default is 7.
+ * @returns {Promise<void>}
+ */
 export const applyForFilesUsagePermission = async (fileIds: string[], account: Account, usageDays = 7) => {
   // https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E7%94%B3%E8%AF%B7%E6%96%87%E4%BB%B6%E4%BD%BF%E7%94%A8
   //TODO:  Consider returning the apply record ID
@@ -670,13 +664,13 @@ export const applyForFilesUsagePermission = async (fileIds: string[], account: A
 }
 
 /**
-Revokes the permission application of the specified files. This account acts as the user(Bob).
-If it has been approved or failed, it can not be revoked.
-The background service processing logic is such that if there are multiple permission applications, either all of them will be successful or none of them will be successful.
-@category File User(Bob) Interface
-@param {Account} account - The account that revokes the permission application.
-@param {number[]} applyIds - An array of application applyIds to revoke.
-@returns {Promise<object>} - Returns an empty object.
+* Revokes the permission application of the specified files. This account acts as the user(Bob).
+* If it has been approved or failed, it can not be revoked.
+* The background service processing logic is such that if there are multiple permission applications, either all of them will be successful or none of them will be successful.
+* @category File User(Bob) Interface
+* @param {Account} account - The account that revokes the permission application.
+* @param {number[]} applyIds - An array of application applyIds to revoke.
+* @returns {Promise<object>} - Returns an empty object.
 */
 export const revokePermissionApplicationOfFiles = async (
   account: Account, //Bob
@@ -763,25 +757,16 @@ export const getFilesAllStatusAsPublisher = async (account: Account, pageIndex =
             }
  */
 export const getFilesByApplyStatusAsPublisher = async (account: Account, status = 0, pageIndex = 1, pageSize = 10) => {
-  /*return data format: {
-  list: [
-    { apply_id, file_id:, proposer, proposer_id, file_owner:, file_owner_id:, policy_id, hrac, start_at:, end_at, days, created_at }
-    ...
-  ],
-  total: 300,
-}
-*/
-
   return await getFilesByStatus(undefined, undefined, account.id, undefined, status, pageIndex, pageSize)
 }
 
 /**
-Gets a list of files pending approval (applying but not yet approved). This account acts as the publisher (Alice) and needs to approve them.
-@category File Publisher(Alice) Interface
-@param {Account} account - (Optional) The current account information.
-@param {number} pageIndex - (Optional) The index of the page to retrieve. Default is 1.
-@param {number} pageSize - (Optional) The number of files to retrieve per page. Default is 10.
-@returns {Promise<object>} - Returns an object containing the list of files and pagination information.
+* Gets a list of files pending approval (applying but not yet approved). This account acts as the publisher (Alice) and needs to approve them.
+* @category File Publisher(Alice) Interface
+* @param {Account} account - (Optional) The current account information.
+* @param {number} pageIndex - (Optional) The index of the page to retrieve. Default is 1.
+* @param {number} pageSize - (Optional) The number of files to retrieve per page. Default is 10.
+* @returns {Promise<object>} - Returns an object containing the list of files and pagination information.
                           {
                             "list": [
                               {
@@ -833,25 +818,17 @@ export const getFilesPendingApprovalAsPublisher = async (account: Account, pageI
             }
  */
 export const getApprovedFilesAsPublisher = async (account: Account, pageIndex = 1, pageSize = 10) => {
-  /*return data format: {
-  list: [
-    { apply_id, file_id:, proposer, proposer_id, file_owner:, file_owner_id:, policy_id, hrac, start_at:, end_at, days, created_at }
-    ...
-  ],
-  total: 300,
-}
-*/
 
   return await getFilesByStatus(undefined, undefined, account.id, undefined, 2, pageIndex, pageSize)
 }
 
 /**
-Gets a list of files with the "approved failed" status for others to use. This account acts as the publisher (Alice).
-@category File Publisher(Alice) Interface
-@param {Account} account - The current account information.
-@param {number} pageIndex - The index of the page to retrieve. Default is 1.
-@param {number} pageSize - The number of files to retrieve per page. Default is 10.
-@returns {Promise<object>} - Returns an object containing the list of files and pagination information.
+* Gets a list of files with the "approved failed" status for others to use. This account acts as the publisher (Alice).
+* @category File Publisher(Alice) Interface
+* @param {Account} account - The current account information.
+* @param {number} pageIndex - The index of the page to retrieve. Default is 1.
+* @param {number} pageSize - The number of files to retrieve per page. Default is 10.
+* @returns {Promise<object>} - Returns an object containing the list of files and pagination information.
               {
                 "list": [
                   {
@@ -877,12 +854,12 @@ export const getFilesForRefusedAsPublisher = async (account: Account, pageIndex 
 }
 
 /**
-Gets a list of all files with any status as a user (Bob) using this account.
-@category File User(Bob) Interface
-@param {Account} account - The current account information.
-@param {number} pageIndex - The index of the page to retrieve. Default is 1.
-@param {number} pageSize - The number of files to retrieve per page. Default is 10.
-@returns {Promise<object>} - Returns an object containing the list of files and pagination information.
+* Gets a list of all files with any status as a user (Bob) using this account.
+* @category File User(Bob) Interface
+* @param {Account} account - The current account information.
+* @param {number} pageIndex - The index of the page to retrieve. Default is 1.
+* @param {number} pageSize - The number of files to retrieve per page. Default is 10.
+* @returns {Promise<object>} - Returns an object containing the list of files and pagination information.
                             {
                               "list": [
                                 {
@@ -999,7 +976,6 @@ export const getApprovedFilesAsUser = async (account: Account, pageIndex = 1, pa
   return await getFilesByStatus(undefined, account.id, undefined, undefined, 2, pageIndex, pageSize)
 }
 
-//get the Approved failed status files, So that I can not use it. This account acts as user (Bob)
 /**
  * Gets a list of files with the "approved failed" status, which cannot be used by the user (Bob) using this account.
  * @category File User(Bob) Interface
@@ -1755,16 +1731,7 @@ export const getFilesByPolicyId = async (
   pageIndex = 1,
   pageSize = 10
 ) => {
-  /*
-  https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E8%8E%B7%E5%8F%96%E7%AD%96%E7%95%A5%E5%85%B3%E8%81%94%E7%9A%84%E6%96%87%E4%BB%B6%E4%BF%A1%E6%81%AF%E5%88%97%E8%A1%A8  return data format: {
-  return data format: {
-  list: [
-    {file_id , file_name :, owner , owner_id, address:,thumbnail:,created_at:, policy_id, policy_hrac, policy_start_at, policy_end_at}
-    ...
-  ],
-  total: 300,
-}
-  */
+  //https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E8%8E%B7%E5%8F%96%E7%AD%96%E7%95%A5%E5%85%B3%E8%81%94%E7%9A%84%E6%96%87%E4%BB%B6%E4%BF%A1%E6%81%AF%E5%88%97%E8%A1%A8
 
   const sendData = {
     policy_id: policyId,
@@ -2086,7 +2053,6 @@ export const getPolicyLabelInfos = async (publisherAccount: Account, pageIndex =
                           ]                 
 */
 export const getPolicyLabelInfosByAddr = async (accountAddress: string) => {
-
   return Account.getStrategyInfosFromServerByAddr(accountAddress)
 }
 
