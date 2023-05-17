@@ -19,14 +19,13 @@ export type { BigNumber } from 'ethers'
 /**
  * get service fees (NLK/TNLK) for sharing files
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
- * @throws {UnauthorizedError} get logined account failed, must be login account first
- * @param {Number} startSeconds - Start time of file usage application in seconds
- * @param {Number} endSeconds - End time of file usage application in seconds
- * @param {Number} ursulaShares - Number of service shares
- * @returns {String} - the amount of NLK/TNLK in wei
+ * @throws {@link UnauthorizedError} get logined account failed, must be login account first
+ * @param {number} startSeconds - Start time of file usage application in seconds
+ * @param {number} endSeconds - End time of file usage application in seconds
+ * @param {number} ursulaShares - Number of service shares
+ * @returns {string} - the amount of NLK/TNLK in wei
  */
 export const getPolicyServerGasFee = async (startSeconds: number, endSeconds: number, ursulaShares: number) => {
-
   const account = await getWalletDefaultAccount()
   if (isBlank(account)) {
     throw new exception.UnauthorizedError(
@@ -47,14 +46,14 @@ export const getPolicyServerGasFee = async (startSeconds: number, endSeconds: nu
 /**
  * estimate service gas fees for sharing files
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
- * @throws {UnauthorizedError} get logined account failed, must be login account first
- * @throws {PolicyHasBeenActivedOnChain} Policy has been actived(created) on chain (policy is currently active)
- * @param {String} userAccountId - the account Id of the file applicant (Bob)
- * @param {String} applyId - The application ID returned to the user by the interface when applying to use a specific file
- * @param {Number} ursulaShares - Number of service shares
- * @param {Number} ursulaThreshold - The file user can download the file after obtaining the specified number of service data shares
- * @param {Number} startSeconds - Start time of file usage application in seconds
- * @param {Number} endSeconds - End time of file usage application in seconds
+ * @throws {@link UnauthorizedError} get logined account failed, must be login account first
+ * @throws {@link PolicyHasBeenActivedOnChain} Policy has been actived(created) on chain (policy is currently active)
+ * @param {string} userAccountId - the account Id of the file applicant (Bob)
+ * @param {string} applyId - The application ID returned to the user by the interface when applying to use a specific file
+ * @param {number} ursulaShares - Number of service shares
+ * @param {number} ursulaThreshold - The file user can download the file after obtaining the specified number of service data shares
+ * @param {number} startSeconds - Start time of file usage application in seconds
+ * @param {number} endSeconds - End time of file usage application in seconds
  * @param {BigNumber} serverFee - server fees by call function of `getPolicyServerGasFee`
  * @returns {Promise<String>} - the amount of bnb/tbnb in wei
  */
@@ -66,7 +65,7 @@ export const getPolicyGasFee = async (
   startSeconds: number, //policy usage start
   endSeconds: number, //policy usage start
   serverFee: BigNumber // nlk fee in wei
-) : Promise<string> => {
+): Promise<string> => {
   try {
     const account = await getWalletDefaultAccount()
     if (isBlank(account)) {
@@ -109,8 +108,8 @@ export const getPolicyGasFee = async (
 /**
  * get information of the logged-in user
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
- * @throws {UnauthorizedError} get logined account failed, must be login account first
- * @returns {Object} - The object containing the user information: {"name": , "address": "account address", "id": "account id", "ipfs": "IPFS",  "service": "service URL"} 
+ * @throws {@link UnauthorizedError} get logined account failed, must be login account first
+ * @returns {Promise<object>} - The object containing the user information: {"name": , "address": "account address", "id": "account id", "ipfs": "IPFS",  "service": "service URL"}
  */
 export const getLoginedUserInfo = async () => {
   //Web page Checks whether the user has logged in or get logined UserInfo. If so, the current login user name is returned
@@ -134,7 +133,7 @@ export const getLoginedUserInfo = async () => {
 /**
  * Retrieve if the default account is logged in
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
- * @throws {UnauthorizedError} get logined account failed, must be login account first
+ * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @returns {Promise<Boolean>}
  */
 export const isUserLogined = async (): Promise<boolean> => {
@@ -145,8 +144,8 @@ export const isUserLogined = async (): Promise<boolean> => {
 /**
  * Retrieve user information details
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
- * @throws {UnauthorizedError} get logined account failed, must be login account first
- * @returns {Object} - User information details:
+ * @throws {@link UnauthorizedError} get logined account failed, must be login account first
+ * @returns {Promise<object>} - User information details:
  *                {
                     name	string	account name
                     account_id	string	account ID(UUID v4)
@@ -178,8 +177,8 @@ export const getUserDetails = async () => {
 /**
  * Retrieve user information details by user account Id
  * @param {Object} data - Object be must be have the property of "accountId",  null otherwise
- * @param {String} data.accountId -  Object be must be have the property of "accountId",  null otherwise
- * @returns {Object} - User information details:
+ * @param {string} data.accountId - account's Id
+ * @returns {Promise<object>} - User information details:
  *                {
                     name	string	account name
                     account_id	string	account ID(UUID v4)
@@ -197,7 +196,7 @@ export const getUserDetails = async () => {
                     profile string  personal data        
                   }
  */
-export const getUserByAccountId = async (data) => {
+export const getUserByAccountId = async (data: { accountId: string }) => {
   if (Object.prototype.hasOwnProperty.call(data, 'accountId')) {
     return await pre.getAccountInfo(data['accountId'])
   }
@@ -205,20 +204,27 @@ export const getUserByAccountId = async (data) => {
 }
 
 /** update info of current user account
- * @param {Object} data -  the Object of update data. The input data must be one or more fields in the "data" section:
- * @param {String} data.avatar the photo of current account
- * @param {String} data.nickname the nickname of current account
- * @param {String} data.userSite the user site of current account
- * @param {String} data.twitter the twitter of current account
- * @param {String} data.instagram the instagram of current account
- * @param {String} data.facebook the facebook of current account
- * @param {String} data.personalProfile the personal profile of current account
- *
+ * @param {Object} data - the Object of update data. The input data must be one or more fields in the "data" section
+ * @param {string} data.avatar - (Optional) the photo of current account
+ * @param {string} data.nickname - (Optional) the nickname of current account
+ * @param {string} data.userSite - (Optional) the user site of current account
+ * @param {string} data.twitter - (Optional) the twitter of current account
+ * @param {string} data.instagram - (Optional) the instagram of current account
+ * @param {string} data.facebook - (Optional) the facebook of current account
+ * @param {string} data.personalProfile - (Optional) the personal profile of current account
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
- * @throws {UnauthorizedError} get logined account failed, must be login account first
- * @returns {void}
+ * @throws {@link UnauthorizedError} get logined account failed, must be login account first
+ * @returns {Promise<void>}
  */
-export const updateUserInfo = async (data) => {
+export const updateUserInfo = async (data: {
+  avatar?: string
+  nickname?: string
+  userSite?: string
+  twitter?: string
+  instagram?: string
+  facebook?: string
+  personalProfile?: string
+}) => {
   const account = await getWalletDefaultAccount()
 
   return await pre.updateAccountInfo(account as Account, data as Record<string, string>)
@@ -227,11 +233,11 @@ export const updateUserInfo = async (data) => {
 /**
  * Check if the application status is "under review" or "approved"
  * @param {Object} data - Object be must be have the property of "applyId",  return null otherwise
- * @param {String} data.applyId - The ID of the file application.
+ * @param {string} data.applyId - The ID of the file application.
  * @returns  {Promise<boolean> || null}  param data Object be must be have the property of "applyId",  return null otherwise.
  *           Return true if the status is "under review" or "approved", false otherwise
  */
-export const checkFileApprovalStatusIsUnderReviewOrApproved = async (data) => {
+export const checkFileApprovalStatusIsUnderReviewOrApproved = async (data: { applyId: string }) => {
   if (Object.prototype.hasOwnProperty.call(data, 'applyId')) {
     return await pre.checkFileApprovalStatusIsApprovedOrApproving(data['applyId'])
   }
@@ -243,15 +249,15 @@ export const checkFileApprovalStatusIsUnderReviewOrApproved = async (data) => {
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @param {Object} data - the Object of update data. Object be must be have the properties: "userAccountId" and "applyId", return null otherwise
  *              The input data must include the following fields in the "data" section:
- * @param {String} data.userAccountId
- * @param {String} data.applyId
- * @param {Number} data.startSeconds
- * @param {Number} data.endSeconds
- * @param {Number} data.ursulaShares
- * @param {Number} data.ursulaThreshold
+ * @param {string} data.userAccountId
+ * @param {string} data.applyId
+ * @param {number} data.startSeconds
+ * @param {number} data.endSeconds
+ * @param {number} data.ursulaShares
+ * @param {number} data.ursulaThreshold
  * @param {BigNumber} data.gasFeeInWei - by call 'getPolicyGasFee'
- * @param {String} data.remark - (Optional) remark
- * @throws {UnauthorizedError} get logined account failed, must be login account first
+ * @param {string} data.remark - (Optional) remark
+ * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @returns {Object || null} - If the "userAccountId" and "applyId" properties are not included in the "data" parameter, return null.
  *          Otherwise, return the object of
  *          {
@@ -259,7 +265,16 @@ export const checkFileApprovalStatusIsUnderReviewOrApproved = async (data) => {
  *            from: 'publisher.address'
  *          }
  */
-export const ApprovalUseFiles = async (data) => {
+export const ApprovalUseFiles = async (data: {
+  userAccountId: string
+  applyId: string
+  startSeconds: number
+  endSeconds: number
+  ursulaShares: number
+  ursulaThreshold: number
+  gasFeeInWei?: BigNumber
+  remark?: string
+}) => {
   if (
     data &&
     Object.prototype.hasOwnProperty.call(data, 'userAccountId') &&
@@ -286,7 +301,7 @@ export const ApprovalUseFiles = async (data) => {
       endDate,
       data && Object.prototype.hasOwnProperty.call(data, 'remark') ? data['remark'] : '',
       '',
-      data && Object.prototype.hasOwnProperty.call(data, 'gasFeeInWei') ? data['gasFeeInWei'] : ''
+      data && Object.prototype.hasOwnProperty.call(data, 'gasFeeInWei') ? data['gasFeeInWei'] : BigNumber.from('-1')
     )
   }
 
@@ -297,11 +312,11 @@ export const ApprovalUseFiles = async (data) => {
  * The file publisher retrieves a list of files that have been approved for use by others.
  * @category File Publisher(Alice) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
- * @throws {UnauthorizedError} get logined account failed, must be login account first  
+ * @throws {@link UnauthorizedError} get logined account failed, must be login account first  
  * @param {Object} data - Object must be include the following fields in the "data" section:
- * @param {Number} data.pageIndex - (Optional) number default 1
- * @param {Number} data.pageSize - (Optional) number default 10
- * @returns {Object} - {
+ * @param {number} data.pageIndex - (Optional) number default 1
+ * @param {number} data.pageSize - (Optional) number default 10
+ * @returns {Promise<object>} - {
                 "list": [
                   {
                     "file_id": "8feS-wp5lYhGOCtOLTKZH",
@@ -321,7 +336,7 @@ export const ApprovalUseFiles = async (data) => {
               "total": total count
             }
  */
-export const getFilesForApprovedAsPublisher = async (data) => {
+export const getFilesForApprovedAsPublisher = async (data: { pageIndex?: number; pageSize?: number }) => {
   const account = await getWalletDefaultAccount()
 
   if (isBlank(account)) {
@@ -341,11 +356,11 @@ export const getFilesForApprovedAsPublisher = async (data) => {
  * The file applicant retrieves a list of files that have been approved for their own use.
  * @category File User(Bob) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
- * @throws {UnauthorizedError} get logined account failed, must be login account first  
+ * @throws {@link UnauthorizedError} get logined account failed, must be login account first  
  * @param {Object} data - Object must be include the following fields in the "data" section:
- * @param {Number} data.pageIndex - (Optional) number default 1
- * @param {Number} data.pageSize - (Optional) number default 10
- * @returns {Object} - {
+ * @param {number} data.pageIndex - (Optional) number default 1
+ * @param {number} data.pageSize - (Optional) number default 10
+ * @returns {Promise<object>} - {
                 "list": [
                   {
                     "file_id": "8feS-wp5lYhGOCtOLTKZH",
@@ -365,7 +380,7 @@ export const getFilesForApprovedAsPublisher = async (data) => {
               "total": total count
             }
  */
-export const getFilesForApprovedAsUser = async (data) => {
+export const getFilesForApprovedAsUser = async (data: { pageIndex?: number; pageSize?: number }) => {
   const account = await getWalletDefaultAccount()
 
   if (isBlank(account)) {
@@ -385,11 +400,11 @@ export const getFilesForApprovedAsUser = async (data) => {
  * The file publisher retrieves a list of files in all states that need to be approved for use by others.
  * @category File Publisher(Alice) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
- * @throws {UnauthorizedError} get logined account failed, must be login account first  
+ * @throws {@link UnauthorizedError} get logined account failed, must be login account first  
  * @param {Object} data - Object must be include the following fields in the "data" section:
- * @param {Number} data.pageIndex - (Optional) number default 1
- * @param {Number} data.pageSize - (Optional) number default 10
- * @returns {Object} - {
+ * @param {number} data.pageIndex - (Optional) number default 1
+ * @param {number} data.pageSize - (Optional) number default 10
+ * @returns {Promise<object>} - {
                 "list": [
                   {
                     "file_id": "8feS-wp5lYhGOCtOLTKZH",
@@ -409,7 +424,7 @@ export const getFilesForApprovedAsUser = async (data) => {
               "total": total count
             }
  */
-export const getFilesForAllStatusAsPublisher = async (data) => {
+export const getFilesForAllStatusAsPublisher = async (data: { pageIndex?: number; pageSize?: number }) => {
   const account = await getWalletDefaultAccount()
 
   if (isBlank(account)) {
@@ -429,11 +444,11 @@ export const getFilesForAllStatusAsPublisher = async (data) => {
  * Retrieve a list of files that have been approved for the file applicant's own use.
  * @category File User(Bob) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
- * @throws {UnauthorizedError} get logined account failed, must be login account first  
+ * @throws {@link UnauthorizedError} get logined account failed, must be login account first  
  * @param {Object} data - Object must be include the following fields in the "data" section:
- * @param {Number} data.pageIndex - (Optional) number default 1
- * @param {Number} data.pageSize - (Optional) number default 10
- * @returns {Object} - {
+ * @param {number} data.pageIndex - (Optional) number default 1
+ * @param {number} data.pageSize - (Optional) number default 10
+ * @returns {Promise<object>} - {
                 "list": [
                   {
                     "file_id": "8feS-wp5lYhGOCtOLTKZH",
@@ -453,7 +468,7 @@ export const getFilesForAllStatusAsPublisher = async (data) => {
               "total": total count
             }
  */
-export const getFilesApprovedForApplicantAsUser = async (data) => {
+export const getFilesApprovedForApplicantAsUser = async (data: { pageIndex?: number; pageSize?: number }) => {
   const account = await getWalletDefaultAccount()
 
   if (isBlank(account)) {
@@ -473,12 +488,12 @@ export const getFilesApprovedForApplicantAsUser = async (data) => {
  * Retrieve a list of files in a specified state that need to be approved for use by others, for the file publisher.
  * @category File Publisher(Alice) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
- * @throws {UnauthorizedError} get logined account failed, must be login account first  
+ * @throws {@link UnauthorizedError} get logined account failed, must be login account first  
  * @param {Object} data - Object must be include the following fields in the "data" section:
- * @param {Number} data.status - (Optional) default 0: All state 1: Under review, 2: Approved, 3: Rejected, 4: Under approval, 5: Expired
- * @param {Number} data.pageIndex - (Optional) number default 1
- * @param {Number} data.pageSize - (Optional) number default 10
- * @returns {Object} - {
+ * @param {number} data.status - (Optional) default 0: All state 1: Under review, 2: Approved, 3: Rejected, 4: Under approval, 5: Expired
+ * @param {number} data.pageIndex - (Optional) number default 1
+ * @param {number} data.pageSize - (Optional) number default 10
+ * @returns {Promise<object>} - {
                 "list": [
                   {
                     "file_id": "8feS-wp5lYhGOCtOLTKZH",
@@ -498,7 +513,11 @@ export const getFilesApprovedForApplicantAsUser = async (data) => {
               "total": total count
             }
  */
-export const getFilesByStatusForAllApplyAsPublisher = async (data) => {
+export const getFilesByStatusForAllApplyAsPublisher = async (data: {
+  pageIndex?: number
+  pageSize?: number
+  status?: string | number
+}) => {
   const account = await getWalletDefaultAccount()
 
   if (isBlank(account)) {
@@ -509,7 +528,7 @@ export const getFilesByStatusForAllApplyAsPublisher = async (data) => {
 
   return await pre.getFilesByApplyStatusAsPublisher(
     account as Account,
-    data && Object.prototype.hasOwnProperty.call(data, 'status') ? parseInt(data['status']) : 0,
+    data && Object.prototype.hasOwnProperty.call(data, 'status') ? Number(data['status']) : 0,
     data && Object.prototype.hasOwnProperty.call(data, 'pageIndex') ? data['pageIndex'] : 1,
     data && Object.prototype.hasOwnProperty.call(data, 'pageSize') ? data['pageSize'] : 10
   )
@@ -519,12 +538,12 @@ export const getFilesByStatusForAllApplyAsPublisher = async (data) => {
  * The file applicant retrieves a list of files in a specified state that need to be approved by others.
  * @category File User(Bob) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
- * @throws {UnauthorizedError} get logined account failed, must be login account first  
+ * @throws {@link UnauthorizedError} get logined account failed, must be login account first  
  * @param {Object} data - Object must be include the following fields in the "data" section:
- * @param {Number} data.status - (Optional) default 0: All state 1: Under review, 2: Approved, 3: Rejected, 4: Under approval, 5: Expired
- * @param {Number} data.pageIndex - (Optional) number default 1
- * @param {Number} data.pageSize - (Optional) number default 10
- * @returns {Object} - {
+ * @param {number} data.status - (Optional) default 0: All state 1: Under review, 2: Approved, 3: Rejected, 4: Under approval, 5: Expired
+ * @param {number} data.pageIndex - (Optional) number default 1
+ * @param {number} data.pageSize - (Optional) number default 10
+ * @returns {Promise<object>} - {
                 "list": [
                   {
                     "file_id": "8feS-wp5lYhGOCtOLTKZH",
@@ -544,7 +563,11 @@ export const getFilesByStatusForAllApplyAsPublisher = async (data) => {
               "total": total count
             }
  */
-export const getFilesByStatusForAllApplyAsUser = async (data) => {
+export const getFilesByStatusForAllApplyAsUser = async (data: {
+  pageIndex?: number
+  pageSize?: number
+  status?: string | number
+}) => {
   const account = await getWalletDefaultAccount()
 
   if (isBlank(account)) {
@@ -555,7 +578,7 @@ export const getFilesByStatusForAllApplyAsUser = async (data) => {
 
   return await pre.getFilesByApplyStatusAsUser(
     account as Account,
-    data && Object.prototype.hasOwnProperty.call(data, 'status') ? parseInt(data['status']) : 0,
+    data && Object.prototype.hasOwnProperty.call(data, 'status') ? Number(data['status']) : 0,
     data && Object.prototype.hasOwnProperty.call(data, 'pageIndex') ? data['pageIndex'] : 1,
     data && Object.prototype.hasOwnProperty.call(data, 'pageSize') ? data['pageSize'] : 10
   )
@@ -565,14 +588,14 @@ export const getFilesByStatusForAllApplyAsUser = async (data) => {
  * The file applicant retrieves the content of a file that has been approved for their usage.
  * @category File User(Bob) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
- * @throws {UnauthorizedError} get logined account failed, must be login account first
- * @throws {ParameterError} The input parameter must have the "fileId" field
+ * @throws {@link UnauthorizedError} get logined account failed, must be login account first
+ * @throws {@link ParameterError} The input parameter must have the "fileId" field
  * @param {Object} data - Object must be include the following fields in the "data" section:
- * @param {String} data.fileId
- * @param {String} data.fileName
- * @returns {Object} - { url: "file content url", fileName: "file name" }
+ * @param {string} data.fileId
+ * @param {string} data.fileName
+ * @returns {Promise<object>} - { url: "file content url", fileName: "file name" }
  */
-export const getApprovedFileContentUrl = async (data) => {
+export const getApprovedFileContentUrl = async (data: { fileId: string; fileName: string }) => {
   if (data && Object.prototype.hasOwnProperty.call(data, 'fileId')) {
     const account = await getWalletDefaultAccount()
 
@@ -600,10 +623,9 @@ export const getApprovedFileContentUrl = async (data) => {
  * The file applicant retrieves the content of a file that has been approved for their usage.
  * @category File User(Bob) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
- * @throws {UnauthorizedError} get logined account failed, must be login account first
- * @throws {ParameterError} The input parameter must have the "fileId" field
- * @param {Object} data - Object must be include the following fields in the "data" section:
- * @param {String} data.fileId
+ * @throws {@link UnauthorizedError} get logined account failed, must be login account first
+ * @throws {@link ParameterError} The input parameter must have the "fileId" field
+ * @param {string} fileId - file's id
  * @returns {Promise<ArrayBuffer>}
  */
 export const getApprovedFileContent = async (fileId): Promise<ArrayBuffer> => {
@@ -618,8 +640,7 @@ export const getApprovedFileContent = async (fileId): Promise<ArrayBuffer> => {
 
     const arraybuffer: ArrayBuffer = await pre.getFileContentByFileIdAsUser(account as Account, fileId)
     return arraybuffer
-  }
-  else {
+  } else {
     throw new exception.ParameterError(`The input parameter must have the "fileId" field`)
   }
 }
@@ -628,14 +649,14 @@ export const getApprovedFileContent = async (fileId): Promise<ArrayBuffer> => {
  * The file publisher obtains the content of the file
  * @category File Publisher(Alice) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
- * @throws {UnauthorizedError} get logined account failed, must be login account first
- * @throws {ParameterError} The input parameter must have the "fileId" field
+ * @throws {@link UnauthorizedError} get logined account failed, must be login account first
+ * @throws {@link ParameterError} The input parameter must have the "fileId" field
  * @param {Object} data - Object must be include the following fields in the "data" section:
- * @param {String} data.fileId
- * @param {String} data.fileName
- * @returns {Object} - { url: "file content url", fileName: "file name" }
+ * @param {string} data.fileId
+ * @param {string} data.fileName
+ * @returns {Promise<object>} - { url: "file content url", fileName: "file name" }
  */
-export const getFileContentAsPublisher = async (data) => {
+export const getFileContentAsPublisher = async (data: { fileId: string; fileName: string }) => {
   if (data && Object.prototype.hasOwnProperty.call(data, 'fileId')) {
     const account = await getWalletDefaultAccount()
 
@@ -654,8 +675,7 @@ export const getFileContentAsPublisher = async (data) => {
     // chrome.runtime.sendMessage({ method: "downloadFile", data: { url: url, fileName: data["fileName"] } });
 
     return { url: url, fileName: data['fileName'] }
-  }
-  else {
+  } else {
     throw new exception.ParameterError(`The input parameter must have the "fileId" ,"fileName" fields`)
   }
 }
@@ -663,14 +683,14 @@ export const getFileContentAsPublisher = async (data) => {
 /**
  * Retrieves a list of files in a specified state.
  * @param {Object} data - Object must be include the following fields in the "data" section:
- * @param {Number} data.status - (Optional) default 0: All state 1: Under review, 2: Approved, 3: Rejected, 4: Under approval, 5: Expired
- * @param {Number} data.pageIndex - (Optional) number default 1
- * @param {Number} data.pageSize - (Optional) number default 10
- * @param {String} data.fileId - (Optional) filter fileId
- * @param {String} data.proposerId - (Optional) The applicant of the file
- * @param {String} data.fileOwnerId - (Optional) The publisher of the file
- * @param {String} data.applyId - (Optional) The ID of the file application
- * @returns {Object} - {
+ * @param {number} data.status - (Optional) default 0: All state 1: Under review, 2: Approved, 3: Rejected, 4: Under approval, 5: Expired
+ * @param {number} data.pageIndex - (Optional) number default 1
+ * @param {number} data.pageSize - (Optional) number default 10
+ * @param {string} data.fileId - (Optional) filter fileId
+ * @param {string} data.proposerId - (Optional) The applicant of the file
+ * @param {string} data.fileOwnerId - (Optional) The publisher of the file
+ * @param {string} data.applyId - (Optional) The id of the file application
+ * @returns {Promise<object>} - {
                 "list": [
                   {
                     "file_id": "8feS-wp5lYhGOCtOLTKZH",
@@ -690,13 +710,21 @@ export const getFileContentAsPublisher = async (data) => {
               "total": total count
             }
  */
-export const getFilesInfoByStatus = async (data) => {
+export const getFilesInfoByStatus = async (data: {
+  pageIndex?: number
+  pageSize?: number
+  status?: string | number
+  fileId?: string
+  proposerId?: string
+  fileOwnerId?: string
+  applyId?: string
+}) => {
   return await pre.getFilesByStatus(
     data && Object.prototype.hasOwnProperty.call(data, 'fileId') ? data['fileId'] : undefined,
     data && Object.prototype.hasOwnProperty.call(data, 'proposerId') ? data['proposerId'] : undefined,
     data && Object.prototype.hasOwnProperty.call(data, 'fileOwnerId') ? data['fileOwnerId'] : undefined,
     data && Object.prototype.hasOwnProperty.call(data, 'applyId') ? data['applyId'] : undefined,
-    data && Object.prototype.hasOwnProperty.call(data, 'status') ? data['status'] : 1,
+    data && Object.prototype.hasOwnProperty.call(data, 'status') ? Number(data['status']) : 1,
     data && Object.prototype.hasOwnProperty.call(data, 'pageIndex') ? data['pageIndex'] : 1,
     data && Object.prototype.hasOwnProperty.call(data, 'pageSize') ? data['pageSize'] : 10
   )
@@ -706,11 +734,11 @@ export const getFilesInfoByStatus = async (data) => {
  * The publisher of the file obtains a list of the information of the policies.
  * @category File Publisher(Alice) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
- * @throws {UnauthorizedError} get logined account failed, must be login account first
+ * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @param {Object} data - Object must be include the following fields in the "data" section:
- * @param {Number} data.pageIndex - (Optional) number default 1
- * @param {Number} data.pageSize - (Optional) number default 10
- * @returns {Object} - {
+ * @param {number} data.pageIndex - (Optional) number default 1
+ * @param {number} data.pageSize - (Optional) number default 10
+ * @returns {Promise<object>} - {
                 "list": [
                   {
                     "hrac":"Policy hrac",
@@ -733,7 +761,7 @@ export const getFilesInfoByStatus = async (data) => {
               "total": total count
             }
  */
-export const getPublishedPolicyInfos = async (data) => {
+export const getPublishedPolicyInfos = async (data: { pageIndex?: number; pageSize?: number }) => {
   const account = await getWalletDefaultAccount()
 
   if (isBlank(account)) {
@@ -754,11 +782,11 @@ export const getPublishedPolicyInfos = async (data) => {
  * The applicant of the file obtains a list of the policy information.
  * @category File User(Bob) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
- * @throws {UnauthorizedError} get logined account failed, must be login account first
+ * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @param {Object} data - Object must be include the following fields in the "data" section:
- * @param {Number} data.pageIndex - (Optional) number default 1
- * @param {Number} data.pageSize - (Optional) number default 10
- * @returns {Object} - {
+ * @param {number} data.pageIndex - (Optional) number default 1
+ * @param {number} data.pageSize - (Optional) number default 10
+ * @returns {Promise<object>} - {
                 "list": [
                   {
                     "hrac":"Policy hrac",
@@ -781,7 +809,7 @@ export const getPublishedPolicyInfos = async (data) => {
               "total": total count
             }
  */
-export const getPolicyInfosAsUser = async (data) => {
+export const getPolicyInfosAsUser = async (data: { pageIndex?: number; pageSize?: number }) => {
   const account = await getWalletDefaultAccount()
 
   if (isBlank(account)) {
@@ -800,16 +828,16 @@ export const getPolicyInfosAsUser = async (data) => {
 /**
  * Obtain a list of files associated with the published policy information.
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
- * @throws {UnauthorizedError} get logined account failed, must be login account first
- * @throws {ParameterError} The input parameter must have the "policyId" field
+ * @throws {@link UnauthorizedError} get logined account failed, must be login account first
+ * @throws {@link ParameterError} The input parameter must have the "policyId" field
  * @param {Object} data - Object must be include the following fields in the "data" section:
- * @param {String} data.policyId - policyId
- * @param {Boolean} data.asPublisher - (Optional) default true
+ * @param {string} data.policyId - policyId
+ * @param {boolean} data.asPublisher - (Optional) default true
  *                             true: acting as the role of file publisher. 
  *                             false: acting as the role of file applicant
- * @param {Number} data.pageIndex - (Optional) number default 1
- * @param {Number} data.pageSize - (Optional) number default 10
- * @returns {Object} - {
+ * @param {number} data.pageIndex - (Optional) number default 1
+ * @param {number} data.pageSize - (Optional) number default 10
+ * @returns {Promise<object>} - {
                 "list": [
                   {
                     "file_id": "File ID",
@@ -830,11 +858,15 @@ export const getPolicyInfosAsUser = async (data) => {
               "total": total count
             }
  */
-export const getFilesInfoOfPolicy = async (data) => {
-  const policyId = data && Object.prototype.hasOwnProperty.call(data, 'policyId')
-  if (policyId) {
-    const asPublisher: boolean =
-      data && Object.prototype.hasOwnProperty.call(data, 'asPublisher') ? data['asPublisher'] : true
+export const getFilesInfoOfPolicy = async (data: {
+  pageIndex?: number
+  pageSize?: number
+  policyId: string
+  asPublisher?: boolean
+}) => {
+  if (data && Object.prototype.hasOwnProperty.call(data, 'policyId')) {
+    const bPublisher: boolean =
+      data && Object.prototype.hasOwnProperty.call(data, 'asPublisher') ? Boolean(data['asPublisher']) : true
     const pageIndex = data && Object.prototype.hasOwnProperty.call(data, 'pageIndex') ? data['pageIndex'] : 1
     const pageSize = data && Object.prototype.hasOwnProperty.call(data, 'pageSize') ? data['pageSize'] : 10
     const account = await getWalletDefaultAccount()
@@ -846,25 +878,24 @@ export const getFilesInfoOfPolicy = async (data) => {
     }
 
     const accountId = (account as Account).id
-    if (asPublisher) {
-      return await pre.getFilesByPolicyId(policyId, accountId, undefined, pageIndex, pageSize)
+    if (bPublisher) {
+      return await pre.getFilesByPolicyId(data['policyId'], accountId, undefined, pageIndex, pageSize)
     } else {
-      return await pre.getFilesByPolicyId(policyId, undefined, accountId, pageIndex, pageSize)
+      return await pre.getFilesByPolicyId(data['policyId'], undefined, accountId, pageIndex, pageSize)
     }
-  }
-  else {
+  } else {
     throw new exception.ParameterError(`The input parameter must have the "policyId" fields`)
   }
 }
 
 /**
  * Obtain a list of files associated with the policy (including the files of both the file publisher and the file applicant).
- * @throws {ParameterError} The input parameter must have the "policyId" field
+ * @throws {@link ParameterError} The input parameter must have the "policyId" field
  * @param {Object} data - Object must be include the following fields in the "data" section:
- * @param {String} data.policyId - policyId
- * @param {Number} data.pageIndex - (Optional) number default 1
- * @param {Number} data.pageSize - (Optional) number default 10
- * @returns {Object} - {
+ * @param {string} data.policyId - policyId
+ * @param {number} data.pageIndex - (Optional) number default 1
+ * @param {number} data.pageSize - (Optional) number default 10
+ * @returns {Promise<object>} - {
                 "list": [
                   {
                     "file_id": "File ID",
@@ -885,7 +916,7 @@ export const getFilesInfoOfPolicy = async (data) => {
               "total": total count
             }
  */
-export const getAllFilesInfoOfPolicy = async (data) => {
+export const getAllFilesInfoOfPolicy = async (data: { pageIndex?: number; pageSize?: number; policyId: string }) => {
   if (data && Object.prototype.hasOwnProperty.call(data, 'policyId')) {
     return await pre.getFilesByPolicyId(
       data['policyId'],
@@ -894,8 +925,7 @@ export const getAllFilesInfoOfPolicy = async (data) => {
       data && Object.prototype.hasOwnProperty.call(data, 'pageIndex') ? data['pageIndex'] : 1,
       data && Object.prototype.hasOwnProperty.call(data, 'pageSize') ? data['pageSize'] : 10
     )
-  }
-  else {
+  } else {
     throw new exception.ParameterError(`The input parameter must have the "policyId" fields`)
   }
 }

@@ -41,7 +41,7 @@ export const proxyReencryptionAPIsTestRun = async () => {
   assert(nuLinkHDWallet1 === nuLinkHDWallet)
 
   //also, We can verify whether the user's password is correct
-  const correct: boolean = await verifyPassword(password)
+  const correct: boolean = await verifyPassword(password) as boolean
 
   assert(correct)
 

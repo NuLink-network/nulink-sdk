@@ -70,7 +70,7 @@ export const indexdb = {
   /**
    * @method Query the number of elements that satisfy the key condition (returns the number of elements that match the condition).
    * @param {Object}
-   *   @property {String} tableName  the name of table
+   *   @property {string} tableName  the name of table
    *   @property {Number|String} key The key to be queried.
    *   @property {Object} countCondition The query condition.
    *  await getInstance().count<T>({
@@ -116,7 +116,7 @@ export const indexdb = {
   /**
    * @method Query all the data in a table (returns a array)
    * @param {Object}
-   *  @property {String} tableName Indicate the table name
+   *  @property {string} tableName Indicate the table name
    *
    *  await getInstance().queryAll<T>({tableName: 'bookrackList'});
    */
@@ -132,7 +132,7 @@ export const indexdb = {
   /**
  * @method Query (returns a array)
  * @param {Object}
- *   @property {String} tableName Indicate the table name
+ *   @property {string} tableName Indicate the table name
  *   @property {Function} condition  data filtering condition
  * 
  *  await getInstance().query<T>({
@@ -153,7 +153,7 @@ export const indexdb = {
   /**
      * @method Query data (with table specific attributes) returns a specific one
      * @param {Object}
-     *   @property {String} tableName Indicate the table name
+     *   @property {string} tableName Indicate the table name
      *   @property {Number|String} key key
      *   @property {Number|String} value value
      * 
@@ -179,7 +179,7 @@ export const indexdb = {
   /**
      * @method Query data (by value of the primary key)
      * @param {Object}
-     *   @property {String} tableName Indicate the table name
+     *   @property {string} tableName Indicate the table name
      *   @property {Number|String} value value of the primary key
      * await getInstance().query_by_primaryKey<T>({
         tableName: 'bookrackList',
@@ -200,7 +200,7 @@ export const indexdb = {
   /**
      * @method Modify data (return the modified array)
      * @param {Object}
-     *   @property {String} tableName Indicate the table name
+     *   @property {string} tableName Indicate the table name
      *   @property {Function} condition data filtering condition
      *      @arg {Object} each element
      *      @return condition
@@ -230,7 +230,7 @@ export const indexdb = {
   /**
     * @method Modifying a piece of data (by value of the primary key) Returns the modified object
     * @param {Object}
-    *   @property {String} tableName Indicate the table name
+    *   @property {string} tableName Indicate the table name
     *   @property {String\|Number} value value of the primary key
     *   @property {Function} handle handle function: Receives a reference to the data and modifies it
     * 
@@ -258,7 +258,7 @@ export const indexdb = {
   /**
      * @method adds data to the table
      * @param {Object}
-     *   @property {String} tableName Indicate the table name
+     *   @property {string} tableName Indicate the table name
      *   @property {Object} data The data you want to insert
      * 
      * await getInstance().insert<T>({
@@ -282,7 +282,7 @@ export const indexdb = {
   /**
      * @method delete data (return the deleted array)
      * @param {Object}
-     *   @property {String} tableName Indicate the table name
+     *   @property {string} tableName Indicate the table name
      *   @property {Function} condition data filtering condition
      *      @arg {Object} each element
      *      @return condition
@@ -305,7 +305,7 @@ export const indexdb = {
   /**
    * @method delete data from the table (by value of the primary key)
    * @param {Object}
-   *   @property {String} tableName Indicate the table name
+   *   @property {string} tableName Indicate the table name
    *   @property {String\|Number} value value of the primary key
    * */
   deleteByPrimaryKey: async <T>({
@@ -328,7 +328,7 @@ export const indexdb = {
 
   /**
    * @method delete the database
-   * @param {String}name database name
+   * @param {string}name database name
    *
    * await getInstance().delete_db('bookrackList')
    *
@@ -339,7 +339,7 @@ export const indexdb = {
 
   /**
    * @method delete table name of the database
-   * @param {String}name database name
+   * @param {string}name database name
    *
    * await getInstance().delete_table('bookrackList')
    *
