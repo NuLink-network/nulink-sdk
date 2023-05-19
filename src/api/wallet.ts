@@ -188,7 +188,7 @@ export const loadWallet = async (password?: string): Promise<NuLinkHDWallet | nu
 
 /**
  * Verifies a password by comparing it to the previously saved hashed password.
- * @throws {AssertionError} - Throws an error if the hdWallet or passwordHash is blank.
+ * @throws {@link AssertionError} - Throws an error if the hdWallet or passwordHash is blank.
  * @param {string} password - The password to verify.
  * @returns {Promise<boolean | undefined>} - Returns true if the password is verified, false otherwise. Returns undefined if the wallet could not be retrieved.
  */

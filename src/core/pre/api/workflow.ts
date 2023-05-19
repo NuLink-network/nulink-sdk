@@ -1612,7 +1612,7 @@ export const approvalApplicationForUseFiles = async (
   //wei can use  BigNumber.from(), ether can use ethers.utils.parseEther(), because the BigNumber.from("1.2"), the number can't not be decimals (x.x)
   //await publisher.getNLKBalance() return ethers
   //Check whether the account balance is less than the policy creation cost
-  const nlkBalanceEthers: BigNumber = ethers.utils.parseEther(await publisher.getNLKBalance())
+  const nlkBalanceEthers: BigNumber = ethers.utils.parseEther(await publisher.getNLKBalance() as string)
   const costServerGasEther = Web3.utils.fromWei(costServerFeeWei.toString(), 'ether')
 
   console.log(`the account balance is: ${nlkBalanceEthers.toString()} ether nlk`)

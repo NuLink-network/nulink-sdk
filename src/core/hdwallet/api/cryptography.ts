@@ -385,7 +385,7 @@ export class CryptoBroker {
     }
   }
 
-  public static decryptWithPassword(ciphertext: string, password: string) {
+  public static decryptWithPassword(ciphertext: string, password: string): string {
     try {
       return encryptpwd.decrypt(ciphertext, password)
     } catch (error) {

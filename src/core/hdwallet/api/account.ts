@@ -71,6 +71,9 @@ export const getHDWalletInstance = (): any => {
   return SingletonService.get<NuLinkHDWallet>(HDWALLET_INSTANCE_NAME)
 }
 
+/**
+ * @internal
+ */
 const setHDWalletInstance = async (hdWallet: NuLinkHDWallet | null, persist = true) => {
   if (!hdWallet) {
     console.log('setHDWallet failed cause by the NuLinkHDWallet is null')
@@ -120,9 +123,9 @@ const setHDWalletInstance = async (hdWallet: NuLinkHDWallet | null, persist = tr
 //   return nuLinkHDWallet
 // }
 
-//Restore verify keyPair and strategy data
+//Restore verify keyPair and policy data
 //Only restore accounts exist, there is no final output
-//If there are currently only 3 strategies (1, 2, 3) under the same account, but there are 5 strategy IDs (3, 4, 5, 6, 7) in the recovered data, the following situations exist
+//If there are currently only 3 strategies (1, 2, 3) under the same account, but there are 5 policy IDs (3, 4, 5, 6, 7) in the recovered data, the following situations exist
 //Union merge result is (1,2,3,4,5,6,7)
 //Cover coverage result is (3,4,5,6,7)
 /**
@@ -133,13 +136,26 @@ export enum DataStrategyRecoveryMode {
   Cover
 }
 
+/**
+ *  Account class manages policies information, adds policies, deletes policies, and serializes
+ * @export
+ * @class Strategy
+ * @extends {IJson}
+ */
 export class Strategy extends IJson {
   accountAddressIndex: number
-  addressIndex: number //Strategy address index
+  addressIndex: number //policy address index
   id: string //Mainly to correspond to the background, globally unique
   label: string
   strategyKeyPair: KeyPair
 
+  /**
+   * Creates a new policy object with the specified account and policy address indices, label, and ID.
+   * @param {number} accountAddressIndex - The index of the Ethereum account address.
+   * @param {number} strategyAddressIndex - The index of the Ethereum policy address.
+   * @param {string} label - Generate a label name for a local policy.
+   * @param {string} [id=''] - policy id or generate a policy id if the parameter is not passed.
+   */
   constructor(accountAddressIndex: number, strategyAddressIndex: number, label: string, id = '') {
     //label's type and Id
 
@@ -165,10 +181,18 @@ export class Strategy extends IJson {
     // Can't do it in the constructor (async), do it when the upper level is called
   }
 
+  /**
+   * @internal
+   */
   public getSaveKey(): string {
     return macro.strategyKey(this.accountAddressIndex, this.addressIndex)
   }
 
+  /**
+   * Returns a JSON string representation of the account local policy object for encrypted upload files.
+   * @returns {string} - Returns a JSON string representation of the account local policy object for encrypted upload files.
+   * @memberof Strategy
+   */
   public dump(): string {
     return JSON.stringify({
       acntAdrIndex: this.accountAddressIndex,
@@ -182,6 +206,14 @@ export class Strategy extends IJson {
     })
   }
 
+  /**
+   * Loads a policy object from a JSON string.
+   * @param {string} jsonString - The JSON string to parse and load.
+   * @param {boolean} [_save=false] - This parameter is deprecated. Whether to save the loaded object to local storage.
+   * @returns {Promise<Strategy|null>} - Returns a Promise that resolves with the loaded policy object or null if there was an error.
+   * @static
+   * @memberof Strategy
+   */
   public static async load(jsonString: string, _save = false): Promise<Strategy | null> {
     try {
       const jsonObj = JSON.parse(jsonString)
@@ -193,16 +225,32 @@ export class Strategy extends IJson {
     }
   }
 
+  /**
+   * Serializes the policy object and encrypts it to 'Browser-local storage'.
+   * @returns {Promise<void>}
+   * @memberof Strategy
+   */
   public async serialize(): Promise<void> {
     const strategyString: string = this.dump()
     return await getHDWalletInstance().encryptSaveData(this.getSaveKey(), strategyString)
   }
 
+  /**
+   * Deserializes a policy object from 'Browser-local storage' by decrypting it and creating a policy object in memory.
+   * @returns {Promise<Strategy|null>} - Returns a Promise that resolves with the deserialized policy object or null if there was an error.
+   * @memberof Strategy
+   */
   public async deserialize(): Promise<Strategy | null> {
     const strategyString = await getHDWalletInstance().decryptSavedData(this.getSaveKey())
     return await Strategy.load(strategyString)
   }
 
+  /**
+   * @internal
+   * Serializes the policy object and encrypts it to 'Browser-local storage' by individual policy information.
+   * @returns {Promise<void>}
+   * @memberof Strategy
+   */
   public async save() {
     //Store account individual policy information
 
@@ -214,6 +262,12 @@ export class Strategy extends IJson {
     )
   }
 
+  /**
+   * Deserializes a policy object from 'Browser-local storage' by decrypting it and creating a policy object in memory.
+   * @returns {Promise<Strategy|null>} - Returns a Promise that resolves with the deserialized policy object or null if there was an error.
+   * @memberof Strategy
+   * @static
+   */
   public static async loadSaved(accountAddressIndex: number, addressIndex: number) {
     //Get the storage of account individual policy information
 
@@ -223,6 +277,12 @@ export class Strategy extends IJson {
     return await Strategy.load(strategyString)
   }
 
+  /**
+   * clear a policy object from 'Browser-local storage'
+   * @returns {Promise<void>}
+   * @memberof Strategy
+   * @static
+   */
   public async erase() {
     const nuLinkHDWallet = getHDWalletInstance()
     //Remove account single policy storage information
@@ -230,7 +290,13 @@ export class Strategy extends IJson {
   }
 }
 
-//Account class manages account information, adds policies, deletes policies, and serializes
+/**
+ *
+ * Account class manages account information, include pk/sk key pair info, policy info and so on
+ * @export
+ * @class Account
+ * @extends {IJson}
+ */
 export class Account extends IJson {
   name = ''
   address = ''
@@ -241,6 +307,12 @@ export class Account extends IJson {
   private generateStrateAddressIndexLock = new AwaitLock() //Generation strategy (key spanning tree path) index
   private strategyMapping = new Map<number, Strategy>() //Strategy related information address_index: Strategy
 
+  /**
+   * Constructs a new policy object with the specified name, address index, and optional ID.
+   * @param {string} name - The name of the account.
+   * @param {number} addressIndex - The index of the Ethereum address associated with the account. Generate by generateAddressIndex() function
+   * @param {string} [id=''] - The optional ID of the account.  Generate a account id if the parameter is not passed.
+   */
   constructor(name: string, addressIndex: number, id = '') {
     super()
     this.name = name
@@ -262,13 +334,24 @@ export class Account extends IJson {
     //Can't do it in the constructor (async), do it when the upper level is called
   }
 
+  /**
+   * @internal
+   */
   public getSaveKey(): string {
     return macro.accountKey(this.addressIndex)
   }
 
+  /**
+   * Sets the policy mapping for this object for save the policy info to this account
+   * @param {Map<number, Strategy>} _strategyMapping - The new policy mapping. key: policy index, value: Policy object
+   * @memberof Account
+   */
   public setStrategyMapping(_strategyMapping: Map<number, Strategy>) {
     this.strategyMapping = _strategyMapping
   }
+  /**
+   * @internal
+   */
   public async updateHDWalletAccountStrategys() {
     const nuLinkHDWallet = getHDWalletInstance()
     if (util.isBlank(nuLinkHDWallet)) {
@@ -286,6 +369,12 @@ export class Account extends IJson {
     await setHDWalletInstance(nuLinkHDWallet, true)
   }
 
+  /**
+   * @internal
+   * Generates a new address index for a policy object to add it to the policy map. The index is the maximum value of the address indices in the current policy mapping + 1.
+   * @returns {Promise<number>} - Returns a Promise that resolves with the new address index.
+   * @memberof Account
+   */
   private async generateStrategyAddressIndex(): Promise<number> {
     //Get the policy index (maximum value) + 1 under the key spanning tree path (seventh level) of the current last policy, that is, the address_index required when creating the policy
 
@@ -305,7 +394,12 @@ export class Account extends IJson {
       this.generateStrateAddressIndexLock.release()
     }
   }
-
+  /**
+   * Gets the policy object associated with the specified ID from the policy mapping.
+   * @param {string} strategyId - The ID of the policy object to retrieve.
+   * @returns {Strategy|null} - Returns the policy object associated with the specified ID, or null if the ID is not found in the policy mapping.
+   * @memberof Account
+   */
   public getStrategyInfo(strategyId: string): Strategy | null {
     //Get the policy PK and SK by Strategy Id
 
@@ -319,13 +413,26 @@ export class Account extends IJson {
 
     return null
   }
-
+  /**
+   * Creates a new policy object with the specified label and a generated ID. The policy object is used to encrypt files uploaded by the user.
+   * @param {string} label - The label to use for the new policy.
+   * @returns {Promise<Strategy>} - Returns a Promise that resolves with the new policy object.
+   * @memberof Account
+   */
   public async createStrategyByLabel(label: string): Promise<Strategy> {
     //label is composed of ID and incoming label common (in order to make label unique)
     const id: string = nanoid()
     return await this.createStrategy(`${label}_${id}`, id)
   }
 
+  /**
+   * Creates a new policy object with the specified label and ID, and adds it to the policy mapping. The policy object is used to encrypt files uploaded by the user.
+   * @param {string} label - The label to use for the new policy.
+   * @param {string} [id=''] - The optional ID to use for the new policy, If the ID parameter is not passed,
+   *                          it will automatically call the generateStrategyAddressIndex function to generate a new address index for the policy object.
+   * @returns {Promise<Strategy>} - Returns a Promise that resolves with the new policy object.
+   * @memberof Account
+   */
   public async createStrategy(label: string, id = ''): Promise<Strategy> {
     //The default label should be the name of the incoming file. If it is repeated, add the policy id identifier (uuid)
     const strategyAddressIndex = await this.generateStrategyAddressIndex()
@@ -340,9 +447,15 @@ export class Account extends IJson {
     return strategy
   }
 
-  //If the policy is deleted, address_index can be reused, because if the key generation tree path is certain, the public and private keys must be the same
-  //But note that the ids are not the same, the resources shared in the background cannot be reused
-  public async deleteStrategy(strategyAddressIndex: number): Promise<Strategy | undefined> {
+  /**
+   * Deletes the policy object associated with the specified address index from the policy mapping.
+   * attention please: If the policy is deleted, address_index can be reused, because if the key generation tree path is certain, the public and private keys must be the same.
+   *                   But note that the ids are not the same, the resources shared in the background cannot be reused
+   * @param {number} strategyAddressIndex - The address index of the policy object to delete.
+   * @returns {Promise<void>}
+   * @memberof Account
+   */
+  public async deleteStrategy(strategyAddressIndex: number): Promise<void> {
     // Note: To delete the policy, note that the policy cannot be deleted if there is a file share, and delete here is the bottom-level function.
     // Judging whether the deletion policy should be (with file sharing) should be judged by the upper-level function
     console.warn(
@@ -352,7 +465,7 @@ export class Account extends IJson {
     let strategy: Strategy | undefined = this.strategyMapping.get(strategyAddressIndex)
 
     if (util.isBlank(strategy)) {
-      return undefined
+      return
     }
 
     this.strategyMapping.delete(strategyAddressIndex)
@@ -367,6 +480,11 @@ export class Account extends IJson {
     //Note to the front end, after deleting it, return it to the front end. The front end should call the backend interface to delete the backend policy id corresponding to the policy information    return strategy;
   }
 
+  /**
+   * Gets an array of all policy objects in the policy mapping, sorted by their address indices in ascending order.
+   * @returns {Strategy[]} - Returns an array of all policy objects in the policy mapping.
+   * @memberof Account
+   */
   public getAllStrategy(): Strategy[] {
     const sortStrategyArray: Strategy[] = Array.from(this.strategyMapping.values()).sort((strategy1, strategy2) =>
       strategy1.addressIndex < strategy2.addressIndex ? strategy1.addressIndex : strategy2.addressIndex
@@ -374,6 +492,11 @@ export class Account extends IJson {
     return sortStrategyArray
   }
 
+  /**
+   * Gets an array of all policy objects in the policy mapping, sorted by their IDs in ascending order.
+   * @returns {Strategy[]} - Returns an array of all policy objects in the policy mapping.
+   * @memberof Account
+   */
   public getAllStrategySortByStategyId(): Strategy[] {
     const sortStrategyArray: Strategy[] = Array.from(this.strategyMapping.values()).sort((strategy1, strategy2) =>
       strategy1.id < strategy2.id ? -1 : strategy1.id > strategy2.id ? 1 : 0
@@ -381,6 +504,12 @@ export class Account extends IJson {
     return sortStrategyArray
   }
 
+  /**
+   * Get all policy object associated with the specified account's policy id.
+   * @param {string} strategyId - The policy ID of a specified account.
+   * @returns {Strategy|undefined} - Returns the policy object associated with the specified ID, or undefined if the ID is not found in the policy mapping.
+   * @memberof Account
+   */
   public getAccountStrategyByStategyId = (strategyId: string): Strategy | undefined => {
     const strategys: Strategy[] = this.getAllStrategy()
     for (const strategy of strategys) {
@@ -392,10 +521,22 @@ export class Account extends IJson {
     return undefined
   }
 
+  /**
+   * Retrieves a policy by its address index.
+   * @param strategyAddressIndex - The index of the policy address.
+   * @returns {Strategy | undefined} The corresponding policy object, or undefined if no such policy exists.
+   * @memberof Account
+   */
   public getStrategy(strategyAddressIndex: number): Strategy | undefined {
     return this.strategyMapping.get(strategyAddressIndex)
   }
 
+  /**
+   * Returns the policy object with the given label.
+   * @param label - The label of the policy to fetch.
+   * @returns {Strategy | undefined} - The policy object if found, otherwise undefined.
+   * @memberof Account
+   */
   public getStrategyByLabel(label: string): Strategy | undefined {
     const values = this.strategyMapping.values()
     for (const strategy of Array.from(values)) {
@@ -408,6 +549,11 @@ export class Account extends IJson {
     return undefined
   }
 
+  /**
+   * Retrieves an array of all policy IDs in the mapping.
+   * @returns {string[]} - An array of policy IDs.
+   * @memberof Account
+   */
   public strategyIds(): string[] {
     const strategyIds: string[] = []
 
@@ -420,6 +566,11 @@ export class Account extends IJson {
     return strategyIds
   }
 
+  /**
+   * Returns a JSON string representation of the current account object.
+   * @returns {string} - Returns a JSON string representation of the current account object.
+   * @memberof Account
+   */
   public dump(): string {
     const strategys: string[] = []
 
@@ -456,7 +607,7 @@ export class Account extends IJson {
                             ...
                           ]
   * @static
-  * @memberof NuLinkHDWallet               
+  * @memberof Account               
 */
   public static async getStrategyInfosFromServerByAddr(accountAddress: string) {
     const sendData = {
@@ -467,7 +618,12 @@ export class Account extends IJson {
     return data
   }
 
-  //restore account by the strategys of account stored in the backend db.
+  /**
+   * Restores an account using the strategies stored in the backend database.
+   * @returns {Promise<Account>} - A Promise that resolves to an `Account` object.
+   * @static
+   * @memberof Account
+   */
   public static async restoreByStrategyInfos(): Promise<Account> {
     const account = new Account('', 0)
 
@@ -503,6 +659,14 @@ export class Account extends IJson {
     return account
   }
 
+  /**
+   * Loads a account object from a JSON string.
+   * @param {string} jsonString - The JSON string to parse and load.
+   * @param {boolean} [_save=false] - Whether to save the loaded object to browser's local storage.
+   * @returns {Promise<Account>} - Returns a Promise that resolves with the loaded account object.
+   * @static
+   * @memberof Account
+   */
   public static async load(jsonString: string, save = false): Promise<Account> {
     const jsonObj = JSON.parse(jsonString)
 
@@ -530,7 +694,12 @@ export class Account extends IJson {
 
     return account
   }
-
+  /**
+   * Deserializes a account object from 'Browser-local storage' by decrypting it and creating a account object in memory.
+   * @returns {Promise<Account|null>} - Returns a Promise that resolves with the deserialized account object or null if there was an error.
+   * @static
+   * @memberof Account
+   */
   public static async loadSaved(addressIndex: number): Promise<Account | null> {
     const hdWalletInstance = await getHDWalletInstance()
     const accountItselfInfoString = await hdWalletInstance.decryptSavedData(macro.accountItselfInfo(addressIndex))
@@ -572,16 +741,31 @@ export class Account extends IJson {
     }
   }
 
+  /**
+   * Serializes the account object and encrypts it to 'Browser-local storage'.
+   * @returns {Promise<void>}
+   * @memberof Account
+   */
   public async serialize(): Promise<void> {
     const accountString: string = this.dump()
     return await getHDWalletInstance().encryptSaveData(this.getSaveKey(), accountString)
   }
 
+  /**
+   * Deserializes a account object from 'Browser-local storage' by decrypting it and creating a account object in memory.
+   * @returns {Promise<Account>} - Returns a Promise that resolves with the deserialized account object or null if there was an error.
+   * @memberof Account
+   */
   public async deserialize(): Promise<Account> {
     const accountString = await getHDWalletInstance().decryptSavedData(this.getSaveKey())
     return await Account.load(accountString)
   }
 
+  /**
+   * Encrypts and stores the account's own information (excluding policy information) to the browser's local storage
+   * @returns {Promise<void>}
+   * @memberof Account
+   */
   public async saveAccountItselfInfo() {
     //Store the current account source information, except for the policy information, all information is complete
     const cipherText: string = await getHDWalletInstance().encryptSaveData(
@@ -590,8 +774,8 @@ export class Account extends IJson {
         name: this.name,
         addressIndex: this.addressIndex,
         id: this.id
-        //'encryptedKeyPair': this.encryptedKeyPair.dump()  //Dump is not required,，It can be recovered through the account, because the mnemonic (or root extended private key), account index is determined, pk is generated, sk is certain
-        //'verifyKeyPair': this.encryptedKeyPair.dump()  //Dump is not required,，It can be recovered through the account, because the mnemonic (or root extended private key), account index is determined, pk is generated, sk is certain
+        //'encryptedKeyPair': this.encryptedKeyPair.dump()  //Dump is not required，It can be recovered through the account, because the mnemonic (or root extended private key), account index is determined, pk is generated, sk is certain
+        //'verifyKeyPair': this.encryptedKeyPair.dump()  //Dump is not required，It can be recovered through the account, because the mnemonic (or root extended private key), account index is determined, pk is generated, sk is certain
       })
     )
 
@@ -600,6 +784,11 @@ export class Account extends IJson {
     // );
   }
 
+  /**
+   * Deserializes a account object (excluding policy information) from 'Browser-local storage' by decrypting it and creating a account object in memory.
+   * @returns {Promise<Account>} - Returns a Promise that resolves with the deserialized account object (excluding policy information) .
+   * @memberof Account
+   */
   public async getSavedAccountItselfInfo() {
     // Get the storage of the current account source information, except for the policy information, all information is complete
     const accountItselfInfoString = await getHDWalletInstance().decryptSavedData(
@@ -612,12 +801,22 @@ export class Account extends IJson {
     return JSON.parse(accountItselfInfoString)
   }
 
+  /**
+   * Clears the account object (excluding policy information) from the browser's local storage.
+   * @returns {Promise<void>}
+   * @memberof Account
+   */
   public async removeSavedAccountItselfInfo() {
     const nuLinkHDWallet = getHDWalletInstance()
     // Delete the original storage information of the current account, except for the policy information, all storage information is complete
     await getHDWalletInstance().removeSavedData(macro.accountItselfInfo(this.addressIndex))
   }
 
+  /**
+   * Serializes all strategy indices of the account to the browser's local storage.
+   * @returns {Promise<void>}
+   * @memberof Account
+   */
   public async saveAccountAllStrategyIndexInfo() {
     // store account index information
 
@@ -629,6 +828,11 @@ export class Account extends IJson {
     )
   }
 
+  /**
+   * Deserializes all strategy indices of the account from the browser's local storage.
+   * @returns {Promise<number[]>} - An array containing all the strategy indices stored in the browser's local storage.
+   * @memberof Account
+   */
   public async getSavedAccountAllStrategyIndexInfo(): Promise<number[]> {
     // store account index information
     const strategyListString = await getHDWalletInstance().decryptSavedData(
@@ -645,12 +849,22 @@ export class Account extends IJson {
     return JSON.parse(strategyListString)
   }
 
+  /**
+   * Clears all strategy indices of the account from the browser's local storage.
+   * @returns {Promise<void>}
+   * @memberof Account
+   */
   public async removeSavedAccountAllStrategyIndexInfo() {
     const nuLinkHDWallet = getHDWalletInstance()
     // remove account index storage information
     await nuLinkHDWallet.removeSavedData(macro.accountStrategyList(this.addressIndex))
   }
 
+  /**
+   * Serializes all strategy information of the account to the browser's local storage.
+   * @returns {Promise<void>}
+   * @memberof Account
+   */
   public async saveAccountAllStrategyInfo() {
     // Store all policy information of the current account
 
@@ -663,6 +877,11 @@ export class Account extends IJson {
     await this.saveAccountAllStrategyIndexInfo()
   }
 
+  /**
+   * Clears all strategy information of the account from the browser's local storage.
+   * @returns {Promise<void>}
+   * @memberof Account
+   */
   public async removeSavedAccountAllStrategyInfo() {
     for (const strategy of Array.from(this.strategyMapping.values())) {
       // We don’t escape the key '__proto__'
@@ -674,17 +893,22 @@ export class Account extends IJson {
     await this.removeSavedAccountAllStrategyIndexInfo()
   }
 
-  //get balance(): Promise<string> {
-  public async balance(): Promise<string | any> {
+  /**
+   * get the account balance of (bnb/tbnb) from the Ethereum blockchain using web3.
+   * @returns {Promise<string | undefined>} - A Promise that resolves to the account balance in ether as a string, or undefined if the balance could not be retrieved.
+   * @memberof Account
+   */
+  public async balance(): Promise<string | undefined> {
     // Get account balance from Ethereum
     return await this.refreshBalance()
   }
 
-  //   set balance(value: string) {
-  //     this._balance = value;
-  //   }
-
-  public async refreshBalance(): Promise<string | any> {
+  /**
+   * Refreshes the account balance of (bnb/tbnb) from the Ethereum blockchain using web3.
+   * @returns{Promise<string | undefined>} - A Promise that resolves to the account balance in ether as a string, or undefined if the balance could not be retrieved.
+   * @memberof Account
+   */
+  public async refreshBalance(): Promise<string | undefined> {
     // Get account balance from Ethereum
 
     // const account = web3.eth.accounts.privateKeyToAccount('0x2cc983ef0f52c5e430b780e53da10ee2bb5cbb5be922a63016fc39d4d52ce962');
@@ -710,13 +934,22 @@ export class Account extends IJson {
       }
   }
 
-  //get NLKbalance(): Promise<string> {
-  public async getNLKBalance(): Promise<string | any> {
+  /**
+   * get the account balance of nlk from the Ethereum blockchain using web3.
+   * @returns {Promise<string | undefined>} - A Promise that resolves to the account balance in ether as a string, or undefined if the balance could not be retrieved.
+   * @memberof Account
+   */
+  public async getNLKBalance(): Promise<string | undefined> {
     // Get account NLK balance from Ethereum
     return await this.refreshNLKBalance()
   }
 
-  public async refreshNLKBalance(): Promise<string | any> {
+  /**
+   * Refreshes the account balance of nlk from the Ethereum blockchain using web3.
+   * @returns{Promise<string | undefined>} - A Promise that resolves to the account balance in ether as a string, or undefined if the balance could not be retrieved.
+   * @memberof Account
+   */
+  public async refreshNLKBalance(): Promise<string | undefined> {
     // Get account balance from Ethereum
 
     // const account = web3.eth.accounts.privateKeyToAccount('0x2cc983ef0f52c5e430b780e53da10ee2bb5cbb5be922a63016fc39d4d52ce962');
@@ -745,7 +978,13 @@ export class Account extends IJson {
   }
 }
 
-// account management
+/**
+ *
+ * An account management object that stores all account information.
+ * @export
+ * @class AccountManager
+ * @extends {IJson}
+ */
 export class AccountManager extends IJson {
   //accountCount: number = 0; //Number of current accounts
   private generateAccountAddressIndexLock = new AwaitLock() //Generation strategy (key spanning tree path) index
@@ -756,6 +995,12 @@ export class AccountManager extends IJson {
   //   super();
   // }
 
+  /**
+   * Generates the address index to be used for creating a new account.
+   * The address index is the maximum value under the key spanning tree path (seventh level) of the current last policy + 1.
+   * @returns {Promise<number>} - A Promise that resolves to the generated address index as a number.
+   * @memberof AccountManager
+   */
   private async generateAddressIndex(): Promise<number> {
     //Get the policy index (maximum value) + 1 under the key spanning tree path (seventh level) of the current last policy, that is, the address_index required when creating the policy
     await this.generateAccountAddressIndexLock.acquireAsync()
@@ -773,18 +1018,31 @@ export class AccountManager extends IJson {
       this.generateAccountAddressIndexLock.release()
     }
   }
-
+  /**
+   * Returns the number of accounts in the account mapping data structure.
+   * @returns {number} - The number of accounts as a number.
+   * @memberof AccountManager
+   */
   getAccountCount(): number {
     return this.accountMapping.size
   }
 
+  /**
+   * Returns an array of all the accounts in the account mapping data structure, sorted by address index in ascending order.
+   * @returns {Account[]} - An array of Account objects.
+   * @memberof AccountManager
+   */
   getAllAccount(): Account[] {
     const sortAccountArray: Account[] = Array.from(this.accountMapping.values()).sort((account1, account2) =>
       account1.addressIndex < account2.addressIndex ? account1.addressIndex : account2.addressIndex
     )
     return sortAccountArray
   }
-
+  /**
+   * Returns an array of all the accounts in the account mapping data structure, sorted by account ID in ascending order.
+   * @returns {Account[]} - An array of Account objects.
+   * @memberof AccountManager
+   */
   getAllAccountSortByAccountId(): Account[] {
     const sortAccountArray: Account[] = Array.from(this.accountMapping.values()).sort((account1, account2) =>
       account1.id < account2.id ? -1 : account1.id > account2.id ? 1 : 0
@@ -792,6 +1050,13 @@ export class AccountManager extends IJson {
     return sortAccountArray
   }
 
+  /**
+   * @internal
+   * Not currently implemented
+   * @param _privateKey
+   * @param _dataFileBinaryString
+   * @memberof AccountManager
+   */
   restoreAccount(_privateKey: string, _dataFileBinaryString = '') {
     /* Recovery of a single account (Wallet) is not supported, because a single account cannot be derived from the private key
      The extended private key (ExtendedPrivatekey) of BIP32, the sub-account is generated through the wallet root private key (ExtendedPrivatekey), the sub-account of the tree structure is deduced,
@@ -807,6 +1072,13 @@ export class AccountManager extends IJson {
     throw new Error('Restoring a single account is not supported')
   }
 
+  /**
+   * @internal
+   * Not currently implemented
+   * @param _keystoreJson
+   * @param _dataFileBinaryString
+   * @memberof AccountManager
+   */
   restoreAccountByKeyStoreJson(_keystoreJson: string, _dataFileBinaryString = '') {
     /* Recovery of a single account (Wallet) is not supported, because a single account cannot be derived from the private key
      The extended private key (ExtendedPrivatekey) of BIP32, the sub-account is generated through the wallet root private key (ExtendedPrivatekey), the sub-account of the tree structure is deduced,
@@ -822,6 +1094,13 @@ export class AccountManager extends IJson {
     throw new Error('Restoring a single account is not supported')
   }
 
+  /**
+   * Creates a new account and returns it.
+   * @param name {string} - (optional) The name of the account .
+   * @param defaultAccount {boolean} - (optional) Whether to set the new account as the default account (optional, defaults to false).
+   * @returns {Account} - A Promise that resolves to the newly created Account object.
+   * @memberof AccountManager
+   */
   public async createAccount(name = '', defaultAccount = false) {
     const accountAddressIndex = await this.generateAddressIndex()
 
@@ -860,6 +1139,12 @@ export class AccountManager extends IJson {
     return account
   }
 
+  /**
+   * Removes an account with the specified address index and returns it.
+   * @param addressIndex {number} - The address index of the account to be removed.
+   * @returns {Promise<Account | undefined>} - A Promise that resolves to the removed Account object, or undefined if the account does not exist or cannot be removed.
+   * @memberof AccountManager
+   */
   public async removeAccount(addressIndex: number): Promise<Account | undefined> {
     // remove account
     //Note: To delete an account, note that if the policy in the account has a file share, the account cannot be deleted. Delete here is the bottom-level function.
@@ -911,6 +1196,12 @@ export class AccountManager extends IJson {
     return account
   }
 
+  /**
+   * @internal
+   * Updates the HD wallet account manager with the nulink wallet instance.
+   * @returns {void}
+   * @memberof AccountManager
+   */
   public async updateHDWalletAccountManager() {
     const nuLinkHDWallet = getHDWalletInstance()
     if (util.isBlank(nuLinkHDWallet)) {
@@ -920,7 +1211,8 @@ export class AccountManager extends IJson {
     await setHDWalletInstance(nuLinkHDWallet, true)
   }
 
-  /*   public async updateHDWalletWhenRemoveAccount(
+  /*   
+  public async updateHDWalletWhenRemoveAccount(
     accountAddress: string
   ): Promise<boolean> {
     // remove account
@@ -986,6 +1278,12 @@ export class AccountManager extends IJson {
     return 2;
   }
  */
+  /**
+   * Returns the Account object with the specified address index, or undefined if the account does not exist.
+   * @param index {number} - The address index of the account to be retrieved.
+   * @returns {Account | undefined} - The Account object with the specified address index, or undefined if the account does not exist.
+   * @memberof AccountManager
+   */
   public getAccount(index: number): Account | undefined {
     return this.accountMapping.get(index)
   }
@@ -1001,10 +1299,14 @@ export class AccountManager extends IJson {
     return this.accountMapping.get(Number(index))
   }
 
+  /**
+   * Returns an array of strategy IDs associated with all accounts of the current HD wallet instance.
+   * @returns {string []} - An array of strategy IDs as strings.
+   * @memberof AccountManager
+   */
   public strategyIds(): string[] {
     let strategyIds: string[] = []
 
-    // for (const [k, v] of Array.from(this.strategyMapping)) {
     for (const account of Array.from(this.accountMapping.values())) {
       // We don’t escape the key '__proto__'
       // which can cause problems on older engines
@@ -1014,10 +1316,14 @@ export class AccountManager extends IJson {
     return strategyIds
   }
 
+  /**
+   * Returns an array of account IDs associated with all accounts of the current HD wallet instance.
+   * @returns {string []} - An array of account IDs as strings.
+   * @memberof AccountManager
+   */
   public accountIds(): string[] {
     const accountIds: string[] = []
 
-    // for (const [k, v] of Array.from(this.strategyMapping)) {
     for (const account of Array.from(this.accountMapping.values())) {
       // We don’t escape the key '__proto__'
       // which can cause problems on older engines
@@ -1027,6 +1333,12 @@ export class AccountManager extends IJson {
     return accountIds
   }
 
+  /**
+   * Restores the default account using the strategies stored in the backend database and returns a new AccountManager object.
+   * @returns ｛Promise<AccountManager>｝- A Promise that resolves to a new AccountManager object with the default account restored.
+   * @memberof AccountManager
+   * @static
+   */
   public static async restoreDefaultAccount(): Promise<AccountManager> {
     const accountManager = new AccountManager()
     accountManager.defaultAccountAddressIndex = 0
@@ -1042,6 +1354,11 @@ export class AccountManager extends IJson {
     return accountManager
   }
 
+  /**
+   * Returns a JSON string representation of the AccountManager object.
+   * @returns {string} - Returns a JSON string representation of the AccountManager object.
+   * @memberof AccountManager
+   */
   public dump(): string {
     const accounts: string[] = []
 
@@ -1058,6 +1375,14 @@ export class AccountManager extends IJson {
     })
   }
 
+  /**
+   * Loads a accountManager object from a JSON string.
+   * @param {string} jsonString - The JSON string to parse and load.
+   * @param {boolean} [_save=false] - Whether to save the loaded object to browser local storage.
+   * @returns {Promise<AccountManager>} - Returns a Promise that resolves with the accountManager object.
+   * @static
+   * @memberof AccountManager
+   */
   public static async load(jsonString: string, save = false): Promise<AccountManager> {
     const jsonObj = JSON.parse(jsonString)
 
@@ -1090,6 +1415,12 @@ export class AccountManager extends IJson {
     return accountManager
   }
 
+  /**
+   * @static
+   * Loads the saved account information from browser local storage and returns a AccountManager object.
+   * @returns {Promise<AccountManager>} - A Promise that resolves to a AccountManager object with the saved account information loaded.
+   * @memberof AccountManager
+   */
   public static async loadSaved(): Promise<AccountManager> {
     const accountManager = new AccountManager()
     accountManager.defaultAccountAddressIndex = Number(await accountManager.getSavedDefaultAccountAddressIndex())
@@ -1126,6 +1457,12 @@ export class AccountManager extends IJson {
     return accountManager
   }
 
+  /**
+   * @internal
+   * Saves all account address indices to browser local storage.
+   * @return {Promise<void>}
+   * @memberof AccountManager
+   */
   public async saveAllAccountAddressIndex() {
     await getHDWalletInstance().encryptSaveData(
       macro.accountListAddressIndex,
@@ -1133,11 +1470,23 @@ export class AccountManager extends IJson {
     )
   }
 
+  /**
+   * @internal
+   * Retrieves all saved account address indices from browser local storage.
+   * @returns {Promise<[] number>} - A Promise that resolves to an array of all saved account address indices.
+   * @memberof AccountManager
+   */
   public async getSavedAllAccountAddressIndex() {
     const accountAddressIndexString = await getHDWalletInstance().decryptSavedData(macro.accountListAddressIndex)
     return JSON.parse(accountAddressIndexString)
   }
 
+  /**
+   * @internal
+   * Saves default account address index to browser local storage.
+   * @return {Promise<void>}
+   * @memberof AccountManager
+   */
   public async saveDefaultAccountAddressIndex() {
     await getHDWalletInstance().encryptSaveData(
       macro.accountDefaultAddressIndex,
@@ -1145,32 +1494,66 @@ export class AccountManager extends IJson {
     )
   }
 
+  /**
+   * @internal
+   * Retrieves saved default account address index from browser local storage.
+   * @returns {Promise<number>} - A Promise that resolves to number of default account address index.
+   * @memberof AccountManager
+   */
   public async getSavedDefaultAccountAddressIndex(): Promise<number> {
     return await getHDWalletInstance().decryptSavedData(macro.accountDefaultAddressIndex)
   }
 
+  /**
+   * Serializes the accountManager object and encrypts it to 'Browser-local storage'.
+   * @returns {Promise<void>}
+   * @memberof AccountManager
+   */
   public async serialize(): Promise<void> {
     const accountManagerString: string = this.dump()
     return await getHDWalletInstance().encryptSaveData(this.getSaveKey(), accountManagerString)
   }
 
+  /**
+   * Deserializes a accountManager object from 'Browser-local storage' by decrypting it and creating a account object in memory.
+   * @returns {Promise<AccountManager>} - Returns a Promise that resolves with the deserialized accountManager object.
+   * @memberof AccountManager
+   */
   public async deserialize(): Promise<AccountManager> {
     const strategyString = await getHDWalletInstance().decryptSavedData(this.getSaveKey())
     return await AccountManager.load(strategyString)
   }
 
+    /**
+   * @internal
+   * Returns the marco of nuink Wallet account Manager Key .
+   * @returns {string} - The save key as a string.
+   * @memberof AccountManager
+   */
   public getSaveKey(): string {
     return macro.accountManagerKey
   }
 }
 
+/**
+ * An enum representing the types of HD wallet creation methods.
+ */
 enum HDWalletCreateType {
-  // wallet creation method
-  Mnemonic, // create from mnemonic
-  RootExtendedPrivateKey // Creation of extended private key through root account
+  /**
+   * Create an HD wallet from a mnemonic phrase.
+   */
+  Mnemonic,
+  /**
+   * Create an HD wallet from a root extended private key.
+   */
+  RootExtendedPrivateKey
 }
 
-//Temporarily set the data storage scheme to: generate a random string, encrypt it with the user's public key, and store it on the disk. This random string is used as a symmetric key to encrypt data using
+/**
+ *  nulink wallet object
+ * @export
+ * @class NuLinkHDWallet
+ */
 export class NuLinkHDWallet {
   private _passwordHash: string
   private mnemonic: string
@@ -1180,6 +1563,16 @@ export class NuLinkHDWallet {
   protected accountManager: AccountManager
   private cryptoBroker: CryptoBroker | null = null // Encryption and decryption middleware
 
+  /**
+   * Constructs an HDWallet object.
+   *
+   * @remarks
+   * This constructor creates a new instance of the HDWallet class. It sets the properties of the object, including
+   * the account manager, password hash, mnemonic, root extended private key, create type, and so on.
+   *
+   * The constructor is private so that the class can use static methods to create instances.
+   * @private
+   */
   private constructor() {
     this.accountManager = new AccountManager()
     this._passwordHash = ''
@@ -1189,6 +1582,19 @@ export class NuLinkHDWallet {
     this.cryptoBroker = null
   }
 
+  /**
+   * Constructs a new HDWallet object by copying an existing one.
+   *
+   * @remarks
+   * This constructor creates a new instance of the HDWallet class by copying another instance's properties, including
+   * the account manager, password hash, mnemonic, root extended private key, create type, and crypto broker. It encrypts
+   * the mnemonic and root extended private key using the provided password.
+   *
+   * The constructor is private so that the class can use static methods to create instances.
+   *
+   * @param _nuLinkHDWallet {NuLinkHDWallet} - The existing HDWallet object to copy.
+   * @param password {string}- This parameter is not used now.
+   */
   private copyConstructor(_nuLinkHDWallet: NuLinkHDWallet, password: string) {
     this.accountManager = _nuLinkHDWallet.accountManager
     this._passwordHash = _nuLinkHDWallet._passwordHash
@@ -1198,6 +1604,13 @@ export class NuLinkHDWallet {
     this.cryptoBroker = _nuLinkHDWallet.cryptoBroker
     this.hdWallet = _nuLinkHDWallet.hdWallet
   }
+
+  /**
+   * Generates a new BIP39 mnemonic phrase.
+   * @static
+   * @returns {string} - The generated mnemonic phrase as a string.
+   * @memberof NuLinkHDWallet
+   */
   public static generateMnemonic(): string {
     return commonGenerateMnemonic()
   }
@@ -1303,6 +1716,8 @@ export class NuLinkHDWallet {
   /**
    * Logs out the user by clearing the local storage.
    * @returns {Promise<void>}
+   * @static
+   * @memberof NuLinkHDWallet
    */
   public static async logout(): Promise<void> {
     await store.clear()
@@ -1324,7 +1739,6 @@ export class NuLinkHDWallet {
     return await NuLinkHDWallet.restoreHDWallet(mnemonic, newPassword)
   }
 
-  // restore wallet by mnemonic and dataFileBinaryString or import wallet by mnemonic and create new account
   /**
    *
    * Restores a NuLinkHDWallet using a mnemonic phrase and optional data file binary string.
@@ -1334,7 +1748,7 @@ export class NuLinkHDWallet {
    * @param {string} [dataFileBinaryString=''] - The optional binary string of a data file to restore the wallet from. The dataFileBinaryString is returned by the exportWalletData function
    * If a data file binary string is provided, the wallet's account data will be restored from it. Otherwise, a new account will be created.
    * @returns {Promise<NuLinkHDWallet>} - Returns a new NuLinkHDWallet object.
-   * @throws {Error} - Throws an error if the restore wallet tag is missing or if the wallet could not be restored from the data file.
+   * @throws {@link Error} - Throws an error if the restore wallet tag is missing or if the wallet could not be restored from the data file.
    * @static
    * @memberof NuLinkHDWallet
    */
@@ -1382,9 +1796,24 @@ export class NuLinkHDWallet {
     return nulinkHDWallet
   }
 
-  // restore wallet by rootExtendedPrivateKey and dataFileBinaryString or import wallet by rootExtendedPrivateKey and create new account
-  // dataFileBinaryString is a H5 fileReader.readAsArrayBuffer() return value,
-  // attention please: you need to call the createAccountIfNotExist method outside of this function for add user account to the center server for decouple
+  /**
+   * Restores an HDWallet object using a root extended private key and optional user data.
+   *
+   * @remarks
+   * This static method restores an HDWallet object by using a provided root extended private key and optional user data.
+   * If user data is provided, the function attempts to restore accounts and other data associated with the wallet. If no user data is provided,
+   * the function creates a new account. The restored or new HDWallet object is encrypted with the provided password and returned.
+   *
+   * attention please: you need to call the createAccountIfNotExist method outside of this function for add user account to the center server for decouple
+   *
+   * @param {string} privateKeyString - The root extended private key used to generate sub-accounts and access funds.
+   * @param {string} newPassword - The password used to encrypt the HDWallet object.
+   * @param {string} [dataFileBinaryString=''] - Optional parameter that contains user data, such as account information, in binary form.
+   * @returns {Promise<NuLinkHDWallet>} - An encrypted HDWallet object containing account and user data.
+   * @throws {@link Error}  Throws an InvalidRootExtendedPrivateKeyError if the provided private key does not follow the BIP32 standard.
+   * @static
+   * @memberof NuLinkHDWallet
+   */
   public static async restoreHDWalletByRootExtendedPrivateKey(
     privateKeyString: string,
     newPassword: string,
@@ -1534,17 +1963,36 @@ export class NuLinkHDWallet {
     }
   }
 
+  /**
+   * Get the Ethereum wallet
+   * @return {EthWallet} - Ethereum wallet
+   * @memberof NuLinkHDWallet
+   */
   private wallet(): EthWallet {
     assert(!util.isBlank(this.hdWallet))
     return (this.hdWallet as hdkey).getWallet()
   }
 
+  /**
+   * Get the root account key pair
+   * @return {KeyPair} - Key pair of the root account
+   * @memberof NuLinkHDWallet
+   */
   private getRootAccountKeyPair(): KeyPair {
     const wallet = this.wallet()
 
     return new KeyPair(wallet.getPublicKeyString(), wallet.getPrivateKeyString())
   }
 
+  /**
+   * @internal
+   * Get the CryptoBroker object
+   * @param {string} encryptedSymmetricKeyIv - Encrypted symmetric key and IV
+   * @param {boolean} reCreate - Whether to recreate the CryptoBroker object
+   * @param {boolean} save - Whether to save the CryptoBroker object
+   * @return {Promise<CryptoBroker>} - Promise object representing the CryptoBroker object
+   * @memberof NuLinkHDWallet
+   */
   private async getCryptoBroker(encryptedSymmetricKeyIv = '', reCreate = false, save = true): Promise<CryptoBroker> {
     //Restore the object through encryptedSymmetricKeyIv
 
@@ -1571,7 +2019,13 @@ export class NuLinkHDWallet {
     return this.cryptoBroker as CryptoBroker
   }
 
-  //restore wallet by the strategys of account stored in the backend db.
+  /**
+   * Restore data using the strategies of the accounts stored in the backend database.
+   * @param {string} newPassword - New password for encryption
+   * @param {DataStrategyRecoveryMode} _mode - Recovery mode for restoring data strategies
+   * @return {Promise<void>} - Promise object representing the completion of restoring data
+   * @memberof NuLinkHDWallet
+   */
   public async restoreDataByStrategyInfos(
     newPassword: string,
     _mode: DataStrategyRecoveryMode = DataStrategyRecoveryMode.Union
@@ -1609,6 +2063,14 @@ export class NuLinkHDWallet {
     //Note: The method of calling this function needs to save the account-related data after the call (decentralized storage)
   }
 
+  /**
+   * Recover user data to current NuLinkHDWallet object using the provided encrypted data file.
+   * @param {string} newPassword - New password for encryption
+   * @param {string} dataFileBinaryString - Encrypted data file as a binary string
+   * @param {DataStrategyRecoveryMode} _mode - Recovery mode for restoring data strategies
+   * @return {Promise<void>} - Promise object representing the completion of recovering user data
+   * @memberof NuLinkHDWallet
+   */
   public async recoverUserData(
     newPassword: string,
     dataFileBinaryString = '',
@@ -1653,6 +2115,12 @@ export class NuLinkHDWallet {
     //Note: The method of calling this function needs to save the account-related data after the call (decentralized storage)
   }
 
+  /**
+   * Export user data as an encrypted file.
+   * @param {string} password - Password for decrypt nulink wallet
+   * @return {Promise<string>} - Promise object representing the encrypted data file as a string
+   * @memberof NuLinkHDWallet
+   */
   public async exportUserData(password: string): Promise<string> {
     //Export user data, return the file stream, the front end needs to be downloaded directly to the local
     //The logic here should be to export the data of all accounts to 1 file
@@ -1727,7 +2195,12 @@ export class NuLinkHDWallet {
     return JSON.stringify(jsonData)
   }
 
-  //The master account mnemonic and extended private key are not exported, but obtained through the function
+  /**
+   * Get the mnemonic phrase for the master account.
+   * @param {string} password - Password for decryption
+   * @return {Promise<string|null>} - Promise object representing the mnemonic phrase for the master account
+   * @memberof NuLinkHDWallet
+   */
   public async getMnemonic(password: string): Promise<string | null> {
     if (await this.verifyPassword(password)) {
       //this must be plainText
@@ -1738,7 +2211,12 @@ export class NuLinkHDWallet {
     return null
   }
 
-  //The master account mnemonic and extended private key are not exported, but obtained through the function
+  /**
+   * Get the base58 root extend private key for the master account.
+   * @param {string} password - Password for decryption
+   * @return {Promise<string|null>} - Promise object representing the base58 root extend private key for the master account
+   * @memberof NuLinkHDWallet
+   */
   public async getRootExtendedPrivateKey(password: string): Promise<string | null> {
     assert(!!this.hdWallet)
 
@@ -1750,7 +2228,15 @@ export class NuLinkHDWallet {
     return null
   }
 
-  private async calcPasswordHash(password: string, salt: string) {
+  /**
+   * @internal
+   * Calculate the password hash using Keccak-256 algorithm and a salt.
+   * @param {string} password - Password string
+   * @param {string} salt - Salt string
+   * @return {Promise<string>} - Promise object representing the calculated password hash
+   * @memberof NuLinkHDWallet
+   */
+  private async calcPasswordHash(password: string, salt: string): Promise<string> {
     //The length of the salt we use here is 21 (nanoid())
     assert(!util.isBlank(this.hdWallet))
 
@@ -1767,7 +2253,7 @@ export class NuLinkHDWallet {
 
   /**
    * Verifies a password by comparing it to the previously saved hashed password.
-   * @throws {AssertionError} - Throws an error if the hdWallet or passwordHash is blank.
+   * @throws {@link AssertionError} - Throws an error if the hdWallet or passwordHash is blank.
    * @param {string} password - The password to verify.
    * @returns {Promise<boolean>} - Returns true if the password is verified, false otherwise.
    * @memberof NuLinkHDWallet
@@ -1794,16 +2280,28 @@ export class NuLinkHDWallet {
   /**
    * Retrieves the AccountManager object associated with the NuLinkHDWallet.
    * @returns {AccountManager}
-   * @memberof AccountManager
+   * @memberof NuLinkHDWallet
    */
   public getAccountManager() {
     return this.accountManager
   }
 
+  /**
+   * Set the account manager for the wallet.
+   * @param {AccountManager} _accountManager - Account manager object
+   * @memberof NuLinkHDWallet
+   */
   public setAccountManager(_accountManager: AccountManager) {
     this.accountManager = _accountManager
   }
 
+  /**
+   * @internal
+   * Save the password hash to the browser's local storage.
+   * @param {string} passwordHash - Password hash string
+   * @return {Promise<void>} - Promise object representing the completion of saving password hash
+   * @memberof NuLinkHDWallet
+   */
   private async savePassword(password: string): Promise<string> {
     //return password hash
     assert(this.hdWallet != null)
@@ -1819,17 +2317,36 @@ export class NuLinkHDWallet {
     return this._passwordHash
   }
 
+  /**
+   * @internal
+   * Save the password hash to the browser's local storage.
+   * @param {string} passwordHash - Password hash string
+   * @return {Promise<void>} - Promise object representing the completion of saving password hash
+   * @memberof NuLinkHDWallet
+   */
   private async savePasswordHash(passwordHash: string) {
     // store to local
     await this.encryptSaveData(macro.passwordHash, passwordHash)
     // console.log("savePasswordHash  passwordHash: ", passwordHash);
   }
 
+  /**
+   * @internal
+   * Get the saved password hash from the browser's local storage.
+   * @return {Promise<string>} - Promise object representing the saved password hash
+   * @memberof NuLinkHDWallet
+   */
   private async getSavedPasswordHash(): Promise<string> {
     //return password hash
     return await this.decryptSavedData(macro.passwordHash)
   }
 
+  /**
+   * @internal
+   * Save the mnemonic phrase to the browser's local storage.
+   * @return {Promise<void>} - Promise object representing the completion of saving the mnemonic phrase
+   * @memberof NuLinkHDWallet
+   */
   private async saveMnemonic() {
     // Save the mnemonic to the local via the symmetric key
     //this must be plainText
@@ -1838,11 +2355,24 @@ export class NuLinkHDWallet {
     await this.encryptSaveData(macro.mnemonicKey, mnemonic)
   }
 
+  /**
+   * @internal
+   * Get the saved mnemonic phrase from the browser's local storage.
+   * @return {Promise<string>} - Promise object representing the saved mnemonic phrase
+   * @memberof NuLinkHDWallet
+   */
   private async getSavedMnemonic() {
     // Get the locally saved mnemonic through the symmetric key
     return await this.decryptSavedData(macro.mnemonicKey)
   }
 
+  /**
+   * @internal
+   * Save the mnemonic phrase to the browser's local storage with an additional password.
+   * @param {string} password Password for encryption
+   * @return {Promise<void>}- Promise object representing the completion of saving the mnemonic phrase
+   * @memberof NuLinkHDWallet
+   */
   private async saveMnemonicByPassword(password: string) {
     // Save the mnemonic to the local with the password
     if (util.isBlank(this.mnemonic)) {
@@ -1852,23 +2382,49 @@ export class NuLinkHDWallet {
     await CryptoBroker.encryptWithPasswordSave(mnemonic, password, macro.mnemonicByPassword)
   }
 
+  /**
+   * @internal
+   * Get the saved mnemonic phrase from the browser's local storage with an additional password.
+   * @param {string} password - Password for decryption
+   * @return {Promise<string>} - Promise object representing the saved mnemonic phrase
+   * @memberof NuLinkHDWallet
+   */
   private async getSavedMnemonicByPassword(password: string) {
     // Get the local mnemonic by password
 
     return await CryptoBroker.decryptWithPasswordSaved(password, macro.mnemonicByPassword)
   }
 
+  /**
+   * @internal
+   * Save the root extended private key to the browser's local storage.
+   * @return {Promise<void>} - Promise object representing the completion of saving the root extended private key
+   * @memberof NuLinkHDWallet
+   */
   private async saveRootExtendedPrivateKey() {
     // Save the mnemonic to the local via the symmetric key
     const rootExtendedPrivateKey = pwdDecrypt(this.rootExtendedPrivateKey, true)
     await this.encryptSaveData(macro.rootExtendedPrivateKey, rootExtendedPrivateKey)
   }
 
-  private async getSavedRootExtendedPrivateKey() {
+  /**
+   * @internal
+   * Get the saved root extended private key from the browser's local storage.
+   * @return {Promise<string>} - Promise object representing the saved root extended private key
+   * @memberof NuLinkHDWallet
+   */
+  private async getSavedRootExtendedPrivateKey(): Promise<string> {
     // Get the locally saved mnemonic through the symmetric key
     return await this.decryptSavedData(macro.rootExtendedPrivateKey)
   }
 
+  /**
+   * @internal
+   * Save the root extended private key to the browser's local storage with an additional password.
+   * @param {string} password - Password for encryption
+   * @return {Promise<void>} - Promise object representing the completion of saving the root extended private key
+   * @memberof NuLinkHDWallet
+   */
   private async saveRootExtendedPrivateKeyByPassword(password: string) {
     // Save the wallet root private key to the local with the password
     let rootExtendedPrivateKey: string = commonGetRootExtendedPrivateKey(getHDWalletInstance().hdWallet).toString()
@@ -1878,21 +2434,50 @@ export class NuLinkHDWallet {
     await CryptoBroker.encryptWithPasswordSave(rootExtendedPrivateKey, password, macro.rootExtendedPrivateKeyByPassword)
   }
 
+  /**
+   * @internal
+   * Get the saved root extended private key from the browser's local storage with an additional password.
+   * @param {string} password - Password for decryption
+   * @return {Promise<string>} - Promise object representing the saved root extended private key
+   * @memberof NuLinkHDWallet
+   */
   private async getSavedRootExtendedPrivateKeyByPassword(password: string): Promise<string> {
     //Get the local (wallet) root private key through the password
     return await CryptoBroker.decryptWithPasswordSaved(password, macro.rootExtendedPrivateKeyByPassword)
   }
 
+  /**
+   * @internal
+   * Save the HD wallet creation type (mnemonic or root extended private key) to the browser's local storage with an additional password.
+   * @param {string} password - Password for encryption
+   * @param {string} hDWalletCreateType - HD wallet creation type
+   * @return {Promise<void>} - Promise object representing the completion of saving the HD wallet creation type
+   * @memberof NuLinkHDWallet
+   */
   private async saveHDWalletCreateType(password: string, hDWalletCreateType: string) {
     // Save the wallet create(restore) type : Mnemonic or RootExtendedPrivateKey
     await CryptoBroker.encryptWithPasswordSave(hDWalletCreateType, password, macro.hDWalletCreateType)
   }
 
+  /**
+   * @internal
+   * Retrieves the saved HD wallet create type by decrypting it with the supplied password.
+   * @param password {string} - The password to use for decryption.
+   * @returns {Promise<string>} - A Promise that resolves to the decrypted HD wallet create type as a string.
+   * @memberof NuLinkHDWallet
+   */
   private async getSavedHDWalletCreateType(password: string): Promise<string> {
     //Get the local (wallet) root private key through the password
     return await CryptoBroker.decryptWithPasswordSaved(password, macro.hDWalletCreateType)
   }
 
+  /**
+   * @internal
+   * Saves the encrypted symmetric key and initialization vector (IV) to browser local storage using the supplied password.
+   * @param password {string} - The password to use for encrypting and saving the key and IV.
+   * @returns {Promise<void>}
+   * @memberof NuLinkHDWallet
+   */
   private async saveEncryptedKeyIv(password: string) {
     //Save the encrypted symmetric key key,iv to the local by password
     const cryptoBroker = await this.getCryptoBroker()
@@ -1902,6 +2487,13 @@ export class NuLinkHDWallet {
     await CryptoBroker.encryptWithPasswordSave(encryptedKeyIv, password, macro.encryptedKeyIvByPassword)
   }
 
+  /**
+   * @internal
+   * Retrieves the saved encrypted symmetric key and initialization vector (IV) by decrypting it with the supplied password.
+   * @param password {string} - The password to use for decryption.
+   * @returns {Promise<string>} - A Promise that resolves to the decrypted encrypted key and IV as a string.
+   * @memberof NuLinkHDWallet
+   */
   private async getSavedEncryptedKeyIv(password: string): Promise<string> {
     //Get the local encrypted symmetric key key,iv through the password
     const encryptedKeyIv: string = await CryptoBroker.decryptWithPasswordSaved(password, macro.encryptedKeyIvByPassword)
@@ -1910,6 +2502,14 @@ export class NuLinkHDWallet {
     return encryptedKeyIv
   }
 
+  /**
+   * @internal
+   * Encrypts and saves the supplied plaintext data to browser local storage using the specified key.
+   * @param saveKey {string} - The key to use for saving the encrypted data.
+   * @param plainText {string} - The plaintext data to encrypt and save.
+   * @returns {Promise<string>} - A Promise that resolves to the encrypted data as a string.
+   * @memberof NuLinkHDWallet
+   */
   private async encryptSaveData(saveKey: string, plainText: string): Promise<string> {
     const cryptoBroker = await this.getCryptoBroker()
     const result = await cryptoBroker.encryptSaveData(saveKey, plainText)
@@ -1917,7 +2517,13 @@ export class NuLinkHDWallet {
     await setHDWalletInstance(this, true)
     return result
   }
-
+  /**
+   * @internal
+   * Decrypts the data that was previously saved using the specified key.
+   * @param savedKey {string} -The key that was used to save the encrypted data.
+   * @returns {Promise<string>} - A Promise that resolves to the decrypted data as a string.
+   * @memberof NuLinkHDWallet
+   */
   private async decryptSavedData(savedKey: string): Promise<string> {
     const cryptoBroker = await this.getCryptoBroker()
     // console.log("decryptSavedData cryptoBroker", cryptoBroker);
@@ -1925,6 +2531,14 @@ export class NuLinkHDWallet {
     return await cryptoBroker.decryptSavedData(savedKey)
   }
 
+  /**
+   * @internal
+   * Removes the saved data associated with the specified key.
+   * attention please: Use this function with caution as it may affect the overall storage interface.
+   * @param savedKey {string} -The key that was used to save the data to be removed.
+   * @returns {Promise<string>} - A Promise that resolves to the removed data as a string.
+   * @memberof NuLinkHDWallet
+   */
   private async removeSavedData(savedKey: string) {
     //Try not to call this function. If you delete a key without logic, it will destroy the overall storage interface.
     //Unless you know the consequences of deleting a key (such as load failure), don't do this lightly.
@@ -1934,14 +2548,29 @@ export class NuLinkHDWallet {
     return result
   }
 
+  /**
+   * Returns an array of strategy IDs associated with all accounts of the current HD wallet instance.
+   * @returns {string []} - An array of strategy IDs as strings.
+   * @memberof NuLinkHDWallet
+   */
   public strategyIds(): string[] {
     return this.accountManager.strategyIds()
   }
 
+  /**
+   * Returns an array of account IDs associated with all accounts of the current HD wallet instance.
+   * @returns {string []} - An array of account IDs as strings.
+   * @memberof NuLinkHDWallet
+   */
   public accountIds(): string[] {
     return this.accountManager.accountIds()
   }
 
+  /**
+   * Returns a JSON string representation of the nulink wallet object.
+   * @returns {Promise<string>} - Returns a JSON string representation of the  nulink wallet object.
+   * @memberof NuLinkHDWallet
+   */
   public async dump(): Promise<string> {
     if (!this._passwordHash) {
       this._passwordHash = await this.getSavedPasswordHash()
@@ -2065,6 +2694,15 @@ export class NuLinkHDWallet {
     // return strategyIds;
   }
 
+  /**
+   * Loads a nulink wallet object from a JSON string.
+   * @param {string} jsonString - The JSON string to parse and load.
+   * @param {boolean} [_save=false] - Whether to save the loaded object to browser local storage.
+   * @param {boolean} [recoverPassword=true] - A boolean indicating whether or not to recover the password used to encrypt the HD wallet instance
+   * @returns {Promise<NuLinkHDWallet>} - Returns a Promise that resolves with the nulink wallet object.
+   * @static
+   * @memberof NuLinkHDWallet
+   */
   public static async load(jsonString: string, save = false, recoverPassword = true): Promise<NuLinkHDWallet> {
     const jsonObj = JSON.parse(jsonString)
 
@@ -2216,23 +2854,44 @@ export class NuLinkHDWallet {
     return nulinkHDWallet
   }
 
-  // Increase each key scattered storage (disk), and scattered loading (otherwise every modification needs to re-call hdwallet's serialize). The original serialize, deserialize can be used for import and export
-
+  /**
+   * Serializes the nulink wallet and encrypts it to 'Browser-local storage'.
+   * Increase each key scattered storage (disk), and scattered loading (otherwise every modification needs to re-call hdwallet's serialize). The original serialize, deserialize can be used for import and export
+   * @returns {Promise<void>}
+   * @memberof NuLinkHDWallet
+   */
   private async serialize(): Promise<void> {
     const nuLinkHDWalletEncStr: string = await this.dump()
     await this.encryptSaveData(this.getSaveKey(), nuLinkHDWalletEncStr)
   }
 
+  /**
+   * Deserializes the encrypted NuLinkHDWallet instance and returns the decrypted NuLinkHDWallet instance.
+   * @returns {Promise<NuLinkHDWallet>} - A Promise that resolves to a new NuLinkHDWallet instance.
+   * @memberof NuLinkHDWallet
+   */
   private async deserialize(): Promise<NuLinkHDWallet> {
     const nuLinkHDWalletEncStr = await this.decryptSavedData(this.getSaveKey())
     return await NuLinkHDWallet.load(nuLinkHDWalletEncStr, true, true)
   }
 
+  /**
+   * @internal
+   * Returns the marco suffix of nuink Wallet Manager Key .
+   * @returns {string} - The save key as a string.
+   * @memberof NuLinkHDWallet
+   */
   private getSaveKey(): string {
     return macro.hdWalletManagerKey
   }
 
-  // decrypt the mnemonic phrase or root extended private key using the user's password, denoted as S1. Then, use S1 to generate a password to encrypt the data
+  /**
+   * Decrypt the mnemonic phrase or root extended private key using the user's password, denoted as S1. Then, use S1 to generate a password to encrypt the data
+   * @param plaintext {string} - The plaintext data to be encrypted.
+   * @param password {string} - The user's password used to verify their identity and derive a password for the encryption.
+   * @returns {Promise<string>} - A Promise that resolves to the encrypted data as a string.
+   * @memberof NuLinkHDWallet
+   */
   public async verifyPasswordAndEncrypt(plaintext: string, password: string /*userpassword*/): Promise<string> {
     //First verify that the password is correct
     if (!(await this.verifyPassword(password))) {
@@ -2260,7 +2919,12 @@ export class NuLinkHDWallet {
     return CryptoBroker.encryptWithPassword(plaintext, passwordHash) + salt
   }
 
-  // Use the mnemonic phrase or root extended private key to generate a password to encrypt the data
+  /**
+   * Use the mnemonic phrase or root extended private key to generate a password to encrypt the data
+   * @param plaintext {string} - The plaintext data to be encrypted.
+   * @returns {Promise<string>} - A Promise that resolves to the encrypted data as a string.
+   * @memberof NuLinkHDWallet
+   */
   public async encrypt(plaintext: string): Promise<string> {
     let secretKey: string | null = ''
     if (this.createType === HDWalletCreateType.Mnemonic) {
@@ -2284,7 +2948,15 @@ export class NuLinkHDWallet {
     return CryptoBroker.encryptWithPassword(plaintext, passwordHash) + salt
   }
 
-  public static async decrypt(ciphertext: string, walletSecret: macro.walletSecretKeyType) {
+  /**
+   * Decrypts the ciphertext using the wallet secret (mnemonic phrase or root extended private key).
+   * @static
+   * @param ciphertext {string} - The encrypted data to be decrypted.
+   * @param walletSecret {string} - The wallet secret (mnemonic phrase or root extended private key) used to decrypt the data.
+   * @returns {Promise<string>} - A Promise that resolves to the decrypted data as a string.
+   * @memberof NuLinkHDWallet
+   */
+  public static async decrypt(ciphertext: string, walletSecret: macro.walletSecretKeyType): Promise<string> {
     let secretKey: string = ''
     if (!isBlank(walletSecret.mnemonic)) {
       try {

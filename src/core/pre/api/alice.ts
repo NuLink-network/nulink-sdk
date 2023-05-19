@@ -498,7 +498,7 @@ export const approveNLK = async (
   // const account = web3.eth.accounts.privateKeyToAccount('0x2cc983ef0f52c5e430b780e53da10ee2bb5cbb5be922a63016fc39d4d52ce962');
   //web3.eth.accounts.wallet.add(account);
 
-  const nlkBalanceEthers = await account.getNLKBalance();
+  const nlkBalanceEthers = await account.getNLKBalance() as string;
 
   const nlkBalanceWei = BigNumber.from(Web3.utils.toWei(nlkBalanceEthers));
 
@@ -635,7 +635,7 @@ export const approveNLK = async (
       return gasFeeInWei.toString();
     }
 
-    const tokenBalanceEthers = await account.balance(); //tbnb
+    const tokenBalanceEthers = await account.balance() as string; //tbnb
     const tokenBalanceWei = Web3.utils.toWei(tokenBalanceEthers);
 
     // tokenBalanceWei must be great than gasUsed(gasLimit) * gitPrice
