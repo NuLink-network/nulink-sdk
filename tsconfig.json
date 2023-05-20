@@ -5,6 +5,7 @@
     "rootDir": ".",
     "incremental": true,
     "target": "esnext", //"es6", // to remove build files have 'awaiter' code, https://stackoverflow.com/questions/42415450/awaiter-is-not-defined-when-using-async-await-in-typescript
+    "module": "commonjs", //"esnext",
     "lib": [
       "dom",
       "dom.iterable",
@@ -23,7 +24,6 @@
     "traceResolution": false, //https://www.tslang.cn/docs/handbook/compiler-options.html
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
-    "module": "esnext",
     "moduleResolution": "node",
      /* Enables emit interoperability between CommonJS and ES Modules via creation of namespace objects for all imports. Implies 'allowSyntheticDefaultImports'. */
     "resolveJsonModule": true,/* Ensure that casing is correct in imports. */

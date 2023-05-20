@@ -8,7 +8,7 @@
     "@ethersproject/providers": "^5.7.2",
     "@ethersproject/wallet": "^5.7.0",
     "@nucypher/nucypher-core": "0.2.0",
-    "@nulink_network/nulink-ts": "^0.1.9",
+    "@nulink_network/nulink-ts": "^0.1.13",
     "@nulink_network/ts-indexdb": "^0.0.5",
     "@offirmo/globalthis-ponyfill": "^4.0.0",
     "@types/humps": "^2.0.2",

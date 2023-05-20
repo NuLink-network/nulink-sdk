@@ -2420,10 +2420,10 @@
   resolved "https://registry.yarnpkg.com/@nucypher/nucypher-core/-/nucypher-core-0.2.0.tgz#23d24868998ab0e58eaec919f2c1673cff566172"
   integrity sha512-vSSMbe4ad/Bkq5fdehSiMcflvHqLjfcCqAym+GWSiOvs/LJh4nB8Zo2/bJoMES1M1xoCjAZv4NZpPMlZiAXgzQ==
 
-"@nulink_network/nulink-ts@^0.1.9":
-  version "0.1.9"
-  resolved "https://registry.yarnpkg.com/@nulink_network/nulink-ts/-/nulink-ts-0.1.9.tgz#6699ff0b4ae961460323cf5b4232f5c45ecb765d"
-  integrity sha512-s1ba+Ojd2gSb9BuDDBxpd+uO/EcdFl4m74GVDAR5G6BWayB8oGIdT4LoSbMj/f4AeZtJih7Z9OI9CJPfMFLqew==
+"@nulink_network/nulink-ts@^0.1.13":
+  version "0.1.13"
+  resolved "https://registry.yarnpkg.com/@nulink_network/nulink-ts/-/nulink-ts-0.1.13.tgz#6d591d42a2cbce9d05c28f41dd06e12863ae8671"
+  integrity sha512-jk57htiigteCFKdpPSb0X/KnJ+kBJQZIXfMfJnFwBi6vRYugV0ZzqsS/ThxgaIMq6EDRsSfkv/Fev0KXElIsIg==
   dependencies:
     "@nucypher/nucypher-core" "^0.2.0"
     axios "^0.21.1"
