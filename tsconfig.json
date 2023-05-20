@@ -5,8 +5,7 @@
     "rootDir": ".",
     "incremental": true,
     "target": "esnext", //"es6", // to remove build files have 'awaiter' code, https://stackoverflow.com/questions/42415450/awaiter-is-not-defined-when-using-async-await-in-typescript
-    //"module": "commonjs", //"esnext",
-    "module": "esnext", // commonjs is another project 
+    "module": "esnext",
     "lib": [
       "dom",
       "dom.iterable",
