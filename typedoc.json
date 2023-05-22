@@ -3,13 +3,14 @@
   "name": "NuLink SDK",
   "entryPoints": [
     //"./src",
-    "./src/api/index.ts", 
+    "./src/api/index.ts",
     /* "./src/api/pre.ts", 
-    "./src/api/wallet.ts", */ 
-    /* "./src/core/utils/exception.ts", */ 
-    "./src/core/hdwallet/api/account.ts", 
-    "./src/core/pre/api/index.ts",
+    "./src/api/wallet.ts", */
+    /* "./src/core/utils/exception.ts", */
+    "./src/core/hdwallet/api/account.ts",
+    "./src/core/pre/api/index.ts"
   ],
+  "allReflectionsHaveOwnDocument": true,
   "sort": ["source-order"],
   // "media": "media",
   "categorizeByGroup": false,
@@ -39,12 +40,12 @@
     // "**/core.d.ts"
   ],
   "plugin": [
-    "typedoc-plugin-markdown", 
+    "typedoc-plugin-markdown",
     "typedoc-plugin-not-exported",
     // "typedoc-plugin-external-module-name",
     "typedoc-plugin-merge-modules",
-   ],
-
+  ],
+  
   "searchCategoryBoosts": {
     "Component": 2,
     "Model": 1.2

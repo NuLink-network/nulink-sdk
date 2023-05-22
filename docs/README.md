@@ -1,3 +1,5 @@
+NuLink SDK / [Modules](modules.md)
+
 # NuLink SDK
 
 <p align="center">
@@ -11,7 +13,6 @@
 ## How to Use
 
 ### Build Source
-
 
 ```bash
 1. Rename .env.example to .env
@@ -33,7 +34,6 @@
 ```
 ### Install via npm
 
-
 ```bash
 npm i @nulink_network/nulink-sdk
 ```
@@ -42,11 +42,10 @@ or
 yarn add @nulink_network/nulink-sdk
 ```
 
-<!-- ## API doc
-[API](./docs/modules.md) -->
+## API doc
+[API](./docs/modules.md)
 
 ## Usage
-
 
 ```javascript
 
@@ -423,7 +422,6 @@ const data = (await getFilesByStatus(
 
 assert(data && !isBlank(data) && data["total"] > 0);
 
-
 // we also can restore wallet by mnemonic
 
 //get mnemonic from current wallet
@@ -444,9 +442,8 @@ privatekeyString = privatekeyString as string;
 //When you are done using it, you can clear the browser's wallet cache data, and use the mnemonic to re-import it the next time you use it
 await logoutWallet();
 
-
 ```
 
 ## More examples 
 
-  [nulink-sdk-demo](https://github.com/NuLink-network/nulink-sdk-demo) 
+  [nulink-sdk-demo](https://github.com/NuLink-network/nulink-sdk-demo)

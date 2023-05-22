@@ -138,7 +138,6 @@ export enum DataStrategyRecoveryMode {
 
 /**
  *  Account class manages policies information, adds policies, deletes policies, and serializes
- * @export
  * @class Strategy
  * @extends {IJson}
  */
@@ -293,7 +292,6 @@ export class Strategy extends IJson {
 /**
  *
  * Account class manages account information, include pk/sk key pair info, policy info and so on
- * @export
  * @class Account
  * @extends {IJson}
  */
@@ -981,7 +979,6 @@ export class Account extends IJson {
 /**
  *
  * An account management object that stores all account information.
- * @export
  * @class AccountManager
  * @extends {IJson}
  */
@@ -1551,7 +1548,6 @@ enum HDWalletCreateType {
 
 /**
  *  nulink wallet object
- * @export
  * @class NuLinkHDWallet
  */
 export class NuLinkHDWallet {
