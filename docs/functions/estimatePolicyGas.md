@@ -28,4 +28,4 @@ estimate gas fees for sharing files
 
 #### Defined in
 
-[core/pre/api/workflow.ts:1287](https://github.com/NuLink-network/nulink-sdk/blob/541ac45/src/core/pre/api/workflow.ts#L1287)
+[core/pre/api/workflow.ts:1287](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/core/pre/api/workflow.ts#L1287)

@@ -37,4 +37,4 @@ Retrieve user information details by user account Id
 
 #### Defined in
 
-[api/pre.ts:199](https://github.com/NuLink-network/nulink-sdk/blob/541ac45/src/api/pre.ts#L199)
+[api/pre.ts:199](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/api/pre.ts#L199)

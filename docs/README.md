@@ -42,8 +42,18 @@ or
 yarn add @nulink_network/nulink-sdk
 ```
 
-## API doc
-[API](./docs/modules.md)
+## API docs
+
+### The Classes
+* `NulinkHDWallet`: The module mainly includes interfaces for nulink wallet related operations.
+* `AccountManager`: The module mainly responsible for managing multiple Account objects. AccountManager is a property of the NulinkHDWallet wallet object.
+* `Account`: The module mainly includes interfaces for nulink wallet account related operations. Account is a property of the AccountManager object.
+* `Strategy`: The module is mainly used to encrypt user files for file uploading using private keys.
+### The Functions
+* `Functions`: The module mainly includes interfaces for file encryption and uploading, as well as operations related to interacting with the blockchain.
+
+<!--[API](./docs/modules.md) -->
+[API Details](https://github.com/NuLink-network/nulink-sdk/blob/main/docs/modules.md)
 
 ## Usage
 

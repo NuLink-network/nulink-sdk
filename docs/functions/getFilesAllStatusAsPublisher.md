@@ -40,4 +40,4 @@ The file publisher retrieves a list of files in all states.
 
 #### Defined in
 
-[core/pre/api/workflow.ts:719](https://github.com/NuLink-network/nulink-sdk/blob/541ac45/src/core/pre/api/workflow.ts#L719)
+[core/pre/api/workflow.ts:719](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/core/pre/api/workflow.ts#L719)

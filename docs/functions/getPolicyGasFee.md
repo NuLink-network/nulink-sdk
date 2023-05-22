@@ -35,4 +35,4 @@ PolicyHasBeenActivedOnChain Policy has been actived(created) on chain (policy is
 
 #### Defined in
 
-[api/pre.ts:60](https://github.com/NuLink-network/nulink-sdk/blob/541ac45/src/api/pre.ts#L60)
+[api/pre.ts:60](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/api/pre.ts#L60)

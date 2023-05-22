@@ -22,4 +22,4 @@ Uploads files to the server by creating a new local policy and uploading the fil
 
 #### Defined in
 
-[core/pre/api/workflow.ts:229](https://github.com/NuLink-network/nulink-sdk/blob/541ac45/src/core/pre/api/workflow.ts#L229)
+[core/pre/api/workflow.ts:229](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/core/pre/api/workflow.ts#L229)

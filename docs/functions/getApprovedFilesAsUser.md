@@ -40,4 +40,4 @@ The file applicant retrieves a list of files that have been approved for their o
 
 #### Defined in
 
-[core/pre/api/workflow.ts:975](https://github.com/NuLink-network/nulink-sdk/blob/541ac45/src/core/pre/api/workflow.ts#L975)
+[core/pre/api/workflow.ts:975](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/core/pre/api/workflow.ts#L975)

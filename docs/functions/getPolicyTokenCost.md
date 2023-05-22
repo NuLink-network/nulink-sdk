@@ -23,4 +23,4 @@ calcurate publish policy server fee (nlk/tnlk): By calling calcPolicyCost
 
 #### Defined in
 
-[core/pre/api/workflow.ts:1227](https://github.com/NuLink-network/nulink-sdk/blob/541ac45/src/core/pre/api/workflow.ts#L1227)
+[core/pre/api/workflow.ts:1227](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/core/pre/api/workflow.ts#L1227)

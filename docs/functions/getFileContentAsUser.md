@@ -25,4 +25,4 @@ Gets the content of an approved file, which can be downloaded. The input paramet
 
 #### Defined in
 
-[core/pre/api/workflow.ts:1798](https://github.com/NuLink-network/nulink-sdk/blob/541ac45/src/core/pre/api/workflow.ts#L1798)
+[core/pre/api/workflow.ts:1798](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/core/pre/api/workflow.ts#L1798)

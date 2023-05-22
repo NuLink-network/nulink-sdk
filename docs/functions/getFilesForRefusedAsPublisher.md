@@ -41,4 +41,4 @@ Gets a list of files with the "approved failed" status for others to use. This a
 
 #### Defined in
 
-[core/pre/api/workflow.ts:852](https://github.com/NuLink-network/nulink-sdk/blob/541ac45/src/core/pre/api/workflow.ts#L852)
+[core/pre/api/workflow.ts:852](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/core/pre/api/workflow.ts#L852)

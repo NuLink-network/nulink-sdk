@@ -19,4 +19,4 @@ update info of current user account
 
 #### Defined in
 
-[core/pre/api/workflow.ts:176](https://github.com/NuLink-network/nulink-sdk/blob/541ac45/src/core/pre/api/workflow.ts#L176)
+[core/pre/api/workflow.ts:176](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/core/pre/api/workflow.ts#L176)

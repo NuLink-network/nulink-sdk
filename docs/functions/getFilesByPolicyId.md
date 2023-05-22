@@ -43,4 +43,4 @@ Gets the file information associated with the published policy (so the policy ha
 
 #### Defined in
 
-[core/pre/api/workflow.ts:1727](https://github.com/NuLink-network/nulink-sdk/blob/541ac45/src/core/pre/api/workflow.ts#L1727)
+[core/pre/api/workflow.ts:1727](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/core/pre/api/workflow.ts#L1727)

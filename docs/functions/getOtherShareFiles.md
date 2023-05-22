@@ -43,4 +43,4 @@ Gets a list of files shared by others (files uploaded by the current account are
 
 #### Defined in
 
-[core/pre/api/workflow.ts:579](https://github.com/NuLink-network/nulink-sdk/blob/541ac45/src/core/pre/api/workflow.ts#L579)
+[core/pre/api/workflow.ts:579](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/core/pre/api/workflow.ts#L579)

@@ -26,4 +26,4 @@ PasswordDecryptError
 
 #### Defined in
 
-[api/wallet.ts:289](https://github.com/NuLink-network/nulink-sdk/blob/541ac45/src/api/wallet.ts#L289)
+[api/wallet.ts:289](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/api/wallet.ts#L289)

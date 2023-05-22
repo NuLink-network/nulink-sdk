@@ -24,4 +24,4 @@ AssertionError - Throws an error if the hdWallet or passwordHash is blank.
 
 #### Defined in
 
-[api/wallet.ts:195](https://github.com/NuLink-network/nulink-sdk/blob/541ac45/src/api/wallet.ts#L195)
+[api/wallet.ts:195](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/api/wallet.ts#L195)

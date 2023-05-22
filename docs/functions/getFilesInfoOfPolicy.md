@@ -52,4 +52,4 @@ ParameterError The input parameter must have the "policyId" field
 
 #### Defined in
 
-[api/pre.ts:861](https://github.com/NuLink-network/nulink-sdk/blob/541ac45/src/api/pre.ts#L861)
+[api/pre.ts:861](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/api/pre.ts#L861)

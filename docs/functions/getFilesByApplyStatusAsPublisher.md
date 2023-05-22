@@ -41,4 +41,4 @@ Retrieve a list of files in a specified state that need to be approved for use b
 
 #### Defined in
 
-[core/pre/api/workflow.ts:759](https://github.com/NuLink-network/nulink-sdk/blob/541ac45/src/core/pre/api/workflow.ts#L759)
+[core/pre/api/workflow.ts:759](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/core/pre/api/workflow.ts#L759)

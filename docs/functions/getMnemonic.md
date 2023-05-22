@@ -26,4 +26,4 @@ Returns the mnemonic phrase if the password is correct, otherwise returns null. 
 
 #### Defined in
 
-[api/wallet.ts:276](https://github.com/NuLink-network/nulink-sdk/blob/541ac45/src/api/wallet.ts#L276)
+[api/wallet.ts:276](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/api/wallet.ts#L276)

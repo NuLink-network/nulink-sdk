@@ -22,4 +22,4 @@ Gets a list of files with the "approved failed" status, which cannot be used by 
 
 #### Defined in
 
-[core/pre/api/workflow.ts:987](https://github.com/NuLink-network/nulink-sdk/blob/541ac45/src/core/pre/api/workflow.ts#L987)
+[core/pre/api/workflow.ts:987](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/core/pre/api/workflow.ts#L987)

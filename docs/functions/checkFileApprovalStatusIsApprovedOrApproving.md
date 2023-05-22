@@ -20,4 +20,4 @@ Promise<boolean>
 
 #### Defined in
 
-[core/pre/api/workflow.ts:1507](https://github.com/NuLink-network/nulink-sdk/blob/541ac45/src/core/pre/api/workflow.ts#L1507)
+[core/pre/api/workflow.ts:1507](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/core/pre/api/workflow.ts#L1507)

@@ -19,4 +19,4 @@ Get approved document content (downloadable). The file applicant retrieves the c
 
 #### Defined in
 
-[core/pre/api/workflow.ts:1853](https://github.com/NuLink-network/nulink-sdk/blob/541ac45/src/core/pre/api/workflow.ts#L1853)
+[core/pre/api/workflow.ts:1853](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/core/pre/api/workflow.ts#L1853)

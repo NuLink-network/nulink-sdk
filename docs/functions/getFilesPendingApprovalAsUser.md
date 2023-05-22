@@ -41,4 +41,4 @@ Gets a list of files pending approval (applying but not yet approved). This acco
 
 #### Defined in
 
-[core/pre/api/workflow.ts:945](https://github.com/NuLink-network/nulink-sdk/blob/541ac45/src/core/pre/api/workflow.ts#L945)
+[core/pre/api/workflow.ts:945](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/core/pre/api/workflow.ts#L945)

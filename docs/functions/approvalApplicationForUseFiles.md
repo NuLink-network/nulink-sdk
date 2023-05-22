@@ -33,4 +33,4 @@ Please unlock account with your password first by call getWalletDefaultAccount(u
 
 #### Defined in
 
-[core/pre/api/workflow.ts:1537](https://github.com/NuLink-network/nulink-sdk/blob/541ac45/src/core/pre/api/workflow.ts#L1537)
+[core/pre/api/workflow.ts:1537](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/core/pre/api/workflow.ts#L1537)

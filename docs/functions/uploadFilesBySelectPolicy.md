@@ -23,4 +23,4 @@ Uploads files to the server by selecting an existing policy and uploading the fi
 
 #### Defined in
 
-[core/pre/api/workflow.ts:354](https://github.com/NuLink-network/nulink-sdk/blob/541ac45/src/core/pre/api/workflow.ts#L354)
+[core/pre/api/workflow.ts:354](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/core/pre/api/workflow.ts#L354)

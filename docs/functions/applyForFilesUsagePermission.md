@@ -20,4 +20,4 @@ Applies for file usage permission for the specified files, This account acts as 
 
 #### Defined in
 
-[core/pre/api/workflow.ts:636](https://github.com/NuLink-network/nulink-sdk/blob/541ac45/src/core/pre/api/workflow.ts#L636)
+[core/pre/api/workflow.ts:636](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/core/pre/api/workflow.ts#L636)

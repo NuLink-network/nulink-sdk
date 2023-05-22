@@ -7768,6 +7768,13 @@ grapheme-splitter@^1.0.4:
   resolved "https://registry.yarnpkg.com/grapheme-splitter/-/grapheme-splitter-1.0.4.tgz#9cf3a665c6247479896834af35cf1dbb4400767e"
   integrity sha512-bzh50DW9kTPM00T8y4o8vQg89Di9oLJVLW/KaOGIXJWP/iqCN6WKYkbNOF04vFLJhwcpYUh9ydh/+5vpOqV4YQ==
 
+graphviz@>=0.0.8:
+  version "0.0.9"
+  resolved "https://registry.yarnpkg.com/graphviz/-/graphviz-0.0.9.tgz#0bbf1df588c6a92259282da35323622528c4bbc4"
+  integrity sha512-SmoY2pOtcikmMCqCSy2NO1YsRfu9OO0wpTlOYW++giGjfX1a6gax/m1Fo8IdUd0/3H15cTOfR1SMKwohj4LKsg==
+  dependencies:
+    temp "~0.4.0"
+
 growl@1.10.5:
   version "1.10.5"
   resolved "https://registry.yarnpkg.com/growl/-/growl-1.10.5.tgz#f2735dc2283674fa67478b10181059355c369e5e"
@@ -13184,6 +13191,11 @@ tar@^6.1.11, tar@^6.1.13, tar@^6.1.2:
     mkdirp "^1.0.3"
     yallist "^4.0.0"
 
+temp@~0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/temp/-/temp-0.4.0.tgz#671ad63d57be0fe9d7294664b3fc400636678a60"
+  integrity sha512-IsFisGgDKk7qzK9erMIkQe/XwiSUdac7z3wYOsjcLkhPBy3k1SlvLoIh2dAHIlEpgA971CgguMrx9z8fFg7tSA==
+
 term-size@^2.1.0:
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/term-size/-/term-size-2.2.1.tgz#2a6a54840432c2fb6320fea0f415531e90189f54"
@@ -13499,6 +13511,21 @@ tsutils@^3.21.0:
   dependencies:
     tslib "^1.8.1"
 
+tsviz-cli@^2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/tsviz-cli/-/tsviz-cli-2.0.3.tgz#0227f6e1e080c1c16004b829954659c71533e249"
+  integrity sha512-B8xDNsEtET/R6KmkScrIxcOGK5bmhJ+R//9XVmhYn3HLku4eriIdI8zMrZMpyzYQYFgtPkQOys2a8ywjPgHSfQ==
+  dependencies:
+    graphviz ">=0.0.8"
+    tsviz ">=2.0.8"
+
+tsviz@>=2.0.8:
+  version "2.0.10"
+  resolved "https://registry.yarnpkg.com/tsviz/-/tsviz-2.0.10.tgz#b8ebc4c68f55acb50322f96e3890175f0c6aa3c1"
+  integrity sha512-IJzMRx4dymrnEPWbs4ZtIwUJoCPDPo2Y30pZYzpBbXeSJcHfTAAhcw61YILHB6GFo/dFYgzM/b2uan5UxOdPzg==
+  dependencies:
+    typescript "=4.4.3"
+
 tty-browserify@0.0.0:
   version "0.0.0"
   resolved "https://registry.yarnpkg.com/tty-browserify/-/tty-browserify-0.0.0.tgz#a157ba402da24e9bf957f9aa69d524eed42901a6"
@@ -13639,6 +13666,11 @@ typesafe-actions@^5.1.0:
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/typesafe-actions/-/typesafe-actions-5.1.0.tgz#9afe8b1e6a323af1fd59e6a57b11b7dd6623d2f1"
   integrity sha512-bna6Yi1pRznoo6Bz1cE6btB/Yy8Xywytyfrzu/wc+NFW3ZF0I+2iCGImhBsoYYCOWuICtRO4yHcnDlzgo1AdNg==
+
+typescript@=4.4.3:
+  version "4.4.3"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.4.3.tgz#bdc5407caa2b109efd4f82fe130656f977a29324"
+  integrity sha512-4xfscpisVgqqDfPaJo5vkd+Qd/ItkoagnHpufr+i2QCHBsNYp+G7UAoyFl8aPtx879u38wPV65rZ8qbGZijalA==
 
 typescript@>=4.5.2, "typescript@^4.6.4 || ^5.0.0", typescript@^5.0.3:
   version "5.0.4"
