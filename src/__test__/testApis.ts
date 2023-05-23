@@ -259,8 +259,8 @@ export const proxyReencryptionAPIsTestRun = async () => {
     needToApprovedFileInfo2['apply_id'],
     2,
     1,
-    startMs,
-    endMs,
+    startMs/1000,
+    endMs/1000,
     BigNumber.from(serverFeeNLKInWei)
   )
 
