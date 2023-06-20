@@ -9,7 +9,6 @@ import FormData from 'form-data'
 import { isBlank, isNotBlankAndEmptyObject } from './null'
 import { MultiFileUploadError } from './exception'
 
-
 export const setBatchData = async (
   // account: Account,
   userDatas:
@@ -30,7 +29,7 @@ export const setBatchData = async (
 
       for (let index = 0; index < userDatas.length; index++) {
         const userData = userDatas[index]
-        sendData.append('file', userData)
+        sendData.append('file', userData, `file${index + 1}`)
       }
 
       //TODO: Verification can be done by paying on-chain, and then listening for on-chain events. If payment has been made, the file can be uploaded.
