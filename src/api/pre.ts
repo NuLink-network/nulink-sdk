@@ -4,7 +4,7 @@
  * @module pre
  * @preferred
  */
-import { getPolicyTokenCost, estimatePolicyGas as gasFee } from '../core/pre'
+import { getPolicyTokenCost, getPolicysTokenCost, estimatePolicyGas as gasFee, estimatePolicysGas as getBatchCreatePolicyGasFee } from '../core/pre'
 import { PolicyHasBeenActivedOnChain } from '../core'
 import { BigNumber } from 'ethers'
 import { Account, NuLinkHDWallet } from '../core/hdwallet/api/account'
@@ -13,6 +13,7 @@ import { getSettingsData as getConfigData } from '../core/chainnet'
 import * as pre from '../core/pre'
 import { isBlank } from '../core/utils'
 import * as exception from '../core/utils/exception'
+import {UnauthorizedError} from '../core/utils/exception' //for comment
 
 export type { BigNumber } from 'ethers'
 
@@ -39,6 +40,44 @@ export const getPolicyServerGasFee = async (startSeconds: number, endSeconds: nu
   const endDate: Date = new Date(endSeconds * 1000) //  end_at is seconds, but Date needs milliseconds
 
   const gasWei = await getPolicyTokenCost(account as Account, startDate, endDate, ursulaShares)
+  // const gasValue = Web3.utils.fromWei(gasWei.toString(), "ether");
+  return gasWei.toString()
+}
+
+
+/**
+ * Retrieving the total of the service fees (NLK/TNLK) in bulk for file sharing purposes.
+ * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
+ * @throws {@link UnauthorizedError} get logined account failed, must be login account first
+ * @param {number[]} startSeconds - An array of the start time of file usage application in seconds
+ * @param {number[]} endSeconds - An array of the end time of file usage application in seconds
+ * @param {number[]} ursulaShares - An array of the number of service shares
+ * @returns {string} - the amount of NLK/TNLK in wei
+ */
+ export const getPolicysServerGasFee = async (startSeconds: number [], endSeconds: number [], ursulaShares: number []) => {
+  const account = await getWalletDefaultAccount()
+  if (isBlank(account)) {
+    throw new exception.UnauthorizedError(
+      'Please unlock account with your password first by call getWalletDefaultAccount(userpassword)'
+    )
+  }
+
+  console.log(account);
+  const startDates : Date [] = [];
+  const endDates : Date [] = [];
+  for (let index = 0; index < startSeconds.length; index++) {
+    const _startSeconds = startSeconds[index];
+    const _endSeconds = endSeconds[index];
+    const startDate: Date = new Date(_startSeconds * 1000) //  start_at is seconds, but Date needs milliseconds
+    const endDate: Date = new Date(_endSeconds * 1000) //  end_at is seconds, but Date needs milliseconds
+    startDates.push(startDate);
+    endDates.push(endDate);
+
+    console.log("getPolicysServerGasFee: ", index, _startSeconds, _endSeconds, ursulaShares[index]);
+  }
+
+
+  const gasWei = await getPolicysTokenCost(account as Account, startDates, endDates, ursulaShares)
   // const gasValue = Web3.utils.fromWei(gasWei.toString(), "ether");
   return gasWei.toString()
 }
@@ -94,7 +133,80 @@ export const getPolicyGasFee = async (
   } catch (error: any) {
     const error_info: string = error?.message || error
 
-    if (error_info?.toLowerCase()?.includes('policy is currently active')) {
+    if (typeof error_info === 'string' && error_info?.toLowerCase()?.includes('policy is currently active')) {
+      //The policy has been created successfully, and there is no need to created again
+      throw new PolicyHasBeenActivedOnChain('Policy is currently active')
+    }
+
+    console.error(error_info, error)
+    // Message.error(`Failed to get gas fee!! reason: ${error_info}`);
+    throw error
+  }
+}
+
+/**
+ * estimate service gas fees for sharing files. The batch version of the getPolicyGasFee function.
+ * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
+ * @throws {@link UnauthorizedError} get logined account failed, must be login account first
+ * @throws {@link PolicyHasBeenActivedOnChain} Policy has been actived(created) on chain (policy is currently active)
+ * @param {string[]} userAccountIds - the account Id of the file applicant (Bob)
+ * @param {string[]} applyIds - The application ID returned to the user by the interface when applying to use a specific file
+ * @param {number[]} ursulaShares - Number of service shares
+ * @param {number[]} ursulaThreshold - The file user can download the file after obtaining the specified number of service data shares
+ * @param {number[]} startSeconds - Start time of file usage application in seconds
+ * @param {number[]} endSeconds - End time of file usage application in seconds
+ * @param {BigNumber} serverFee - server fees by call function of `getPolicyServerGasFee`
+ * @returns {Promise<String>} - the amount of bnb/tbnb in wei
+ */
+ export const getPolicysGasFee = async (
+  userAccountIds: string[],
+  applyIds: string[],
+  ursulaShares: number[],
+  ursulaThresholds: number[],
+  startSeconds: number[], //policy usage start
+  endSeconds: number[], //policy usage start
+  serverFee: BigNumber // nlk fee in wei
+): Promise<string> => {
+  try {
+    const account = await getWalletDefaultAccount()
+    if (isBlank(account)) {
+      throw new exception.UnauthorizedError(
+        'Please unlock account with your password first by call getWalletDefaultAccount(userpassword)'
+      )
+    }
+
+    // console.log(account, applyId, ursulaShares, ursulaThreshold);
+
+    console.log(account);
+    const startDates : Date [] = [];
+    const endDates : Date [] = [];
+    for (let index = 0; index < startSeconds.length; index++) {
+      const _startSeconds = startSeconds[index];
+      const _endSeconds = endSeconds[index];
+      const startDate: Date = new Date(_startSeconds * 1000) //  start_at is seconds, but Date needs milliseconds
+      const endDate: Date = new Date(_endSeconds * 1000) //  end_at is seconds, but Date needs milliseconds
+      startDates.push(startDate);
+      endDates.push(endDate);
+  
+      console.log("getPolicysGasFee: ", index, _startSeconds, _endSeconds, ursulaShares[index]);
+    }
+
+    const gasWei = await getBatchCreatePolicyGasFee(
+      account as Account,
+      userAccountIds,
+      applyIds,
+      ursulaShares,
+      ursulaThresholds,
+      startDates,
+      endDates,
+      serverFee
+    )
+    // const gasValue = Web3.utils.fromWei(gasWei.toString(), "ether");
+    return gasWei.toString()
+  } catch (error: any) {
+    const error_info: string = error?.message || error
+
+    if (typeof error_info === 'string' && error_info?.toLowerCase()?.includes('policy is currently active')) {
       //The policy has been created successfully, and there is no need to created again
       throw new PolicyHasBeenActivedOnChain('Policy is currently active')
     }
@@ -299,6 +411,71 @@ export const ApprovalUseFiles = async (data: {
       data['ursulaThreshold'],
       startDate,
       endDate,
+      data && Object.prototype.hasOwnProperty.call(data, 'remark') ? data['remark'] : '',
+      '',
+      data && Object.prototype.hasOwnProperty.call(data, 'gasFeeInWei') ? data['gasFeeInWei'] : BigNumber.from('-1')
+    )
+  }
+
+  return null
+}
+
+
+/**
+ * Approve the user's multi file usage request. The batch version of the ApprovalUseFiles function.
+ * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
+ * @param {Object} data - the Object of update data. Object be must be have the properties: "userAccountIds" and "applyIds", return null otherwise
+ *              The input data must include the following fields in the "data" section:
+ * @param {string[]} data.userAccountIds
+ * @param {string[]} data.applyIds
+ * @param {number[]} data.startSeconds
+ * @param {number[]} data.endSeconds
+ * @param {number[]} data.ursulaShares
+ * @param {number[]} data.ursulaThresholds
+ * @param {BigNumber} data.gasFeeInWei - by call 'getPolicysGasFee'
+ * @param {string} data.remark - (Optional) remark
+ * @throws {@link UnauthorizedError} get logined account failed, must be login account first
+ * @returns {Object || null} - If the "userAccountIds" and "applyIds" properties are not included in the "data" parameter, return null.
+ *          Otherwise, return the object of
+ *          {
+ *            txHash: 'the transaction hash of the "approve" transaction',
+ *            from: 'publisher.address'
+ *          }
+ */
+export const ApprovalMultiUseFiles = async (data: {
+  userAccountIds: string []
+  applyIds: string []
+  startSecondsArray: number []
+  endSecondsArray: number []
+  ursulaShares: number []
+  ursulaThresholds: number []
+  gasFeeInWei?: BigNumber
+  remark?: string
+}) => {
+  if (
+    data &&
+    Object.prototype.hasOwnProperty.call(data, 'userAccountIds') &&
+    Object.prototype.hasOwnProperty.call(data, 'applyIds')
+  ) {
+    const publisher = await getWalletDefaultAccount()
+
+    if (isBlank(publisher)) {
+      throw new exception.UnauthorizedError(
+        'Please unlock account with your password first by call getWalletDefaultAccount(userpassword)'
+      )
+    }
+
+    const startDates: Date [] =data['startSecondsArray'].map((startSeconds) => new Date(Number(startSeconds) * 1000) )  // start_at is seconds, but Date needs milliseconds
+    const endDates: Date [] =data['endSecondsArray'].map((endSeconds) => new Date(Number(endSeconds) * 1000) )  // end_at is seconds, but Date needs milliseconds
+
+    return await pre.approvalApplicationsForUseFiles(
+      publisher as Account,
+      data['userAccountIds'],
+      data['applyIds'],
+      data['ursulaShares'],
+      data['ursulaThresholds'],
+      startDates,
+      endDates,
       data && Object.prototype.hasOwnProperty.call(data, 'remark') ? data['remark'] : '',
       '',
       data && Object.prototype.hasOwnProperty.call(data, 'gasFeeInWei') ? data['gasFeeInWei'] : BigNumber.from('-1')

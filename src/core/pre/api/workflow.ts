@@ -8,13 +8,21 @@ import { signMessage } from '../../utils/signMessage'
 import { Account, Strategy, web3 } from '../../hdwallet/api/account'
 
 // notice: bacause the MessageKit use the SecretKey import from nucypher-ts, so you  must be use the nucypher-ts's SecretKey PublicKey , not use the nucypher-core's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
-import { Alice, BlockchainPolicyParameters, EnactedPolicy, MessageKit, RemoteBob } from '@nulink_network/nulink-ts'
+import {
+  Alice,
+  BlockchainPolicyParameters,
+  MultiBlockchainPolicyParameters,
+  EnactedPolicy,
+  MultiEnactedPolicy,
+  MessageKit,
+  RemoteBob
+} from '@nulink_network/nulink-ts-dev'
 
 import { EncryptedTreasureMap, HRAC } from '@nucypher/nucypher-core'
 
 //reference: https://github.com/nucypher/nucypher-ts-demo/blob/main/src/characters.ts
 // notice: bacause the encryptedMessage.decrypt( get by MessageKit) use the SecretKey import from nucypher-ts, so you  must be use the nucypher-ts's SecretKey PublicKey , not use the nucypher-core's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
-import { PublicKey, SecretKey as NucypherTsSecretKey } from '@nulink_network/nulink-ts'
+import { PublicKey, SecretKey as NucypherTsSecretKey } from '@nulink_network/nulink-ts-dev'
 
 import { encryptMessage } from './enrico'
 import { isBlank } from '../../utils/null'
@@ -24,10 +32,12 @@ import { getSettingsData } from '../../chainnet'
 import { serverGet, serverPost } from '../../servernet'
 import { nanoid } from 'nanoid'
 import { Bob, makeBob, makeRemoteBob } from './bob'
-import { Porter, Ursula } from '@nulink_network/nulink-ts/build/main/src/characters/porter'
+import { Porter, Ursula } from '@nulink_network/nulink-ts-dev/build/main/src/characters/porter'
 import {
   BlockchainPolicy,
+  MultiBlockchainPolicy,
   createChainPolicy,
+  createMultiChainPolicy,
   makeAlice,
   getBalance,
   getUrsulas,
@@ -37,11 +47,12 @@ import {
 
 import { BigNumber } from 'ethers'
 import { ethers } from 'ethers'
-import { SubscriptionManagerAgent } from '@nulink_network/nulink-ts/build/main/src/agents/subscription-manager'
+import { SubscriptionManagerAgent } from '@nulink_network/nulink-ts-dev/build/main/src/agents/subscription-manager'
 import { toEpoch } from '../../utils/format'
 import { compressPublicKeyBuffer, compressPublicKeyBuffer2, privateKeyBuffer } from '../../hdwallet/api/common'
 import { getPorterUrl } from './porter'
 import { setData as setIPFSData, getData as getIPFSData } from '../../utils/ipfs'
+import { setBatchData as setIPFSBatchDataByBackend } from '../../utils/ipfs.backend'
 import humps from 'humps'
 import { getBlurThumbnail } from '../../utils/image'
 import { ThumbailResult } from '../../utils/image'
@@ -52,7 +63,14 @@ import { fromBytes, fromBytesByEncoding } from '../../utils/encode'
 import { decrypt as pwdDecrypt } from '../../utils/passwordEncryption'
 import { getUrsulaError, InsufficientBalanceError, PolicyHasBeenActivedOnChain } from '../../utils/exception'
 import { getWeb3 } from '../../hdwallet/api'
+import { getRandomElementsFromArray } from '../../../core/utils'
 
+// let ipfsSaveByBackend: boolean = true
+// try {
+//   // access strategy for IPFS data:  1. Access IPFS data through proxy of backend service (with added verification logic). 2. Directly access IPFS  network node
+//   ipfsSaveByBackend = ((process.env.REACT_APP_IPFS_STORAGE_STRATEGY as string) || '1').trim() === '1'
+// } catch (error) {}
+const ipfsSaveByBackend = false;
 /**
  * @internal
  */
@@ -162,6 +180,56 @@ export const getAccountInfo = async (accountId: string) => {
   return data
 }
 
+/**
+ * get account infos by multiple account ids
+ * @param {string[]} - accountId s
+ * @returns {Promise<object>} - account information details list
+ * 
+ *         [ {
+              name	string	account name
+              account_id	string	account ID(UUID v4)
+              ethereum_addr	string	eth address
+              encrypted_pk	string	encrypted PK
+              verify_pk	string	verifyed PK
+              status	number	account state 
+              created_at	number	account create time
+              avatar           string  IPFS address of avatar
+              name         string  nickname            
+              user_site         string  Address of the user's primary site   
+              twitter          string  twitter address     
+              instagram        string  instagram address  
+              facebook         string  facebook address    
+              profile string  personal data        
+          },
+          ...
+        ]
+ */
+export const getAccountInfos = async (accountIds: string[]): Promise<object[]> => {
+  //https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E8%8E%B7%E5%8F%96%E7%94%A8%E6%88%B7%E4%BF%A1%E6%81%AF
+
+  const sendData = {
+    account_ids: accountIds
+  }
+
+  const data = (await serverPost('/account/batch-get', sendData)) as object
+
+  const dataDict: object = data['list']
+  if (isBlank(dataDict)) {
+    return []
+  }
+  const retList: object[] = []
+  for (let index = 0; index < accountIds.length; index++) {
+    const accountId: string = accountIds[index]
+    if (accountId in dataDict) {
+      retList.push(dataDict[accountId])
+    } else {
+      retList.push({})
+    }
+  }
+
+  return retList
+}
+
 /** update info of current user account
  * @param {Account} account - the current account object
  * @param {string} avatar - (Optional) the photo of current account
@@ -255,7 +323,6 @@ export const uploadFilesByCreatePolicy = async (
   const strategy: Strategy = await account.createStrategyByLabel(label)
   // console.log("uploadFilesByCreatePolicy strategy", strategy);
 
-  //TODO: call server interface Check whether the file needs to be uploaded repeatedly
   // console.log("uploadFilesByCreatePolicy fileList", fileList);
   /*   //for test start
   const plainText = "This is a history book content";
@@ -274,11 +341,20 @@ export const uploadFilesByCreatePolicy = async (
   const _encryptMessages: MessageKit[] = encryptMessage(strategy.strategyKeyPair._publicKey, fileContentList)
   // console.log("uploadFilesByCreatePolicy _encryptMessages", _encryptMessages);
   const mockIPFSAddressList: string[] = []
-  for (const _encryptMessage of _encryptMessages) {
-    const _encryptMessageBytes: Uint8Array = _encryptMessage.toBytes()
+
+  if (ipfsSaveByBackend) {
     //upload encrypt files to IPFS
-    const cid = await setIPFSData(_encryptMessageBytes)
-    mockIPFSAddressList.push(cid)
+    const cids: string[] = await setIPFSBatchDataByBackend(
+      _encryptMessages.map((encryptMessage) => encryptMessage.toBytes()) /*Uint8Array*/
+    )
+    mockIPFSAddressList.push(...cids)
+  } else {
+    for (const _encryptMessage of _encryptMessages) {
+      const _encryptMessageBytes: Uint8Array = _encryptMessage.toBytes()
+      //upload encrypt files to IPFS
+      const cid = await setIPFSData(_encryptMessageBytes)
+      mockIPFSAddressList.push(cid)
+    }
   }
   // console.log("uploadFilesByCreatePolicy mockIPFSAddressList", mockIPFSAddressList);
   const fileInfos: object[] = []
@@ -295,7 +371,13 @@ export const uploadFilesByCreatePolicy = async (
         thumbnail = ''
       } else {
         const { buffer: thumbnailBuffer, mimeType }: ThumbailResult = result as ThumbailResult
-        thumbnail = mimeType + '|' + (await setIPFSData(thumbnailBuffer.buffer))
+        let cid: string = ''
+        if (ipfsSaveByBackend) {
+          cid = (await setIPFSBatchDataByBackend([thumbnailBuffer.buffer]))[0]
+        } else {
+          cid = await setIPFSData(thumbnailBuffer.buffer)
+        }
+        thumbnail = mimeType + '|' + cid
       }
     } catch (error) {
       thumbnail = ''
@@ -343,14 +425,14 @@ export const uploadFilesByCreatePolicy = async (
   return strategy
 }
 /**
-* Uploads files to the server by selecting an existing policy and uploading the files encrypted with the policy's public key to IPFS.
-* @category File Publisher(Alice) Interface
-* @param {Account} account - The account to use to upload the files.
-* @param {FileCategory | string} fileCategory - The category of the files being uploaded. Must be a valid FileCategory value or a string.
-* @param {FileInfo[]} fileList - The list of files to upload. Each element of the array must be an object with properties 'name' and 'fileBinaryArrayBuffer'.
-* @param {number} policyId - The ID of the policy to use to encrypt and upload the files.
-* @returns {Promise<string[]>} - Returns an array of file IDs uploaded to the server.
-*/
+ * Uploads files to the server by selecting an existing policy and uploading the files encrypted with the policy's public key to IPFS.
+ * @category File Publisher(Alice) Interface
+ * @param {Account} account - The account to use to upload the files.
+ * @param {FileCategory | string} fileCategory - The category of the files being uploaded. Must be a valid FileCategory value or a string.
+ * @param {FileInfo[]} fileList - The list of files to upload. Each element of the array must be an object with properties 'name' and 'fileBinaryArrayBuffer'.
+ * @param {number} policyId - The ID of the policy to use to encrypt and upload the files.
+ * @returns {Promise<string[]>} - Returns an array of file IDs uploaded to the server.
+ */
 export const uploadFilesBySelectPolicy = async (
   account: Account,
   fileCategory: FileCategory | string, //File category, according to the design: only one category is allowed to be uploaded in batches, and different categories need to be uploaded separately
@@ -387,11 +469,20 @@ export const uploadFilesBySelectPolicy = async (
   const _encryptMessages: MessageKit[] = encryptMessage(policyEncrypedPublicKey, fileContentList)
 
   const mockIPFSAddressList: string[] = []
-  for (const _encryptMessage of _encryptMessages) {
-    const _encryptMessageBytes: Uint8Array = _encryptMessage.toBytes()
+
+  if (ipfsSaveByBackend) {
     //upload encrypt files to IPFS
-    const cid = await setIPFSData(_encryptMessageBytes)
-    mockIPFSAddressList.push(cid)
+    const cids: string[] = await setIPFSBatchDataByBackend(
+      _encryptMessages.map((encryptMessage) => encryptMessage.toBytes()) /*Uint8Array*/
+    )
+    mockIPFSAddressList.push(...cids)
+  } else {
+    for (const _encryptMessage of _encryptMessages) {
+      const _encryptMessageBytes: Uint8Array = _encryptMessage.toBytes()
+      //upload encrypt files to IPFS
+      const cid = await setIPFSData(_encryptMessageBytes)
+      mockIPFSAddressList.push(cid)
+    }
   }
 
   const retInfo: string[] = []
@@ -408,7 +499,13 @@ export const uploadFilesBySelectPolicy = async (
         thumbnail = ''
       } else {
         const { buffer: thumbnailBuffer, mimeType }: ThumbailResult = result as ThumbailResult
-        thumbnail = mimeType + '|' + (await setIPFSData(thumbnailBuffer.buffer))
+        let cid: string = ''
+        if (ipfsSaveByBackend) {
+          cid = (await setIPFSBatchDataByBackend([thumbnailBuffer.buffer]))[0]
+        } else {
+          cid = await setIPFSData(thumbnailBuffer.buffer)
+        }
+        thumbnail = mimeType + '|' + cid
       }
     } catch (error) {
       thumbnail = ''
@@ -520,12 +617,12 @@ export const getFileInfosByAccount = async (account: Account, fileName?: string,
 }
 
 /**
-* Deletes the specified files uploaded by the account from the server, This account acts as the publisher
-* @category File Publisher(Alice) Interface
-* @param {Account} account - The account that owns the files to be deleted.
-* @param {string[]} fileIds - An array of file IDs to delete.
-* @returns {Promise<void>}
-*/
+ * Deletes the specified files uploaded by the account from the server, This account acts as the publisher
+ * @category File Publisher(Alice) Interface
+ * @param {Account} account - The account that owns the files to be deleted.
+ * @param {string[]} fileIds - An array of file IDs to delete.
+ * @returns {Promise<void>}
+ */
 export const deleteUploadedFiles = async (account: Account, fileIds: string[]) => {
   //https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E5%88%A0%E9%99%A4%E6%96%87%E4%BB%B6
   /*  
@@ -664,14 +761,14 @@ export const applyForFilesUsagePermission = async (fileIds: string[], account: A
 }
 
 /**
-* Revokes the permission application of the specified files. This account acts as the user(Bob).
-* If it has been approved or failed, it can not be revoked.
-* The background service processing logic is such that if there are multiple permission applications, either all of them will be successful or none of them will be successful.
-* @category File User(Bob) Interface
-* @param {Account} account - The account that revokes the permission application.
-* @param {number[]} applyIds - An array of application applyIds to revoke.
-* @returns {Promise<object>} - Returns an empty object.
-*/
+ * Revokes the permission application of the specified files. This account acts as the user(Bob).
+ * If it has been approved or failed, it can not be revoked.
+ * The background service processing logic is such that if there are multiple permission applications, either all of them will be successful or none of them will be successful.
+ * @category File User(Bob) Interface
+ * @param {Account} account - The account that revokes the permission application.
+ * @param {number[]} applyIds - An array of application applyIds to revoke.
+ * @returns {Promise<object>} - Returns an empty object.
+ */
 export const revokePermissionApplicationOfFiles = async (
   account: Account, //Bob
   applyIds: number[] //Application Record ID
@@ -818,7 +915,6 @@ export const getFilesPendingApprovalAsPublisher = async (account: Account, pageI
             }
  */
 export const getApprovedFilesAsPublisher = async (account: Account, pageIndex = 1, pageSize = 10) => {
-
   return await getFilesByStatus(undefined, undefined, account.id, undefined, 2, pageIndex, pageSize)
 }
 
@@ -1219,8 +1315,8 @@ export const getPoliciesInfo = async (
  * calcurate publish policy server fee (nlk/tnlk): By calling calcPolicyCost
  * @category File Publisher(Alice) Interface
  * @param {Account} publisher - the current logined Account object
- * @param {number} startSeconds - Start time of file usage application in seconds
- * @param {number} endSeconds - End time of file usage application in seconds
+ * @param {Date} startDate - Start time of file usage application in seconds
+ * @param {Date} endDate - End time of file usage application in seconds
  * @param {number} ursulaShares - Number of service shares
  * @returns {Promise<BigNumber>} - the amount of NLK/TNLK in wei
  */
@@ -1241,11 +1337,36 @@ export const getPolicyTokenCost = async (
 }
 
 /**
+ * Calculating service fees (nlk/tnlk) for publishing multiple policys. : By calling calcPolicysCost
+ * @category File Publisher(Alice) Interface
+ * @param {Account} publisher - the current logined Account object
+ * @param {Date[]} startDates -  An array of the start time of file usage application in seconds
+ * @param {Date[]} endDates -  An array of the end time of file usage application in seconds
+ * @param {number[]} ursulaShares -  An array of the number of service shares
+ * @returns {Promise<BigNumber>} - All services fees of the amount of NLK/TNLK in wei
+ */
+export const getPolicysTokenCost = async (
+  publisher: Account,
+  startDates: Date[], //policy usage start date
+  endDates: Date[], //policy usage start date
+  ursulaShares: number[] //URSULA_N_SHARES,
+): Promise<BigNumber> => {
+  const alice: Alice = await makeAlice(publisher)
+
+  // const startDate: Date = new Date(startSeconds * 1000); //  start_at is seconds, but Date needs milliseconds
+  // const endDate: Date = new Date(endSeconds * 1000); //  end_at is seconds, but Date needs milliseconds
+
+  //return wei
+  const gasWei = await calcPolicysCost(alice, startDates, endDates, ursulaShares)
+  return gasWei
+}
+
+/**
  * calcurate publish policy server fee (nlk/tnlk), you can get ether: Web3.utils.fromWei(costGasWei.toNumber().toString(), "ether" )
  * @category File Publisher(Alice) Interface
  * @param {Account} alice - the current logined Account object as file publisher
- * @param {number} startSeconds - Start time of file usage application in seconds
- * @param {number} endSeconds - End time of file usage application in seconds
+ * @param {Date} startDate - Start time of file usage application
+ * @param {Date} endDate - End time of file usage application
  * @param {number} ursulaShares - Number of service shares
  * @returns {Promise<BigNumber>} - the amount of NLK/TNLK in wei
  */
@@ -1270,6 +1391,47 @@ const calcPolicyCost = async (
   return value
 }
 
+/**
+ * Calculating service fees (nlk/tnlk) for publishing multiple policys, you can get ether: Web3.utils.fromWei(costGasWei.toNumber().toString(), "ether" )
+ * @category File Publisher(Alice) Interface
+ * @param {Account} alice - the current logined Account object as file publisher
+ * @param {Date[]} startDates - Start time of file usage application
+ * @param {Date[]} endDates - End time of file usage application
+ * @param {number[]} ursulaShares - Number of service shares
+ * @returns {Promise<BigNumber>} - the amount of NLK/TNLK in wei
+ */
+const calcPolicysCost = async (
+  alice: Alice,
+  startDates: Date[], //policy usage start date
+  endDates: Date[], //policy usage start date
+  ursulaShares: number[] //URSULA_N_SHARES must be great than 0
+): Promise<BigNumber> => {
+  const startSeconds: number[] = []
+  const endSeconds: number[] = []
+  for (let index = 0; index < startDates.length; index++) {
+    const startDate = startDates[index]
+    const endDate = endDates[index]
+    startSeconds.push(toEpoch(startDate))
+    endSeconds.push(toEpoch(endDate))
+
+    if (ursulaShares[index] <= 0) {
+      throw new Error(`index: ${index} ${ursulaShares[index]} shares must be greater than zero`)
+    }
+
+    console.log(index, startDate, endDate, ursulaShares[index])
+  }
+
+  //TODO:
+  //return wei
+  const value = await SubscriptionManagerAgent.getPolicysCost(
+    alice.web3Provider.provider, //note: the provider must be nulink network provider
+    ursulaShares,
+    startSeconds,
+    endSeconds
+  )
+
+  return value
+}
 /**
  * estimate gas fees for sharing files
  * @category File Publisher(Alice) Interface
@@ -1334,7 +1496,87 @@ export const estimatePolicyGas = async (
   const txHash: string = await approveNLK(publisher, BigNumber.from('10000000000000000000000000'), serverFee, false)
   console.log('before policy estimateCreatePolicyGas ')
   const gasInWei: BigNumber = await resultInfo.blockchainPolicy.estimateCreatePolicyGas(resultInfo.alice)
-  console.log('end policy estimatePolicyGas wei:', gasInWei.toString())
+  console.log('after policy estimatePolicyGas wei:', gasInWei.toString())
+
+  return gasInWei.add(approveGasInWei)
+}
+
+/**
+ *
+ * estimate the gas fee for batch (sharing files) creating policies.
+ * @category File Publisher(Alice) Interface
+ * @param {Account} publisher - Account the account object of the file publisher (Alice)
+ * @param {string[]} userAccountIds - the account Id of the file publisher (Alice)
+ * @param {string[]} applyIds - The application ID returned to the user by the interface when applying to use a specific file
+ * @param {number[]} ursulaShares - Number of service shares
+ * @param {number[]} ursulaThresholds - The file user can download the file after obtaining the specified number of service data shares
+ * @param {number[]} startSeconds - Start time of file usage application in seconds
+ * @param {number[]} endSeconds - End time of file usage application in seconds
+ * @param {BigNumber} serverFee - server fees by call function of `getPolicyServerGasFee`
+ * @param {string} porterUri - (Optional) the porter service url
+ * @returns {Promise<BigNumber>} - the amount of bnb/tbnb in wei
+ */
+export const estimatePolicysGas = async (
+  publisher: Account,
+  userAccountIds: string[], // proposer account id
+  applyIds: string[], // Application Record id
+  ursulaShares: number[], //n   m of n => 3 of 5
+  ursulaThresholds: number[], // m
+  startDates: Date[], //policy usage start date
+  endDates: Date[], //policy usage start date
+  serverFee: BigNumber, //nlk in wei
+  porterUri?: string
+): Promise<BigNumber> => {
+  // calcPolicyEstimateGasFee
+  const approvingAndApprovedApplyIds: string[] = await checkMultiFileApprovalStatusIsApprovedOrApproving(applyIds)
+
+  if (approvingAndApprovedApplyIds.length > 0) {
+    throw new PolicyHasBeenActivedOnChain(`Policys ${approvingAndApprovedApplyIds} is currently active`)
+  }
+
+  /**
+   * {
+   *    multiBlockchainPolicy: MultiBlockchainPolicy
+   *    strategys: Strategy []
+   *    policyParameters: MultiBlockchainPolicyParameters
+   *    alice: Alice
+   *    ursulasArray: Array<Ursula[]>
+   *    publisherAccount: Account
+   *  }
+   */
+  const resultInfo = await getBlockchainPolicys(
+    publisher,
+    userAccountIds,
+    applyIds,
+    ursulaShares,
+    ursulaThresholds,
+    startDates,
+    endDates,
+    porterUri,
+    false
+  )
+
+  // //enPolicy service fee wei
+  // const costServerFeeWei: BigNumber = await calcPolicyCost(
+  //   resultInfo.alice,
+  //   resultInfo.policyParameters.startDate,
+  //   resultInfo.policyParameters.endDate,
+  //   resultInfo.policyParameters.shares,
+  // );
+
+  console.log('before estimatePolicyGas approveNLK')
+  const approveGasInWei: number = await estimateApproveNLKGas(
+    publisher,
+    BigNumber.from('10000000000000000000000000'),
+    serverFee
+  )
+
+  console.log('before multi policy estimatePolicyGas')
+  //Note that it takes time to evaluate gas, and since the transfer nlk function is called, it must be approved first
+  const txHash: string = await approveNLK(publisher, BigNumber.from('10000000000000000000000000'), serverFee, false)
+  console.log('before multi policy estimateCreatePolicyGas ')
+  const gasInWei: BigNumber = await resultInfo.multiBlockchainPolicy.estimateCreatePolicyGas(resultInfo.alice)
+  console.log('after multi policy estimatePolicyGas wei:', gasInWei.toString())
 
   return gasInWei.add(approveGasInWei)
 }
@@ -1460,7 +1702,7 @@ const getBlockchainPolicy = async (
     ursulas = humps.camelizeKeys(ursulas)
 
     // length 66 public string to PublicKey Object
-    //now @nulink_network/nulink-ts@0.7.0 must be the version 0.7.0
+    //now @nulink_network/nulink-ts-dev@0.7.0 must be the version 0.7.0
     for (const ursula of ursulas) {
       ursula.encryptingKey = PublicKey.fromBytes(compressPublicKeyBuffer2(ursula.encryptingKey))
     }
@@ -1487,7 +1729,7 @@ const getBlockchainPolicy = async (
   console.log('before createChainPolicy')
   const policy: BlockchainPolicy = await createChainPolicy(alice, policyParameters, strategy)
   console.log('after createChainPolicy')
-  // "@nulink_network/nulink-ts": "^0.7.0",  must be this version
+  // "@nulink_network/nulink-ts-dev": "^0.7.0",  must be this version
 
   return {
     blockchainPolicy: policy,
@@ -1495,6 +1737,185 @@ const getBlockchainPolicy = async (
     policyParameters: policyParameters,
     alice: alice,
     ursulas: calcUrsula ? ursulas : [],
+    publisherAccount: publisher
+  }
+}
+
+/**
+ * @internal
+ */
+const getBlockchainPolicys = async (
+  publisher: Account,
+  userAccountIds: string[], // proposer account ids
+  applyIds: string[], // Application Record ids
+  ursulaShares: number[], //n   m of n => 3 of 5
+  ursulaThresholds: number[], // m
+  startDates: Date[],
+  endDates: Date[],
+  porterUri?: string,
+  calcUrsula = true
+): Promise<{
+  multiBlockchainPolicy: MultiBlockchainPolicy
+  strategys: Strategy[]
+  policyParameters: MultiBlockchainPolicyParameters
+  alice: Alice
+  ursulasArray: Array<Ursula[]>
+  publisherAccount: Account
+}> => {
+  //https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E6%89%B9%E5%87%86%E6%96%87%E4%BB%B6%E4%BD%BF%E7%94%A8%E7%94%B3%E8%AF%B7
+  //return {}
+
+  porterUri = porterUri || (await getPorterUrl())
+
+  const userInfos = (await getAccountInfos(userAccountIds)) as object[]
+
+  for (let index = 0; index < userInfos.length; index++) {
+    const userInfo = userInfos[index]
+    if (!userInfo || isBlank(userInfo)) {
+      throw new Error(
+        `Failed to retrieve account information from the database for account ID: ${userInfo['account_id']}`
+      )
+    }
+    // console.log("Bob account Info: ", userInfo);
+  }
+
+  const alice: Alice = await makeAlice(publisher, porterUri)
+
+  //1. get apply policy info
+  //return {start_at, end_at, policy_label, policy_label_id, file_owner_id,proposer_id,file_id}
+  const policyDatas = await getMultiApplyDetails(applyIds)
+  // assert(policyDatas && !isBlank(policyDatas));
+  if (!policyDatas || isBlank(policyDatas)) {
+    throw new Error(`Failed to retrieve policyData information from the database for apply ID: ${applyIds}`)
+  }
+
+  const maxShares: number = Math.max(...ursulaShares)
+
+  //get ursula start
+  let ursulas
+
+  if (calcUrsula) {
+    /*   try {
+    ursulas = await porter.getUrsulas(shares);
+  } catch (e) {
+    const info = e as Object;
+    if (Object.prototype.hasOwnProperty.call(info, "status") && info["status"].toString().startsWith("2")) {
+      //2xx
+      // console.log("businsesFlow getUrsulas info['data']", info);
+      ursulas = info["data"].result.ursulas;
+    } else {
+      throw e;
+    }
+  } */
+
+    let i = 0
+    while (i < 3) {
+      try {
+        ursulas = await getUrsulas(porterUri, maxShares)
+        break
+      } catch (error) {
+        //http request retry again
+        i++
+
+        console.error('getUrsulas: ', error)
+        if (i >= 3) {
+          console.error('Failed to retrieve Ursula information due to network issues; please try again', error)
+          throw new getUrsulaError('Failed to retrieve Ursula information due to network issues; please try again')
+        }
+
+        await sleep(1000)
+      }
+    }
+
+    // console.log("before ursulas:",ursulas);
+    try {
+      ursulas = ursulas.result.ursulas
+    } catch (error) {
+      ursulas = ursulas.data.result.ursulas
+    }
+
+    //Change the underline naming to small hump naming
+    ursulas = humps.camelizeKeys(ursulas)
+
+    // length 66 public string to PublicKey Object
+    //now @nulink_network/nulink-ts-dev@0.7.0 must be the version 0.7.0
+    for (const ursula of ursulas) {
+      ursula.encryptingKey = PublicKey.fromBytes(compressPublicKeyBuffer2(ursula.encryptingKey))
+    }
+
+    //get ursula end
+    // console.log("ursulas:",ursulas);
+  }
+
+  const bobs: RemoteBob[] = []
+  const labels: string[] = []
+  const strategys: Strategy[] = []
+  const ursulasArray: Array<Ursula[]> = []
+
+  //2. create policy to block chain
+  // const config = await getData();
+  // const porter = new Porter(porterUri);
+  for (let index = 0; index < policyDatas.length; index++) {
+    const policyData = policyDatas[index]
+    const label = policyData['policy_label']
+
+    const userInfo = userInfos[index]
+    // const startDate: Date = new Date();
+    // const startMs: number = Date.parse(startDate.toString());
+    // const endMs: number = startMs + (policyData["days"] as number) * 24 * 60 * 60 * 1000;
+    // const endDate: Date = new Date(endMs); //  start_at is seconds, but Date needs milliseconds
+
+    // Note Bob, Enrico's Encrypted PK SK is the same as Verify PK SK.  Alice verify PK can use encrypted PK.
+
+    const bob: RemoteBob = makeRemoteBob(userInfo['encrypted_pk'], userInfo['encrypted_pk']) //userInfo["verify_pk"]);
+
+    // console.log("Bob encrypted_pk: ", userInfo["encrypted_pk"]);
+    // console.log("Bob verify_pk: ", userInfo["verify_pk"]);
+
+    const strategy: Strategy | undefined = publisher.getAccountStrategyByStategyId(
+      policyData['policy_label_id'] as string
+    )
+    // console.log("ApprovalUseFiles strategy", strategy);
+    // assert(strategy !== undefined);
+    if (!strategy || isBlank(strategy)) {
+      //` get account strategy failed, label_id ${policyData["policy_label_id"]},\n When you Restore Account, You must Import account Vault data!!!`
+      throw new Error(
+        `The user's data version is outdated and cannot be imported. Please export the latest data to prevent data loss!`
+      )
+    }
+
+    // console.log("the account address is:", publisher.address);
+    // console.log("the account key is:", pwdDecrypt(publisher.encryptedKeyPair._privateKey, true));
+
+    const shares = ursulaShares[index]
+    const sharesUrsulas: Ursula[] = getRandomElementsFromArray(ursulas ?? [], shares)
+
+    strategys.push(strategy)
+    bobs.push(bob)
+    labels.push(label)
+    ursulasArray.push(sharesUrsulas)
+  }
+
+  const multiBlockchainPolicyParameters: MultiBlockchainPolicyParameters = {
+    bobs: bobs,
+    labels: labels,
+    thresholds: ursulaThresholds,
+    shares: ursulaShares,
+    startDates: startDates,
+    endDates: endDates
+  }
+
+  console.log(`getBlockchainPolicys before createMultiChainPolicy`)
+  const policy: MultiBlockchainPolicy = await createMultiChainPolicy(alice, multiBlockchainPolicyParameters, strategys)
+  console.log(`getBlockchainPolicys after createMultiChainPolicy`)
+  // "@nulink_network/nulink-ts-dev": "^0.7.0",  must be this version
+
+  return {
+    multiBlockchainPolicy: policy,
+    strategys: strategys,
+    policyParameters: multiBlockchainPolicyParameters,
+    alice: alice,
+    ursulasArray: ursulasArray,
     publisherAccount: publisher
   }
 }
@@ -1514,6 +1935,33 @@ export const checkFileApprovalStatusIsApprovedOrApproving = async (applyId: stri
   }
 
   return false
+}
+
+/**
+ * Check whether the status of multiple applications is "under review" or "approved".
+ * @param {string[]} applyIds - string[]| number[]
+ * @returns  Promise<string[]> -- return a list of applyIds that are not in the "pending approval" and "approved" statuses.
+ */
+export const checkMultiFileApprovalStatusIsApprovedOrApproving = async (
+  applyIds: string[] | number[]
+): Promise<string[]> => {
+  //Query whether the approval status is being approved or approving
+  const policyDatas = await getMultiApplyDetails(applyIds as string[])
+
+  if (!policyDatas || isBlank(policyDatas)) {
+    throw new Error(`Failed to retrieve policyData information from the database for apply ID: ${applyIds}`)
+  }
+
+  const approveApplyIds: string[] = []
+  for (let index = 0; index < policyDatas.length; index++) {
+    const policyData = policyDatas[index] as object
+    if (policyDatas && [2, 4].includes((policyData as any)?.status)) {
+      //2: approved , 4: approving
+      approveApplyIds.push(applyIds[index] as string)
+    }
+  }
+
+  return approveApplyIds
 }
 
 /**
@@ -1607,12 +2055,12 @@ export const approvalApplicationForUseFiles = async (
   )
 
   // eslint-disable-next-line no-extra-boolean-cast
-  console.log(!txHashOrEmpty ? `no need approve` : `txHash: ${txHashOrEmpty}`)
+  console.log(!txHashOrEmpty ? `no need approve nlk` : `txHash: ${txHashOrEmpty}`)
 
   //wei can use  BigNumber.from(), ether can use ethers.utils.parseEther(), because the BigNumber.from("1.2"), the number can't not be decimals (x.x)
   //await publisher.getNLKBalance() return ethers
   //Check whether the account balance is less than the policy creation cost
-  const nlkBalanceEthers: BigNumber = ethers.utils.parseEther(await publisher.getNLKBalance() as string)
+  const nlkBalanceEthers: BigNumber = ethers.utils.parseEther((await publisher.getNLKBalance()) as string)
   const costServerGasEther = Web3.utils.fromWei(costServerFeeWei.toString(), 'ether')
 
   console.log(`the account balance is: ${nlkBalanceEthers.toString()} ether nlk`)
@@ -1631,7 +2079,7 @@ export const approvalApplicationForUseFiles = async (
     )
   }
 
-  // "@nulink_network/nulink-ts": "^0.7.0",  must be this version
+  // "@nulink_network/nulink-ts-dev": "^0.7.0",  must be this version
   console.log('before policy enact')
   const waitReceipt = false
 
@@ -1639,15 +2087,22 @@ export const approvalApplicationForUseFiles = async (
   const gasPrice: BigNumber = BigNumber.from(await web3.eth.getGasPrice())
   const gesLimit: BigNumber = gasFeeInWei.div(gasPrice)
   const enPolicy: EnactedPolicy = await resultInfo.blockchainPolicy.enact(resultInfo.ursulas, waitReceipt, gesLimit)
-  console.log('end policy enact')
+  console.log('after policy enact')
   // // Persist side-channel
   // const aliceVerifyingKey: PublicKey = alice.verifyingKey;
   // const policyEncryptingKey: PublicKey = enPolicy.policyKey;
 
   const encryptedTreasureMap: EncryptedTreasureMap = enPolicy.encryptedTreasureMap
   const encryptedTreasureMapBytes: Uint8Array = encryptedTreasureMap.toBytes()
+
+  let encryptedTreasureMapIPFS: string = ''
   //3. upload encrypt files to IPFS
-  const encryptedTreasureMapIPFS = await setIPFSData(encryptedTreasureMapBytes)
+  if (ipfsSaveByBackend) {
+    //upload encrypt files to IPFS
+    encryptedTreasureMapIPFS = (await setIPFSBatchDataByBackend([encryptedTreasureMapBytes]))[0]
+  } else {
+    encryptedTreasureMapIPFS = await setIPFSData(encryptedTreasureMapBytes)
+  }
 
   //4. call center server to save policy info
   const hrac: HRAC = enPolicy.id
@@ -1668,6 +2123,186 @@ export const approvalApplicationForUseFiles = async (
   //V1->V2: The background approve logic changes to: store tx_hash to a table , and then execute approve operator after listening for an on-chain event
   const data = await serverPost('/apply/approve', sendData)
   return Object.assign({ txHash: enPolicy.txHash, from: publisher.address }, data || { info: 'succeed' })
+}
+
+/**
+ * Approval of applications for use of Files, This account acts as Publisher (Alice) grant. The batch version of the function refusalApplicationForUseFiles.
+ * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
+ * @category File Publisher(Alice) Interface
+ * @param {Account} publisher - Account the current account object
+ * @param {string[]} userAccountIds - string
+ * @param {string[]} applyIds - string
+ * @param {number[]} ursulaShares - number
+ * @param {number[]} ursulaThresholds - number
+ * @param {Date[]} startDates - policy usage start date
+ * @param {Date[]} endDates - policy usage end date
+ * @param {string} remark - (Optional)
+ * @param {string} porterUri - (Optional) the porter services url
+ * @returns {object} - {
+ *                       txHash: 'the transaction hash of the "approve" transaction',
+ *                       from: 'publisher.address'
+ *                     }
+ */
+export const approvalApplicationsForUseFiles = async (
+  publisher: Account,
+  userAccountIds: string[], // proposer account id
+  applyIds: string[], // Application Record ID
+  ursulaShares: number[], //n   m of n => 3 of 5
+  ursulaThresholds: number[], // m
+  startDates: Date[], //policy usage start date
+  endDates: Date[], //policy usage end date
+  remark = '', //remark
+  porterUri = '',
+  //To handle whole numbers, Wei can be converted using BigNumber.from(), and Ether can be converted using ethers.utils.parseEther(). It's important to note that BigNumber.from("1.2") cannot handle decimal numbers (x.x).
+  gasFeeInWei: BigNumber = BigNumber.from('-1') //must be the token of the chain (e.g. bnb), not be the nlk
+) => {
+  //https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E6%89%B9%E5%87%86%E6%96%87%E4%BB%B6%E4%BD%BF%E7%94%A8%E7%94%B3%E8%AF%B7
+  //return { txHash: enPolicy.txHash, from: publisher.address , data }
+
+  // console.log("the account address is:", publisher.address);
+  // console.log("the account key is:", pwdDecrypt(publisher.encryptedKeyPair._privateKey, true));
+
+  const approvingAndApprovedApplyIds: string[] = await checkMultiFileApprovalStatusIsApprovedOrApproving(applyIds)
+
+  if (approvingAndApprovedApplyIds.length > 0) {
+    throw new PolicyHasBeenActivedOnChain(`Policys ${approvingAndApprovedApplyIds} is currently active`)
+  }
+
+  const resultInfo = await getBlockchainPolicys(
+    publisher,
+    userAccountIds,
+    applyIds,
+    ursulaShares,
+    ursulaThresholds,
+    startDates, //policy usage start date
+    endDates, //policy usage start date
+    porterUri
+  )
+
+  //Ensure that the BNB balance is greater than the GAS fee balance
+  const balance: BigNumber = await getBalance(publisher.address)
+  const chainConfigInfo = await getSettingsData()
+
+  console.log(`the account token balance is: ${balance.toString()} wei ${chainConfigInfo.token_symbol}`)
+  console.log(`the create policy gas fee is: ${gasFeeInWei.toString()} wei ${chainConfigInfo.token_symbol}`)
+
+  if (!gasFeeInWei.eq(BigNumber.from('-1')) && balance.lt(gasFeeInWei)) {
+    const balanceValue = Web3.utils.fromWei(balance.toString(), 'ether')
+    const gasValue = Web3.utils.fromWei(gasFeeInWei.toString(), 'ether')
+    // Message.error(
+    //   `The account (${publisher.address}) balance of ${balanceValue} ether in [token] ${chainConfigInfo.token_symbol} is insufficient to publish a policy with a gas value of ${gasValue} ether`,
+    // );
+    console.log(
+      `The account (${publisher.address}) balance of ${balanceValue} ether in [token] ${chainConfigInfo.token_symbol} is insufficient to publish a policy with a gas value of ${gasValue} ether`
+    )
+    throw new InsufficientBalanceError(
+      `The account (${publisher.address}) balance of ${balanceValue} ether in [token] ${chainConfigInfo.token_symbol} is insufficient to publish a policy with a gas value of ${gasValue} ether`
+    )
+  }
+
+  //enPolicy service fee gas wei
+  const costServerFeeWei: BigNumber = await calcPolicysCost(
+    resultInfo.alice,
+    resultInfo.policyParameters.startDates,
+    resultInfo.policyParameters.endDates,
+    resultInfo.policyParameters.shares
+  )
+
+  const txHashOrEmpty: string = await approveNLK(
+    publisher,
+    BigNumber.from('10000000000000000000000000'),
+    costServerFeeWei,
+    false
+  )
+
+  // eslint-disable-next-line no-extra-boolean-cast
+  console.log(!txHashOrEmpty ? `no need approve nlk` : `txHash: ${txHashOrEmpty}`)
+
+  //wei can use  BigNumber.from(), ether can use ethers.utils.parseEther(), because the BigNumber.from("1.2"), the number can't not be decimals (x.x)
+  //await publisher.getNLKBalance() return ethers
+  //Check whether the account balance is less than the policy creation cost
+  const nlkBalanceEthers: BigNumber = ethers.utils.parseEther((await publisher.getNLKBalance()) as string)
+  const costServerGasEther = Web3.utils.fromWei(costServerFeeWei.toString(), 'ether')
+
+  console.log(`the account balance is: ${nlkBalanceEthers.toString()} ether nlk`)
+  console.log(`the create policy server fee is: ${costServerGasEther.toString()} ether nlk`)
+
+  //Don't forget the mint fee (service charge), so use the method lte, not le
+  if (nlkBalanceEthers.lt(costServerFeeWei)) {
+    // Message.error(
+    //   `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerGasEther} ether`,
+    // );
+    console.log(
+      `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerGasEther} ether`
+    )
+    throw new InsufficientBalanceError(
+      `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerGasEther} ether`
+    )
+  }
+
+  // "@nulink_network/nulink-ts-dev": "^0.7.0",  must be this version
+  console.log('before multi policy enact')
+  const waitReceipt = false
+
+  const web3: Web3 = await getWeb3()
+  const gasPrice: BigNumber = BigNumber.from(await web3.eth.getGasPrice())
+  const gesLimit: BigNumber = gasFeeInWei.div(gasPrice)
+
+  //MultiPreEnactedPolicy
+  const enMultiPolicy: MultiEnactedPolicy = await resultInfo.multiBlockchainPolicy.enact(
+    resultInfo.ursulasArray,
+    waitReceipt,
+    gesLimit
+  )
+  console.log('after mulit policy enact')
+  // // Persist side-channel
+  // const aliceVerifyingKey: PublicKey = alice.verifyingKey;
+  // const policyEncryptingKey: PublicKey = enPolicy.policyKey;
+
+  const encryptedTreasureMapBytesArray: Uint8Array[] = enMultiPolicy.encryptedTreasureMaps.map((encryptedTreasureMap) =>
+    encryptedTreasureMap.toBytes()
+  )
+
+  const encryptedTreasureMapIPFSs: string[] = []
+
+  //3. upload multiple encrypt files to IPFS
+  if (ipfsSaveByBackend) {
+    //upload encrypt files to IPFS
+    const cids: string[] = await setIPFSBatchDataByBackend(encryptedTreasureMapBytesArray) /*Uint8Array*/
+    encryptedTreasureMapIPFSs.push(...cids)
+  } else {
+    for (let index = 0; index < encryptedTreasureMapBytesArray.length; index++) {
+      const encryptedTreasureMapBytes: Uint8Array = encryptedTreasureMapBytesArray[index]
+      const encryptedTreasureMapIPFS = await setIPFSData(encryptedTreasureMapBytes)
+      encryptedTreasureMapIPFSs.push(encryptedTreasureMapIPFS)
+    }
+  }
+
+  //4. call center server to save policy info
+  const policy_list: object[] = []
+  const hracs: HRAC[] = enMultiPolicy.ids
+
+  for (let index = 0; index < hracs.length; index++) {
+    const hrac: HRAC = hracs[index]
+    policy_list.push({
+      hrac: fromBytesByEncoding(hrac.toBytes(), 'binary'), //.toString(),
+      gas: costServerFeeWei.toString(),
+      tx_hash: enMultiPolicy.txHash,
+      encrypted_address: encryptedTreasureMapIPFSs[index],
+      encrypted_pk: resultInfo.strategys[index].strategyKeyPair._publicKey //policy_encrypted_pk
+    })
+  }
+
+  const sendData: any = {
+    account_id: publisher.id,
+    apply_ids: applyIds.map((applyId) => Number(applyId)),
+    remark: remark,
+    policy_list: policy_list
+  }
+  sendData['signature'] = await signUpdateServerDataMessage(publisher, sendData)
+  //V1->V2: The background approve logic changes to: store tx_hash to a table , and then execute approve operator after listening for an on-chain event
+  const data = await serverPost('/apply/batch-approve', sendData)
+  return Object.assign({ txHash: enMultiPolicy.txHash, from: publisher.address }, data || { info: 'succeed' })
 }
 
 /**
@@ -1692,6 +2327,32 @@ export const refusalApplicationForUseFiles = async (
 
   sendData['signature'] = await signUpdateServerDataMessage(publisher, sendData)
   const data = await serverPost('/apply/reject', sendData)
+  return data
+}
+
+//TODO: 修改为批量版本
+/**
+ * Rejects the applications for the use of files. This account acts as the publisher (Alice). The batch version of the function refusalApplicationForUseFiles.
+ * @category File Publisher(Alice) Interface
+ * @param {Account} publisher - The account of the publisher (Alice).
+ * @param {string[]} applyIds - The application apply ID to reject.
+ * @param {string} remark - (Optional) Additional remarks for the rejection. Default is an empty string.
+ * @returns {Promise<void>}
+ */
+export const refusalApplicationsForUseFiles = async (
+  publisher: Account,
+  applyIds: string[], // Application Record ID
+  remark = '' //remark
+) => {
+  //https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E6%8B%92%E7%BB%9D%E6%96%87%E4%BB%B6%E4%BD%BF%E7%94%A8%E7%94%B3%E8%AF%B7
+  const sendData: any = {
+    account_id: publisher.id,
+    apply_ids: applyIds.map((applyId) => Number(applyId)),
+    remark: remark
+  }
+
+  sendData['signature'] = await signUpdateServerDataMessage(publisher, sendData)
+  const data = await serverPost('/apply/batch-reject', sendData)
   return data
 }
 
@@ -1767,10 +2428,10 @@ export const getFilesByPolicyId = async (
 export const revokePublishedPolicies = async (publisher: Account, userAccountId: string, policyId: string) => {
   //https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E6%92%A4%E9%94%80%E7%AD%96%E7%95%A5
 
-  //TODO: Not currently supported
+  //TODO: Current version not supported
 
   //TODO: 1. revoke the contract on blockchain
-  throw new Error('Not currently supported')
+  throw new Error(' Current version not supported')
 
   //2. center server revoke the policy info etc.
   const sendData: any = {
@@ -1953,6 +2614,55 @@ export const getApplyDetails = async (applyId: string) => {
     }
 
     console.error(`getApplyDetails error apply id ${applyId}`, error?.data?.msg || error?.message || error)
+    throw error
+  }
+}
+
+/**
+ * Gets the details of multiple application records.
+ * @param {string []} applyId - The ID of the application record.
+ * @returns {Promise<object[]>} - Returns an array object containing the multiple details of the application record, or null if the record does not exist.
+ *              {
+ *                start_at:  "The start timestamp of the application",
+ *                end_at: "The end timestamp of the application",
+ *                policy_label: "The label of the policy",
+ *                policy_label_id: "The ID of the policy label",
+ *                days: "days",
+ *                status: "apply status: 1 - In progress, 2 - Approved, 3 - Rejected, 4 - Under review, 5 - Expired"
+ *              }
+ */
+export const getMultiApplyDetails = async (applyIds: string[]): Promise<object[] | null> => {
+  //https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E7%94%B3%E8%AF%B7%E8%AF%A6%E6%83%85
+
+  const sendData = {
+    apply_ids: applyIds.map((applyId) => Number(applyId))
+  }
+
+  try {
+    const data = (await serverPost('/apply/batch-detail', sendData)) as object
+
+    const dataDict: object = data['list']
+    if (isBlank(dataDict)) {
+      return []
+    }
+    const retList: object[] = []
+    for (let index = 0; index < applyIds.length; index++) {
+      const applyId: string = applyIds[index]
+      if (applyId in dataDict) {
+        retList.push(dataDict[applyId])
+      } else {
+        retList.push({})
+      }
+    }
+
+    return retList
+  } catch (error: any) {
+    if (error?.data?.code === 4006) {
+      //"apply does not exist"
+      return null
+    }
+
+    console.error(`getMultiApplyDetails error apply ids: ${applyIds}`, error?.data?.msg || error?.message || error)
     throw error
   }
 }

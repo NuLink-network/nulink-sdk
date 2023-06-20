@@ -4,9 +4,11 @@ import { privateKeyBuffer } from "../../hdwallet/api/common";
 import {
   Alice,
   BlockchainPolicyParameters,
+  MultiBlockchainPolicyParameters,
   EnactedPolicy,
+  MultiEnactedPolicy,
   RemoteBob,
-} from "@nulink_network/nulink-ts";
+} from "@nulink_network/nulink-ts-dev";
 
 //reference: https://github.com/nucypher/nucypher-ts-demo/blob/main/src/characters.ts
 // notice: bacause the Alice import from nucypher-ts, so you  must be use the nucypher-ts's SecretKey PublicKey , not use the nucypher-core's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
@@ -14,7 +16,7 @@ import {
   PublicKey as NucypherTsPublicKey,
   SecretKey as NucypherTsSecretKey,
   Signer as NucypherTsSigner,
-} from "@nulink_network/nulink-ts";
+} from "@nulink_network/nulink-ts-dev";
 
 // notice: bacause the generateKFrags import from nucypher-core, so you  must be use the nucypher-core's SecretKey PublicKey , not use the nucypher-ts's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
 import * as NucypherCore from "@nucypher/nucypher-core";
@@ -37,20 +39,22 @@ import { getWeb3Provider } from "../../chainnet/api/web3Provider";
 import {
   GetUrsulasResponse,
   Ursula,
-} from "@nulink_network/nulink-ts/build/main/src/characters/porter";
-import { PreEnactedPolicy } from "@nulink_network/nulink-ts/build/main/src/policies/policy";
-import { RevocationKit } from "@nulink_network/nulink-ts/build/main/src/kits/revocation";
+} from "@nulink_network/nulink-ts-dev/build/main/src/characters/porter";
+import { PreEnactedPolicy } from "@nulink_network/nulink-ts-dev/build/main/src/policies/policy";
+import { MultiPreEnactedPolicy } from "@nulink_network/nulink-ts-dev/build/main/src/policies/multi.policy";
+
+import { RevocationKit } from "@nulink_network/nulink-ts-dev/build/main/src/kits/revocation";
 import { getWeb3, toCanonicalAddress } from "../../hdwallet/api";
 import {
   toBytes,
   zip,
   toEpoch,
-} from "@nulink_network/nulink-ts/build/main/src/utils";
-import { SubscriptionManagerAgent } from "@nulink_network/nulink-ts/build/main/src/agents/subscription-manager";
+} from "@nulink_network/nulink-ts-dev/build/main/src/utils";
+import { SubscriptionManagerAgent } from "@nulink_network/nulink-ts-dev/build/main/src/agents/subscription-manager";
 import Web3 from "web3";
 import { getCurrentNetworkKey, getSettingsData } from "../../chainnet";
 import { BigNumber } from "ethers";
-import { ChecksumAddress } from "@nulink_network/nulink-ts/build/main/src/types";
+import { ChecksumAddress } from "@nulink_network/nulink-ts-dev/build/main/src/types";
 import qs from "qs";
 import axiosRetry from "axios-retry";
 import axios, { AxiosRequestConfig } from "axios";
@@ -119,7 +123,7 @@ export const createChainPolicy = async (
 ): Promise<BlockchainPolicy> => {
   const { bob, label, threshold, shares, startDate, endDate } =
     await validatePolicyParameters(alice, rawParameters);
-  const { delegatingKey, verifiedKFrags } = alicegGenerateKFrags(
+  const { delegatingKey, verifiedKFrags } = aliceGenerateKFrags(
     alice,
     bob,
     strategy,
@@ -139,6 +143,56 @@ export const createChainPolicy = async (
   );
 };
 
+//Create multiple on-chain policys
+export const createMultiChainPolicy = async (
+  alice: Alice,
+  rawParameters: MultiBlockchainPolicyParameters,
+  strategys: Strategy []
+): Promise<MultiBlockchainPolicy> => {
+  const multiBlockchainPolicyParameters  =
+  await validateMultiPolicyParameters(alice, rawParameters);
+
+  const delegatingKeys: NucypherTsPublicKey [] = [];
+  const verifiedKFragsArray: Array<VerifiedKeyFrag[]> = [];
+  for (let index = 0; index < multiBlockchainPolicyParameters.bobs.length; index++) {
+    const bob = multiBlockchainPolicyParameters.bobs[index];
+    const threshold = multiBlockchainPolicyParameters.thresholds[index];
+    const shares = multiBlockchainPolicyParameters.shares[index];
+    const strategy = strategys[index];
+    //delegatingKey: policy public key
+    const { delegatingKey, verifiedKFrags } = aliceGenerateKFrags(
+      alice,
+      bob,
+      strategy,
+      threshold,
+      shares
+    );
+
+    delegatingKeys.push(delegatingKey);
+    verifiedKFragsArray.push(verifiedKFrags);
+  }
+
+
+  const bobs = multiBlockchainPolicyParameters.bobs;
+  const labels = multiBlockchainPolicyParameters.labels;
+  const thresholds = multiBlockchainPolicyParameters.thresholds;
+  const shares = multiBlockchainPolicyParameters.shares;
+  const startDates = multiBlockchainPolicyParameters.startDates;
+  const endDates = multiBlockchainPolicyParameters.endDates;
+  
+  return new MultiBlockchainPolicy(
+    alice,
+    labels,
+    bobs,
+    verifiedKFragsArray,
+    delegatingKeys,
+    thresholds,
+    shares,
+    startDates,
+    endDates
+  );
+};
+
 export class BlockchainPolicy {
   public readonly hrac: HRAC;
 
@@ -147,7 +201,7 @@ export class BlockchainPolicy {
     private readonly label: string,
     private bob: RemoteBob,
     private verifiedKFrags: VerifiedKeyFrag[],
-    private delegatingKey: NucypherTsPublicKey,
+    private delegatingKey: NucypherTsPublicKey, //policy public key
     private readonly threshold: number,
     private readonly shares: number,
     private readonly startDate: Date,
@@ -212,7 +266,7 @@ export class BlockchainPolicy {
       return gasFeeInWei;
     } catch (error: any) {
       const error_info: string = error?.message || error;
-      if (error_info?.toLowerCase()?.includes("policy is currently active")) {
+      if (typeof error_info === 'string' && error_info?.toLowerCase()?.includes("policy is currently active")) {
         //The policy has been created successfully, and there is no need to created again
         throw new PolicyHasBeenActivedOnChain("Policy is currently active");
       } else {
@@ -258,7 +312,7 @@ export class BlockchainPolicy {
     return new PreEnactedPolicy(
       this.hrac,
       this.label,
-      this.delegatingKey,
+      this.delegatingKey, //policy public key
       encryptedTreasureMap,
       revocationKit,
       this.publisher.verifyingKey.toBytes(),
@@ -342,7 +396,7 @@ export class BlockchainPolicy {
   }
 }
 
-const alicegGenerateKFrags = (
+const aliceGenerateKFrags = (
   alice: Alice,
   bob: RemoteBob,
   strategy: Strategy,
@@ -456,6 +510,176 @@ const keyringGenerateKFrags = (
     verifiedKFrags,
   };
 };
+
+export class MultiBlockchainPolicy {
+  public readonly hracs: HRAC [];
+
+  constructor(
+    private readonly publisher: Alice,
+    private readonly labels: string [],
+    private bobs: RemoteBob [],
+    private verifiedKFragsArray: Array<VerifiedKeyFrag[]>, //multi `kfrags`    const arrayPush: Array<number[]> = [[1,2], [2, 3, 4]];
+    private delegatingKeys: NucypherTsPublicKey [], //policy public key
+    private readonly thresholds: number [],
+    private readonly shares: number [],
+    private readonly startDates: Date [],
+    private readonly endDates: Date []
+  ) {
+
+    this.hracs = [];
+    for (let index = 0; index < labels.length; index++) {
+      const label = labels[index];
+      const bob = this.bobs[index];
+      this.hracs.push(new HRAC(
+        this.publisher.verifyingKey,
+        bob.verifyingKey,
+        toBytes(label)
+      ));
+    }
+
+  }
+
+  public async enact(
+    ursulasArray: Array<Ursula[]>, // multi `Ursula[]`,  The order must correspond to the order of the labels array.
+    waitReceipt = true,
+    gasUsedAmount?: BigNumber
+  ): Promise<MultiEnactedPolicy> {
+    const preEnacted: MultiPreEnactedPolicy = await this.generatePreEnactedPolicy(ursulasArray);
+    return await preEnacted.enact(this.publisher, waitReceipt, gasUsedAmount);
+  }
+
+  public async estimateCreatePolicyGas(
+    publisher: Alice
+  ): Promise<BigNumber> {
+    
+    const startTimestamps = this.startDates.map((startDate) => toEpoch(startDate));
+    const endTimestamps = this.endDates.map((endDate) => toEpoch(endDate));
+    const ownerAddress = await publisher.web3Provider.getAddress();
+/*     const value = await SubscriptionManagerAgent.getPolicyCost(
+      publisher.web3Provider.provider,
+      this.shares,
+      startTimestamp,
+      endTimestamp
+    ); */
+    const estimatedGas =
+      await SubscriptionManagerAgent.estimateGasByCreatePolicys(
+        publisher.web3Provider,
+        /* value */BigNumber.from("0"),
+        this.hracs.map((hrac) => hrac.toBytes()),
+        this.shares,
+        startTimestamps,
+        endTimestamps,
+        ownerAddress
+      );
+    return estimatedGas;
+  }
+
+  public async generatePreEnactedPolicy(
+    ursulasArray: Array<Ursula[]>, // multi `Ursula[]`,  The order must correspond to the order of the labels array.
+  ): Promise<MultiPreEnactedPolicy> {
+
+    const encryptedTreasureMaps: EncryptedTreasureMap [] = [];
+    const revocationKits: RevocationKit [] = [];
+    for (let index = 0; index < this.bobs.length; index++) {
+      const ursulas = ursulasArray[index];
+      const treasureMap = this.makeTreasureMap(ursulas, this.verifiedKFragsArray[index], index);
+      const encryptedTreasureMap = this.encryptTreasureMap(treasureMap,index);
+      const revocationKit = new RevocationKit(treasureMap, this.publisher.signer);
+      encryptedTreasureMaps.push(encryptedTreasureMap);
+      revocationKits.push(revocationKit);
+    }
+
+    return new MultiPreEnactedPolicy(
+      this.hracs,
+      this.labels,
+      this.delegatingKeys,
+      encryptedTreasureMaps,
+      revocationKits,
+      this.publisher.verifyingKey.toBytes(),
+      this.shares,
+      this.startDates,
+      this.endDates
+    );
+  }
+
+  private makeTreasureMap(
+    ursulas: Ursula[],
+    verifiedKFrags: VerifiedKeyFrag[],
+    index: number
+  ): TreasureMap {
+    const builder = new TreasureMapBuilder(
+      this.publisher.signer,
+      this.hracs[index],
+      this.delegatingKeys[index],
+      this.thresholds[index]
+    );
+    zip(ursulas, verifiedKFrags).forEach(([ursula, kFrag]) => {
+      const ursulaAddress = toCanonicalAddress(ursula.checksumAddress);
+      builder.addKfrag(ursulaAddress, ursula.encryptingKey, kFrag);
+    });
+    return builder.build();
+  }
+
+  private encryptTreasureMap(treasureMap: TreasureMap, index: number): EncryptedTreasureMap {
+    return treasureMap.encrypt(this.publisher.signer, this.bobs[index].decryptingKey);
+  }
+}
+
+
+const validateMultiPolicyParameters = async (
+  alice: Alice,
+  rawParams: MultiBlockchainPolicyParameters
+): Promise<MultiBlockchainPolicyParameters> => {
+
+  const blockNumber = await alice.web3Provider.provider.getBlockNumber();
+  const block = await alice.web3Provider.provider.getBlock(blockNumber);
+  const blockTime = new Date(block.timestamp * 1000);
+
+  const multiBlockchainPolicyParameters: MultiBlockchainPolicyParameters = {
+    bobs: rawParams.bobs,
+    labels: rawParams.labels,
+    thresholds: rawParams.thresholds,
+    shares: rawParams.shares,
+    startDates: rawParams.startDates,
+    endDates: rawParams.endDates,
+  };  
+
+  for (let index = 0; index < rawParams.startDates.length; index++) {
+
+    const startDate = rawParams.startDates[index] ?? new Date();
+    const endDate = rawParams.endDates[index];
+    const threshold = rawParams.thresholds[index];
+    const shares = rawParams.shares[index];
+
+    // Validate raw parameters
+    if (threshold > shares) {
+      throw new Error(
+        `Threshold must not exceed the number of shares: ${threshold} > ${shares}`
+      );
+    }
+
+    if (endDate < new Date(Date.now())) {
+      throw new Error(`The end date must be set to a future date: ${endDate}).`);
+    }
+
+    if (startDate > endDate) {
+      throw new Error(
+        `Start date must occur before the end date: ${startDate} > ${endDate}).`
+      );
+    }
+
+    
+    if (endDate < blockTime) {
+      throw new Error(
+        `The end date must be set to a future date, ${endDate} is earlier than block time ${blockTime}).`
+      );
+    }
+    multiBlockchainPolicyParameters.startDates[index] = startDate;
+  }
+
+  return multiBlockchainPolicyParameters;
+};
+
 
 export const getBalance = async (
   accountAddress: string

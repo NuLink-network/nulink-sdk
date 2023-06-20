@@ -2415,17 +2415,17 @@
     read-package-json-fast "^3.0.0"
     which "^3.0.0"
 
-"@nucypher/nucypher-core@0.2.0", "@nucypher/nucypher-core@^0.2.0":
+"@nucypher/nucypher-core@0.2.0":
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/@nucypher/nucypher-core/-/nucypher-core-0.2.0.tgz#23d24868998ab0e58eaec919f2c1673cff566172"
   integrity sha512-vSSMbe4ad/Bkq5fdehSiMcflvHqLjfcCqAym+GWSiOvs/LJh4nB8Zo2/bJoMES1M1xoCjAZv4NZpPMlZiAXgzQ==
 
-"@nulink_network/nulink-ts@^0.1.13":
-  version "0.1.13"
-  resolved "https://registry.yarnpkg.com/@nulink_network/nulink-ts/-/nulink-ts-0.1.13.tgz#6d591d42a2cbce9d05c28f41dd06e12863ae8671"
-  integrity sha512-jk57htiigteCFKdpPSb0X/KnJ+kBJQZIXfMfJnFwBi6vRYugV0ZzqsS/ThxgaIMq6EDRsSfkv/Fev0KXElIsIg==
+"@nulink_network/nulink-ts-dev@^0.1.14":
+  version "0.1.14"
+  resolved "https://registry.yarnpkg.com/@nulink_network/nulink-ts-dev/-/nulink-ts-dev-0.1.14.tgz#d05b5cdfb51430856315ae6c9cab63c1b238e6fd"
+  integrity sha512-MbtipONUD65OuWX/kIHz1aa0L5Cz1crftHLP09b9WBHd/lgR7eHo0d0JTrZGj5Gtt1sdtvjYNbiMwGLgw3lHjA==
   dependencies:
-    "@nucypher/nucypher-core" "^0.2.0"
+    "@nucypher/nucypher-core" "0.2.0"
     axios "^0.21.1"
     ethers "^5.7.1"
     js-sha3 "^0.8.0"
