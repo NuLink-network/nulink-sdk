@@ -16,13 +16,13 @@ import {
   MultiEnactedPolicy,
   MessageKit,
   RemoteBob
-} from '@nulink_network/nulink-ts-dev'
+} from '@nulink_network/nulink-ts'
 
 import { EncryptedTreasureMap, HRAC } from '@nucypher/nucypher-core'
 
 //reference: https://github.com/nucypher/nucypher-ts-demo/blob/main/src/characters.ts
 // notice: bacause the encryptedMessage.decrypt( get by MessageKit) use the SecretKey import from nucypher-ts, so you  must be use the nucypher-ts's SecretKey PublicKey , not use the nucypher-core's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
-import { PublicKey, SecretKey as NucypherTsSecretKey } from '@nulink_network/nulink-ts-dev'
+import { PublicKey, SecretKey as NucypherTsSecretKey } from '@nulink_network/nulink-ts'
 
 import { encryptMessage } from './enrico'
 import { isBlank } from '../../utils/null'
@@ -32,7 +32,7 @@ import { getSettingsData } from '../../chainnet'
 import { serverGet, serverPost } from '../../servernet'
 import { nanoid } from 'nanoid'
 import { Bob, makeBob, makeRemoteBob } from './bob'
-import { Porter, Ursula } from '@nulink_network/nulink-ts-dev/build/main/src/characters/porter'
+import { Porter, Ursula } from '@nulink_network/nulink-ts/build/main/src/characters/porter'
 import {
   BlockchainPolicy,
   MultiBlockchainPolicy,
@@ -47,7 +47,7 @@ import {
 
 import { BigNumber } from 'ethers'
 import { ethers } from 'ethers'
-import { SubscriptionManagerAgent } from '@nulink_network/nulink-ts-dev/build/main/src/agents/subscription-manager'
+import { SubscriptionManagerAgent } from '@nulink_network/nulink-ts/build/main/src/agents/subscription-manager'
 import { toEpoch } from '../../utils/format'
 import { compressPublicKeyBuffer, compressPublicKeyBuffer2, privateKeyBuffer } from '../../hdwallet/api/common'
 import { getPorterUrl } from './porter'
@@ -1702,7 +1702,7 @@ const getBlockchainPolicy = async (
     ursulas = humps.camelizeKeys(ursulas)
 
     // length 66 public string to PublicKey Object
-    //now @nulink_network/nulink-ts-dev@0.7.0 must be the version 0.7.0
+    //now @nulink_network/nulink-ts@0.7.0 must be the version 0.7.0
     for (const ursula of ursulas) {
       ursula.encryptingKey = PublicKey.fromBytes(compressPublicKeyBuffer2(ursula.encryptingKey))
     }
@@ -1729,7 +1729,7 @@ const getBlockchainPolicy = async (
   console.log('before createChainPolicy')
   const policy: BlockchainPolicy = await createChainPolicy(alice, policyParameters, strategy)
   console.log('after createChainPolicy')
-  // "@nulink_network/nulink-ts-dev": "^0.7.0",  must be this version
+  // "@nulink_network/nulink-ts": "^0.7.0",  must be this version
 
   return {
     blockchainPolicy: policy,
@@ -1838,7 +1838,7 @@ const getBlockchainPolicys = async (
     ursulas = humps.camelizeKeys(ursulas)
 
     // length 66 public string to PublicKey Object
-    //now @nulink_network/nulink-ts-dev@0.7.0 must be the version 0.7.0
+    //now @nulink_network/nulink-ts@0.7.0 must be the version 0.7.0
     for (const ursula of ursulas) {
       ursula.encryptingKey = PublicKey.fromBytes(compressPublicKeyBuffer2(ursula.encryptingKey))
     }
@@ -1908,7 +1908,7 @@ const getBlockchainPolicys = async (
   console.log(`getBlockchainPolicys before createMultiChainPolicy`)
   const policy: MultiBlockchainPolicy = await createMultiChainPolicy(alice, multiBlockchainPolicyParameters, strategys)
   console.log(`getBlockchainPolicys after createMultiChainPolicy`)
-  // "@nulink_network/nulink-ts-dev": "^0.7.0",  must be this version
+  // "@nulink_network/nulink-ts": "^0.7.0",  must be this version
 
   return {
     multiBlockchainPolicy: policy,
@@ -2079,7 +2079,7 @@ export const approvalApplicationForUseFiles = async (
     )
   }
 
-  // "@nulink_network/nulink-ts-dev": "^0.7.0",  must be this version
+  // "@nulink_network/nulink-ts": "^0.7.0",  must be this version
   console.log('before policy enact')
   const waitReceipt = false
 
@@ -2240,7 +2240,7 @@ export const approvalApplicationsForUseFiles = async (
     )
   }
 
-  // "@nulink_network/nulink-ts-dev": "^0.7.0",  must be this version
+  // "@nulink_network/nulink-ts": "^0.7.0",  must be this version
   console.log('before multi policy enact')
   const waitReceipt = false
 

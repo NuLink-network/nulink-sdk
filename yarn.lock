@@ -2420,10 +2420,10 @@
   resolved "https://registry.yarnpkg.com/@nucypher/nucypher-core/-/nucypher-core-0.2.0.tgz#23d24868998ab0e58eaec919f2c1673cff566172"
   integrity sha512-vSSMbe4ad/Bkq5fdehSiMcflvHqLjfcCqAym+GWSiOvs/LJh4nB8Zo2/bJoMES1M1xoCjAZv4NZpPMlZiAXgzQ==
 
-"@nulink_network/nulink-ts-dev@^0.1.14":
-  version "0.1.14"
-  resolved "https://registry.yarnpkg.com/@nulink_network/nulink-ts-dev/-/nulink-ts-dev-0.1.14.tgz#d05b5cdfb51430856315ae6c9cab63c1b238e6fd"
-  integrity sha512-MbtipONUD65OuWX/kIHz1aa0L5Cz1crftHLP09b9WBHd/lgR7eHo0d0JTrZGj5Gtt1sdtvjYNbiMwGLgw3lHjA==
+"@nulink_network/nulink-ts@^0.1.15":
+  version "0.1.15"
+  resolved "https://registry.yarnpkg.com/@nulink_network/nulink-ts/-/nulink-ts-0.1.15.tgz#059247784c37148c7d08854e9699ee919a4e850f"
+  integrity sha512-bFt4MHAOplcdXhz+WATfZyxI8G+W9gSzyenQmVsJZAtKNySp0NJQGvO9bpl0CgAU03gO8VkupWpFNXmgibDyQA==
   dependencies:
     "@nucypher/nucypher-core" "0.2.0"
     axios "^0.21.1"
@@ -11615,7 +11615,14 @@ qs@6.11.0:
   dependencies:
     side-channel "^1.0.4"
 
-qs@^6.10.1, qs@^6.11.1:
+qs@^6.10.1:
+  version "6.11.2"
+  resolved "https://registry.yarnpkg.com/qs/-/qs-6.11.2.tgz#64bea51f12c1f5da1bc01496f48ffcff7c69d7d9"
+  integrity sha512-tDNIz22aBzCDxLtVH++VnTfzxlfeK5CbqohpSqpJgj1Wg/cQbStNAz3NuqCs5vV+pjBsK4x4pN9HlVh7rcYRiA==
+  dependencies:
+    side-channel "^1.0.4"
+
+qs@^6.11.1:
   version "6.11.1"
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.11.1.tgz#6c29dff97f0c0060765911ba65cbc9764186109f"
   integrity sha512-0wsrzgTz/kAVIeuxSjnpGC56rzYtr6JT/2BwEvMaPhFIoYa1aGO8LbzuU1R0uUYQkLpWBTOj0l/CLAJB64J6nQ==
