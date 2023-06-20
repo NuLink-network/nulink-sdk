@@ -47,7 +47,9 @@ import {
 
 import { BigNumber } from 'ethers'
 import { ethers } from 'ethers'
-import { SubscriptionManagerAgent } from '@nulink_network/nulink-ts/build/main/src/agents/subscription-manager'
+// import { SubscriptionManagerAgent } from '@nulink_network/nulink-ts/build/main/src/agents/subscription-manager'
+import { SubscriptionManagerAgent } from '@nulink_network/nulink-ts'
+
 import { toEpoch } from '../../utils/format'
 import { compressPublicKeyBuffer, compressPublicKeyBuffer2, privateKeyBuffer } from '../../hdwallet/api/common'
 import { getPorterUrl } from './porter'
@@ -65,12 +67,12 @@ import { getUrsulaError, InsufficientBalanceError, PolicyHasBeenActivedOnChain }
 import { getWeb3 } from '../../hdwallet/api'
 import { getRandomElementsFromArray } from '../../../core/utils'
 
-// let ipfsSaveByBackend: boolean = true
-// try {
-//   // access strategy for IPFS data:  1. Access IPFS data through proxy of backend service (with added verification logic). 2. Directly access IPFS  network node
-//   ipfsSaveByBackend = ((process.env.REACT_APP_IPFS_STORAGE_STRATEGY as string) || '1').trim() === '1'
-// } catch (error) {}
-const ipfsSaveByBackend = false;
+let ipfsSaveByBackend: boolean = true
+try {
+  // access strategy for IPFS data:  1. Access IPFS data through proxy of backend service (with added verification logic). 2. Directly access IPFS  network node
+  ipfsSaveByBackend = ((process.env.REACT_APP_IPFS_STORAGE_STRATEGY as string) || '1').trim() === '1'
+} catch (error) {}
+// const ipfsSaveByBackend = false;
 /**
  * @internal
  */
@@ -344,8 +346,11 @@ export const uploadFilesByCreatePolicy = async (
 
   if (ipfsSaveByBackend) {
     //upload encrypt files to IPFS
+
     const cids: string[] = await setIPFSBatchDataByBackend(
-      _encryptMessages.map((encryptMessage) => encryptMessage.toBytes()) /*Uint8Array*/
+      _encryptMessages.map(
+        (encryptMessage) => new Blob([encryptMessage.toBytes() /*Uint8Array*/], { type: 'application/octet-stream' })
+      )
     )
     mockIPFSAddressList.push(...cids)
   } else {
@@ -373,7 +378,9 @@ export const uploadFilesByCreatePolicy = async (
         const { buffer: thumbnailBuffer, mimeType }: ThumbailResult = result as ThumbailResult
         let cid: string = ''
         if (ipfsSaveByBackend) {
-          cid = (await setIPFSBatchDataByBackend([thumbnailBuffer.buffer]))[0]
+          cid = (
+            await setIPFSBatchDataByBackend([new Blob([thumbnailBuffer.buffer], { type: 'application/octet-stream' })])
+          )[0]
         } else {
           cid = await setIPFSData(thumbnailBuffer.buffer)
         }
@@ -473,7 +480,9 @@ export const uploadFilesBySelectPolicy = async (
   if (ipfsSaveByBackend) {
     //upload encrypt files to IPFS
     const cids: string[] = await setIPFSBatchDataByBackend(
-      _encryptMessages.map((encryptMessage) => encryptMessage.toBytes()) /*Uint8Array*/
+      _encryptMessages.map(
+        (encryptMessage) => new Blob([encryptMessage.toBytes() /*Uint8Array*/], { type: 'application/octet-stream' })
+      )
     )
     mockIPFSAddressList.push(...cids)
   } else {
@@ -501,7 +510,9 @@ export const uploadFilesBySelectPolicy = async (
         const { buffer: thumbnailBuffer, mimeType }: ThumbailResult = result as ThumbailResult
         let cid: string = ''
         if (ipfsSaveByBackend) {
-          cid = (await setIPFSBatchDataByBackend([thumbnailBuffer.buffer]))[0]
+          cid = (
+            await setIPFSBatchDataByBackend([new Blob([thumbnailBuffer.buffer], { type: 'application/octet-stream' })])
+          )[0]
         } else {
           cid = await setIPFSData(thumbnailBuffer.buffer)
         }
@@ -2099,7 +2110,9 @@ export const approvalApplicationForUseFiles = async (
   //3. upload encrypt files to IPFS
   if (ipfsSaveByBackend) {
     //upload encrypt files to IPFS
-    encryptedTreasureMapIPFS = (await setIPFSBatchDataByBackend([encryptedTreasureMapBytes]))[0]
+    encryptedTreasureMapIPFS = (
+      await setIPFSBatchDataByBackend([new Blob([encryptedTreasureMapBytes], { type: 'application/octet-stream' })])
+    )[0]
   } else {
     encryptedTreasureMapIPFS = await setIPFSData(encryptedTreasureMapBytes)
   }
@@ -2268,7 +2281,11 @@ export const approvalApplicationsForUseFiles = async (
   //3. upload multiple encrypt files to IPFS
   if (ipfsSaveByBackend) {
     //upload encrypt files to IPFS
-    const cids: string[] = await setIPFSBatchDataByBackend(encryptedTreasureMapBytesArray) /*Uint8Array*/
+    const cids: string[] = await setIPFSBatchDataByBackend(
+      encryptedTreasureMapBytesArray.map(
+        (encryptedTreasureMapBytes) => new Blob([encryptedTreasureMapBytes], { type: 'application/octet-stream' })
+      )
+    )
     encryptedTreasureMapIPFSs.push(...cids)
   } else {
     for (let index = 0; index < encryptedTreasureMapBytesArray.length; index++) {
