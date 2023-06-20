@@ -5,6 +5,8 @@ import queryString, { StringifiableRecord, UrlObject } from "query-string";
 import axiosRetry from "axios-retry";
 import { nanoid } from "nanoid";
 import { networkDetails } from "../../chainnet";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import FormData from 'form-data';
 
 const username = process.env.REACT_APP_SERVER_USERNAME;
 const password = process.env.REACT_APP_SERVER_PASSWORD;
@@ -45,6 +47,7 @@ export const signatureRequest = async (
 const excludeList = [
   "file/create-policy-and-upload",
   "/file/upload",
+  "/file/batch-upload",
   "apply/detail",
 ];
 
@@ -171,6 +174,33 @@ axiosRetry(axios, {
     }
   },
 });
+
+//uploadFileInfo
+export const serverPostFormData = async (
+  urlPath: string,
+  data: FormData,
+  config?: object
+): Promise<unknown> => {
+  const serverUrl = await getServerUrl();
+
+  const baseConfig = {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+      Accept: "application/json",
+    },
+  };
+
+  //call server interface to save strategy and file info
+  urlPath = urlPath.startsWith("/") ? urlPath : "/" + urlPath;
+
+  //note: The same key will be overwritten
+  config = Object.assign({}, baseConfig, config);
+
+  // await signatureRequest(urlPath, "POST", data, config);
+
+  return await axios.post(`${serverUrl}${urlPath}`, data, config);
+};
+
 
 export const serverPost = async (
   urlPath: string,

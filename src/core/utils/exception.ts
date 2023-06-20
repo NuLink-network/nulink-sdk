@@ -95,3 +95,11 @@ export class ParameterError extends Error {
     this.name = "ParameterError"; // (2)
   }
 }
+
+
+export class MultiFileUploadError extends Error {
+  constructor(message) {
+    super(message); // (1)
+    this.name = "MultiFileUploadError"; // (2)
+  }
+}
