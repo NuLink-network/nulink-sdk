@@ -2259,13 +2259,14 @@ export const approvalApplicationsForUseFiles = async (
 
   const web3: Web3 = await getWeb3()
   const gasPrice: BigNumber = BigNumber.from(await web3.eth.getGasPrice())
-  const gesLimit: BigNumber = gasFeeInWei.div(gasPrice)
+  const gasLimit: BigNumber = gasFeeInWei.div(gasPrice)
 
+  const gasLimitFactor = applyIds.length < 10 ? BigNumber.from('10') : BigNumber.from(applyIds.length.toString())
   //MultiPreEnactedPolicy
   const enMultiPolicy: MultiEnactedPolicy = await resultInfo.multiBlockchainPolicy.enact(
     resultInfo.ursulasArray,
     waitReceipt,
-    gesLimit
+    gasLimit.mul(gasLimitFactor)
   )
   console.log('after mulit policy enact')
   // // Persist side-channel

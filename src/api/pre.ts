@@ -158,7 +158,7 @@ export const getPolicyGasFee = async (
  * @param {BigNumber} serverFee - server fees by call function of `getPolicyServerGasFee`
  * @returns {Promise<String>} - the amount of bnb/tbnb in wei
  */
- export const getPolicysGasFee = async (
+export const getPolicysGasFee = async (
   userAccountIds: string[],
   applyIds: string[],
   ursulaShares: number[],
