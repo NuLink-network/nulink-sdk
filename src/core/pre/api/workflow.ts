@@ -2347,7 +2347,6 @@ export const refusalApplicationForUseFiles = async (
   return data
 }
 
-//TODO: 修改为批量版本
 /**
  * Rejects the applications for the use of files. This account acts as the publisher (Alice). The batch version of the function refusalApplicationForUseFiles.
  * @category File Publisher(Alice) Interface

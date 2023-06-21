@@ -17,8 +17,8 @@ export enum CONTRACT_NAME {
  */
 const networkContractList = {
   [NETWORK_LIST.Horus]: {
-    [CONTRACT_NAME.nuLinkToken]: { address:  process.env.REACT_APP_CONTRACT_NULINKTOKEN_ADDRESS as string, abi: NuLinkTokenABI },
-    [CONTRACT_NAME.subScriptManager]: { address: process.env.REACT_APP_CONTRACT_SUBSCRIPTMANAGER_ADDRESS as string, abi: null },
+    [CONTRACT_NAME.nuLinkToken]: { address:  process.env.REACT_APP_BSC_TESTNET_CONTRACT_NULINKTOKEN_ADDRESS as string, abi: NuLinkTokenABI },
+    [CONTRACT_NAME.subScriptManager]: { address: process.env.REACT_APP_BSC_TESTNET_CONTRACT_SUBSCRIPTMANAGER_ADDRESS as string, abi: null },
   },
 };
 /**
