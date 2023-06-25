@@ -1,5 +1,5 @@
 // First define a concept:
-//  Alice: as the publisher of the file (file uploader). 
+//  Alice: as the publisher of the file (file uploader).
 //  Bob: as the user of the file (file requester)
 import { NuLinkHDWallet, Account, Strategy, AccountManager } from '..'
 
@@ -22,6 +22,7 @@ import Web3 from 'web3'
 import { type FileInfo } from '..'
 import { restoreWalletDataByMnemonic, getPolicysGasFee } from '..'
 import * as pre from '../core/pre'
+import sleep from 'await-sleep'
 
 export const proxyReencryptionAPIsTestRun = async () => {
   // Declaring and intializing the mnemonic and password variables.
@@ -41,7 +42,7 @@ export const proxyReencryptionAPIsTestRun = async () => {
   assert(nuLinkHDWallet1 === nuLinkHDWallet)
 
   //also, We can verify whether the user's password is correct
-  const correct: boolean = await verifyPassword(password) as boolean
+  const correct: boolean = (await verifyPassword(password)) as boolean
 
   assert(correct)
 
@@ -84,12 +85,12 @@ export const proxyReencryptionAPIsTestRun = async () => {
     {
       name: `history-${nanoid()}.pdf`,
       fileBinaryArrayBuffer: historyContent.buffer
-    },
+    }
   ]
 
   // eslint-disable-next-line no-debugger
   debugger
-  
+
   //2. Alice encrypt and update a file to the ipfs network
   await pre.uploadFilesByCreatePolicy(accountAlice, pre.FileCategory.History, fileList)
 
@@ -130,25 +131,24 @@ export const proxyReencryptionAPIsTestRun = async () => {
 
   assert(uploadFileInfo['owner_id'] === accountAlice.id)
 
-  const numReqFiles = 10;
+  const numReqFiles = 10
   // ............................................
   //
   //Bob find the file on Internet
-  const bobAccountId2AccountMap = {};
-  const accountBobs: Account [] = [];
+  const bobAccountId2AccountMap = {}
+  const accountBobs: Account[] = []
   const accountManager: AccountManager = nuLinkHDWallet.getAccountManager()
   for (let index = 0; index < numReqFiles; index++) {
     const accountBob: Account = await accountManager.createAccount(`Bob_${index}`)
     // call the createAccountIfNotExist method for add user account to the center server for decouple
     await pre.createAccountIfNotExist(accountBob)
-    accountBobs.push(accountBob);
-    bobAccountId2AccountMap[accountBob.id] = accountBob;
-    
+    accountBobs.push(accountBob)
+    bobAccountId2AccountMap[accountBob.id] = accountBob
   }
 
-  let applyFileId: string = "";
+  let applyFileId: string = ''
   for (let index = 0; index < accountBobs.length; index++) {
-    const accountBob = accountBobs[index];
+    const accountBob = accountBobs[index]
 
     //Bob finds the file Alice has just uploaded
     const findFileResultList = (await pre.getOtherShareFiles(
@@ -208,9 +208,8 @@ export const proxyReencryptionAPIsTestRun = async () => {
       console.log(`bob_${index} apply file failed`, e)
       assert(false)
     }
-
   }
-  
+
   //Alice receives Bob's file usage request
   const filesNeedToApprovedResultList2 = await pre.getFilesPendingApprovalAsPublisher(accountAlice, 1, 1000)
   /*return data format: {
@@ -224,48 +223,43 @@ export const proxyReencryptionAPIsTestRun = async () => {
 
   assert(filesNeedToApprovedResultList2 && filesNeedToApprovedResultList2['total'] > 0)
 
-
-
-  const fileIndexs: number [] = []; //Array(numReqFiles).fill(-1);
+  const fileIndexs: number[] = [] //Array(numReqFiles).fill(-1);
   for (let index = 0; index < filesNeedToApprovedResultList2['list'].length; index++) {
     const element = filesNeedToApprovedResultList2['list'][index]
     if (element['file_id'] === applyFileId) {
-      fileIndexs.push(index);
-      assert(element['file_owner_id'] === accountAlice.id);
+      fileIndexs.push(index)
+      assert(element['file_owner_id'] === accountAlice.id)
     }
   }
-  assert(fileIndexs.length >= 0 &&  fileIndexs.length == numReqFiles);
-
+  assert(fileIndexs.length >= 0 && fileIndexs.length == numReqFiles)
 
   //At this point Alice approves Bob's file usage request, Due to on-chain approval of Bob's request, we first evaluate gas and service fees
-  const startDates : Date[] = [];
-  const endDates : Date[] = [];
-  const startMss: number [] = [];
-  const endMss: number [] = [];
-  const ursulaShares: number [] = [];
-  const ursulaThresholds: number [] = [];
-  const accountBobIds:string[] = [];
-  const applyIds:string[] = [];
+  const startDates: Date[] = []
+  const endDates: Date[] = []
+  const startMss: number[] = []
+  const endMss: number[] = []
+  const ursulaShares: number[] = []
+  const ursulaThresholds: number[] = []
+  const accountBobIds: string[] = []
+  const applyIds: string[] = []
   for (let index = 0; index < fileIndexs.length; index++) {
-    const fileIndex = fileIndexs[index];
+    const fileIndex = fileIndexs[index]
     const needToApprovedFileInfo = filesNeedToApprovedResultList2['list'][fileIndex]
     //1. Alice calc server fee (wei): the nulink token tnlk/nlk
     const startDate: Date = new Date()
     const startMs: number = Date.parse(startDate.toString())
     const endMs: number = startMs + (needToApprovedFileInfo['days'] as number) * 24 * 60 * 60 * 1000
     const endDate: Date = new Date(endMs) //  start_at is seconds, but Date needs milliseconds
-    const bobAccountId = needToApprovedFileInfo["proposer_id"]
+    const bobAccountId = needToApprovedFileInfo['proposer_id']
     accountBobIds.push(bobAccountId)
     startDates.push(startDate)
     endDates.push(endDate)
-    startMss.push(startMs);
-    endMss.push(endMs);
+    startMss.push(startMs)
+    endMss.push(endMs)
     ursulaShares.push(2)
     ursulaThresholds.push(1)
-    applyIds.push(needToApprovedFileInfo["apply_id"])
+    applyIds.push(needToApprovedFileInfo['apply_id'])
   }
-
-
 
   const serverFeeNLKInWei: BigNumber = await pre.getPolicysTokenCost(accountAlice, startDates, endDates, ursulaShares)
 
@@ -278,8 +272,8 @@ export const proxyReencryptionAPIsTestRun = async () => {
     applyIds,
     ursulaShares,
     ursulaThresholds,
-    startMss.map((startMs) => startMs/1000),
-    endMss.map((endMs) => endMs/1000),
+    startMss.map((startMs) => startMs / 1000),
+    endMss.map((endMs) => endMs / 1000),
     BigNumber.from(serverFeeNLKInWei)
   )
 
@@ -298,6 +292,9 @@ export const proxyReencryptionAPIsTestRun = async () => {
     BigNumber.from(gasFeeWei)
   )
 
+  //You need to wait for a while for the on-chain transaction to be confirmed and for the backend to listen for the "approve" event.
+  await sleep(20000) //20 seconds
+
   //Alice, as the publisher of the file, obtains the list of files that she has successfully approved
   const aliceApprovedfilesList = await pre.getApprovedFilesAsPublisher(accountAlice, 1, 1000)
   /*return data format: {
@@ -311,7 +308,7 @@ export const proxyReencryptionAPIsTestRun = async () => {
 
   assert(aliceApprovedfilesList && aliceApprovedfilesList['total'] > 0)
 
-  const fileIndex2s: number [] = []; //Array(numReqFiles).fill(-1);
+  const fileIndex2s: number[] = [] //Array(numReqFiles).fill(-1);
   for (let index = 0; index < aliceApprovedfilesList['list'].length; index++) {
     const element = aliceApprovedfilesList['list'][index]
     if (element['file_id'] === applyFileId) {
@@ -319,7 +316,7 @@ export const proxyReencryptionAPIsTestRun = async () => {
       assert(element['file_owner_id'] === accountAlice.id)
       const policyId = element['policy_id']
       //console.log(`index_${index} file policy Id: ${policyId}`)
-      const accountBobId = element['proposer_id'] 
+      const accountBobId = element['proposer_id']
       const accountBob = bobAccountId2AccountMap[accountBobId]
       //Bob finds out that his application has been approved by Alice. Bob now has permission to view the contents of the file
       const bobBeApprovedfilesList = await pre.getApprovedFilesAsUser(accountBob, 1, 1000)
@@ -350,18 +347,18 @@ export const proxyReencryptionAPIsTestRun = async () => {
       assert(policyId2 === policyId)
 
       //Finally, Bob gets the contents of the file
-      const arrayBuffer: ArrayBuffer = await pre.getFileContentByFileIdAsUser(accountBob, bobBeApprovedfilesInfo['file_id'])
+      const arrayBuffer: ArrayBuffer = await pre.getFileContentByFileIdAsUser(
+        accountBob,
+        bobBeApprovedfilesInfo['file_id']
+      )
       const fileContent: string = Buffer.from(arrayBuffer).toString()
       console.log('fileContent: ', fileContent)
       console.log('plainText: ', plainText)
       assert(fileContent === plainText)
 
       //finish
-
     }
   }
 
-  assert(fileIndex2s.length >= 0 &&  fileIndex2s.length == numReqFiles);
-
-
+  assert(fileIndex2s.length >= 0 && fileIndex2s.length == numReqFiles)
 }

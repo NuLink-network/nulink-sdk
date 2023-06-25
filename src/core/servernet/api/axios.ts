@@ -46,8 +46,8 @@ export const signatureRequest = async (
 //exclude show error message list
 const excludeList = [
   "file/create-policy-and-upload",
-  "/file/upload",
-  "/file/batch-upload",
+  "file/upload",
+  "file/batch-upload",
   "apply/detail",
 ];
 

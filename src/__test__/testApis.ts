@@ -1,5 +1,5 @@
 // First define a concept:
-//  Alice: as the publisher of the file (file uploader). 
+//  Alice: as the publisher of the file (file uploader).
 //  Bob: as the user of the file (file requester)
 import { NuLinkHDWallet, Account, Strategy, AccountManager } from '..'
 
@@ -22,6 +22,7 @@ import Web3 from 'web3'
 import { type FileInfo } from '..'
 import { restoreWalletDataByMnemonic, getPolicyGasFee } from '..'
 import * as pre from '../core/pre'
+import sleep from 'await-sleep'
 
 export const proxyReencryptionAPIsTestRun = async () => {
   // Declaring and intializing the mnemonic and password variables.
@@ -41,7 +42,7 @@ export const proxyReencryptionAPIsTestRun = async () => {
   assert(nuLinkHDWallet1 === nuLinkHDWallet)
 
   //also, We can verify whether the user's password is correct
-  const correct: boolean = await verifyPassword(password) as boolean
+  const correct: boolean = (await verifyPassword(password)) as boolean
 
   assert(correct)
 
@@ -242,6 +243,8 @@ export const proxyReencryptionAPIsTestRun = async () => {
 
   //At this point Alice approves Bob's file usage request, Due to on-chain approval of Bob's request, we first evaluate gas and service fees
 
+  console.log(`accountAlice address ${accountAlice.address}`)
+
   //1. Alice calc server fee (wei): the nulink token tnlk/nlk
   const startDate: Date = new Date()
   const startMs: number = Date.parse(startDate.toString())
@@ -259,8 +262,8 @@ export const proxyReencryptionAPIsTestRun = async () => {
     needToApprovedFileInfo2['apply_id'],
     2,
     1,
-    startMs/1000,
-    endMs/1000,
+    startMs / 1000,
+    endMs / 1000,
     BigNumber.from(serverFeeNLKInWei)
   )
 
@@ -278,6 +281,9 @@ export const proxyReencryptionAPIsTestRun = async () => {
     '', //porterUri
     BigNumber.from(gasFeeWei)
   )
+
+  //You need to wait for a while for the on-chain transaction to be confirmed and for the backend to listen for the "approve" event.
+  await sleep(20000) //20 seconds
 
   //Alice, as the publisher of the file, obtains the list of files that she has successfully approved
   const aliceApprovedfilesList = await pre.getApprovedFilesAsPublisher(accountAlice, 1, 1000)
@@ -409,11 +415,10 @@ export const proxyReencryptionAPIsTestRun = async () => {
   assert(nuLinkHDWallet != nuLinkHDWalletRestore)
 
   //You can also export the private key of the nulink wallet account through the user password to import it into the metamask wallet
-  let privatekeyString = (await getDefaultAccountPrivateKey(newpassword))
+  let privatekeyString = await getDefaultAccountPrivateKey(newpassword)
   assert(privatekeyString != null)
   privatekeyString = privatekeyString as string
 
   //When you are done using it, you can clear the browser's wallet cache data, and use the mnemonic to re-import it the next time you use it
-  await logoutWallet();
-
+  await logoutWallet()
 }

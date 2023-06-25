@@ -27,6 +27,7 @@ export const getWeb3Provider = async (account: 'Account', ethUrl?: string): Prom
 };
 
 export const initWeb3Provider = async (account: 'Account', ethUrl?: string): Promise<ethers.providers.Web3Provider> => {
+  console.log(`-----------------  initWeb3Provider ethUrl: ${ethUrl} -----------------------`);
   const web3Provider = await setWeb3Provider(account, ethUrl);
 
   registerOnChangeCallBackFunction("web3RpcUrl", onProviderChangedClosure(account));
