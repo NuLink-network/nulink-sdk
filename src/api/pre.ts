@@ -238,7 +238,9 @@ export const getLoginedUserInfo = async () => {
     address: account?.address,
     id: account?.id,
     ipfs: config.ipfs,
-    service: config.service //pre backend service url
+    service: config.service, //pre backend service url
+    chainId: config.chainId,
+    chainName: config.chainName,
   }
 }
 

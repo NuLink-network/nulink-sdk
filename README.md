@@ -24,9 +24,9 @@
   REACT_APP_IPFS_NODE_URL=xxxxx
   // The NuLink porter address. In the NuLink testnet,
   // you can use the address: https://agent.testnet.nulink.org/porter
-  REACT_APP_PORTER_URL= xxxxx
+  REACT_APP_BSC_TESTNET_PORTER_URL= xxxxx
   // The BSC testnet Web3 RPC URL. Example:
-  REACT_APP_WEB3_RPC_URL=xxxxx
+  REACT_APP_BSC_TESTNET_WEB3_RPC_URL=xxxxx
 
 3. yarn install
 4. yarn build:main

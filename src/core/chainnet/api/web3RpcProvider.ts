@@ -10,16 +10,17 @@ import SingletonService from "singleton-service";
 // import { Account } from "../../hdwallet/api/account";
 import { Web3Provider } from "@ethersproject/providers";
 import { BigNumber, ethers } from "ethers";
+import md5 from 'md5'
 import { Wallet } from "@ethersproject/wallet";
 import toWeb3Provider from "ethers-to-web3";
 import { decrypt as pwdDecrypt } from "../../utils/passwordEncryption";
 
 const RPC_WEB3PROVIDER_INSTANCE_NAME_PREFIX = "rpcWeb3provider";
-const PRIVODER_NAME = (account: 'Account') => `${RPC_WEB3PROVIDER_INSTANCE_NAME_PREFIX}_${(account as any).address}`;
+const PRIVODER_NAME = (account: 'Account', ethUrl?: string) => `${RPC_WEB3PROVIDER_INSTANCE_NAME_PREFIX}_${(account as any).address}_${md5(ethUrl ?? '', { encoding: 'string' })}`;
 
 export const getWeb3Provider = async (account: 'Account', ethUrl?: string): Promise<ethers.providers.Web3Provider> => {
   // for get instance with saved key
-  let web3Provider = SingletonService.get<ethers.providers.Web3Provider>(PRIVODER_NAME(account));
+  let web3Provider = SingletonService.get<ethers.providers.Web3Provider>(PRIVODER_NAME(account, ethUrl));
   if (isBlank(web3Provider)) {
     web3Provider = await initWeb3Provider(account, ethUrl);
   }
@@ -69,6 +70,6 @@ export const setWeb3Provider = async (account: 'Account', ethUrl?: string): Prom
   const web3Provider = new ethers.providers.Web3Provider(toWeb3Provider(signer));
   //above codes is bind account to provider end
 
-  SingletonService.set<ethers.providers.Web3Provider>(PRIVODER_NAME(account), web3Provider, true);
+  SingletonService.set<ethers.providers.Web3Provider>(PRIVODER_NAME(account, ethUrl), web3Provider, true);
   return web3Provider;
 };

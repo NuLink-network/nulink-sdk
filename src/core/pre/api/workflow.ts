@@ -766,6 +766,9 @@ export const applyForFilesUsagePermission = async (fileIds: string[], account: A
 
   sendData['signature'] = await signUpdateServerDataMessage(account, sendData)
 
+  const settingsData = await getSettingsData()
+  sendData['chain_id'] = settingsData.chainId.toString()
+
   const data = await serverPost('/apply/file', sendData)
 
   return data
@@ -1169,6 +1172,9 @@ export const getFilesByStatus = async (
     sendData['file_owner_id'] = fileOwnerId
   }
 
+  const settingsData = await getSettingsData()
+  sendData['chain_id'] = settingsData.chainId.toString()
+
   const data = (await serverPost('/apply/list', sendData)) as object
 
   if (isBlank(data)) {
@@ -1317,6 +1323,9 @@ export const getPoliciesInfo = async (
     sendData['consumer_id'] = consumerId
   }
 
+  const settingsData = await getSettingsData()
+  sendData['chain_id'] = settingsData.chainId.toString()
+
   const data = await serverPost('/policy/list', sendData)
 
   return data
@@ -1432,7 +1441,6 @@ const calcPolicysCost = async (
     console.log(index, startDate, endDate, ursulaShares[index])
   }
 
-  //TODO:
   //return wei
   const value = await SubscriptionManagerAgent.getPolicysCost(
     alice.web3Provider.provider, //note: the provider must be nulink network provider
@@ -2427,6 +2435,9 @@ export const getFilesByPolicyId = async (
     sendData['consumer_id'] = policyUserId
   }
 
+  const settingsData = await getSettingsData()
+  sendData['chain_id'] = settingsData.chainId.toString()
+
   const data = await serverPost('/policy/file-detail-list', sendData)
   return data
 }
@@ -2722,6 +2733,9 @@ export const getFileDetails = async (fileId: string, fileUserAccountId: string) 
     file_id: fileId,
     consumer_id: fileUserAccountId
   }
+
+  const settingsData = await getSettingsData()
+  sendData['chain_id'] = settingsData.chainId.toString()
 
   const data = await serverPost('/file/detail', sendData)
   return data

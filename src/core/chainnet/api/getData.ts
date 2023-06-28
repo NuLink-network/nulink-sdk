@@ -49,6 +49,7 @@ export const getCurrentNetworkInitialConfiguration = async () => {
   const initialConfig: NetworkConfigOptions = {
     web3RpcUrl: netDetails.WEB3_RPC_URL,
     chainId: netDetails.CHAIN_ID,
+    chainName: netDetails.CHAIN_NAME,
     ipfs: netDetails.IPFS_NODE_URL,
     infura_ipfs_encrypted_auth: netDetails.INFURA_IPFS_ENCRYPT_AUTH,
     service: netDetails.CENTRALIZED_SERVER_URL,
