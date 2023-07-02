@@ -764,10 +764,10 @@ export const applyForFilesUsagePermission = async (fileIds: string[], account: A
   // console.log("apply file user account", account);
   // console.log("apply file file_ids", fileIds);
 
-  sendData['signature'] = await signUpdateServerDataMessage(account, sendData)
-
   const settingsData = await getSettingsData()
-  sendData['chain_id'] = settingsData.chainId.toString()
+  sendData['chain_id'] = settingsData.chainId
+
+  sendData['signature'] = await signUpdateServerDataMessage(account, sendData)
 
   const data = await serverPost('/apply/file', sendData)
 
@@ -1173,7 +1173,7 @@ export const getFilesByStatus = async (
   }
 
   const settingsData = await getSettingsData()
-  sendData['chain_id'] = settingsData.chainId.toString()
+  sendData['chain_id'] = settingsData.chainId
 
   const data = (await serverPost('/apply/list', sendData)) as object
 
@@ -1324,7 +1324,7 @@ export const getPoliciesInfo = async (
   }
 
   const settingsData = await getSettingsData()
-  sendData['chain_id'] = settingsData.chainId.toString()
+  sendData['chain_id'] = settingsData.chainId
 
   const data = await serverPost('/policy/list', sendData)
 
@@ -2436,7 +2436,7 @@ export const getFilesByPolicyId = async (
   }
 
   const settingsData = await getSettingsData()
-  sendData['chain_id'] = settingsData.chainId.toString()
+  sendData['chain_id'] = settingsData.chainId
 
   const data = await serverPost('/policy/file-detail-list', sendData)
   return data
@@ -2735,7 +2735,7 @@ export const getFileDetails = async (fileId: string, fileUserAccountId: string) 
   }
 
   const settingsData = await getSettingsData()
-  sendData['chain_id'] = settingsData.chainId.toString()
+  sendData['chain_id'] = settingsData.chainId
 
   const data = await serverPost('/file/detail', sendData)
   return data

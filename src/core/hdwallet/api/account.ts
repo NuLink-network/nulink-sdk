@@ -1056,15 +1056,15 @@ export class AccountManager extends IJson {
    */
   restoreAccount(_privateKey: string, _dataFileBinaryString = '') {
     /* Recovery of a single account (Wallet) is not supported, because a single account cannot be derived from the private key
-     The extended private key (ExtendedPrivatekey) of BIP32, the sub-account is generated through the wallet root private key (ExtendedPrivatekey), the sub-account of the tree structure is deduced,
-     So a single account cannot derive HDWallet.
-     Our business is to derive the seventh-level strategy public and private keys and the sixth-level Verify public and private keys
-     So there is no such function. So exporting the private key must be exporting the wallet root private key
-     This is different from the traditional metamask function, metamask can only restore a single account (Wallet, ordinary wallet) through the private key,
-     Not HDWallet.
-
-     So if you want to support a single account skin care wallet, you must have the wallet root private key, so this function mentions NuLinkHDWallet
-     Restore the wallet in the wallet class (through the wallet root private key)
+      The extended private key (ExtendedPrivatekey) of BIP32, the sub-account is generated through the wallet root private key (ExtendedPrivatekey), the sub-account of the tree structure is deduced,
+      So a single account cannot derive HDWallet.
+      Our business is to derive the seventh-level strategy public and private keys and the sixth-level Verify public and private keys
+      So there is no such function. So exporting the private key must be exporting the wallet root private key
+      This is different from the traditional metamask function, metamask can only restore a single account (Wallet, ordinary wallet) through the private key,
+      Not HDWallet.
+    
+      So if you want to support a single account skin care wallet, you must have the wallet root private key, so this function mentions NuLinkHDWallet
+      Restore the wallet in the wallet class (through the wallet root private key)
      */
     throw new Error('Restoring a single account is not supported')
   }
@@ -1078,15 +1078,15 @@ export class AccountManager extends IJson {
    */
   restoreAccountByKeyStoreJson(_keystoreJson: string, _dataFileBinaryString = '') {
     /* Recovery of a single account (Wallet) is not supported, because a single account cannot be derived from the private key
-     The extended private key (ExtendedPrivatekey) of BIP32, the sub-account is generated through the wallet root private key (ExtendedPrivatekey), the sub-account of the tree structure is deduced,
-     So a single account cannot derive HDWallet.
-     Our business is to derive the seventh-level strategy public and private keys and the sixth-level Verify public and private keys
-     So there is no such function. Therefore, the export of the private key must be to export the extended private key of the root account, so it should not support keystore import.
-     This is different from the traditional metamask function, metamask can only restore a single account (Wallet, ordinary wallet) through the private key,
-     Not HDWallet
-    
+      The extended private key (ExtendedPrivatekey) of BIP32, the sub-account is generated through the wallet root private key (ExtendedPrivatekey), the sub-account of the tree structure is deduced,
+      So a single account cannot derive HDWallet.
+      Our business is to derive the seventh-level strategy public and private keys and the sixth-level Verify public and private keys
+      So there is no such function. Therefore, the export of the private key must be to export the extended private key of the root account, so it should not support keystore import.
+      This is different from the traditional metamask function, metamask can only restore a single account (Wallet, ordinary wallet) through the private key,
+      Not HDWallet
+
       So if you want to support a single account skin care wallet, you must have the extended private key of the root account, so this function mentions NuLinkHDWallet
-     Restoring the wallet in the wallet class (via the extended private key of the root account (call it the wallet))
+      Restoring the wallet in the wallet class (via the extended private key of the root account (call it the wallet))
      */
     throw new Error('Restoring a single account is not supported')
   }
@@ -1521,7 +1521,7 @@ export class AccountManager extends IJson {
     return await AccountManager.load(strategyString)
   }
 
-    /**
+  /**
    * @internal
    * Returns the marco of nuink Wallet account Manager Key .
    * @returns {string} - The save key as a string.
