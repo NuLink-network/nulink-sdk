@@ -5,7 +5,7 @@ import { privateKeyBuffer } from "../../hdwallet/api/common";
 
 //reference: https://github.com/nucypher/nucypher-ts-demo/blob/main/src/characters.ts
 // must be use the nucypher-ts's SecretKey PublicKey , not use the nucypher-core's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
-import { Configuration, PublicKey as NucypherTsPublicKey, RemoteBob, SecretKey as NucypherTsSecretKey} from "@nulink_network/nulink-ts";
+import { Configuration, PublicKey as NucypherTsPublicKey, RemoteBob, SecretKey as NucypherTsSecretKey, RetrievalKit} from "@nulink_network/nulink-ts";
 
 // notice: bacause the generateKFrags import from nucypher-core, so you  must be use the nucypher-core's SecretKey PublicKey , not use the nucypher-ts's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
 import * as NucypherCore from '@nucypher/nucypher-core'; 
@@ -13,7 +13,9 @@ import * as NucypherCore from '@nucypher/nucypher-core';
 import { compressPublicKeyBuffer } from "../../hdwallet/api/common";
 import { getPorterUrl } from "./porter";
 import { Porter } from "@nulink_network/nulink-ts/build/main/src/characters/porter";
-import { EncryptedTreasureMap, MessageKit, Signer, CapsuleFrag } from "@nucypher/nucypher-core";
+import { CapsuleFrag } from "@nulink_network/nulink-ts";
+
+import { EncryptedTreasureMap, MessageKit, Signer } from "@nucypher/nucypher-core";
 
 import { PolicyMessageKit } from "@nulink_network/nulink-ts/build/main/src/kits/message";
 import { RetrievalResult } from "@nulink_network/nulink-ts/build/main/src/kits/retrieval";
@@ -108,35 +110,63 @@ export class Bob {
       PolicyMessageKit.fromMessageKit(mk, policyEncryptingKey, treasureMap.threshold),
     );
 
-    const retrievalKits = policyMessageKits.map((pk) => pk.asRetrievalKit());
+
+    // resolve => TypeError: Cannot read properties of undefined (reading 'fromMessageKit')
+    // const retrievalKits = policyMessageKits.map((pk) => pk.asRetrievalKit());
+    const retrievalKits = policyMessageKits.map((pk) => RetrievalKit.fromMessageKit(pk.messageKit)); 
+    console.log("retrievalKits: ", retrievalKits);
 
     let retrieveCFragsResponses;
-    try {
-      retrieveCFragsResponses = await this.porter.retrieveCFrags(
-        treasureMap,
-        retrievalKits,
-        publisherVerifyingKey,
-        this.decryptingKey,
-        this.verifyingKey,
-      );
-      // console.log("bob.ts retrieveCFrags info", retrieveCFragsResponses);
-    } catch (e) {
-      const info = e as object;
-      // console.log("bob.ts retrieve info", info);
-      if (Object.prototype.hasOwnProperty.call(info, "status") && info["status"].toString().startsWith("2")) {
-        //2xx
-        retrieveCFragsResponses = info["data"].result.retrieval_results
-          .map((result) => result.cfrags)
-          .map((cFrags) => {
-            const parsed = Object.keys(cFrags).map((address) => [
-              address,
-              CapsuleFrag.fromBytes(fromBase64(cFrags[address])),
-            ]);
-            return Object.fromEntries(parsed);
-          });
-      } else {
-        throw e;
-      }
+    // try {
+    //   retrieveCFragsResponses = await this.porter.retrieveCFrags(
+    //     treasureMap,
+    //     retrievalKits,
+    //     publisherVerifyingKey,
+    //     this.decryptingKey,
+    //     this.verifyingKey,
+    //   );
+    //   // console.log("bob.ts retrieveCFrags info", retrieveCFragsResponses);
+    // } catch (e) {
+    //   const info = e as object;
+    //   // console.log("bob.ts retrieve info", info);
+    //   if (Object.prototype.hasOwnProperty.call(info, "status") && info["status"].toString().startsWith("2")) {
+    //     //2xx
+    //     retrieveCFragsResponses = info["data"].result.retrieval_results
+    //       .map((result) => result.cfrags)
+    //       .map((cFrags) => {
+    //         const parsed = Object.keys(cFrags).map((address) => [
+    //           address,
+    //           CapsuleFrag.fromBytes(fromBase64(cFrags[address])),
+    //         ]);
+    //         return Object.fromEntries(parsed);
+    //       });
+    //   } else {
+    //     throw e;
+    //   }
+    // }
+
+
+    retrieveCFragsResponses = await this.porter.retrieveCFragsReturnResponse(
+      treasureMap,
+      retrievalKits,
+      publisherVerifyingKey,
+      this.decryptingKey,
+      this.verifyingKey,
+    );
+
+    if (Object.prototype.hasOwnProperty.call(retrieveCFragsResponses, "status") && retrieveCFragsResponses["status"].toString().startsWith("2")) {
+      //2xx
+      retrieveCFragsResponses = retrieveCFragsResponses["data"].result.retrieval_results
+        .map((result) => result.cfrags)
+        .map((cFrags) => {
+          const parsed = Object.keys(cFrags).map((address) => [
+            address,
+            CapsuleFrag.fromBytes(fromBase64(cFrags[address])),
+          ]);
+          return Object.fromEntries(parsed);
+        });
+    } else {
+      throw Error("Get CFrags Failed");
     }
 
     return zip(policyMessageKits, retrieveCFragsResponses).map((pair) => {

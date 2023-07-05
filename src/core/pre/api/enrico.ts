@@ -1,7 +1,7 @@
 //reference: https://github.com/nucypher/nucypher-ts-demo/blob/main/src/characters.ts
 // must be use the nucypher-ts's SecretKey PublicKey , not use the nucypher-core's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
 
-import { Enrico, PublicKey, MessageKit } from '@nulink_network/nulink-ts'
+import { Enrico, PublicKey, MessageKit, RetrievalKit, CapsuleFrag } from '@nulink_network/nulink-ts'
 
 import { compressPublicKeyBuffer } from '../../hdwallet/api/common'
 
@@ -15,6 +15,15 @@ export const encryptMessage = (
   policyEncryptingPublicKeyString: string,
   szDataFileBinaryArrayBuffer: ArrayBuffer[]
 ): MessageKit[] => {
+
+  // console.log(CapsuleFrag);
+  // console.log(CapsuleFrag.fromBytes);
+  // try {
+  //   console.log(RetrievalKit);
+  //   console.log(RetrievalKit.fromMessageKit);
+  // } catch (error) {
+  //   console.log(error);
+  // }
 
   const x = PublicKey;
   console.log(x);

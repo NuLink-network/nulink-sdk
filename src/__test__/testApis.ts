@@ -72,6 +72,7 @@ export const proxyReencryptionAPIsTestRun = async () => {
     }
   ]
 
+  debugger;
   //2. Alice encrypt and update a file to the ipfs network
   await pre.uploadFilesByCreatePolicy(accountAlice, pre.FileCategory.History, fileList)
 

@@ -6,7 +6,8 @@ import sleep from 'await-sleep'
 import { signMessage } from '../../utils/signMessage'
 
 import { Account, Strategy, web3 } from '../../hdwallet/api/account'
-
+import { GAS_LIMIT_FACTOR, GAS_PRICE_FACTOR } from "../../chainnet/config";
+import { DecimalToInteger } from "../../utils/math";
 // notice: bacause the MessageKit use the SecretKey import from nucypher-ts, so you  must be use the nucypher-ts's SecretKey PublicKey , not use the nucypher-core's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
 import {
   Alice,
@@ -1594,7 +1595,7 @@ export const estimatePolicysGas = async (
   //Note that it takes time to evaluate gas, and since the transfer nlk function is called, it must be approved first
   const txHash: string = await approveNLK(publisher, BigNumber.from('10000000000000000000000000'), serverFee, false)
   console.log('before multi policy estimateCreatePolicyGas ')
-  const gasInWei: BigNumber = await resultInfo.multiBlockchainPolicy.estimateCreatePolicyGas(resultInfo.alice)
+  const gasInWei: BigNumber = await resultInfo.multiBlockchainPolicy.estimateCreatePolicysGas(resultInfo.alice)
   console.log('after multi policy estimatePolicyGas wei:', gasInWei.toString())
 
   return gasInWei.add(approveGasInWei)
@@ -2103,9 +2104,14 @@ export const approvalApplicationForUseFiles = async (
   const waitReceipt = false
 
   const web3: Web3 = await getWeb3()
-  const gasPrice: BigNumber = BigNumber.from(await web3.eth.getGasPrice())
+    const [GAS_PRICE_FACTOR_LEFT, GAS_PRICE_FACTOR_RIGHT] =
+      DecimalToInteger(GAS_PRICE_FACTOR);
+    //estimatedGas * gasPrice * factor
+    const gasPrice = BigNumber.from(await web3.eth.getGasPrice()).mul(GAS_PRICE_FACTOR_LEFT)
+      .div(GAS_PRICE_FACTOR_RIGHT);
+
   const gesLimit: BigNumber = gasFeeInWei.div(gasPrice)
-  const enPolicy: EnactedPolicy = await resultInfo.blockchainPolicy.enact(resultInfo.ursulas, waitReceipt, gesLimit)
+  const enPolicy: EnactedPolicy = await resultInfo.blockchainPolicy.enact(resultInfo.ursulas, waitReceipt, gesLimit, gasPrice)
   console.log('after policy enact')
   // // Persist side-channel
   // const aliceVerifyingKey: PublicKey = alice.verifyingKey;
@@ -2266,7 +2272,13 @@ export const approvalApplicationsForUseFiles = async (
   const waitReceipt = false
 
   const web3: Web3 = await getWeb3()
-  const gasPrice: BigNumber = BigNumber.from(await web3.eth.getGasPrice())
+
+  const [GAS_PRICE_FACTOR_LEFT, GAS_PRICE_FACTOR_RIGHT] =
+      DecimalToInteger(GAS_PRICE_FACTOR);
+    //estimatedGas * gasPrice * factor
+    const gasPrice = BigNumber.from(await web3.eth.getGasPrice()).mul(GAS_PRICE_FACTOR_LEFT)
+      .div(GAS_PRICE_FACTOR_RIGHT);
+
   const gasLimit: BigNumber = gasFeeInWei.div(gasPrice)
 
   const gasLimitFactor = applyIds.length < 10 ? BigNumber.from('10') : BigNumber.from(applyIds.length.toString())
@@ -2274,8 +2286,10 @@ export const approvalApplicationsForUseFiles = async (
   const enMultiPolicy: MultiEnactedPolicy = await resultInfo.multiBlockchainPolicy.enact(
     resultInfo.ursulasArray,
     waitReceipt,
-    gasLimit.mul(gasLimitFactor)
+    gasLimit.mul(gasLimitFactor),
+    gasPrice
   )
+  
   console.log('after mulit policy enact')
   // // Persist side-channel
   // const aliceVerifyingKey: PublicKey = alice.verifyingKey;

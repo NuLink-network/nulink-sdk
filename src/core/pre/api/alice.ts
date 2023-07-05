@@ -256,13 +256,14 @@ export class BlockchainPolicy {
           ownerAddress
         );
 
-      const [GAS_PRICE_FACTOR_LEFT, GAS_PRICE_FACTOR_RIGHT] =
-        DecimalToInteger(GAS_PRICE_FACTOR);
+        const [GAS_LIMIT_FACTOR_LEFT, GAS_LIMIT_FACTOR_RIGHT] =
+        DecimalToInteger(GAS_LIMIT_FACTOR);
+
       //estimatedGas * gasPrice * factor
       const gasFeeInWei = BigNumber.from(estimatedGas)
         .mul(BigNumber.from(gasPrice))
-        .mul(GAS_PRICE_FACTOR_LEFT)
-        .div(GAS_PRICE_FACTOR_RIGHT);
+        .mul(GAS_LIMIT_FACTOR_LEFT)
+        .div(GAS_LIMIT_FACTOR_RIGHT);
       return gasFeeInWei;
     } catch (error: any) {
       const error_info: string = error?.message || error;
@@ -278,10 +279,11 @@ export class BlockchainPolicy {
   public async enact(
     ursulas: Ursula[],
     waitReceipt = true,
-    gasUsedAmount?: BigNumber
+    gasUsedAmount?: BigNumber, 
+    gasPrice?: BigNumber
   ): Promise<EnactedPolicy> {
     const preEnacted = await this.generatePreEnactedPolicy(ursulas);
-    return await preEnacted.enact(this.publisher, waitReceipt, gasUsedAmount);
+    return await preEnacted.enact(this.publisher, waitReceipt, gasUsedAmount, gasPrice );
   }
 
   public async generatePreEnactedPolicy(
@@ -542,13 +544,14 @@ export class MultiBlockchainPolicy {
   public async enact(
     ursulasArray: Array<Ursula[]>, // multi `Ursula[]`,  The order must correspond to the order of the labels array.
     waitReceipt = true,
-    gasUsedAmount?: BigNumber
+    gasUsedAmount?: BigNumber,
+    gasPrice?: BigNumber
   ): Promise<MultiEnactedPolicy> {
     const preEnacted: MultiPreEnactedPolicy = await this.generatePreEnactedPolicy(ursulasArray);
-    return await preEnacted.enact(this.publisher, waitReceipt, gasUsedAmount);
+    return await preEnacted.enact(this.publisher, waitReceipt, gasUsedAmount, gasPrice);
   }
 
-  public async estimateCreatePolicyGas(
+  public async estimateCreatePolicysGas(
     publisher: Alice
   ): Promise<BigNumber> {
     

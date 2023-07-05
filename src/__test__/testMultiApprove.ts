@@ -1,5 +1,5 @@
 // First define a concept:
-//  Alice: as the publisher of the file (file uploader).
+//  Alice: as the publisher of the file (file uploader). 
 //  Bob: as the user of the file (file requester)
 import { NuLinkHDWallet, Account, Strategy, AccountManager } from '..'
 
