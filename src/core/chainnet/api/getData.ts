@@ -38,7 +38,7 @@ export const getCurrentNetworkKey = async (): Promise<NETWORK_LIST> => {
 export const getCurrentNetworkInitialConfiguration = async () => {
   const currentNetwork: NETWORK_LIST = await getCurrentNetworkKey();
 
-  console.log("current Network is ", NETWORK_LIST[NETWORK_LIST.Horus]);
+  console.log("current Network is ", currentNetwork);
 
   if (!(currentNetwork in networkDetails)) {
     return {};

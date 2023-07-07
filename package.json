@@ -1,6 +1,6 @@
 {
   "name": "@nulink_network/nulink-sdk",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "private": false,
   "dependencies": {
     "@ethereumjs/common": "^3.0.2",
