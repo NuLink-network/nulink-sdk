@@ -9,7 +9,7 @@ export const networkDetails = {
   [NETWORK_LIST.Horus]: {
     WEB3_RPC_URL: process.env.REACT_APP_BSC_TESTNET_WEB3_RPC_URL as string || "", //"https://data-seed-prebsc-1-s1.binance.org:8545/", //"https://polygon-mumbai.g.alchemy.com/v2/46LmJOYydi52yqUdANxbLDReG13MDYw5"; //"https://rpc-mumbai.maticvigil.com/v1/84cc5f2f2beca130d1d33b38a7085e5d8b57d404";
     CHAIN_ID: 97, //notes: If you add this field, you must also put it in the newworkConfig structure
-    CHAIN_NAME: 'Horus TestNet',
+    CHAIN_NAME: NETWORK_LIST.Horus,
     // ETH_EXPOLRER: "https://testnet.bscscan.com/", //"https://polygonscan.com"; //notes: If you add this field, you must also put it in the newworkConfig structure
     CENTRALIZED_SERVER_URL: process.env.REACT_APP_CENTRALIZED_SERVER_URL as string || "", //"http://8.219.11.39:8181", //"http://54.241.67.36:8181",
     IPFS_NODE_URL: process.env.REACT_APP_IPFS_NODE_URL as string || "", // "/ip4/8.219.11.39/tcp/5001", //"https://ipfs.infura.io:5001", //"/ip4/54.241.67.36/tcp/5001",
@@ -23,7 +23,7 @@ export const networkDetails = {
   [NETWORK_LIST.Conflux]: {
     WEB3_RPC_URL: process.env.REACT_APP_CONFLUX_ESPACE_TESTNET_WEB3_RPC_URL as string || "", //"https://data-seed-prebsc-1-s1.binance.org:8545/", //"https://polygon-mumbai.g.alchemy.com/v2/46LmJOYydi52yqUdANxbLDReG13MDYw5"; //"https://rpc-mumbai.maticvigil.com/v1/84cc5f2f2beca130d1d33b38a7085e5d8b57d404";
     CHAIN_ID: 71, //notes: If you add this field, you must also put it in the newworkConfig structure
-    CHAIN_NAME: 'ConFlux Espace TestNet',
+    CHAIN_NAME: NETWORK_LIST.Conflux,
     // ETH_EXPOLRER: "https://testnet.bscscan.com/", //"https://polygonscan.com"; //notes: If you add this field, you must also put it in the newworkConfig structure
     CENTRALIZED_SERVER_URL: process.env.REACT_APP_CENTRALIZED_SERVER_URL as string || "", //"http://8.219.11.39:8181", //"http://54.241.67.36:8181",
     IPFS_NODE_URL: process.env.REACT_APP_IPFS_NODE_URL as string || "", // "/ip4/8.219.11.39/tcp/5001", //"https://ipfs.infura.io:5001", //"/ip4/54.241.67.36/tcp/5001",

@@ -1,7 +1,7 @@
 import type { NetworkConfigOptions } from "../types";
 import { store as storage } from "../../utils/storage";
 import { defaultChainNetWork, networkDetails } from "../config";
-import { NETWORK_LIST } from "../../sol"
+import { NETWORK_LIST } from "../../sol";
 
 /**
  * @internal
@@ -12,7 +12,6 @@ export const CHAIN_NETWORK_LABEL = "chain_network";
  * @internal
  */
 export const CHAIN_NETWORK_CONFIG = "chain_network_config";
-
 
 /**
  * get current setting data
@@ -30,6 +29,20 @@ export const getSettingsData = async (): Promise<NetworkConfigOptions> => {
 export const getCurrentNetworkKey = async (): Promise<NETWORK_LIST> => {
   const network = await storage.getItem(CHAIN_NETWORK_LABEL);
   return network || defaultChainNetWork;
+};
+
+/**
+ * get network NETWORK_LIST name by chainId 
+ * @returns Promise<NETWORK_LIST>
+ */
+export const getNetworkKeyByChainId = (chainId: string | number): NETWORK_LIST | undefined => {
+
+  for (const networkDetailsKey in networkDetails) {
+    if (chainId.toString() === networkDetails[networkDetailsKey].CHAIN_ID as string){
+        return networkDetailsKey as NETWORK_LIST;
+    }
+  }
+  return undefined;
 };
 
 /**

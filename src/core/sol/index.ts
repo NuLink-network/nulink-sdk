@@ -2,8 +2,8 @@ import NuLinkTokenABI from "./abi/NuLinkToken.json";
 import SubscriptionManagerABI from "./abi/SubscriptionManager.json";
 
 export enum NETWORK_LIST {
-  Horus = "Horus",
-  Conflux = "Conflux Espace"
+  Horus = "Horus TestNet",
+  Conflux = "ConFlux Espace TestNet"
 }
 
 /**
