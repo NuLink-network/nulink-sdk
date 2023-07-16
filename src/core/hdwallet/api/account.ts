@@ -1672,6 +1672,9 @@ export class NuLinkHDWallet {
       await setHDWalletInstance(nulinkHDWallet, true)
 
       // If there is no storage, getHDWallet() is empty
+
+      console.log('Password verification success')
+      
       return nulinkHDWallet
     } catch (e) {
       if (e instanceof exception.PasswordDecryptError) {
