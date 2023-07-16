@@ -1286,6 +1286,24 @@ export class AccountManager extends IJson {
   }
 
   /**
+   * Returns the Account object with the specified address, or undefined if the account does not exist.
+   * @param address {string} - The address index of the account to be retrieved.
+   * @returns {Account | undefined} - The Account object with the specified address, or undefined if the account does not exist.
+   * @memberof AccountManager
+   */
+  public getAccountByAddress(address: string): Account | undefined {
+    for (const account of Array.from(this.accountMapping.values())) {
+      // We don’t escape the key '__proto__'
+      // which can cause problems on older engines
+      if (account.address.toLowerCase().trim() === address.toLowerCase().trim()) {
+        return account
+      }
+    }
+
+    return undefined
+  }
+
+  /**
    * Retrieves the default account associated with the NuLinkHDWallet.
    * If no default account is set, the account with index 0 will be returned.
    * @returns {Account|undefined} - Returns the default account or undefined if it does not exist.
