@@ -6,7 +6,7 @@
 //Determine whether it is a data production environment. The production environment needs js compression, obfuscation, and remove the log and debugger
 //TODO: When you add a new .env file, you need to modify this array
 
-exports.PROD_CONFIG = ["mobile", "prod"];
+exports.PROD_CONFIG = ["mobile", "prod", "production"];
 
 var isProdEnv = function () {
   var mode = process.env.REACT_APP_ENV ; // || process.env.RUN_ENV;
@@ -17,7 +17,7 @@ var isProdEnv = function () {
   var idProdConfig = exports.PROD_CONFIG.includes(mode.toLowerCase());
   console.log(
     "---------------------------config select ".concat(
-      idProdConfig ? "prod" : "development",
+      idProdConfig ? "production" : "development",
       "-----------------------------"
     )
   );
