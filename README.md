@@ -16,17 +16,25 @@
 ```bash
 1. Rename .env.example to .env
 2. Modify config:
-  // The SDK backend testnet server address. In the NuLink testnet,
-  // you can use the address: https://agent.testnet.nulink.org/bk
-  REACT_APP_CENTRALIZED_SERVER_URL=xxxxx
-  // Your IPFS address, requires permission to write data. In the NuLink testnet,
-  // you can use the address: https://agent.testnet.nulink.org/nuipfs
-  REACT_APP_IPFS_NODE_URL=xxxxx
-  // The NuLink porter address. In the NuLink testnet,
-  // you can use the address: https://agent.testnet.nulink.org/porter
-  REACT_APP_BSC_TESTNET_PORTER_URL= xxxxx
-  // The BSC testnet Web3 RPC URL. Example:
-  REACT_APP_BSC_TESTNET_WEB3_RPC_URL=xxxxx
+      //the sdk backend testnet server address. in the nulink testnet,
+      //you can use the address: https://agent.testnet.nulink.org/bk
+      REACT_APP_CENTRALIZED_SERVER_URL=xxxxx
+      //you ipfs address, Requires permission to write data. in the nulink testnet,
+      //you can use the address: https://agent.testnet.nulink.org/nuipfs 
+      REACT_APP_IPFS_NODE_URL=xxxxx
+
+      //Configure the parameters of the network that you connect to. Parameters for networks that are not connected do not need to be configured.
+      
+      //the nulink bsc testnet porter address. in the nulink testnet,
+      //you can use the address: https://agent.testnet.nulink.org/porter
+      REACT_APP_BSC_TESTNET_PORTER_URI= xxxxx
+      //the bsc testnet web3 rpc url. example: 
+      REACT_APP_BSC_TESTNET_WEB3_RPC_URL=xxxxx
+      //the nulink conflux testnet porter address. in the nulink testnet,
+      //you can use the address: https://agent.testnet.nulink.org/conflux/porter
+      REACT_APP_CONFLUX_ESPACE_TESTNET_PORTER_URI= xxxxx
+      //the conflux testnet web3 rpc url. example:
+      REACT_APP_CONFLUX_ESPACE_TESTNET_WEB3_RPC_URL=xxxxx
 
 3. yarn install
 4. yarn build:main
