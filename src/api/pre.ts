@@ -207,6 +207,7 @@ export const getPolicysGasFee = async (
     const error_info: string = error?.message || error
 
     if (typeof error_info === 'string' && error_info?.toLowerCase()?.includes('policy is currently active')) {
+      console.error(error_info, error)
       //The policy has been created successfully, and there is no need to created again
       throw new PolicyHasBeenActivedOnChain('Policy is currently active')
     }
