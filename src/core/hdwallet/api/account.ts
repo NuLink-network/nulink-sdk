@@ -355,13 +355,13 @@ export class Account extends IJson {
     if (util.isBlank(nuLinkHDWallet)) {
       return false
     }
-    const accountManager = nuLinkHDWallet.getAccountManager()
-
-    const accountMapping: Map<number, Account> = accountManager.accountMapping
+    const accountManager: AccountManager = nuLinkHDWallet.getAccountManager()
 
     // We don’t escape the key '__proto__'
     // which can cause problems on older engines
-    const account: Account = accountMapping.get(this.addressIndex) as Account
+    
+    const account: Account = accountManager.getAccount(this.addressIndex) as Account
+
     account.setStrategyMapping(this.strategyMapping)
 
     await setHDWalletInstance(nuLinkHDWallet, true)
@@ -378,8 +378,8 @@ export class Account extends IJson {
 
     await this.generateStrateAddressIndexLock.acquireAsync()
 
+    let max = -1
     try {
-      let max = -1
       const keys = this.strategyMapping.keys()
       for (const addressIndex of Array.from(keys)) {
         // es6 no need use Array.from()
@@ -387,10 +387,15 @@ export class Account extends IJson {
           max = addressIndex
         }
       }
-      return max + 1
+      // IMPORTANT: Do not return a promise from here because the finally clause
+      // may run before the promise settles, and the catch clause will not run if
+      // the promise is rejected
+      //return max + 1
     } finally {
       this.generateStrateAddressIndexLock.release()
     }
+
+    return max + 1
   }
   /**
    * Gets the policy object associated with the specified ID from the policy mapping.
@@ -676,7 +681,7 @@ export class Account extends IJson {
       const strategy: Strategy | null = await Strategy.load(strategyString, save)
       const _strategy = strategy as Strategy
       if (!isBlank(strategy)) {
-        account.strategyMapping.set(_strategy.addressIndex, _strategy)
+        account.strategyMapping.set(Number(_strategy.addressIndex), _strategy)
       }
       //await strategy.serialize(); //This operation is not done here, but is done when the account is recovered
     }
@@ -984,7 +989,7 @@ export class Account extends IJson {
  */
 export class AccountManager extends IJson {
   //accountCount: number = 0; //Number of current accounts
-  private generateAccountAddressIndexLock = new AwaitLock() //Generation strategy (key spanning tree path) index
+  private generateAccountAddressIndexLock = new AwaitLock() //Generation account (key spanning tree path) index
   private accountMapping = new Map<number, Account>() //Strategy related information address_index: Strategy
   public defaultAccountAddressIndex = 0
 
@@ -1674,7 +1679,7 @@ export class NuLinkHDWallet {
       // If there is no storage, getHDWallet() is empty
 
       console.log('Password verification success')
-      
+
       return nulinkHDWallet
     } catch (e) {
       if (e instanceof exception.PasswordDecryptError) {
