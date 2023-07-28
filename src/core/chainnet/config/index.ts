@@ -47,4 +47,4 @@ export const GAS_LIMIT_FACTOR = 1.3;
 /**
  * @internal
  */
-export const GAS_PRICE_FACTOR = 1.5;
+export const GAS_PRICE_FACTOR = 1.0;
