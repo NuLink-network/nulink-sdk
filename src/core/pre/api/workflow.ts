@@ -8,6 +8,8 @@ import { signMessage } from '../../utils/signMessage'
 import { Account, Strategy, web3 } from '../../hdwallet/api/account'
 import { GAS_LIMIT_FACTOR, GAS_PRICE_FACTOR } from "../../chainnet/config";
 import { DecimalToInteger } from "../../utils/math";
+import { hexlify } from 'ethers/lib/utils';
+
 // notice: bacause the MessageKit use the SecretKey import from nucypher-ts, so you  must be use the nucypher-ts's SecretKey PublicKey , not use the nucypher-core's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
 import {
   Alice,
@@ -2139,7 +2141,7 @@ export const approvalApplicationForUseFiles = async (
     apply_id: Number(applyId),
     remark: remark,
     policy: {
-      hrac: fromBytesByEncoding(hrac.toBytes(), 'binary'), //.toString(),
+      hrac: hexlify(hrac.toBytes()/* Uint8Array[]*/), //fromBytesByEncoding(hrac.toBytes(), 'binary'),
       gas: costServerFeeWei.toString(),
       tx_hash: enPolicy.txHash,
       encrypted_address: encryptedTreasureMapIPFS,
@@ -2325,7 +2327,7 @@ export const approvalApplicationsForUseFiles = async (
   for (let index = 0; index < hracs.length; index++) {
     const hrac: HRAC = hracs[index]
     policy_list.push({
-      hrac: fromBytesByEncoding(hrac.toBytes(), 'binary'), //.toString(),
+      hrac: hexlify(hrac.toBytes()/* Uint8Array[]*/), //fromBytesByEncoding(hrac.toBytes(), 'binary'),
       gas: costServerFeeWei.toString(),
       tx_hash: enMultiPolicy.txHash,
       encrypted_address: encryptedTreasureMapIPFSs[index],
