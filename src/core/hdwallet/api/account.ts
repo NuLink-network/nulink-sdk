@@ -355,13 +355,13 @@ export class Account extends IJson {
     if (util.isBlank(nuLinkHDWallet)) {
       return false
     }
-    const accountManager: AccountManager = nuLinkHDWallet.getAccountManager()
+    const accountManager = nuLinkHDWallet.getAccountManager()
+
+    const accountMapping: Map<number, Account> = accountManager.accountMapping
 
     // We don’t escape the key '__proto__'
     // which can cause problems on older engines
-    
-    const account: Account = accountManager.getAccount(this.addressIndex) as Account
-
+    const account: Account = accountMapping.get(this.addressIndex) as Account
     account.setStrategyMapping(this.strategyMapping)
 
     await setHDWalletInstance(nuLinkHDWallet, true)
@@ -2534,7 +2534,7 @@ export class NuLinkHDWallet {
    */
   private async encryptSaveData(saveKey: string, plainText: string): Promise<string> {
     const cryptoBroker = await this.getCryptoBroker()
-    const result = await cryptoBroker.encryptSaveData(saveKey, plainText)
+    const result = await cryptoBroker.encryptSaveData(saveKey, String(plainText))
     //this the is very important for sync the HDWallet object to background
     await setHDWalletInstance(this, true)
     return result

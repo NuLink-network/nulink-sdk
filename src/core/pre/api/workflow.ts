@@ -8,9 +8,11 @@ import { signMessage } from '../../utils/signMessage'
 import { Account, Strategy, web3 } from '../../hdwallet/api/account'
 import { GAS_LIMIT_FACTOR, GAS_PRICE_FACTOR } from "../../chainnet/config";
 import { DecimalToInteger } from "../../utils/math";
-import { hexlify } from 'ethers/lib/utils';
+import { hexlify, arrayify } from "ethers/lib/utils";
+//import { arrayify } from '@ethersproject/bytes'
 
 // notice: bacause the MessageKit use the SecretKey import from nucypher-ts, so you  must be use the nucypher-ts's SecretKey PublicKey , not use the nucypher-core's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
+// eslint-disable-next-line import/no-extraneous-dependencies
 import {
   Alice,
   BlockchainPolicyParameters,
@@ -18,24 +20,32 @@ import {
   EnactedPolicy,
   MultiEnactedPolicy,
   MessageKit,
-  RemoteBob
-} from '@nulink_network/nulink-ts'
+  RemoteBob,
+} from "@nulink_network/nulink-ts-crosschain";
 
 import { EncryptedTreasureMap, HRAC } from '@nucypher/nucypher-core'
 
 //reference: https://github.com/nucypher/nucypher-ts-demo/blob/main/src/characters.ts
 // notice: bacause the encryptedMessage.decrypt( get by MessageKit) use the SecretKey import from nucypher-ts, so you  must be use the nucypher-ts's SecretKey PublicKey , not use the nucypher-core's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
-import { PublicKey, SecretKey as NucypherTsSecretKey } from '@nulink_network/nulink-ts'
+import {
+  PublicKey,
+  SecretKey as NucypherTsSecretKey,
+  CrossChainHRAC,
+} from "@nulink_network/nulink-ts-crosschain";
 
 import { encryptMessage } from './enrico'
 import { isBlank } from '../../utils/null'
 import { FileCategory, FileInfo, FileType } from '../types'
+//import { message as Message } from "antd";
 import assert from 'assert-ts'
-import { getSettingsData } from '../../chainnet'
+import { getCurrentNetworkKey, getSettingsData } from "../../chainnet";
 import { serverGet, serverPost } from '../../servernet'
 import { nanoid } from 'nanoid'
 import { Bob, makeBob, makeRemoteBob } from './bob'
-import { Porter, Ursula } from '@nulink_network/nulink-ts/build/main/src/characters/porter'
+import {
+  Porter,
+  Ursula,
+} from "@nulink_network/nulink-ts-crosschain/build/main/src/characters/porter";
 import {
   BlockchainPolicy,
   MultiBlockchainPolicy,
@@ -50,14 +60,15 @@ import {
 
 import { BigNumber } from 'ethers'
 import { ethers } from 'ethers'
-// import { SubscriptionManagerAgent } from '@nulink_network/nulink-ts/build/main/src/agents/subscription-manager'
-import { SubscriptionManagerAgent } from '@nulink_network/nulink-ts'
+// import { SubscriptionManagerAgent } from '@nulink_network/nulink-ts-crosschain/build/main/src/agents/subscription-manager'
+import { SubscriptionManagerAgent } from "@nulink_network/nulink-ts-crosschain";
 
 import { toEpoch } from '../../utils/format'
 import { compressPublicKeyBuffer, compressPublicKeyBuffer2, privateKeyBuffer } from '../../hdwallet/api/common'
 import { getPorterUrl } from './porter'
 import { setData as setIPFSData, getData as getIPFSData } from '../../utils/ipfs'
 import { setBatchData as setIPFSBatchDataByBackend } from '../../utils/ipfs.backend'
+import { getData as getGreenFieldStorageData } from "../../utils/greenfield.storage.backend";
 import humps from 'humps'
 import { getBlurThumbnail } from '../../utils/image'
 import { ThumbailResult } from '../../utils/image'
@@ -69,6 +80,7 @@ import { decrypt as pwdDecrypt } from '../../utils/passwordEncryption'
 import { getUrsulaError, InsufficientBalanceError, PolicyHasBeenActivedOnChain } from '../../utils/exception'
 import { getWeb3 } from '../../hdwallet/api'
 import { getRandomElementsFromArray } from '../../../core/utils'
+import { NETWORK_LIST } from "../../sol";
 
 let ipfsSaveByBackend: boolean = true
 try {
@@ -76,6 +88,20 @@ try {
   ipfsSaveByBackend = ((process.env.REACT_APP_IPFS_STORAGE_STRATEGY as string) || '1').trim() === '1'
 } catch (error) {}
 // const ipfsSaveByBackend = false;
+
+let greenfieldStorageEnable: boolean = true;
+try {
+  // # Storing and Accessing FILE data (IPFS data) can be achieved through the Greenfield storage bucket, which is our encapsulated backend interface
+  // 0: defalut value -> save file data by IPFS, 1: save file data by Greenfield storage(the variable REACT_APP_IPFS_STORAGE_STRATEGY must be set value of 1)
+  greenfieldStorageEnable =
+    ((process.env.REACT_APP_STORAGE_BY_GREENFIELD as string) || "0").trim() ===
+    "1";
+  if (greenfieldStorageEnable) {
+    //(the variable REACT_APP_IPFS_STORAGE_STRATEGY must be set value of 1)
+    ipfsSaveByBackend = true;
+  }
+} catch (error) {}
+
 /**
  * @internal
  */
@@ -345,14 +371,29 @@ export const uploadFilesByCreatePolicy = async (
 
   const _encryptMessages: MessageKit[] = encryptMessage(strategy.strategyKeyPair._publicKey, fileContentList)
   // console.log("uploadFilesByCreatePolicy _encryptMessages", _encryptMessages);
-  const mockIPFSAddressList: string[] = []
+  const mockIPFSAddressList: string[] = [];
+  //notice greenfieldStorage backend API not support batch interface currently
+  if (greenfieldStorageEnable) {
+    for (const _encryptMessage of _encryptMessages) {
+      const _encryptMessageBytes: Uint8Array = _encryptMessage.toBytes();
 
-  if (ipfsSaveByBackend) {
+      //upload encrypt files to greenfield
+      const cids: string[] = await setIPFSBatchDataByBackend([
+        new Blob([_encryptMessageBytes /*Uint8Array*/], {
+          type: "application/octet-stream",
+        }),
+      ]);
+      mockIPFSAddressList.push(...cids);
+    }
+  } else if (ipfsSaveByBackend) {
     //upload encrypt files to IPFS
 
     const cids: string[] = await setIPFSBatchDataByBackend(
       _encryptMessages.map(
-        (encryptMessage) => new Blob([encryptMessage.toBytes() /*Uint8Array*/], { type: 'application/octet-stream' })
+        (encryptMessage) =>
+          new Blob([encryptMessage.toBytes() /*Uint8Array*/], {
+            type: "application/octet-stream",
+          })
       )
     )
     mockIPFSAddressList.push(...cids)
@@ -480,11 +521,27 @@ export const uploadFilesBySelectPolicy = async (
 
   const mockIPFSAddressList: string[] = []
 
-  if (ipfsSaveByBackend) {
+  //notice greenfieldStorage backend API not support batch interface currently
+  if (greenfieldStorageEnable) {
+    for (const _encryptMessage of _encryptMessages) {
+      const _encryptMessageBytes: Uint8Array = _encryptMessage.toBytes();
+
+      //upload encrypt files to greenfield
+      const cids: string[] = await setIPFSBatchDataByBackend([
+        new Blob([_encryptMessageBytes /*Uint8Array*/], {
+          type: "application/octet-stream",
+        }),
+      ]);
+      mockIPFSAddressList.push(...cids);
+    }
+  } else if (ipfsSaveByBackend) {
     //upload encrypt files to IPFS
     const cids: string[] = await setIPFSBatchDataByBackend(
       _encryptMessages.map(
-        (encryptMessage) => new Blob([encryptMessage.toBytes() /*Uint8Array*/], { type: 'application/octet-stream' })
+        (encryptMessage) =>
+          new Blob([encryptMessage.toBytes() /*Uint8Array*/], {
+            type: "application/octet-stream",
+          })
       )
     )
     mockIPFSAddressList.push(...cids)
@@ -1506,19 +1563,33 @@ export const estimatePolicyGas = async (
   //   resultInfo.policyParameters.shares,
   // );
 
+  // const nlkEther: string = await publisher.getNLKBalance();
+  // const nlkWei: string = Web3.utils.toWei(nlkEther, "ether");
+  const nlkThresholdWei: string = "10000000000000000000000000";
+  const approveNLKwei: string = nlkThresholdWei;
+  // if(BigNumber.from(nlkThresholdWei).gt(BigNumber.from(nlkWei))){
+  //   approveNLKwei = nlkWei;
+  // }
   console.log('before estimatePolicyGas approveNLK')
   const approveGasInWei: number = await estimateApproveNLKGas(
     publisher,
-    BigNumber.from('10000000000000000000000000'),
+    BigNumber.from(approveNLKwei),
     serverFee
   )
 
   console.log('before policy estimatePolicyGas')
   //Note that it takes time to evaluate gas, and since the transfer nlk function is called, it must be approved first
-  const txHash: string = await approveNLK(publisher, BigNumber.from('10000000000000000000000000'), serverFee, false)
-  console.log('before policy estimateCreatePolicyGas ')
-  const gasInWei: BigNumber = await resultInfo.blockchainPolicy.estimateCreatePolicyGas(resultInfo.alice)
-  console.log('after policy estimatePolicyGas wei:', gasInWei.toString())
+  const txHash: string = await approveNLK(
+    publisher,
+    BigNumber.from(approveNLKwei),
+    serverFee,
+    false
+  );
+
+  console.log("before policy estimateCreatePolicyGas ");
+  const gasInWei: BigNumber =
+    await resultInfo.blockchainPolicy.estimateCreatePolicyGas(resultInfo.alice);
+  console.log("after policy estimatePolicyGas wei:", gasInWei.toString());
 
   return gasInWei.add(approveGasInWei)
 }
@@ -1724,9 +1795,11 @@ const getBlockchainPolicy = async (
     ursulas = humps.camelizeKeys(ursulas)
 
     // length 66 public string to PublicKey Object
-    //now @nulink_network/nulink-ts@0.7.0 must be the version 0.7.0
+    //now @nulink_network/nulink-ts-crosschain@0.7.0 must be the version 0.7.0
     for (const ursula of ursulas) {
-      ursula.encryptingKey = PublicKey.fromBytes(compressPublicKeyBuffer2(ursula.encryptingKey))
+      ursula.encryptingKey = PublicKey.fromBytes(
+        compressPublicKeyBuffer2(ursula.encryptingKey)
+      );
     }
 
     //get ursula end
@@ -1751,7 +1824,7 @@ const getBlockchainPolicy = async (
   console.log('before createChainPolicy')
   const policy: BlockchainPolicy = await createChainPolicy(alice, policyParameters, strategy)
   console.log('after createChainPolicy')
-  // "@nulink_network/nulink-ts": "^0.7.0",  must be this version
+  // "@nulink_network/nulink-ts-crosschain": "^0.7.0",  must be this version
 
   return {
     blockchainPolicy: policy,
@@ -1860,9 +1933,11 @@ const getBlockchainPolicys = async (
     ursulas = humps.camelizeKeys(ursulas)
 
     // length 66 public string to PublicKey Object
-    //now @nulink_network/nulink-ts@0.7.0 must be the version 0.7.0
+    //now @nulink_network/nulink-ts-crosschain@0.7.0 must be the version 0.7.0
     for (const ursula of ursulas) {
-      ursula.encryptingKey = PublicKey.fromBytes(compressPublicKeyBuffer2(ursula.encryptingKey))
+      ursula.encryptingKey = PublicKey.fromBytes(
+        compressPublicKeyBuffer2(ursula.encryptingKey)
+      );
     }
 
     //get ursula end
@@ -1930,7 +2005,7 @@ const getBlockchainPolicys = async (
   console.log(`getBlockchainPolicys before createMultiChainPolicy`)
   const policy: MultiBlockchainPolicy = await createMultiChainPolicy(alice, multiBlockchainPolicyParameters, strategys)
   console.log(`getBlockchainPolicys after createMultiChainPolicy`)
-  // "@nulink_network/nulink-ts": "^0.7.0",  must be this version
+  // "@nulink_network/nulink-ts-crosschain": "^0.7.0",  must be this version
 
   return {
     multiBlockchainPolicy: policy,
@@ -2079,11 +2154,21 @@ export const approvalApplicationForUseFiles = async (
   // eslint-disable-next-line no-extra-boolean-cast
   console.log(!txHashOrEmpty ? `no need approve nlk` : `txHash: ${txHashOrEmpty}`)
 
-  //wei can use  BigNumber.from(), ether can use ethers.utils.parseEther(), because the BigNumber.from("1.2"), the number can't not be decimals (x.x)
-  //await publisher.getNLKBalance() return ethers
-  //Check whether the account balance is less than the policy creation cost
-  const nlkBalanceEthers: BigNumber = ethers.utils.parseEther((await publisher.getNLKBalance()) as string)
-  const costServerGasEther = Web3.utils.fromWei(costServerFeeWei.toString(), 'ether')
+  const curNetwork: NETWORK_LIST = await getCurrentNetworkKey();
+
+  if (curNetwork === NETWORK_LIST.Horus) {
+    //only mainnet can get nlk balance. if not crosschain mainnet, no nlk token, no need get nlk balance
+
+    //wei can use  BigNumber.from(), ether can use ethers.utils.parseEther(), because the BigNumber.from("1.2"), the number can't not be decimals (x.x)
+    //await publisher.getNLKBalance() return ethers
+    //Check whether the account balance is less than the policy creation cost
+    const nlkBalanceEthers: BigNumber = ethers.utils.parseEther(
+      (await publisher.getNLKBalance()) as string
+    );
+    const costServerGasEther = Web3.utils.fromWei(
+      costServerFeeWei.toString(),
+      "ether"
+    );
 
   console.log(`the account balance is: ${nlkBalanceEthers.toString()} ether nlk`)
   console.log(`the create policy server fee is: ${costServerGasEther.toString()} ether nlk`)
@@ -2100,17 +2185,19 @@ export const approvalApplicationForUseFiles = async (
       `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerGasEther} ether`
     )
   }
+  } //end of if (curNetwork === NETWORK_LIST.Horus)
 
-  // "@nulink_network/nulink-ts": "^0.7.0",  must be this version
-  console.log('before policy enact')
-  const waitReceipt = false
+  // "@nulink_network/nulink-ts-crosschain": "^0.7.0",  must be this version
+  console.log("before policy enact");
+  const waitReceipt = false;
 
-  const web3: Web3 = await getWeb3()
-    const [GAS_PRICE_FACTOR_LEFT, GAS_PRICE_FACTOR_RIGHT] =
-      DecimalToInteger(GAS_PRICE_FACTOR);
-    //estimatedGas * gasPrice * factor
-    const gasPrice = BigNumber.from(await web3.eth.getGasPrice()).mul(GAS_PRICE_FACTOR_LEFT)
-      .div(GAS_PRICE_FACTOR_RIGHT);
+  const web3: Web3 = await getWeb3();
+  const [GAS_PRICE_FACTOR_LEFT, GAS_PRICE_FACTOR_RIGHT] =
+    DecimalToInteger(GAS_PRICE_FACTOR);
+  //estimatedGas * gasPrice * factor
+  const gasPrice = BigNumber.from(await web3.eth.getGasPrice())
+    .mul(GAS_PRICE_FACTOR_LEFT)
+    .div(GAS_PRICE_FACTOR_RIGHT);
 
   const gesLimit: BigNumber = gasFeeInWei.div(gasPrice)
   const enPolicy: EnactedPolicy = await resultInfo.blockchainPolicy.enact(resultInfo.ursulas, waitReceipt, gesLimit, gasPrice)
@@ -2134,14 +2221,16 @@ export const approvalApplicationForUseFiles = async (
   }
 
   //4. call center server to save policy info
-  const hrac: HRAC = enPolicy.id
+  const crossChainHrac: CrossChainHRAC = enPolicy.id;
+  
+  const hracBytes = crossChainHrac.toBytes();
 
   const sendData: any = {
     account_id: publisher.id,
     apply_id: Number(applyId),
     remark: remark,
     policy: {
-      hrac: hexlify(hrac.toBytes()/* Uint8Array[]*/), //fromBytesByEncoding(hrac.toBytes(), 'binary'),
+      hrac: hexlify(crossChainHrac.toBytes() /* Uint8Array[]*/), //fromBytesByEncoding(crossChainHrac.toBytes(), 'binary'),
       gas: costServerFeeWei.toString(),
       tx_hash: enPolicy.txHash,
       encrypted_address: encryptedTreasureMapIPFS,
@@ -2229,7 +2318,14 @@ export const approvalApplicationsForUseFiles = async (
     )
   }
 
-  //enPolicy service fee gas wei
+  const costServerFeeWei: BigNumber = BigNumber.from("0");
+
+  const curNetwork: NETWORK_LIST = await getCurrentNetworkKey();
+
+  if (curNetwork === NETWORK_LIST.Horus) {
+    //only mainnet can get nlk balance. if not crosschain mainnet, no nlk token, no need get nlk balance
+
+    //enPolicy service fee gas wei
   const costServerFeeWei: BigNumber = await calcPolicysCost(
     resultInfo.alice,
     resultInfo.policyParameters.startDates,
@@ -2268,8 +2364,9 @@ export const approvalApplicationsForUseFiles = async (
       `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerGasEther} ether`
     )
   }
+  } //end of if (curNetwork === NETWORK_LIST.Horus) 
 
-  // "@nulink_network/nulink-ts": "^0.7.0",  must be this version
+  // "@nucypher_network/nucypher-ts": "^0.7.0",  must be this version
   console.log('before multi policy enact')
   const waitReceipt = false
 
@@ -2304,7 +2401,24 @@ export const approvalApplicationsForUseFiles = async (
   const encryptedTreasureMapIPFSs: string[] = []
 
   //3. upload multiple encrypt files to IPFS
-  if (ipfsSaveByBackend) {
+
+  //notice greenfieldStorage backend API not support batch interface currently
+  if (greenfieldStorageEnable) {
+    for (
+      let index = 0;
+      index < encryptedTreasureMapBytesArray.length;
+      index++
+    ) {
+      const encryptedTreasureMapBytes: Uint8Array =
+        encryptedTreasureMapBytesArray[index];
+      const cids: string[] = await setIPFSBatchDataByBackend([
+        new Blob([encryptedTreasureMapBytes], {
+          type: "application/octet-stream",
+        }),
+      ]);
+      encryptedTreasureMapIPFSs.push(...cids);
+    }
+  } else if (ipfsSaveByBackend) {
     //upload encrypt files to IPFS
     const cids: string[] = await setIPFSBatchDataByBackend(
       encryptedTreasureMapBytesArray.map(
@@ -2319,15 +2433,16 @@ export const approvalApplicationsForUseFiles = async (
       encryptedTreasureMapIPFSs.push(encryptedTreasureMapIPFS)
     }
   }
-
+  
   //4. call center server to save policy info
-  const policy_list: object[] = []
-  const hracs: HRAC[] = enMultiPolicy.ids
+  const policy_list: object[] = [];
+  const crossChainHracs: CrossChainHRAC[] = enMultiPolicy.ids;
+  
+  for (let index = 0; index < crossChainHracs.length; index++) {
+    const crossChainHrac: CrossChainHRAC = crossChainHracs[index];
 
-  for (let index = 0; index < hracs.length; index++) {
-    const hrac: HRAC = hracs[index]
     policy_list.push({
-      hrac: hexlify(hrac.toBytes()/* Uint8Array[]*/), //fromBytesByEncoding(hrac.toBytes(), 'binary'),
+      hrac: hexlify(crossChainHrac.toBytes() /* Uint8Array[]*/), //fromBytesByEncoding(crossChainHrac.toBytes(), 'binary'),
       gas: costServerFeeWei.toString(),
       tx_hash: enMultiPolicy.txHash,
       encrypted_address: encryptedTreasureMapIPFSs[index],
@@ -2506,6 +2621,7 @@ export const getFileContentAsUser = async (
   aliceVerifyingKey: string, //note: adapter nucypher-ts ,this input parameter should be aliceEncryptedKey string
   fileIPFSAddress: string,
   encryptedTreasureMapIPFSAddress: string,
+  crossChainHrac: CrossChainHRAC,
   porterUri?: string
 ): Promise<ArrayBuffer> => {
   //https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E6%92%A4%E9%94%80%E7%AD%96%E7%95%A5
@@ -2517,12 +2633,17 @@ export const getFileContentAsUser = async (
   // console.log("Bob userAccount: ", userAccount);
   // console.log("porterUri: ", porterUri);
   //getFileContent from IPFS
-  const fileIpfsData: Buffer = await getIPFSData(fileIPFSAddress)
+  const fileIpfsData: Buffer = greenfieldStorageEnable
+    ? await getGreenFieldStorageData(fileIPFSAddress)
+    : await getIPFSData(fileIPFSAddress);
   // console.log("fileIpfsData: ", fileIpfsData);
-  const encryptedMessage: MessageKit = MessageKit.fromBytes(fileIpfsData)
-  const encryptedTreasureMapIpfsData: Buffer = await getIPFSData(encryptedTreasureMapIPFSAddress)
+  const encryptedMessage: MessageKit = MessageKit.fromBytes(fileIpfsData);
+  const encryptedTreasureMapIpfsData: Buffer = greenfieldStorageEnable
+    ? await getGreenFieldStorageData(encryptedTreasureMapIPFSAddress)
+    : await getIPFSData(encryptedTreasureMapIPFSAddress);
   // console.log("encryptedTreasureMapIpfsData: ", encryptedTreasureMapIpfsData);
-  const encryptedTreasureMap: EncryptedTreasureMap = EncryptedTreasureMap.fromBytes(encryptedTreasureMapIpfsData)
+  const encryptedTreasureMap: EncryptedTreasureMap =
+    EncryptedTreasureMap.fromBytes(encryptedTreasureMapIpfsData);
   // console.log("encryptedMessage: ", encryptedMessage);
   // console.log("encryptedTreasureMap: ", encryptedTreasureMap);
   // console.log("policyEncryptingKey: ", policyEncryptingKey);
@@ -2536,7 +2657,8 @@ export const getFileContentAsUser = async (
     PublicKey.fromBytes(compressPublicKeyBuffer(policyEncryptingKey)),
     PublicKey.fromBytes(compressPublicKeyBuffer(aliceVerifyingKey)),
     [encryptedMessage],
-    encryptedTreasureMap
+    encryptedTreasureMap,
+    crossChainHrac
   )
 
   // console.log("retrievedMessage: ", retrievedMessage);
@@ -2566,14 +2688,20 @@ export const getFileContentByFileIdAsUser = async (userAccount: Account, fileId:
   const fileIPFSAddress = data['file_ipfs_address']
   const encryptedTreasureMapIPFSAddress = data['encrypted_treasure_map_ipfs_address']
 
+  // hexlify: Convert a byte array to a hexadecimal encoded string -> arrayify: Convert a hexadecimal encoded string back to a byte array
+  const crossChainHrac: CrossChainHRAC = CrossChainHRAC.fromBytes(
+    arrayify(data["hrac"])
+  );
+
   return getFileContentAsUser(
     userAccount,
     policyEncryptingKey,
     aliceVerifyingKey,
     fileIPFSAddress,
-    encryptedTreasureMapIPFSAddress
-  )
-}
+    encryptedTreasureMapIPFSAddress,
+    crossChainHrac
+  );
+};
 
 /**
  * The file publisher obtains the content of the file
@@ -2613,7 +2741,9 @@ export const getFileContentByFileIdAsPublisher = async (userAccount: Account, fi
   }
 
   //getFileContent from IPFS
-  const fileIpfsData: Buffer = await getIPFSData(fileIPFSAddress)
+  const fileIpfsData: Buffer = greenfieldStorageEnable
+    ? await getGreenFieldStorageData(fileIPFSAddress)
+    : await getIPFSData(fileIPFSAddress);
   // console.log("fileIpfsData: ", fileIpfsData);
   const encryptedMessage: MessageKit = MessageKit.fromBytes(fileIpfsData)
 

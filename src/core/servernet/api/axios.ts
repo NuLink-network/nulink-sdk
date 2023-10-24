@@ -28,6 +28,24 @@ export const getServerUrl = async () => {
   return serverUrl;
 };
 
+/* export const getGreenFieldStorageServerUrl = async () => {
+  //return server url endsWith without "/"
+
+  //call server interface to save strategy and file info
+  let greenFieldStorageServerUrl: string =
+    (process.env.REACT_APP_GREENFIELD_STORAGE_SERVER_URL as string) || "";
+  const serverUrl = greenFieldStorageServerUrl.endsWith("/")
+    ? greenFieldStorageServerUrl.slice(0, -1)
+    : greenFieldStorageServerUrl;
+
+  // const token = Buffer.from(`${username}:${password}`, "utf8").toString(
+  //   "base64",
+  // );
+
+  // await storage.setToken(token);
+  return serverUrl;
+}; */
+
 export const signatureRequest = async (
   urlPath: string,
   method: string,

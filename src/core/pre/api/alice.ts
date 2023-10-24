@@ -8,7 +8,8 @@ import {
   EnactedPolicy,
   MultiEnactedPolicy,
   RemoteBob,
-} from "@nulink_network/nulink-ts";
+  CrossChainHRAC
+} from "@nulink_network/nulink-ts-crosschain";
 
 //reference: https://github.com/nucypher/nucypher-ts-demo/blob/main/src/characters.ts
 // notice: bacause the Alice import from nucypher-ts, so you  must be use the nucypher-ts's SecretKey PublicKey , not use the nucypher-core's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
@@ -16,7 +17,7 @@ import {
   PublicKey as NucypherTsPublicKey,
   SecretKey as NucypherTsSecretKey,
   Signer as NucypherTsSigner,
-} from "@nulink_network/nulink-ts";
+} from "@nulink_network/nulink-ts-crosschain";
 
 // notice: bacause the generateKFrags import from nucypher-core, so you  must be use the nucypher-core's SecretKey PublicKey , not use the nucypher-ts's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
 import * as NucypherCore from "@nucypher/nucypher-core";
@@ -39,22 +40,22 @@ import { getWeb3Provider } from "../../chainnet/api/web3Provider";
 import {
   GetUrsulasResponse,
   Ursula,
-} from "@nulink_network/nulink-ts/build/main/src/characters/porter";
-import { PreEnactedPolicy } from "@nulink_network/nulink-ts/build/main/src/policies/policy";
-import { MultiPreEnactedPolicy } from "@nulink_network/nulink-ts/build/main/src/policies/multi.policy";
+} from "@nulink_network/nulink-ts-crosschain/build/main/src/characters/porter";
+import { PreEnactedPolicy } from "@nulink_network/nulink-ts-crosschain/build/main/src/policies/policy";
+import { MultiPreEnactedPolicy } from "@nulink_network/nulink-ts-crosschain/build/main/src/policies/multi.policy";
 
-import { RevocationKit } from "@nulink_network/nulink-ts/build/main/src/kits/revocation";
+import { RevocationKit } from "@nulink_network/nulink-ts-crosschain/build/main/src/kits/revocation";
 import { getWeb3, toCanonicalAddress } from "../../hdwallet/api";
 import {
   toBytes,
   zip,
   toEpoch,
-} from "@nulink_network/nulink-ts/build/main/src/utils";
-import { SubscriptionManagerAgent } from "@nulink_network/nulink-ts/build/main/src/agents/subscription-manager";
+} from "@nulink_network/nulink-ts-crosschain/build/main/src/utils";
+import { SubscriptionManagerAgent } from "@nulink_network/nulink-ts-crosschain/build/main/src/agents/subscription-manager";
 import Web3 from "web3";
 import { getCurrentNetworkKey, getSettingsData } from "../../chainnet";
 import { BigNumber } from "ethers";
-import { ChecksumAddress } from "@nulink_network/nulink-ts/build/main/src/types";
+import { ChecksumAddress } from "@nulink_network/nulink-ts-crosschain/build/main/src/types";
 import qs from "qs";
 import axiosRetry from "axios-retry";
 import axios, { AxiosRequestConfig } from "axios";
@@ -78,6 +79,7 @@ import AwaitLock from "await-lock";
 import { isBlank } from "../../utils/null";
 import sleep from "await-sleep";
 import { getTransactionNonceLock } from "../../utils/transaction";
+import { CrossChain } from "@bnb-chain/greenfield-chain-sdk/dist/esm/api/crosschain";
 
 // import assert from "assert-ts";
 
@@ -130,6 +132,10 @@ export const createChainPolicy = async (
     threshold,
     shares
   );
+
+
+  const { chainId } = await alice.web3Provider.provider.getNetwork();
+
   return new BlockchainPolicy(
     alice,
     label,
@@ -139,7 +145,8 @@ export const createChainPolicy = async (
     threshold,
     shares,
     startDate,
-    endDate
+    endDate,
+    chainId,
   );
 };
 
@@ -180,6 +187,8 @@ export const createMultiChainPolicy = async (
   const startDates = multiBlockchainPolicyParameters.startDates;
   const endDates = multiBlockchainPolicyParameters.endDates;
   
+  const { chainId } = await alice.web3Provider.provider.getNetwork();
+
   return new MultiBlockchainPolicy(
     alice,
     labels,
@@ -189,12 +198,13 @@ export const createMultiChainPolicy = async (
     thresholds,
     shares,
     startDates,
-    endDates
+    endDates,
+    chainId,
   );
 };
 
 export class BlockchainPolicy {
-  public readonly hrac: HRAC;
+  public readonly hrac: CrossChainHRAC;
 
   constructor(
     private readonly publisher: Alice,
@@ -205,7 +215,8 @@ export class BlockchainPolicy {
     private readonly threshold: number,
     private readonly shares: number,
     private readonly startDate: Date,
-    private readonly endDate: Date
+    private readonly endDate: Date,
+    private readonly chainId: number,
   ) {
     //reference: https://github.com/nucypher/nucypher-ts-demo/blob/main/src/characters.ts
     // notice: bacause the HRAC import from nucypher-core, so you  must be use the nucypher-core's SecretKey PublicKey , not use the nucypher-ts's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
@@ -215,11 +226,14 @@ export class BlockchainPolicy {
     const bobVerifyingKey = NucypherCore.PublicKey.fromBytes(
       this.bob.verifyingKey.toBytes()
     );
-    this.hrac = new HRAC(
+    const hrac = new HRAC(
       publisherVerifyingKey,
       bobVerifyingKey,
       toBytes(this.label)
     );
+    
+    this.hrac = new CrossChainHRAC(hrac, chainId);
+
   }
 
   public async estimateCreatePolicyGas(
@@ -248,7 +262,7 @@ export class BlockchainPolicy {
       const estimatedGas =
         await SubscriptionManagerAgent.estimateGasByCreatePolicy(
           publisher.web3Provider,
-          BigNumber.from("0"),
+          BigNumber.from("100"), //Contract error, value must be greater than 0 //BigNumber.from("0"), 
           this.hrac.toBytes(),
           this.shares,
           startTimestamp,
@@ -311,6 +325,8 @@ export class BlockchainPolicy {
       /* this.publisher.signer */ nucypherCoreSigner
     );
 
+    const { chainId } = await this.publisher.web3Provider.provider.getNetwork();
+
     return new PreEnactedPolicy(
       this.hrac,
       this.label,
@@ -320,7 +336,7 @@ export class BlockchainPolicy {
       this.publisher.verifyingKey.toBytes(),
       this.shares,
       this.startDate,
-      this.endDate
+      this.endDate,
     );
   }
 
@@ -350,7 +366,7 @@ export class BlockchainPolicy {
 
     const builder = new TreasureMapBuilder(
       /* this.publisher.signer */ nucypherCoreSigner,
-      this.hrac,
+      this.hrac.hrac,
       nucypherCoreDelegatingKey,
       this.threshold
     );
@@ -514,7 +530,7 @@ const keyringGenerateKFrags = (
 };
 
 export class MultiBlockchainPolicy {
-  public readonly hracs: HRAC [];
+  public readonly hracs: CrossChainHRAC [];
 
   constructor(
     private readonly publisher: Alice,
@@ -525,18 +541,21 @@ export class MultiBlockchainPolicy {
     private readonly thresholds: number [],
     private readonly shares: number [],
     private readonly startDates: Date [],
-    private readonly endDates: Date []
+    private readonly endDates: Date [],
+    private readonly chainId: number,
   ) {
 
     this.hracs = [];
     for (let index = 0; index < labels.length; index++) {
       const label = labels[index];
       const bob = this.bobs[index];
-      this.hracs.push(new HRAC(
+      const hrac = new HRAC(
         this.publisher.verifyingKey,
         bob.verifyingKey,
         toBytes(label)
-      ));
+      );
+      
+      this.hracs.push(new CrossChainHRAC(hrac, chainId));
     }
 
   }
@@ -567,7 +586,7 @@ export class MultiBlockchainPolicy {
     const estimatedGas =
       await SubscriptionManagerAgent.estimateGasByCreatePolicys(
         publisher.web3Provider,
-        /* value */BigNumber.from("0"),
+        /* value */BigNumber.from("100"), //Contract error, value must be greater than 0
         this.hracs.map((hrac) => hrac.toBytes()),
         this.shares,
         startTimestamps,
@@ -592,6 +611,8 @@ export class MultiBlockchainPolicy {
       revocationKits.push(revocationKit);
     }
 
+    const { chainId } = await this.publisher.web3Provider.provider.getNetwork();
+
     return new MultiPreEnactedPolicy(
       this.hracs,
       this.labels,
@@ -601,7 +622,7 @@ export class MultiBlockchainPolicy {
       this.publisher.verifyingKey.toBytes(),
       this.shares,
       this.startDates,
-      this.endDates
+      this.endDates,
     );
   }
 
@@ -612,7 +633,7 @@ export class MultiBlockchainPolicy {
   ): TreasureMap {
     const builder = new TreasureMapBuilder(
       this.publisher.signer,
-      this.hracs[index],
+      this.hracs[index].hrac,
       this.delegatingKeys[index],
       this.thresholds[index]
     );
@@ -725,6 +746,19 @@ export const approveNLK = async (
   // const account = web3.eth.accounts.privateKeyToAccount('0x2cc983ef0f52c5e430b780e53da10ee2bb5cbb5be922a63016fc39d4d52ce962');
   //web3.eth.accounts.wallet.add(account);
 
+  
+  const curNetwork: NETWORK_LIST = await getCurrentNetworkKey();
+
+  if(curNetwork !== NETWORK_LIST.Horus)
+  {
+    //not crosschain mainnet, no nlk token, no need approve nlk
+    if(!!estimateGas)
+    {
+      return "0";
+    }
+    return "";
+  }
+
   const nlkBalanceEthers = await account.getNLKBalance() as string;
 
   const nlkBalanceWei = BigNumber.from(Web3.utils.toWei(nlkBalanceEthers));
@@ -755,7 +789,6 @@ export const approveNLK = async (
   }
 
   const web3: Web3 = await getWeb3();
-  const curNetwork: NETWORK_LIST = await getCurrentNetworkKey();
   const nuLinkTokenContractInfo: any =
     contractList[curNetwork][CONTRACT_NAME.nuLinkToken];
   const subScriptionManagerContractInfo: any =
@@ -803,7 +836,7 @@ export const approveNLK = async (
     )
     .encodeABI();
 
-  const transactionNonceLock: AwaitLock = await getTransactionNonceLock();
+  const transactionNonceLock: AwaitLock = await getTransactionNonceLock(aliceAddress);
   await transactionNonceLock.acquireAsync();
 
   try {
@@ -833,14 +866,13 @@ export const approveNLK = async (
     // tx.sign(/* Buffer.from("1aefdd79679b4e8fe2d55375d976a79b9a0082d23fff8e2768befe6aceb8d3646", 'hex') */ account.encryptedKeyPair.privateKeyBuffer()); //Buffer.from(aliceEthAccount.privateKey, 'hex')
 
     // const serializedTx = tx.serialize().toString("hex");
-    const data = await getSettingsData();
-
+    
     //don't add this
     // if (!!estimateGas) {
     //   //fix error: invalid argument 0: json: cannot unmarshal non-string into Go struct field TransactionArgs.chainId of type *hexutil.Big
-    //   rawTx["chainId"] = web3.utils.toHex(data.chainId);
+    //   rawTx["chainId"] = web3.utils.toHex(chainConfigInfo.chainId);
     // } else {
-    //   rawTx["chainId"] =data.chainId; // data.chainId.toString(); //97
+    //   rawTx["chainId"] =chainConfigInfo.chainId; // chainConfigInfo.chainId.toString(); //97
     // }
 
     // gasUsed => estimateGas return gasUsed is the gasLimit (How many gas were used,that is the amount of gas), not the gasFee (gasLimit * gasPrice)

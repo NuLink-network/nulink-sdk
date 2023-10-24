@@ -103,3 +103,11 @@ export class MultiFileUploadError extends Error {
     this.name = "MultiFileUploadError"; // (2)
   }
 }
+
+
+export class GetBucketDataError extends Error {
+  constructor(message) {
+    super(message); // (1)
+    this.name = "GetBucketDataError"; // (2)
+  }
+}

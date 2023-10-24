@@ -1,14 +1,15 @@
 {
-  "name": "@nulink_network/nulink-sdk",
-  "version": "0.1.16",
+  "name": "@nulink_network/nulink-sdk-crosschain",
+  "version": "0.0.1",
   "private": false,
   "dependencies": {
+    "@bnb-chain/greenfield-chain-sdk": "^0.2.2",
     "@ethereumjs/common": "^3.0.2",
     "@ethereumjs/tx": "^4.0.2",
     "@ethersproject/providers": "^5.7.2",
     "@ethersproject/wallet": "^5.7.0",
     "@nucypher/nucypher-core": "0.2.0",
-    "@nulink_network/nulink-ts": "0.1.37",
+    "@nulink_network/nulink-ts-crosschain": "^0.1.11",
     "@nulink_network/ts-indexdb": "^0.0.5",
     "@offirmo/globalthis-ponyfill": "^4.0.0",
     "@types/humps": "^2.0.2",
@@ -170,7 +171,9 @@
     "webpack-skip-treeshaking-plugin": "^1.0.0",
     "webpack-typings-aliases-plugin": "^0.0.10",
     "yarn": "^1.22.19",
-    "yarn-run-all": "^3.1.1"
+    "yarn-run-all": "^3.1.1",
+    "//npm-unpublish": "npm unpublish @nulink_network/nulink-sdk-crosschain@0.1.10 --force",
+    "npm-publish": "npm publish --access=public"
   },
   "files": [
     "build/main",

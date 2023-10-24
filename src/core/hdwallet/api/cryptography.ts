@@ -331,7 +331,7 @@ export class CryptoBroker {
     //Encrypt and save data locally
     const cipherText: string = await this.encryptData(plainText)
 
-    await store.setItem(saveKey, cipherText)
+    await store.setItem(saveKey, String(cipherText))
     return cipherText
   }
 

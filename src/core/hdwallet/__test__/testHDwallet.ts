@@ -1,5 +1,5 @@
 // The following code is about importing the required packages from the different kind of sources.
-import * as nucypher from "@nulink_network/nulink-ts";
+import * as nucypher from "@nulink_network/nulink-ts-crosschain";
 import {
   AccountManager,
   NuLinkHDWallet,
