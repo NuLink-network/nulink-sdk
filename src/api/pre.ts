@@ -14,6 +14,10 @@ import * as pre from '../core/pre'
 import { isBlank } from '../core/utils'
 import * as exception from '../core/utils/exception'
 import {UnauthorizedError} from '../core/utils/exception' //for comment
+import {
+  sendRawTransaction,
+  sendRawTransactionGas,
+} from "../core/pre/api/transaction";
 
 export type { BigNumber } from 'ethers'
 
@@ -1109,3 +1113,99 @@ export const getAllFilesInfoOfPolicy = async (data: { pageIndex?: number; pageSi
     throw new exception.ParameterError(`The input parameter must have the "policyId" fields`)
   }
 }
+
+/**
+ * send the raw transaction
+ * @param {string} toAddress - The recevier of the transaction, can be empty when deploying a contract.
+ * @param {string} rawTxData - The call data of the transaction, can be empty for simple value transfers.
+ * @param {string} value - The value of the transaction in wei.
+ * @param {string} gasPrice - The gas price set by this transaction, if empty, it will use web3.eth.getGasPrice().
+ * @param {boolean} estimateGas - Whether to assess gas fees.
+ * @returns {Promise<string>} - Returns the transactionHash.
+ */
+export const sendCustomTransaction = async (
+  toAddress: string,
+  rawTxData?: string,
+  value?: string, //wei
+  gasPrice?: string //wei
+): Promise<string> => {
+  try {
+    const account = await getWalletDefaultAccount();
+    if (isBlank(account)) {
+      throw new exception.UnauthorizedError(
+        "Please unlock account with your password first by call getWalletDefaultAccount(userpassword)"
+      );
+    }
+
+    return sendRawTransaction(
+      account as Account,
+      toAddress,
+      rawTxData,
+      value,
+      gasPrice,
+      false
+    );
+  } catch (error: any) {
+    const error_info: string = error?.message || error;
+
+    if (
+      typeof error_info === "string" &&
+      error_info?.toLowerCase()?.includes("policy is currently active")
+    ) {
+      console.error(error_info, error);
+      //The policy has been created successfully, and there is no need to created again
+      throw new PolicyHasBeenActivedOnChain("Policy is currently active");
+    }
+
+    console.error(error_info, error);
+    // Message.error(`Failed to get gas fee!! reason: ${error_info}`);
+    throw error;
+  }
+};
+
+/**
+ * send the raw transaction
+ * @param {string} toAddress - The recevier of the transaction, can be empty when deploying a contract.
+ * @param {string} rawTxData - The call data of the transaction, can be empty for simple value transfers.
+ * @param {string} value - The value of the transaction in wei.
+ * @param {string} gasPrice - The gas price set by this transaction, if empty, it will use web3.eth.getGasPrice().
+ * @returns {Promise<number>} - Returns the transactionHash.
+ */
+export const estimateCustomTransactionGas = async (
+  toAddress: string,
+  rawTxData?: string,
+  value?: string, //wei
+  gasPrice?: string //wei
+): Promise<number> => {
+  try {
+    const account = await getWalletDefaultAccount();
+    if (isBlank(account)) {
+      throw new exception.UnauthorizedError(
+        "Please unlock account with your password first by call getWalletDefaultAccount(userpassword)"
+      );
+    }
+
+    return sendRawTransactionGas(
+      account as Account,
+      toAddress,
+      rawTxData,
+      value,
+      gasPrice
+    );
+  } catch (error: any) {
+    const error_info: string = error?.message || error;
+
+    if (
+      typeof error_info === "string" &&
+      error_info?.toLowerCase()?.includes("policy is currently active")
+    ) {
+      console.error(error_info, error);
+      //The policy has been created successfully, and there is no need to created again
+      throw new PolicyHasBeenActivedOnChain("Policy is currently active");
+    }
+
+    console.error(error_info, error);
+    // Message.error(`Failed to get gas fee!! reason: ${error_info}`);
+    throw error;
+  }
+};

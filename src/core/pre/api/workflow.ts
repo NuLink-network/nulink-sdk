@@ -27,6 +27,7 @@ import { EncryptedTreasureMap, HRAC } from '@nucypher/nucypher-core'
 
 //reference: https://github.com/nucypher/nucypher-ts-demo/blob/main/src/characters.ts
 // notice: bacause the encryptedMessage.decrypt( get by MessageKit) use the SecretKey import from nucypher-ts, so you  must be use the nucypher-ts's SecretKey PublicKey , not use the nucypher-core's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
+// eslint-disable-next-line import/no-extraneous-dependencies
 import {
   PublicKey,
   SecretKey as NucypherTsSecretKey,
@@ -77,10 +78,17 @@ import { fileSuffix } from '../../utils/file'
 import Web3 from 'web3'
 import { fromBytes, fromBytesByEncoding } from '../../utils/encode'
 import { decrypt as pwdDecrypt } from '../../utils/passwordEncryption'
-import { getUrsulaError, InsufficientBalanceError, PolicyHasBeenActivedOnChain } from '../../utils/exception'
+import {
+  getUrsulaError,
+  InsufficientBalanceError,
+  PolicyHasBeenActivedOnChain,
+  GetStrategyError,
+  DecryptError,
+} from "../../utils/exception";
 import { getWeb3 } from '../../hdwallet/api'
 import { getRandomElementsFromArray } from '../../../core/utils'
 import { NETWORK_LIST } from "../../sol";
+import { getFileCategoryString } from "./utils";
 
 let ipfsSaveByBackend: boolean = true
 try {
@@ -332,22 +340,14 @@ export const uploadFilesByCreatePolicy = async (
 ): Promise<Strategy> => {
   console.log('uploadFilesByCreatePolicy account', account)
 
-  let label = ''
-  if (typeof fileCategory == 'number') {
-    //e.g. FileCategory.Philosophy => typeof FileCategory.Philosophy == "number"
-
-    if (typeof FileCategory[fileCategory.toString()] == 'undefined') {
-      label = fileCategory.toString()
-    } else {
-      label = FileCategory[fileCategory.toString()]
-    }
-  } else {
-    //typeof fileCategory == "string"
-    label = fileCategory as string
-  }
-
+  let label = getFileCategoryString(fileCategory);
   if (!label) {
-    label = ''
+    if (fileList.length > 0 && !isBlank(fileList[0]?.fileCategory)) {
+      label = getFileCategoryString(fileList[0]?.fileCategory as any);
+    }
+    if (!label) {
+      label = "";
+    }
   }
 
   // Number.isNaN(parseInt("Philosophy"))
@@ -412,28 +412,40 @@ export const uploadFilesByCreatePolicy = async (
 
     const fileId = nanoid()
 
+    //The generation of thumbnail logic should be handled by a third-party DApp, rather than implemented in the pre-process. Therefore, it needs to be moved to the third-party DApp, and this part should be blocked
     //generate and upload thumbnail files to IPFS
-    let thumbnail = ''
-    try {
-      const result = await getBlurThumbnail(fileInfo.fileBinaryArrayBuffer, fileInfo.name)
-      if (isBlank(result)) {
-        thumbnail = ''
-      } else {
-        const { buffer: thumbnailBuffer, mimeType }: ThumbailResult = result as ThumbailResult
-        let cid: string = ''
-        if (ipfsSaveByBackend) {
-          cid = (
-            await setIPFSBatchDataByBackend([new Blob([thumbnailBuffer.buffer], { type: 'application/octet-stream' })])
-          )[0]
-        } else {
-          cid = await setIPFSData(thumbnailBuffer.buffer)
-        }
-        thumbnail = mimeType + '|' + cid
-      }
-    } catch (error) {
-      thumbnail = ''
-      console.error(`generate or upload thumbail failed file name: ${fileInfo.name}, file id:${fileId}`, error)
-    }
+    let thumbnail = "";
+   //try {
+   //  const result = await getBlurThumbnail(
+   //    fileInfo.fileBinaryArrayBuffer,
+   //    fileInfo.name
+   //  );
+   //  if (isBlank(result)) {
+   //    thumbnail = "";
+   //  } else {
+   //    const { buffer: thumbnailBuffer, mimeType }: ThumbailResult =
+   //      result as ThumbailResult;
+   //    let cid: string = "";
+   //    if (ipfsSaveByBackend) {
+   //      cid = (
+   //        await setIPFSBatchDataByBackend([
+   //          new Blob([thumbnailBuffer.buffer], {
+   //            type: "application/octet-stream",
+   //          }),
+   //        ])
+   //      )[0];
+   //    } else {
+   //      cid = await setIPFSData(thumbnailBuffer.buffer);
+   //    }
+   //    thumbnail = mimeType + "|" + cid;
+   //  }
+   //} catch (error) {
+   //  thumbnail = "";
+   //  console.error(
+   //    `generate or upload thumbail failed file name: ${fileInfo.name}, file id:${fileId}`,
+   //    error
+   //  );
+   //}
 
     const file = {
       id: fileId,
@@ -493,21 +505,16 @@ export const uploadFilesBySelectPolicy = async (
   //TODO: call server interface Check whether the file needs to be uploaded repeatedly
   //return file id array
 
-  let label = ''
-  if (typeof fileCategory == 'number') {
-    //e.g. FileCategory.Philosophy => typeof FileCategory.Philosophy == "number"
-
-    if (typeof FileCategory[fileCategory.toString()] == 'undefined') {
-      label = fileCategory.toString()
-    } else {
-      label = FileCategory[fileCategory.toString()]
+  let label = getFileCategoryString(fileCategory);
+  if (!label) {
+    if (fileList.length > 0 && !isBlank(fileList[0]?.fileCategory)) {
+      label = getFileCategoryString(fileList[0]?.fileCategory as any);
     }
-  } else {
-    //typeof fileCategory == "string"
-    label = fileCategory as string
+    if (!label) {
+      label = "";
+    }
   }
-
-  const fileContentList: ArrayBuffer[] = []
+  const fileContentList: ArrayBuffer[] = [];
   for (const fileInfo of fileList) {
     fileContentList.push(fileInfo.fileBinaryArrayBuffer)
   }
@@ -560,28 +567,40 @@ export const uploadFilesBySelectPolicy = async (
     const fileInfo = fileList[index]
     const fileId = nanoid()
 
+    //The generation of thumbnail logic should be handled by a third-party DApp, rather than implemented in the pre-process. Therefore, it needs to be moved to the third-party DApp, and this part should be blocked
     //generate and upload thumbnail files to IPFS
-    let thumbnail = ''
-    try {
-      const result = await getBlurThumbnail(fileInfo.fileBinaryArrayBuffer, fileInfo.name)
-      if (isBlank(result)) {
-        thumbnail = ''
-      } else {
-        const { buffer: thumbnailBuffer, mimeType }: ThumbailResult = result as ThumbailResult
-        let cid: string = ''
-        if (ipfsSaveByBackend) {
-          cid = (
-            await setIPFSBatchDataByBackend([new Blob([thumbnailBuffer.buffer], { type: 'application/octet-stream' })])
-          )[0]
-        } else {
-          cid = await setIPFSData(thumbnailBuffer.buffer)
-        }
-        thumbnail = mimeType + '|' + cid
-      }
-    } catch (error) {
-      thumbnail = ''
-      console.error(`generate or upload thumbail failed file name: ${fileInfo.name}, file id:${fileId}`, error)
-    }
+    let thumbnail = "";
+    //try {
+    //  const result = await getBlurThumbnail(
+    //    fileInfo.fileBinaryArrayBuffer,
+    //    fileInfo.name
+    //  );
+    //  if (isBlank(result)) {
+    //    thumbnail = "";
+    //  } else {
+    //    const { buffer: thumbnailBuffer, mimeType }: ThumbailResult =
+    //      result as ThumbailResult;
+    //    let cid: string = "";
+    //    if (ipfsSaveByBackend) {
+    //      cid = (
+    //        await setIPFSBatchDataByBackend([
+    //          new Blob([thumbnailBuffer.buffer], {
+    //            type: "application/octet-stream",
+    //          }),
+    //        ])
+    //      )[0];
+    //    } else {
+    //      cid = await setIPFSData(thumbnailBuffer.buffer);
+    //    }
+    //    thumbnail = mimeType + "|" + cid;
+    //  }
+    //} catch (error) {
+    //  thumbnail = "";
+    //  console.error(
+    //    `generate or upload thumbail failed file name: ${fileInfo.name}, file id:${fileId}`,
+    //    error
+    //  );
+    //}
 
     const file = {
       id: fileId,
@@ -1824,7 +1843,7 @@ const getBlockchainPolicy = async (
   console.log('before createChainPolicy')
   const policy: BlockchainPolicy = await createChainPolicy(alice, policyParameters, strategy)
   console.log('after createChainPolicy')
-  // "@nulink_network/nulink-ts-crosschain": "^0.7.0",  must be this version
+  // "@nucypher_network/nucypher-ts": "^0.7.0",  must be this version
 
   return {
     blockchainPolicy: policy,
@@ -2005,7 +2024,7 @@ const getBlockchainPolicys = async (
   console.log(`getBlockchainPolicys before createMultiChainPolicy`)
   const policy: MultiBlockchainPolicy = await createMultiChainPolicy(alice, multiBlockchainPolicyParameters, strategys)
   console.log(`getBlockchainPolicys after createMultiChainPolicy`)
-  // "@nulink_network/nulink-ts-crosschain": "^0.7.0",  must be this version
+  // "@nucypher_network/nucypher-ts": "^0.7.0",  must be this version
 
   return {
     multiBlockchainPolicy: policy,
@@ -2187,7 +2206,7 @@ export const approvalApplicationForUseFiles = async (
   }
   } //end of if (curNetwork === NETWORK_LIST.Horus)
 
-  // "@nulink_network/nulink-ts-crosschain": "^0.7.0",  must be this version
+  // "@nucypher_network/nucypher-ts": "^0.7.0",  must be this version
   console.log("before policy enact");
   const waitReceipt = false;
 
@@ -2627,6 +2646,16 @@ export const getFileContentAsUser = async (
   //https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E6%92%A4%E9%94%80%E7%AD%96%E7%95%A5
   //return {}
 
+  if (isBlank(encryptedTreasureMapIPFSAddress)) {
+    console.error(
+      "get Encrypted failed! Please check if the document has expired. If it has expired, please reapply for its use! error: encryptedTreasureMapIPFSAddress is invalid: ",
+      encryptedTreasureMapIPFSAddress
+    );
+    throw new DecryptError(
+      "get Encrypted failed! Please check if the document has expired. If it has expired, please reapply for its use!"
+    );
+  }
+  
   porterUri = porterUri || (await getPorterUrl())
 
   const bob: Bob = await makeBob(userAccount, porterUri)

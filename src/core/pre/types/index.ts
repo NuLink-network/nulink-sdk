@@ -60,7 +60,7 @@ export const  FileType2Suffix = {
 }
 
 export type FileInfo = {
-    name: string;
+    name: string; //label
     fileBinaryArrayBuffer: ArrayBuffer, //The binary representation of the contents of files By invoke 'FileReader.ReadAsArrayBuffer(file)' callback return the value: e.target.result
     fileCategory?: FileCategory | string;
   };

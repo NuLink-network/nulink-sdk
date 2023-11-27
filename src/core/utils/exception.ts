@@ -111,3 +111,16 @@ export class GetBucketDataError extends Error {
     this.name = "GetBucketDataError"; // (2)
   }
 }
+export class GetStrategyError extends Error {
+  constructor(message) {
+    super(message); // (1)
+    this.name = "GetStrategyError"; // (2)
+  }
+}
+
+export class DecryptError extends Error {
+  constructor(message) {
+    super(message); // (1)
+    this.name = "DecryptError"; // (2)
+  }
+}
