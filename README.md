@@ -30,11 +30,7 @@
       REACT_APP_BSC_TESTNET_PORTER_URI= xxxxx
       //the bsc testnet web3 rpc url. example: 
       REACT_APP_BSC_TESTNET_WEB3_RPC_URL=xxxxx
-      //the nulink conflux testnet porter address. in the nulink testnet,
-      //you can use the address: https://agent.testnet.nulink.org/conflux/porter
-      REACT_APP_CONFLUX_ESPACE_TESTNET_PORTER_URI= xxxxx
-      //the conflux testnet web3 rpc url. example:
-      REACT_APP_CONFLUX_ESPACE_TESTNET_WEB3_RPC_URL=xxxxx
+
 
 3. yarn install
 4. yarn build:main
@@ -43,11 +39,11 @@
 
 
 ```bash
-npm i @nulink_network/nulink-sdk
+npm i @nulink_network/nulink-sdk-crosschain
 ```
 or
 ```bash
-yarn add @nulink_network/nulink-sdk
+yarn add @nulink_network/nulink-sdk-crosschain
 ```
 
 ## API docs
@@ -105,7 +101,7 @@ import {
   getMnemonic,
   getDefaultAccountPrivateKey,
   logoutWallet,
-} from "@nulink_network/nulink-sdk";
+} from "@nulink_network/nulink-sdk-crosschain";
 
 import assert from "assert-ts";
 

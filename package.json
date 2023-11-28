@@ -1,6 +1,6 @@
 {
   "name": "@nulink_network/nulink-sdk-crosschain",
-  "version": "0.0.2",
+  "version": "0.5.0",
   "private": false,
   "dependencies": {
     "@bnb-chain/greenfield-chain-sdk": "^0.2.2",
@@ -91,7 +91,7 @@
     "//build:prod": "cross-env GENERATE_SOURCEMAP=false && rimraf build && yarn run build:main && webpack --stats-error-details --env RUN_ENV=prod --mode production --progress",
     "//build:dev": "cross-env GENERATE_SOURCEMAP=true && rimraf build && yarn run build:main && webpack --stats-error-details --env RUN_ENV=dev --mode development --progress",
     "npm-publish": "npm publish --access=public",
-    "//npm-unpublish": "npm unpublish @nulink_network/nulink-sdk-crosschain@0.0.1 --force",
+    "//npm-unpublish": "npm unpublish @nulink_network/nulink-sdk-crosschain@0.0.3 --force",
     "commit": "git-cz",
     "commitizen:initial": "commitizen init cz-conventional-changelog --save --save-exact",
     "prepare": "husky install"
