@@ -1,6 +1,6 @@
 {
   "name": "@nulink_network/nulink-sdk-crosschain",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "private": false,
   "dependencies": {
     "@bnb-chain/greenfield-chain-sdk": "^0.2.2",
@@ -9,7 +9,7 @@
     "@ethersproject/providers": "^5.7.2",
     "@ethersproject/wallet": "^5.7.0",
     "@nucypher/nucypher-core": "0.2.0",
-    "@nulink_network/nulink-ts-crosschain": "^0.5.2",
+    "@nulink_network/nulink-ts-crosschain": "^0.5.3",
     "@nulink_network/ts-indexdb": "^0.0.5",
     "@offirmo/globalthis-ponyfill": "^4.0.0",
     "@types/humps": "^2.0.2",
@@ -91,7 +91,7 @@
     "//build:prod": "cross-env GENERATE_SOURCEMAP=false && rimraf build && yarn run build:main && webpack --stats-error-details --env RUN_ENV=prod --mode production --progress",
     "//build:dev": "cross-env GENERATE_SOURCEMAP=true && rimraf build && yarn run build:main && webpack --stats-error-details --env RUN_ENV=dev --mode development --progress",
     "npm-publish": "npm publish --access=public",
-    "//npm-unpublish": "npm unpublish @nulink_network/nulink-sdk-crosschain@0.5.1 --force",
+    "//npm-unpublish": "npm unpublish @nulink_network/nulink-sdk-crosschain@0.5.2 --force",
     "commit": "git-cz",
     "commitizen:initial": "commitizen init cz-conventional-changelog --save --save-exact",
     "prepare": "husky install"

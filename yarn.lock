@@ -2614,10 +2614,10 @@
   resolved "https://registry.yarnpkg.com/@nucypher/nucypher-core/-/nucypher-core-0.2.0.tgz#23d24868998ab0e58eaec919f2c1673cff566172"
   integrity sha512-vSSMbe4ad/Bkq5fdehSiMcflvHqLjfcCqAym+GWSiOvs/LJh4nB8Zo2/bJoMES1M1xoCjAZv4NZpPMlZiAXgzQ==
 
-"@nulink_network/nulink-ts-crosschain@^0.5.2":
-  version "0.5.2"
-  resolved "https://registry.yarnpkg.com/@nulink_network/nulink-ts-crosschain/-/nulink-ts-crosschain-0.5.2.tgz#21275b55048fc726624689bd53a022630f806bf4"
-  integrity sha512-4Fba4jaKYVjGOCOcWGL6lCfmrHq2mC6Kl4B4wJgyoxTyWooQFFyUNedkZnpNa8j5/34D4Kx3SH9zMXSyQd0A8Q==
+"@nulink_network/nulink-ts-crosschain@^0.5.3":
+  version "0.5.3"
+  resolved "https://registry.yarnpkg.com/@nulink_network/nulink-ts-crosschain/-/nulink-ts-crosschain-0.5.3.tgz#19ca117075a61f25a25416bc7e6ede309e0c47c6"
+  integrity sha512-5ZhTbEUiLrvxnYP8Yl4MfvAJahuM1fSf7r3KGGlM0UvExzRpoZzY2uz0qzCeHmf7GTQn/p3dkxuT0TbYEGr5og==
   dependencies:
     "@nucypher/nucypher-core" "0.2.0"
     axios "^0.21.1"
