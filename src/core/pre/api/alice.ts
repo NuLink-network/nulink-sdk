@@ -59,7 +59,7 @@ import { ChecksumAddress } from "@nulink_network/nulink-ts-crosschain/build/main
 import qs from "qs";
 import axiosRetry from "axios-retry";
 import axios, { AxiosRequestConfig } from "axios";
-import { decrypt as pwdDecrypt } from "../../utils/passwordEncryption";
+import { decrypt as pwdDecrypt } from "../../utils/password.encryption";
 import { getContractInst } from "../../sol/contract";
 import { Contract, ContractOptions } from "web3-eth-contract";
 import { contractList, CONTRACT_NAME, NETWORK_LIST } from "../../sol";
@@ -237,7 +237,8 @@ export class BlockchainPolicy {
   }
 
   public async estimateCreatePolicyGas(
-    publisher: Alice
+    publisher: Alice,
+    gasPrice: BigNumber = BigNumber.from("0") //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
   ): Promise<BigNumber> {
     //return gasFee =  estimatedGas(gasUsed or gasLimit) * gasPrice
     const startTimestamp = toEpoch(this.startDate);
@@ -250,19 +251,11 @@ export class BlockchainPolicy {
     //   endTimestamp,
     // );
 
-    const web3: Web3 = await getWeb3();
-
-    const [GAS_PRICE_FACTOR_LEFT, GAS_PRICE_FACTOR_RIGHT] =
-        DecimalToInteger(GAS_PRICE_FACTOR);
-      //estimatedGas * gasPrice * factor
-    const gasPrice = BigNumber.from(await web3.eth.getGasPrice()).mul(GAS_PRICE_FACTOR_LEFT)
-        .div(GAS_PRICE_FACTOR_RIGHT);
-
     try {
-      const estimatedGas =
+      const gasUsedAmounts =
         await SubscriptionManagerAgent.estimateGasByCreatePolicy(
           publisher.web3Provider,
-          BigNumber.from("100"), //Contract error, value must be greater than 0 //BigNumber.from("0"), 
+          BigNumber.from("100"), //Contract error, value must be greater than 0 //BigNumber.from("0"),
           this.hrac.toBytes(),
           this.shares,
           startTimestamp,
@@ -270,18 +263,38 @@ export class BlockchainPolicy {
           ownerAddress
         );
 
-        const [GAS_LIMIT_FACTOR_LEFT, GAS_LIMIT_FACTOR_RIGHT] =
+      const web3: Web3 = await getWeb3();
+
+      const [GAS_PRICE_FACTOR_LEFT, GAS_PRICE_FACTOR_RIGHT] =
+        DecimalToInteger(GAS_PRICE_FACTOR);
+
+      //estimatedGas * gasPrice * factor
+      if (gasPrice.lte(BigNumber.from("0"))) {
+        // the gasPrice is obtained in real time
+        gasPrice = BigNumber.from(await web3.eth.getGasPrice());
+        gasPrice = gasPrice
+          .mul(GAS_PRICE_FACTOR_LEFT)
+          .div(GAS_PRICE_FACTOR_RIGHT);
+      } else {
+        //If the gasPrice is manually set, the GAS_PRICE_FACTOR is not set
+      }
+      const _gasPrice = gasPrice;
+
+      const [GAS_LIMIT_FACTOR_LEFT, GAS_LIMIT_FACTOR_RIGHT] =
         DecimalToInteger(GAS_LIMIT_FACTOR);
 
       //estimatedGas * gasPrice * factor
-      const gasFeeInWei = BigNumber.from(estimatedGas)
-        .mul(BigNumber.from(gasPrice))
+      const gasFeeInWei = gasUsedAmounts
+        .mul(_gasPrice)
         .mul(GAS_LIMIT_FACTOR_LEFT)
         .div(GAS_LIMIT_FACTOR_RIGHT);
       return gasFeeInWei;
     } catch (error: any) {
       const error_info: string = error?.message || error;
-      if (typeof error_info === 'string' && error_info?.toLowerCase()?.includes("policy is currently active")) {
+      if (
+        typeof error_info === "string" &&
+        error_info?.toLowerCase()?.includes("policy is currently active")
+      ) {
         //The policy has been created successfully, and there is no need to created again
         throw new PolicyHasBeenActivedOnChain("Policy is currently active");
       } else {
@@ -297,7 +310,12 @@ export class BlockchainPolicy {
     gasPrice?: BigNumber
   ): Promise<EnactedPolicy> {
     const preEnacted = await this.generatePreEnactedPolicy(ursulas);
-    return await preEnacted.enact(this.publisher, waitReceipt, gasUsedAmount, gasPrice );
+    return await preEnacted.enact(
+      this.publisher,
+      waitReceipt,
+      gasUsedAmount,
+      gasPrice
+    );
   }
 
   public async generatePreEnactedPolicy(
@@ -566,15 +584,23 @@ export class MultiBlockchainPolicy {
     gasUsedAmount?: BigNumber,
     gasPrice?: BigNumber
   ): Promise<MultiEnactedPolicy> {
-    const preEnacted: MultiPreEnactedPolicy = await this.generatePreEnactedPolicy(ursulasArray);
-    return await preEnacted.enact(this.publisher, waitReceipt, gasUsedAmount, gasPrice);
+    const preEnacted: MultiPreEnactedPolicy =
+      await this.generatePreEnactedPolicy(ursulasArray);
+    return await preEnacted.enact(
+      this.publisher,
+      waitReceipt,
+      gasUsedAmount,
+      gasPrice
+    );
   }
 
   public async estimateCreatePolicysGas(
-    publisher: Alice
+    publisher: Alice,
+    gasPrice: BigNumber = BigNumber.from("0") //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
   ): Promise<BigNumber> {
-    
-    const startTimestamps = this.startDates.map((startDate) => toEpoch(startDate));
+    const startTimestamps = this.startDates.map((startDate) =>
+      toEpoch(startDate)
+    );
     const endTimestamps = this.endDates.map((endDate) => toEpoch(endDate));
     const ownerAddress = await publisher.web3Provider.getAddress();
 /*     const value = await SubscriptionManagerAgent.getPolicyCost(
@@ -583,17 +609,56 @@ export class MultiBlockchainPolicy {
       startTimestamp,
       endTimestamp
     ); */
-    const estimatedGas =
-      await SubscriptionManagerAgent.estimateGasByCreatePolicys(
-        publisher.web3Provider,
-        /* value */BigNumber.from("100"), //Contract error, value must be greater than 0
-        this.hracs.map((hrac) => hrac.toBytes()),
-        this.shares,
-        startTimestamps,
-        endTimestamps,
-        ownerAddress
-      );
-    return estimatedGas;
+    try {
+      const gasUsedAmounts =
+        await SubscriptionManagerAgent.estimateGasByCreatePolicys(
+          publisher.web3Provider,
+          /* value */ BigNumber.from("100"), //Contract error, value must be greater than 0
+          this.hracs.map((hrac) => hrac.toBytes()),
+          this.shares,
+          startTimestamps,
+          endTimestamps,
+          ownerAddress
+        );
+
+      const web3: Web3 = await getWeb3();
+
+      const [GAS_PRICE_FACTOR_LEFT, GAS_PRICE_FACTOR_RIGHT] =
+        DecimalToInteger(GAS_PRICE_FACTOR);
+
+      //estimatedGas * gasPrice * factor
+      if (gasPrice.lte(BigNumber.from("0"))) {
+        // the gasPrice is obtained in real time
+        gasPrice = BigNumber.from(await web3.eth.getGasPrice());
+        gasPrice = gasPrice
+          .mul(GAS_PRICE_FACTOR_LEFT)
+          .div(GAS_PRICE_FACTOR_RIGHT);
+      } else {
+        //If the gasPrice is manually set, the GAS_PRICE_FACTOR is not set
+      }
+      const _gasPrice = gasPrice;
+
+      const [GAS_LIMIT_FACTOR_LEFT, GAS_LIMIT_FACTOR_RIGHT] =
+        DecimalToInteger(GAS_LIMIT_FACTOR);
+
+      const gasInWei = gasUsedAmounts
+        .mul(_gasPrice)
+        .mul(GAS_LIMIT_FACTOR_LEFT)
+        .div(GAS_LIMIT_FACTOR_RIGHT);
+
+      return gasInWei;
+    } catch (error: any) {
+      const error_info: string = error?.message || error;
+      if (
+        typeof error_info === "string" &&
+        error_info?.toLowerCase()?.includes("policy is currently active")
+      ) {
+        //The policy has been created successfully, and there is no need to created again
+        throw new PolicyHasBeenActivedOnChain("Policy is currently active");
+      } else {
+        throw error;
+      }
+    }
   }
 
   public async generatePreEnactedPolicy(
@@ -644,8 +709,14 @@ export class MultiBlockchainPolicy {
     return builder.build();
   }
 
-  private encryptTreasureMap(treasureMap: TreasureMap, index: number): EncryptedTreasureMap {
-    return treasureMap.encrypt(this.publisher.signer, this.bobs[index].decryptingKey);
+  private encryptTreasureMap(
+    treasureMap: TreasureMap,
+    index: number
+  ): EncryptedTreasureMap {
+    return treasureMap.encrypt(
+      this.publisher.signer,
+      this.bobs[index].decryptingKey
+    );
   }
 }
 
@@ -894,7 +965,7 @@ export const approveNLK = async (
       return gasFeeInWei.toString();
     }
 
-    const tokenBalanceEthers = await account.balance() as string; //tbnb
+    const tokenBalanceEthers = (await account.balance()) as string; //tbnb
     const tokenBalanceWei = Web3.utils.toWei(tokenBalanceEthers);
 
     // tokenBalanceWei must be great than gasUsed(gasLimit) * gitPrice

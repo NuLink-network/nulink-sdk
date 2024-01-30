@@ -1,4 +1,4 @@
-[NuLink SDK - v0.0.6](../README.md) / [Modules](../modules.md) / checkFileApprovalStatusIsUnderReviewOrApproved
+[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / checkFileApprovalStatusIsUnderReviewOrApproved
 
 # Function: checkFileApprovalStatusIsUnderReviewOrApproved
 
@@ -22,4 +22,4 @@ param data Object be must be have the property of "applyId",  return null otherw
 
 #### Defined in
 
-[api/pre.ts:240](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/api/pre.ts#L240)
+[api/pre.ts:387](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/api/pre.ts#L387)

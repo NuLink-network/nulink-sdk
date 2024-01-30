@@ -38,7 +38,7 @@ import keccak256 from 'keccak256'
 // import { errors } from 'web3-core-helpers'
 
 import md5 from 'md5'
-import { encrypt as pwdEncrypt, decrypt as pwdDecrypt } from '../../utils/passwordEncryption'
+import { encrypt as pwdEncrypt, decrypt as pwdDecrypt } from '../../utils/password.encryption'
 import { getContractInst } from '../../sol/contract'
 import { CONTRACT_NAME } from '../../sol'
 import { Contract, ContractOptions } from 'web3-eth-contract'
@@ -1768,7 +1768,7 @@ export class NuLinkHDWallet {
    * @param {string} [dataFileBinaryString=''] - The optional binary string of a data file to restore the wallet from. The dataFileBinaryString is returned by the exportWalletData function
    * If a data file binary string is provided, the wallet's account data will be restored from it. Otherwise, a new account will be created.
    * @returns {Promise<NuLinkHDWallet>} - Returns a new NuLinkHDWallet object.
-   * @throws {@link Error} - Throws an error if the restore wallet tag is missing or if the wallet could not be restored from the data file.
+   * @throws {Error} - Throws an error if the restore wallet tag is missing or if the wallet could not be restored from the data file.
    * @static
    * @memberof NuLinkHDWallet
    */
@@ -1830,7 +1830,7 @@ export class NuLinkHDWallet {
    * @param {string} newPassword - The password used to encrypt the HDWallet object.
    * @param {string} [dataFileBinaryString=''] - Optional parameter that contains user data, such as account information, in binary form.
    * @returns {Promise<NuLinkHDWallet>} - An encrypted HDWallet object containing account and user data.
-   * @throws {@link Error}  Throws an InvalidRootExtendedPrivateKeyError if the provided private key does not follow the BIP32 standard.
+   * @throws {Error}  Throws an InvalidRootExtendedPrivateKeyError if the provided private key does not follow the BIP32 standard.
    * @static
    * @memberof NuLinkHDWallet
    */

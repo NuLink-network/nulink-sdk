@@ -21,7 +21,7 @@ import { ethers } from "ethers";
 import {
   encrypt as pwdEncrypt,
   decrypt as pwdDecrypt,
-} from "../../utils/passwordEncryption";
+} from "../../utils/password.encryption";
 
 // The following code is using Asynchronous, which means by using async multiple codes can run simultaneously.
 export const hdWalletTestRun = async () => {

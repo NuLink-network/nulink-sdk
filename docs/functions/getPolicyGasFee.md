@@ -1,8 +1,8 @@
-[NuLink SDK - v0.0.6](../README.md) / [Modules](../modules.md) / getPolicyGasFee
+[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / getPolicyGasFee
 
 # Function: getPolicyGasFee
 
-▸ **getPolicyGasFee**(`userAccountId`, `applyId`, `ursulaShares`, `ursulaThreshold`, `startSeconds`, `endSeconds`, `serverFee`): `Promise`<`string`\>
+▸ **getPolicyGasFee**(`userAccountId`, `applyId`, `ursulaShares`, `ursulaThreshold`, `startSeconds`, `endSeconds`, `serverFee`, `gasPrice?`): `Promise`<`string`\>
 
 estimate service gas fees for sharing files
 Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
@@ -26,6 +26,7 @@ PolicyHasBeenActivedOnChain Policy has been actived(created) on chain (policy is
 | `startSeconds` | `number` | Start time of file usage application in seconds |
 | `endSeconds` | `number` | End time of file usage application in seconds |
 | `serverFee` | `BigNumber` | server fees by call function of `getPolicyServerGasFee` |
+| `gasPrice` | `BigNumber` | the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time |
 
 #### Returns
 
@@ -35,4 +36,4 @@ PolicyHasBeenActivedOnChain Policy has been actived(created) on chain (policy is
 
 #### Defined in
 
-[api/pre.ts:60](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/api/pre.ts#L60)
+[api/pre.ts:119](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/api/pre.ts#L119)

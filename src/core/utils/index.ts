@@ -5,10 +5,10 @@ export * from "./format";
 export * from "./exception";
 export * from "./storage";
 export * from "./math";
-export * from "./passwordEncryption";
+export * from "./password.encryption";
 export * from "./list";
 export * from "./map";
 export * from "./file";
 export * from "./image";
-export * from "./signMessage";
-export * from "./ipfs";
+export * from "./sign.message";
+export * from "./external-storage"

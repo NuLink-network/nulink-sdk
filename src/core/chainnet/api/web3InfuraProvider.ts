@@ -13,7 +13,7 @@ import { Wallet } from '@ethersproject/wallet'
 import md5 from 'md5'
 // import { InfuraProvider } from '@ethersproject/providers';
 import toWeb3Provider from 'ethers-to-web3'
-import { decrypt as pwdDecrypt } from '../../utils/passwordEncryption'
+import { decrypt as pwdDecrypt } from '../../utils/password.encryption'
 
 const INFURA_WEB3PROVIDER_INSTANCE_NAME_PREFIX = 'infuraWeb3provider'
 const PRIVODER_NAME = (account: 'Account', ethUrl?: string) =>

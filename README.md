@@ -19,9 +19,6 @@
       //the sdk backend testnet server address. in the nulink testnet,
       //you can use the address: https://agent.testnet.nulink.org/bk
       REACT_APP_CENTRALIZED_SERVER_URL=xxxxx
-      //you ipfs address, Requires permission to write data. in the nulink testnet,
-      //you can use the address: https://agent.testnet.nulink.org/nuipfs 
-      REACT_APP_IPFS_NODE_URL=xxxxx
 
       //Configure the parameters of the network that you connect to. Parameters for networks that are not connected do not need to be configured.
       
@@ -79,25 +76,25 @@ import {
   isBlank,
   restoreWalletDataByMnemonic,
   getPolicyGasFee,
-  type FileInfo,
+  type DataInfo,
   getWalletDefaultAccount,
   FileCategory,
-  uploadFilesByCreatePolicy,
-  getUploadedFiles,
+  uploadDatasByCreatePolicy,
+  getUploadedDatas,
   createAccountIfNotExist,
-  getOtherShareFiles,
-  getFileDetails,
-  applyForFilesUsagePermission,
-  getFilesPendingApprovalAsPublisher,
-  refusalApplicationForUseFiles,
+  getOtherShareDatas,
+  getDataDetails,
+  applyForDatasUsagePermission,
+  getDatasPendingApprovalAsPublisher,
+  refusalApplicationForUseDatas,
   getPolicyTokenCost,
-  approvalApplicationForUseFiles,
-  getApprovedFilesAsPublisher,
-  getApprovedFilesAsUser,
-  getFileContentByFileIdAsUser,
+  approvalApplicationForUseDatas,
+  getApprovedDatasAsPublisher,
+  getApprovedDatasAsUser,
+  getDataContentByDataIdAsUser,
   getPublishedPoliciesInfo,
-  uploadFilesBySelectPolicy,
-  getFilesByStatus,
+  uploadDatasBySelectPolicy,
+  getDatasByStatus,
   getMnemonic,
   getDefaultAccountPrivateKey,
   logoutWallet,
@@ -148,18 +145,18 @@ const enc = new TextEncoder(); // always utf-8
 const historyContent: Uint8Array = enc.encode(plainText);
 
 //1.Alice upload file
-const fileList: FileInfo[] = [
+const fileList: DataInfo[] = [
   {
-    name: `history-${nanoid()}.pdf`,
-    fileBinaryArrayBuffer: historyContent.buffer,
+    label: `history-${nanoid()}.pdf`,
+    dataArrayBuffer: historyContent.buffer,
   },
 ];
 
 //2. Alice encrypt and update a file to the ipfs network
-await uploadFilesByCreatePolicy(accountAlice, FileCategory.History, fileList);
+await uploadDatasByCreatePolicy(accountAlice, FileCategory.History, fileList);
 
 //3. We can get the file just uploaded
-const resultList = (await getUploadedFiles(accountAlice, undefined, 1, 1000)) as object;
+const resultList = (await getUploadedDatas(accountAlice, undefined, 1, 1000)) as object;
 
 console.log("resultList: ", resultList);
 console.log('resultList["total"]>0 ', resultList["total"] > 0);
@@ -198,7 +195,7 @@ assert(nuLinkHDWallet);
   assert(accountBob);
 
 //Bob finds the file Bob has just uploaded
-const findFileResultList = (await getOtherShareFiles(accountBob,undefined, false, undefined,
+const findFileResultList = (await getOtherShareDatas(accountBob,undefined, false, undefined,
 undefined, undefined, 1, 1000
 )) as object;
 
@@ -220,7 +217,7 @@ assert(findFileInfo["owner_id"] === accountAlice.id);
 const applyFileId = findFileInfo["file_id"];
 
 //get file details
-const fileDetails = (await getFileDetails(applyFileId, accountBob.id)) as object;
+const fileDetails = (await getDataDetails(applyFileId, accountBob.id)) as object;
 
 //assert(fileDetails["creator_id"] === accountAlice.id);
 assert(fileDetails["file_id"] === applyFileId);
@@ -228,14 +225,14 @@ assert(parseInt(fileDetails["status"]) === 0); //Is not to apply for
 
 //Bob requests permission to use the file for 7 days
 try {
-  await applyForFilesUsagePermission([applyFileId], accountBob, 7);
+  await applyForDatasUsagePermission([applyFileId], accountBob, 7);
 } catch (e) {
   console.log("bob apply file failed", e);
   assert(false);
 }
 
 //Alice receives Bob's file usage request
-const filesNeedToApprovedResultList = await getFilesPendingApprovalAsPublisher(accountAlice, 1, 1000);
+const filesNeedToApprovedResultList = await getDatasPendingApprovalAsPublisher(accountAlice, 1, 1000);
 
 let fileIndex3 = -1;
 for (
@@ -257,18 +254,18 @@ const needToApprovedFileInfo =
 assert(needToApprovedFileInfo["file_owner_id"] === accountAlice.id);
 
 //Alice rejected the file usage request
-await refusalApplicationForUseFiles(accountAlice, needToApprovedFileInfo["apply_id"]);
+await refusalApplicationForUseDatas(accountAlice, needToApprovedFileInfo["apply_id"]);
 
 //Bob apply file for usage again. The application period is three days, less than the previous seven days
 try {
-  await applyForFilesUsagePermission([applyFileId], accountBob, 3);
+  await applyForDatasUsagePermission([applyFileId], accountBob, 3);
 } catch (e) {
   console.log("bob reapply file failed", e);
   assert(false);
 }
 
 //Alice receives Bob's file usage request again
-const filesNeedToApprovedResultList2 = await getFilesPendingApprovalAsPublisher(accountAlice, 1, 1000);
+const filesNeedToApprovedResultList2 = await getDatasPendingApprovalAsPublisher(accountAlice, 1, 1000);
 
 assert(
   filesNeedToApprovedResultList2 &&
@@ -319,7 +316,7 @@ const gasFeeWei = await getPolicyGasFee(
 
 //Note: Please make sure that the account has sufficient tnlk and bsc testnet tokens before this, otherwise the approval will fail
 //Alice approves Bob's application for file usage. Whenever Alice approves a file request, an on-chain policy is created
-await approvalApplicationForUseFiles(
+await approvalApplicationForUseDatas(
   accountAlice,
   accountBob.id,
   needToApprovedFileInfo2["apply_id"],
@@ -333,7 +330,7 @@ await approvalApplicationForUseFiles(
 );
 
 //Alice, as the publisher of the file, obtains the list of files that she has successfully approved
-const aliceApprovedfilesList = await getApprovedFilesAsPublisher(accountAlice, 1, 1000);
+const aliceApprovedfilesList = await getApprovedDatasAsPublisher(accountAlice, 1, 1000);
 
 assert(aliceApprovedfilesList && aliceApprovedfilesList["total"] > 0);
 
@@ -352,7 +349,7 @@ const policyId = aliceApprovedFileInfo["policy_id"];
 console.log("file policy Id:", policyId);
 
 //Bob finds out that his application has been approved by Alice. Bob now has permission to view the contents of the file
-const bobBeApprovedfilesList = await getApprovedFilesAsUser(
+const bobBeApprovedfilesList = await getApprovedDatasAsUser(
   accountBob,
   1,
   1000
@@ -376,7 +373,7 @@ const policyId2 = bobBeApprovedfilesInfo["policy_id"];
 assert(policyId2 === policyId);
 
 //Finally, Bob gets the contents of the file
-const arrayBuffer: ArrayBuffer = await getFileContentByFileIdAsUser(
+const arrayBuffer: ArrayBuffer = await getDataContentByDataIdAsUser(
   accountBob,
   bobBeApprovedfilesInfo["file_id"]
 );
@@ -398,15 +395,15 @@ const plainText2 = "This is a philosophy book content";
 const historyContent2: Uint8Array = enc.encode(plainText2);
 
 //1.upload file
-const fileList2: FileInfo[] = [
+const fileList2: DataInfo[] = [
   {
-    name: `philosophy-${nanoid()}.pdf`,
-    fileBinaryArrayBuffer: historyContent2.buffer,
+    label: `philosophy-${nanoid()}.pdf`,
+    dataArrayBuffer: historyContent2.buffer,
   },
 ];
 
 //Files uploaded by using published policies do not need approval. Bob can use the files directly, so there is no approval record
-const fileIds = await uploadFilesBySelectPolicy(
+const fileIds = await uploadDatasBySelectPolicy(
   accountAlice,
   FileCategory.Philosophy,
   fileList2,
@@ -416,7 +413,7 @@ const fileIds = await uploadFilesBySelectPolicy(
 //Bob can directly download Alice's associated policy upload file without waiting for Alice's approval,
 //because the associated policy has already been created and does not need repeated approval. Note: This publish policy value is available for Bob
 //Bob get new upload file content
-const arrayBuffer2: ArrayBuffer = await getFileContentByFileIdAsUser(
+const arrayBuffer2: ArrayBuffer = await getDataContentByDataIdAsUser(
   accountBob,
   fileIds[0]
 );
@@ -427,7 +424,7 @@ assert(fileContent2 === plainText2);
 
 //you can get all status files for mine apply: The files I applied for
 //status 0: all status, include:  applying, approved, rejected
-const data = (await getFilesByStatus(
+const data = (await getDatasByStatus(
   undefined,
   accountBob.id,
   undefined,

@@ -1,10 +1,10 @@
-[NuLink SDK - v0.0.6](../README.md) / [Modules](../modules.md) / getPublishedPoliciesInfo
+[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / getPublishedPoliciesInfo
 
 # Function: getPublishedPoliciesInfo
 
 ▸ **getPublishedPoliciesInfo**(`account`, `pageIndex?`, `pageSize?`): `Promise`<`object`\>
 
-The publisher of the file obtains a list of the information of the policies published on the blockchain.
+The publisher of the file/data obtains a list of the information of the policies published on the blockchain.
 
 #### Parameters
 
@@ -43,4 +43,4 @@ The publisher of the file obtains a list of the information of the policies publ
 
 #### Defined in
 
-[core/pre/api/workflow.ts:1141](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/core/pre/api/workflow.ts#L1141)
+[core/pre/api/workflow.ts:1219](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/core/pre/api/workflow.ts#L1219)

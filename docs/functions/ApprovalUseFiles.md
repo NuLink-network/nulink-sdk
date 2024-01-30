@@ -1,4 +1,4 @@
-[NuLink SDK - v0.0.6](../README.md) / [Modules](../modules.md) / ApprovalUseFiles
+[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / ApprovalUseFiles
 
 # Function: ApprovalUseFiles
 
@@ -22,7 +22,8 @@ UnauthorizedError get logined account failed, must be login account first
 | `data.endSeconds` | `number` |  |
 | `data.ursulaShares` | `number` |  |
 | `data.ursulaThreshold` | `number` |  |
-| `data.gasFeeInWei?` | `BigNumber` | by call 'getPolicyGasFee' |
+| `data.gasFeeInWei?` | `BigNumber` | (Optional) by call 'getPolicyGasFee', must be the token of the chain (e.g. bnb), not be the nlk |
+| `data.gasPrice?` | `BigNumber` | (Optional) the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time |
 | `data.remark?` | `string` | (Optional) remark |
 
 #### Returns
@@ -38,4 +39,4 @@ UnauthorizedError get logined account failed, must be login account first
 
 #### Defined in
 
-[api/pre.ts:268](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/api/pre.ts#L268)
+[api/pre.ts:416](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/api/pre.ts#L416)

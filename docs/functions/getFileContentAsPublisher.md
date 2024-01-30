@@ -1,4 +1,4 @@
-[NuLink SDK - v0.0.6](../README.md) / [Modules](../modules.md) / getFileContentAsPublisher
+[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / getFileContentAsPublisher
 
 # Function: getFileContentAsPublisher
 
@@ -30,4 +30,4 @@ ParameterError The input parameter must have the "fileId" field
 
 #### Defined in
 
-[api/pre.ts:659](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/api/pre.ts#L659)
+[api/pre.ts:893](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/api/pre.ts#L893)

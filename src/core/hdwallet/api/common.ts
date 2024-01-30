@@ -9,7 +9,7 @@ import assert from "assert";
 import {
   decrypt as pwdDecrypt,
   encrypt as pwdEncrypt,
-} from "../../utils/passwordEncryption";
+} from "../../utils/password.encryption";
 
 /**
  * @internal

@@ -13,7 +13,7 @@ import { BigNumber, ethers } from "ethers";
 import md5 from 'md5'
 import { Wallet } from "@ethersproject/wallet";
 import toWeb3Provider from "ethers-to-web3";
-import { decrypt as pwdDecrypt } from "../../utils/passwordEncryption";
+import { decrypt as pwdDecrypt } from "../../utils/password.encryption";
 
 const RPC_WEB3PROVIDER_INSTANCE_NAME_PREFIX = "rpcWeb3provider";
 const PRIVODER_NAME = (account: 'Account', ethUrl?: string) => `${RPC_WEB3PROVIDER_INSTANCE_NAME_PREFIX}_${(account as any).address}_${md5(ethUrl ?? '', { encoding: 'string' })}`;

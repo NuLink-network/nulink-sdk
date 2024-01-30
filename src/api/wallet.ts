@@ -6,7 +6,7 @@
  */
 import { createAccountIfNotExist, getPolicyLabelIdsByAccountId } from '../core/pre'
 import { isBlank, UserDataCorruptedError, UserDataVersionLowError, Account, NuLinkHDWallet } from '../core'
-import { decrypt as pwdDecrypt } from '../core/utils/passwordEncryption'
+import { decrypt as pwdDecrypt } from '../core/utils/password.encryption'
 import * as exception from '../core/utils/exception'
 
 /**

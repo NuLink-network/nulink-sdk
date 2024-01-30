@@ -1,0 +1,22 @@
+[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / deleteUploadedDatas
+
+# Function: deleteUploadedDatas
+
+▸ **deleteUploadedDatas**(`account`, `dataIds`): `Promise`<`unknown`\>
+
+Deletes the specified files/datas uploaded by the account from the server, This account acts as the publisher
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `account` | [`Account`](../classes/Account.md) | The account that owns the files/datas to be deleted. |
+| `dataIds` | `string`[] | An array of file/data IDs to delete. |
+
+#### Returns
+
+`Promise`<`unknown`\>
+
+#### Defined in
+
+[core/pre/api/workflow.ts:602](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/core/pre/api/workflow.ts#L602)

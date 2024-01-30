@@ -1,4 +1,4 @@
-[NuLink SDK - v0.0.6](../README.md) / [Modules](../modules.md) / createAccountIfNotExist
+[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / createAccountIfNotExist
 
 # Function: createAccountIfNotExist
 
@@ -18,4 +18,4 @@ create account to center server
 
 #### Defined in
 
-[core/pre/api/workflow.ts:85](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/core/pre/api/workflow.ts#L85)
+[core/pre/api/workflow.ts:113](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/core/pre/api/workflow.ts#L113)

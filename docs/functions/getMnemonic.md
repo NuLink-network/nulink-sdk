@@ -1,4 +1,4 @@
-[NuLink SDK - v0.0.6](../README.md) / [Modules](../modules.md) / getMnemonic
+[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / getMnemonic
 
 # Function: getMnemonic
 
@@ -26,4 +26,4 @@ Returns the mnemonic phrase if the password is correct, otherwise returns null. 
 
 #### Defined in
 
-[api/wallet.ts:276](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/api/wallet.ts#L276)
+[api/wallet.ts:276](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/api/wallet.ts#L276)

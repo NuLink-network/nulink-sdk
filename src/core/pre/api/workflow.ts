@@ -3,12 +3,12 @@
  * Note: Anything with an Account parameter is placed in the first parameter of the function. It is convenient to unify the calling format when interacting with the browser page
  */
 import sleep from 'await-sleep'
-import { signMessage } from '../../utils/signMessage'
+import { signMessage } from '../../utils/sign.message'
 
 import { Account, Strategy, web3 } from '../../hdwallet/api/account'
-import { GAS_LIMIT_FACTOR, GAS_PRICE_FACTOR } from "../../chainnet/config";
-import { DecimalToInteger } from "../../utils/math";
-import { hexlify, arrayify } from "ethers/lib/utils";
+import { GAS_LIMIT_FACTOR, GAS_PRICE_FACTOR } from '../../chainnet/config'
+import { DecimalToInteger } from '../../utils/math'
+import { hexlify, arrayify } from 'ethers/lib/utils'
 //import { arrayify } from '@ethersproject/bytes'
 
 // notice: bacause the MessageKit use the SecretKey import from nucypher-ts, so you  must be use the nucypher-ts's SecretKey PublicKey , not use the nucypher-core's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
@@ -20,33 +20,26 @@ import {
   EnactedPolicy,
   MultiEnactedPolicy,
   MessageKit,
-  RemoteBob,
-} from "@nulink_network/nulink-ts-crosschain";
+  RemoteBob
+} from '@nulink_network/nulink-ts-crosschain'
 
 import { EncryptedTreasureMap, HRAC } from '@nucypher/nucypher-core'
 
 //reference: https://github.com/nucypher/nucypher-ts-demo/blob/main/src/characters.ts
 // notice: bacause the encryptedMessage.decrypt( get by MessageKit) use the SecretKey import from nucypher-ts, so you  must be use the nucypher-ts's SecretKey PublicKey , not use the nucypher-core's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
 // eslint-disable-next-line import/no-extraneous-dependencies
-import {
-  PublicKey,
-  SecretKey as NucypherTsSecretKey,
-  CrossChainHRAC,
-} from "@nulink_network/nulink-ts-crosschain";
+import { PublicKey, SecretKey as NucypherTsSecretKey, CrossChainHRAC } from '@nulink_network/nulink-ts-crosschain'
 
 import { encryptMessage } from './enrico'
 import { isBlank } from '../../utils/null'
-import { FileCategory, FileInfo, FileType } from '../types'
+import { DataCategory, DataInfo, DataType } from '../types'
 //import { message as Message } from "antd";
 import assert from 'assert-ts'
-import { getCurrentNetworkKey, getSettingsData } from "../../chainnet";
+import { getCurrentNetworkKey, getSettingsData } from '../../chainnet'
 import { serverGet, serverPost } from '../../servernet'
 import { nanoid } from 'nanoid'
 import { Bob, makeBob, makeRemoteBob } from './bob'
-import {
-  Porter,
-  Ursula,
-} from "@nulink_network/nulink-ts-crosschain/build/main/src/characters/porter";
+import { Porter, Ursula } from '@nulink_network/nulink-ts-crosschain/build/main/src/characters/porter'
 import {
   BlockchainPolicy,
   MultiBlockchainPolicy,
@@ -62,53 +55,31 @@ import {
 import { BigNumber } from 'ethers'
 import { ethers } from 'ethers'
 // import { SubscriptionManagerAgent } from '@nulink_network/nulink-ts-crosschain/build/main/src/agents/subscription-manager'
-import { SubscriptionManagerAgent } from "@nulink_network/nulink-ts-crosschain";
+import { SubscriptionManagerAgent } from '@nulink_network/nulink-ts-crosschain'
 
 import { toEpoch } from '../../utils/format'
 import { compressPublicKeyBuffer, compressPublicKeyBuffer2, privateKeyBuffer } from '../../hdwallet/api/common'
 import { getPorterUrl } from './porter'
-import { setData as setIPFSData, getData as getIPFSData } from '../../utils/ipfs'
-import { setBatchData as setIPFSBatchDataByBackend } from '../../utils/ipfs.backend'
-import { getData as getGreenFieldStorageData } from "../../utils/greenfield.storage.backend";
+import { GetStorageDataError, StorageManager } from '../../utils/external-storage'
 import humps from 'humps'
 import { getBlurThumbnail } from '../../utils/image'
 import { ThumbailResult } from '../../utils/image'
 import md5 from 'md5'
-import { fileSuffix } from '../../utils/file'
+import { dataSuffix } from '../../utils/file'
 import Web3 from 'web3'
 import { fromBytes, fromBytesByEncoding } from '../../utils/encode'
-import { decrypt as pwdDecrypt } from '../../utils/passwordEncryption'
+import { decrypt as pwdDecrypt } from '../../utils/password.encryption'
 import {
   getUrsulaError,
   InsufficientBalanceError,
   PolicyHasBeenActivedOnChain,
   GetStrategyError,
-  DecryptError,
-} from "../../utils/exception";
+  DecryptError
+} from '../../utils/exception'
 import { getWeb3 } from '../../hdwallet/api'
 import { getRandomElementsFromArray } from '../../../core/utils'
-import { NETWORK_LIST } from "../../sol";
-import { getFileCategoryString } from "./utils";
-
-let ipfsSaveByBackend: boolean = true
-try {
-  // access strategy for IPFS data:  1. Access IPFS data through proxy of backend service (with added verification logic). 2. Directly access IPFS  network node
-  ipfsSaveByBackend = ((process.env.REACT_APP_IPFS_STORAGE_STRATEGY as string) || '1').trim() === '1'
-} catch (error) {}
-// const ipfsSaveByBackend = false;
-
-let greenfieldStorageEnable: boolean = true;
-try {
-  // # Storing and Accessing FILE data (IPFS data) can be achieved through the Greenfield storage bucket, which is our encapsulated backend interface
-  // 0: defalut value -> save file data by IPFS, 1: save file data by Greenfield storage(the variable REACT_APP_IPFS_STORAGE_STRATEGY must be set value of 1)
-  greenfieldStorageEnable =
-    ((process.env.REACT_APP_STORAGE_BY_GREENFIELD as string) || "0").trim() ===
-    "1";
-  if (greenfieldStorageEnable) {
-    //(the variable REACT_APP_IPFS_STORAGE_STRATEGY must be set value of 1)
-    ipfsSaveByBackend = true;
-  }
-} catch (error) {}
+import { NETWORK_LIST } from '../../sol'
+import { getDataCategoryString } from './utils'
 
 /**
  * @internal
@@ -326,144 +297,106 @@ export const updateAccountInfo = async (account: Account, updateData: Record<str
 }
 
 /**
- * Uploads files to the server by creating a new local policy and uploading the files encrypted with the policy's public key to IPFS.
- * @category File Publisher(Alice) Interface
- * @param {Account} account - The account to use to create the policy and upload the files.
- * @param {FileCategory | string} fileCategory - The category of the files being uploaded. Must be a valid FileCategory value or a string.
- * @param {FileInfo[]} fileList - The list of files to upload. Each element of the array must be an object with properties 'name' and 'fileBinaryArrayBuffer'.
- * @returns {Promise<Strategy>} - Returns the strategy used to upload the files.
+ * Uploads files/datas to the server by creating a new local policy and uploading the files encrypted with the policy's public key to IPFS.
+ * @category File/Data Publisher(Alice) Interface
+ * @param {Account} account - The account to use to create the policy and upload the files/datas.
+ * @param {DataCategory | string} category - The category of the files/datas being uploaded. Must be a valid DataCategory value or a string.
+ * @param {DataInfo[]} dataInfoList - The list of files/datas to upload. Each element of the array must be an object with properties 'label' and 'dataArrayBuffer'.
+ * @returns {Promise<Strategy>} - Returns the strategy used to upload the files/datas.
  */
-export const uploadFilesByCreatePolicy = async (
+export const uploadDatasByCreatePolicy = async (
   account: Account,
-  fileCategory: FileCategory | string, //File category, according to the design: only one category is allowed to be uploaded in batches, and different categories need to be uploaded separately
-  fileList: FileInfo[] //file information list
+  category: DataCategory | string, //data category, according to the design: only one category is allowed to be uploaded in batches, and different categories need to be uploaded separately
+  dataInfoList: DataInfo[] //data information list
 ): Promise<Strategy> => {
-  console.log('uploadFilesByCreatePolicy account', account)
+  console.log('uploadDatasByCreatePolicy account', account)
 
-  let label = getFileCategoryString(fileCategory);
+  let label = getDataCategoryString(category)
   if (!label) {
-    if (fileList.length > 0 && !isBlank(fileList[0]?.fileCategory)) {
-      label = getFileCategoryString(fileList[0]?.fileCategory as any);
+    if (dataInfoList.length > 0 && !isBlank(dataInfoList[0]?.category)) {
+      label = getDataCategoryString(dataInfoList[0]?.category as any)
     }
     if (!label) {
-      label = "";
+      label = ''
     }
   }
 
   // Number.isNaN(parseInt("Philosophy"))
   const strategy: Strategy = await account.createStrategyByLabel(label)
-  // console.log("uploadFilesByCreatePolicy strategy", strategy);
+  // console.log("uploadDatasByCreatePolicy strategy", strategy);
 
-  // console.log("uploadFilesByCreatePolicy fileList", fileList);
+  // console.log("uploadDatasByCreatePolicy dataList", dataList);
   /*   //for test start
   const plainText = "This is a history book content";
   const enc = new TextEncoder(); // always utf-8
   const historyContent: Uint8Array = enc.encode(plainText);
 
-  fileList = [{ name: `history-${nanoid()}.pdf`, fileBinaryArrayBuffer: historyContent.buffer }];
+  dataList = [{ name: `history-${nanoid()}.pdf`, dataArrayBuffer: historyContent.buffer }];
   //for test end */
 
-  const fileContentList: ArrayBuffer[] = []
-  for (const fileInfo of fileList) {
-    fileContentList.push(fileInfo.fileBinaryArrayBuffer)
+  const dataContentList: ArrayBuffer[] = []
+  for (const dataInfo of dataInfoList) {
+    dataContentList.push(dataInfo.dataArrayBuffer)
   }
-  // console.log("uploadFilesByCreatePolicy fileContentList", fileContentList);
+  // console.log("uploadDatasByCreatePolicy fileContentList", fileContentList);
 
-  const _encryptMessages: MessageKit[] = encryptMessage(strategy.strategyKeyPair._publicKey, fileContentList)
-  // console.log("uploadFilesByCreatePolicy _encryptMessages", _encryptMessages);
-  const mockIPFSAddressList: string[] = [];
-  //notice greenfieldStorage backend API not support batch interface currently
-  if (greenfieldStorageEnable) {
-    for (const _encryptMessage of _encryptMessages) {
-      const _encryptMessageBytes: Uint8Array = _encryptMessage.toBytes();
+  const _encryptMessages: MessageKit[] = encryptMessage(strategy.strategyKeyPair._publicKey, dataContentList)
+  // console.log("uploadDatasByCreatePolicy _encryptMessages", _encryptMessages);
+  const mockIPFSAddressList: string[] = []
 
-      //upload encrypt files to greenfield
-      const cids: string[] = await setIPFSBatchDataByBackend([
-        new Blob([_encryptMessageBytes /*Uint8Array*/], {
-          type: "application/octet-stream",
-        }),
-      ]);
-      mockIPFSAddressList.push(...cids);
-    }
-  } else if (ipfsSaveByBackend) {
-    //upload encrypt files to IPFS
+  const datas: Uint8Array[] = _encryptMessages.map((encryptMessage) => encryptMessage.toBytes() /*Uint8Array*/)
+  const cids: string[] = await StorageManager.setData(datas, account)
+  mockIPFSAddressList.push(...cids)
 
-    const cids: string[] = await setIPFSBatchDataByBackend(
-      _encryptMessages.map(
-        (encryptMessage) =>
-          new Blob([encryptMessage.toBytes() /*Uint8Array*/], {
-            type: "application/octet-stream",
-          })
-      )
-    )
-    mockIPFSAddressList.push(...cids)
-  } else {
-    for (const _encryptMessage of _encryptMessages) {
-      const _encryptMessageBytes: Uint8Array = _encryptMessage.toBytes()
-      //upload encrypt files to IPFS
-      const cid = await setIPFSData(_encryptMessageBytes)
-      mockIPFSAddressList.push(cid)
-    }
-  }
-  // console.log("uploadFilesByCreatePolicy mockIPFSAddressList", mockIPFSAddressList);
-  const fileInfos: object[] = []
-  for (let index = 0; index < fileList.length; index++) {
-    const fileInfo = fileList[index]
+  // console.log("uploadDatasByCreatePolicy mockIPFSAddressList", mockIPFSAddressList);
+  const dataInfos: object[] = []
+  for (let index = 0; index < dataInfoList.length; index++) {
+    const dataInfo = dataInfoList[index]
 
-    const fileId = nanoid()
+    const dataId = nanoid()
 
     //The generation of thumbnail logic should be handled by a third-party DApp, rather than implemented in the pre-process. Therefore, it needs to be moved to the third-party DApp, and this part should be blocked
     //generate and upload thumbnail files to IPFS
-    let thumbnail = "";
-   //try {
-   //  const result = await getBlurThumbnail(
-   //    fileInfo.fileBinaryArrayBuffer,
-   //    fileInfo.name
-   //  );
-   //  if (isBlank(result)) {
-   //    thumbnail = "";
-   //  } else {
-   //    const { buffer: thumbnailBuffer, mimeType }: ThumbailResult =
-   //      result as ThumbailResult;
-   //    let cid: string = "";
-   //    if (ipfsSaveByBackend) {
-   //      cid = (
-   //        await setIPFSBatchDataByBackend([
-   //          new Blob([thumbnailBuffer.buffer], {
-   //            type: "application/octet-stream",
-   //          }),
-   //        ])
-   //      )[0];
-   //    } else {
-   //      cid = await setIPFSData(thumbnailBuffer.buffer);
-   //    }
-   //    thumbnail = mimeType + "|" + cid;
-   //  }
-   //} catch (error) {
-   //  thumbnail = "";
-   //  console.error(
-   //    `generate or upload thumbail failed file name: ${fileInfo.name}, file id:${fileId}`,
-   //    error
-   //  );
-   //}
+    // eslint-disable-next-line prefer-const
+    let thumbnail = ''
+    // try {
+    //  const result = await getBlurThumbnail(
+    //    dataInfo.dataArrayBuffer,
+    //    dataInfo.label
+    //  );
+    //  if (isBlank(result)) {
+    //    thumbnail = "";
+    //  } else {
+    //    const { buffer: thumbnailBuffer, mimeType }: ThumbailResult =
+    //      result as ThumbailResult;
+    //    const cid: string = await StorageManager.setData([thumbnailBuffer.buffer], account)[0];
+    //    thumbnail = mimeType + "|" + cid;
+    //  }
+    // } catch (error) {
+    //  thumbnail = "";
+    //  console.error(
+    //    `generate or upload thumbail failed data label: ${dataInfo.label}, data id:${dataId}`,
+    //    error
+    //  );
+    // }
 
-    const file = {
-      id: fileId,
-      name: fileInfo.name,
+    const _data = {
+      id: dataId,
+      name: dataInfo.label,
       address: mockIPFSAddressList[index],
-      md5: md5(new Uint8Array(fileInfo.fileBinaryArrayBuffer), {
+      md5: md5(new Uint8Array(dataInfo.dataArrayBuffer), {
         encoding: 'binary'
       }),
-      suffix: fileSuffix(fileInfo.name),
+      suffix: dataSuffix(dataInfo.label),
       category: label,
       thumbnail: thumbnail || ''
     }
-    fileInfos.push(file)
+    dataInfos.push(_data)
   }
-  // console.log("uploadFilesByCreatePolicy fileInfos", fileInfos);
+  // console.log("uploadDatasByCreatePolicy dataInfos", dataInfos);
   try {
     const sendData: any = {
-      files: fileInfos,
+      files: dataInfos,
       account_id: account.id,
       policy_label_id: strategy.id,
       policy_label: strategy.label,
@@ -477,46 +410,45 @@ export const uploadFilesByCreatePolicy = async (
     const data = await serverPost('/file/create-policy-and-upload', sendData)
   } catch (error) {
     // Message.error("upload file failed!");
-    console.error('upload file failed!: ', error)
+    console.error('upload data failed!: ', error)
 
     // clear this failed strategy info
     await account.deleteStrategy(strategy.addressIndex)
     throw error
   }
 
-  // console.log("uploadFilesByCreatePolicy after serverPost", data);
+  // console.log("uploadDatasByCreatePolicy after serverPost", data);
   return strategy
 }
 /**
- * Uploads files to the server by selecting an existing policy and uploading the files encrypted with the policy's public key to IPFS.
- * @category File Publisher(Alice) Interface
- * @param {Account} account - The account to use to upload the files.
- * @param {FileCategory | string} fileCategory - The category of the files being uploaded. Must be a valid FileCategory value or a string.
- * @param {FileInfo[]} fileList - The list of files to upload. Each element of the array must be an object with properties 'name' and 'fileBinaryArrayBuffer'.
- * @param {number} policyId - The ID of the policy to use to encrypt and upload the files.
- * @returns {Promise<string[]>} - Returns an array of file IDs uploaded to the server.
+ * Uploads files/datas to the server by selecting an existing policy and uploading the files encrypted with the policy's public key to IPFS.
+ * @category File/Data Publisher(Alice) Interface
+ * @param {Account} account - The account to use to upload the files/datas.
+ * @param {DataCategory | string} category - The category of the files/datas being uploaded. Must be a valid FileCategory value or a string.
+ * @param {DataInfo[]} dataList - The list of files/datas to upload. Each element of the array must be an object with properties 'name' and 'dataArrayBuffer'.
+ * @param {number} policyId - The ID of the policy to use to encrypt and upload the files/datas.
+ * @returns {Promise<string[]>} - Returns an array of file/data IDs uploaded to the server.
  */
-export const uploadFilesBySelectPolicy = async (
+export const uploadDatasBySelectPolicy = async (
   account: Account,
-  fileCategory: FileCategory | string, //File category, according to the design: only one category is allowed to be uploaded in batches, and different categories need to be uploaded separately
-  fileList: FileInfo[], //file information list
+  category: DataCategory | string, //File category, according to the design: only one category is allowed to be uploaded in batches, and different categories need to be uploaded separately
+  dataList: DataInfo[], //file information list
   policyId: number // policy info id
 ): Promise<string[]> => {
-  //TODO: call server interface Check whether the file needs to be uploaded repeatedly
   //return file id array
 
-  let label = getFileCategoryString(fileCategory);
+  let label = getDataCategoryString(category)
   if (!label) {
-    if (fileList.length > 0 && !isBlank(fileList[0]?.fileCategory)) {
-      label = getFileCategoryString(fileList[0]?.fileCategory as any);
+    if (dataList.length > 0 && !isBlank(dataList[0]?.category)) {
+      label = getDataCategoryString(dataList[0]?.category as any)
     }
     if (!label) {
-      label = "";
+      label = ''
     }
   }
-  const fileContentList: ArrayBuffer[] = [];
-  for (const fileInfo of fileList) {
-    fileContentList.push(fileInfo.fileBinaryArrayBuffer)
+  const dataContentList: ArrayBuffer[] = []
+  for (const dataInfo of dataList) {
+    dataContentList.push(dataInfo.dataArrayBuffer)
   }
 
   //Get poliy info by policy Id
@@ -524,102 +456,56 @@ export const uploadFilesBySelectPolicy = async (
   assert(policyInfo && !isBlank(policyInfo) && policyInfo['total'] > 0)
   const policyEncrypedPublicKey = policyInfo['list'][0]['encrypted_pk']
 
-  const _encryptMessages: MessageKit[] = encryptMessage(policyEncrypedPublicKey, fileContentList)
+  const _encryptMessages: MessageKit[] = encryptMessage(policyEncrypedPublicKey, dataContentList)
 
   const mockIPFSAddressList: string[] = []
 
-  //notice greenfieldStorage backend API not support batch interface currently
-  if (greenfieldStorageEnable) {
-    for (const _encryptMessage of _encryptMessages) {
-      const _encryptMessageBytes: Uint8Array = _encryptMessage.toBytes();
-
-      //upload encrypt files to greenfield
-      const cids: string[] = await setIPFSBatchDataByBackend([
-        new Blob([_encryptMessageBytes /*Uint8Array*/], {
-          type: "application/octet-stream",
-        }),
-      ]);
-      mockIPFSAddressList.push(...cids);
-    }
-  } else if (ipfsSaveByBackend) {
-    //upload encrypt files to IPFS
-    const cids: string[] = await setIPFSBatchDataByBackend(
-      _encryptMessages.map(
-        (encryptMessage) =>
-          new Blob([encryptMessage.toBytes() /*Uint8Array*/], {
-            type: "application/octet-stream",
-          })
-      )
-    )
-    mockIPFSAddressList.push(...cids)
-  } else {
-    for (const _encryptMessage of _encryptMessages) {
-      const _encryptMessageBytes: Uint8Array = _encryptMessage.toBytes()
-      //upload encrypt files to IPFS
-      const cid = await setIPFSData(_encryptMessageBytes)
-      mockIPFSAddressList.push(cid)
-    }
-  }
+  const datas: Uint8Array[] = _encryptMessages.map((encryptMessage) => encryptMessage.toBytes() /*Uint8Array*/)
+  const cids: string[] = await StorageManager.setData(datas, account)
+  mockIPFSAddressList.push(...cids)
 
   const retInfo: string[] = []
-  const fileInfos: object[] = []
-  for (let index = 0; index < fileList.length; index++) {
-    const fileInfo = fileList[index]
-    const fileId = nanoid()
+  const dataInfos: object[] = []
+  for (let index = 0; index < dataList.length; index++) {
+    const dataInfo = dataList[index]
+    const dataId = nanoid()
 
     //The generation of thumbnail logic should be handled by a third-party DApp, rather than implemented in the pre-process. Therefore, it needs to be moved to the third-party DApp, and this part should be blocked
     //generate and upload thumbnail files to IPFS
-    let thumbnail = "";
+    // eslint-disable-next-line prefer-const
+    let thumbnail = ''
     //try {
-    //  const result = await getBlurThumbnail(
-    //    fileInfo.fileBinaryArrayBuffer,
-    //    fileInfo.name
-    //  );
+    //  const result = await getBlurThumbnail(dataInfo.dataArrayBuffer, dataInfo.label)
     //  if (isBlank(result)) {
-    //    thumbnail = "";
+    //    thumbnail = ''
     //  } else {
-    //    const { buffer: thumbnailBuffer, mimeType }: ThumbailResult =
-    //      result as ThumbailResult;
-    //    let cid: string = "";
-    //    if (ipfsSaveByBackend) {
-    //      cid = (
-    //        await setIPFSBatchDataByBackend([
-    //          new Blob([thumbnailBuffer.buffer], {
-    //            type: "application/octet-stream",
-    //          }),
-    //        ])
-    //      )[0];
-    //    } else {
-    //      cid = await setIPFSData(thumbnailBuffer.buffer);
-    //    }
-    //    thumbnail = mimeType + "|" + cid;
+    //    const { buffer: thumbnailBuffer, mimeType }: ThumbailResult = result as ThumbailResult
+    //    const cid: string = await StorageManager.setData([thumbnailBuffer.buffer], account)[0]
+    //    thumbnail = mimeType + '|' + cid
     //  }
     //} catch (error) {
-    //  thumbnail = "";
-    //  console.error(
-    //    `generate or upload thumbail failed file name: ${fileInfo.name}, file id:${fileId}`,
-    //    error
-    //  );
+    //  thumbnail = ''
+    //  console.error(`generate or upload thumbail failed data label: ${dataInfo.label}, data id:${dataId}`, error)
     //}
 
-    const file = {
-      id: fileId,
-      name: fileInfo.name,
+    const _data = {
+      id: dataId,
+      name: dataInfo.label,
       address: mockIPFSAddressList[index],
-      md5: md5(new Uint8Array(fileInfo.fileBinaryArrayBuffer), {
+      md5: md5(new Uint8Array(dataInfo.dataArrayBuffer), {
         encoding: 'binary'
       }),
-      suffix: fileSuffix(fileInfo.name),
+      suffix: dataSuffix(dataInfo.label),
       category: label,
       thumbnail: thumbnail || ''
     }
 
-    fileInfos.push(file)
-    retInfo.push(file.id)
+    dataInfos.push(_data)
+    retInfo.push(_data.id)
   }
 
   const sendData: any = {
-    files: fileInfos,
+    files: dataInfos,
     account_id: account.id,
     policy_id: policyId
   }
@@ -634,58 +520,58 @@ export const uploadFilesBySelectPolicy = async (
 }
 
 /**
-* Gets a list of files uploaded by the specified account from the server. This account acts as the publisher
-* @category File Publisher(Alice) Interface
-* @param {Account} account - The account to retrieve the file list for.
-* @param {string} fileName - (Optional) The name of the file to search for. Leave blank to retrieve all files.
+* Gets a list of files/datas uploaded by the specified account from the server. This account acts as the publisher
+* @category File/Data Publisher(Alice) Interface
+* @param {Account} account - The account to retrieve the file/data list for.
+* @param {string} dataLabel - (Optional) The name of the file/data to search for. Leave blank to retrieve all files/datas.
 * @param {number} pageIndex - (Optional) The index of the page to retrieve. Default is 1.
-* @param {number} pageSize - (Optional) The number of files to retrieve per page. Default is 10.
-* @returns {Promise<object>} - Returns an object containing the list of files and pagination information.
+* @param {number} pageSize - (Optional) The number of files/datas to retrieve per page. Default is 10.
+* @returns {Promise<object>} - Returns an object containing the list of files/datas and pagination information.
             {
                 list: [
                   {
-                    {string} file_id - File ID
-                    {string} file_name - File name
-                    {string} owner - File owner
-                    {string} owner_id - File owner account ID
-                    {string} address - File address
-                    {string} thumbnail - File thumbnail
-                    {number} created_at - File upload timestamp
+                    {string} file_id - File/Data ID
+                    {string} file_name - File/Data name
+                    {string} owner - File/Data owner
+                    {string} owner_id - File/Data owner account ID
+                    {string} address - File/Data address
+                    {string} thumbnail - File/Data thumbnail
+                    {number} created_at - File/Data upload timestamp
                   },
                   ...
                 ],
                 total: total cnt
             }
 */
-export const getUploadedFiles = async (account: Account, fileName?: string, pageIndex = 1, pageSize = 10) => {
-  return await getFileInfosByAccount(account, fileName, pageIndex, pageSize)
+export const getUploadedDatas = async (account: Account, dataLabel?: string, pageIndex = 1, pageSize = 10) => {
+  return await getDataInfosByAccount(account, dataLabel, pageIndex, pageSize)
 }
 
 /**
-* Gets a list of files uploaded by the specified account from the server. This account acts as the publisher
-* @category File Publisher(Alice) Interface
-* @param {Account} account - The account to retrieve the file list for.
-* @param {string} fileName - (Optional) The name of the file to search for. Leave blank to retrieve all files.
+* Gets a list of files/datas uploaded by the specified account from the server. This account acts as the publisher
+* @category File/Data Publisher(Alice) Interface
+* @param {Account} account - The account to retrieve the file/data list for.
+* @param {string} dataLabel - (Optional) The label of the file/data to search for. Leave blank to retrieve all files/datas.
 * @param {number} pageIndex - (Optional) The index of the page to retrieve. Default is 1.
-* @param {number} pageSize - (Optional) The number of files to retrieve per page. Default is 10.
-* @returns {Promise<object>} - Returns an object containing the list of files and pagination information.
+* @param {number} pageSize - (Optional) The number of files/datas to retrieve per page. Default is 10.
+* @returns {Promise<object>} - Returns an object containing the list of files/datas and pagination information.
             {
                 list: [
                   {
-                    {string} file_id - File ID
-                    {string} file_name - File name
-                    {string} owner - File owner
-                    {string} owner_id - File owner account ID
-                    {string} address - File address
-                    {string} thumbnail - File thumbnail
-                    {number} created_at - File upload timestamp
+                    {string} file_id - File/Data ID
+                    {string} file_name - File/Data name
+                    {string} owner - File/Data owner
+                    {string} owner_id - File/Data owner account ID
+                    {string} address - File/Data address
+                    {string} thumbnail - File/Data thumbnail
+                    {number} created_at - File/Data upload timestamp
                   },
                   ...
                 ],
                 total: total cnt
             }
 */
-export const getFileInfosByAccount = async (account: Account, fileName?: string, pageIndex = 1, pageSize = 10) => {
+export const getDataInfosByAccount = async (account: Account, dataLabel?: string, pageIndex = 1, pageSize = 10) => {
   //file_name support fuzzy query
   // https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E6%96%87%E4%BB%B6%E5%88%97%E8%A1%A8
 
@@ -697,8 +583,8 @@ export const getFileInfosByAccount = async (account: Account, fileName?: string,
     }
   }
 
-  if (!isBlank(fileName)) {
-    sendData['file_name'] = fileName
+  if (!isBlank(dataLabel)) {
+    sendData['file_name'] = dataLabel
   }
 
   const data = await serverPost('/file/list', sendData)
@@ -707,16 +593,16 @@ export const getFileInfosByAccount = async (account: Account, fileName?: string,
 }
 
 /**
- * Deletes the specified files uploaded by the account from the server, This account acts as the publisher
- * @category File Publisher(Alice) Interface
- * @param {Account} account - The account that owns the files to be deleted.
- * @param {string[]} fileIds - An array of file IDs to delete.
+ * Deletes the specified files/datas uploaded by the account from the server, This account acts as the publisher
+ * @category File/Data Publisher(Alice) Interface
+ * @param {Account} account - The account that owns the files/datas to be deleted.
+ * @param {string[]} dataIds - An array of file/data IDs to delete.
  * @returns {Promise<void>}
  */
-export const deleteUploadedFiles = async (account: Account, fileIds: string[]) => {
+export const deleteUploadedDatas = async (account: Account, dataIds: string[]) => {
   //https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E5%88%A0%E9%99%A4%E6%96%87%E4%BB%B6
   /*  
-          return the list of deleted files is displayed: [
+          return the list of deleted files/datas is displayed: [
               {"file_id": "", "file_name": ""},
               ...
             ]
@@ -724,7 +610,7 @@ export const deleteUploadedFiles = async (account: Account, fileIds: string[]) =
 
   const sendData: any = {
     account_id: account.id,
-    file_ids: fileIds
+    file_ids: dataIds
   }
 
   sendData['signature'] = await signUpdateServerDataMessage(account, sendData)
@@ -735,40 +621,40 @@ export const deleteUploadedFiles = async (account: Account, fileIds: string[]) =
 }
 
 /**
-*Gets a list of files shared by others (files uploaded by the current account are not included). This account acts as the user(Bob).
-* @category File User(Bob) Interface
+* Gets a list of files/datas shared by others (files uploaded by the current account are not included). This account acts as the user(Bob).
+* @category File/Data User(Bob) Interface
 * @param {Account} account - The current account information.
-* @param {string} fileName - (Optional) The name of the file to search for. support fuzzy query. Leave blank to retrieve all files.
-* @param {boolean} include - Indicates whether the query result contains file list data of the current account.
-* @param {FileCategory|string} fileCategory - (Optional) The category of the file to search for.
-* @param {FileType} fileType - (Optional) The type of the file to search for.
+* @param {string} dataLabel - (Optional) The name of the file/data to search for. support fuzzy query. Leave blank to retrieve all files.
+* @param {boolean} include - Indicates whether the query result contains file/data list data of the current account.
+* @param {DataCategory|string} category - (Optional) The category of the file/data to search for.
+* @param {DataType} dataType - (Optional) The type of the file/data to search for.
 * @param {boolean} descOrder - (Optional) Whether to sort by upload time in reverse order.
 * @param {number} pageIndex - (Optional) The index of the page to retrieve. Default is 1.
-* @param {number} pageSize - (Optional) The number of files to retrieve per page. Default is 10.
-* @returns {Promise<object>} - Returns an object containing the list of files and pagination information.
+* @param {number} pageSize - (Optional) The number of files/datas to retrieve per page. Default is 10.
+* @returns {Promise<object>} - Returns an object containing the list of files/datas and pagination information.
                         {
                             total: number
                             list: [{
-                                file_id: string - File ID
-                                file_name: string - File name
-                                category: string - File category/type
-                                format: string - File format
-                                suffix: string - File suffix
-                                address: string - File address
-                                thumbnail: string - File thumbnail
-                                owner: string - File owner
-                                owner_id: string - File owner's account ID
-                                owner_avatar: string - File owner's avatar
-                                created_at: number - File upload timestamp
+                                file_id: string - File/Data ID
+                                file_name: string - File/Data name
+                                category: string - File/Data category/type
+                                format: string - File/Data format
+                                suffix: string - File/Data suffix
+                                address: string - File/Data address
+                                thumbnail: string - File/Data thumbnail
+                                owner: string - File/Data owner
+                                owner_id: string - File/Data owner's account ID
+                                owner_avatar: string - File/Data owner's avatar
+                                created_at: number - File/Data upload timestamp
                             }]
                         }
 */
-export const getOtherShareFiles = async (
+export const getOtherShareDatas = async (
   account: Account, //current account info
-  fileName?: string, //file_name support fuzzy query
+  dataLabel?: string, //file_name support fuzzy query
   include?: boolean, //indicates whether the query result contains file list data of the current account
-  fileCategory?: FileCategory | string,
-  fileType?: FileType,
+  category?: DataCategory | string,
+  dataType?: DataType,
   descOrder = true, //Whether to sort by upload time in reverse order
   pageIndex = 1,
   pageSize = 10
@@ -795,16 +681,16 @@ return data format: {
 
   sendData['include'] = !!include
 
-  if (!isBlank(fileName)) {
-    sendData['file_name'] = fileName
+  if (!isBlank(dataLabel)) {
+    sendData['file_name'] = dataLabel
   }
 
-  if (!isBlank(fileCategory)) {
-    sendData['category'] = FileCategory[(fileCategory as FileCategory).toString()] || (fileCategory as string)
+  if (!isBlank(category)) {
+    sendData['category'] = DataCategory[(category as DataCategory).toString()] || (category as string)
   }
 
-  if (!isBlank(fileType)) {
-    sendData['format'] = FileType[(fileType as FileType).toString()]
+  if (!isBlank(dataType)) {
+    sendData['format'] = DataType[(dataType as DataType).toString()]
   }
 
   const data = await serverPost('/file/others-list', sendData)
@@ -813,23 +699,23 @@ return data format: {
 }
 
 /**
- * Applies for file usage permission for the specified files, This account acts as the user(Bob).
- * @category File User(Bob) Interface
- * @param {string[]} fileIds - An array of file IDs to apply for usage permission.
+ * Applies for file/data usage permission for the specified files/datas, This account acts as the user(Bob).
+ * @category File/Data User(Bob) Interface
+ * @param {string[]} dataIds - An array of file IDs to apply for usage permission.
  * @param {Account} account - The account that applies for the permission.
  * @param {number} usageDays - (Optional) The validity period of the application, in days. Default is 7.
  * @returns {Promise<void>}
  */
-export const applyForFilesUsagePermission = async (fileIds: string[], account: Account, usageDays = 7) => {
+export const applyForDatasUsagePermission = async (dataIds: string[], account: Account, usageDays = 7) => {
   // https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E7%94%B3%E8%AF%B7%E6%96%87%E4%BB%B6%E4%BD%BF%E7%94%A8
   //TODO:  Consider returning the apply record ID
 
   if (usageDays <= 0) {
-    throw Error("The application file's validity period must be greater than 0 days")
+    throw Error("The application file/data's validity period must be greater than 0 days")
   }
 
   const sendData: any = {
-    file_ids: fileIds,
+    file_ids: dataIds,
     proposer_id: account.id,
     account_id: account.id, //new for backend signature
     days: usageDays
@@ -854,15 +740,15 @@ export const applyForFilesUsagePermission = async (fileIds: string[], account: A
 }
 
 /**
- * Revokes the permission application of the specified files. This account acts as the user(Bob).
+ * Revokes the permission application of the specified files/datas. This account acts as the user(Bob).
  * If it has been approved or failed, it can not be revoked.
  * The background service processing logic is such that if there are multiple permission applications, either all of them will be successful or none of them will be successful.
- * @category File User(Bob) Interface
+ * @category File/Data User(Bob) Interface
  * @param {Account} account - The account that revokes the permission application.
  * @param {number[]} applyIds - An array of application applyIds to revoke.
  * @returns {Promise<object>} - Returns an empty object.
  */
-export const revokePermissionApplicationOfFiles = async (
+export const revokePermissionApplicationOfDatas = async (
   account: Account, //Bob
   applyIds: number[] //Application Record ID
 ) => {
@@ -881,8 +767,8 @@ export const revokePermissionApplicationOfFiles = async (
 }
 
 /**
- * The file publisher retrieves a list of files in all states.
- * @category File Publisher(Alice) Interface  
+ * The file/data publisher retrieves a list of files/datas in all states.
+ * @category File/Data Publisher(Alice) Interface  
  * @param {Account} account - the current account object 
  * @param {number} pageIndex - (Optional) number default 1
  * @param {number} pageSize - (Optional) number default 10
@@ -906,7 +792,7 @@ export const revokePermissionApplicationOfFiles = async (
               "total": total count
             }
  */
-export const getFilesAllStatusAsPublisher = async (account: Account, pageIndex = 1, pageSize = 10) => {
+export const getDatasAllStatusAsPublisher = async (account: Account, pageIndex = 1, pageSize = 10) => {
   /*return data format: {
   list: [
     { apply_id, file_id:, proposer, proposer_id, file_owner:, file_owner_id:, policy_id, hrac, start_at:, end_at, days, created_at }
@@ -916,12 +802,12 @@ export const getFilesAllStatusAsPublisher = async (account: Account, pageIndex =
 }
 */
 
-  return await getFilesByStatus(undefined, undefined, account.id, undefined, 0, pageIndex, pageSize)
+  return await getDatasByStatus(undefined, undefined, account.id, undefined, 0, pageIndex, pageSize)
 }
 
 /**
- * Retrieve a list of files in a specified state that need to be approved for use by others, for the file publisher.
- * @category File Publisher(Alice) Interface
+ * Retrieve a list of files/datas in a specified state that need to be approved for use by others, for the file/data publisher.
+ * @category File/Data Publisher(Alice) Interface
  * @param {Account} account - the current account object 
  * @param {number} status - (Optional) default 0: All state 1: Under review, 2: Approved, 3: Rejected, 4: Under approval, 5: Expired
  * @param {number} pageIndex - (Optional) number default 1
@@ -946,17 +832,17 @@ export const getFilesAllStatusAsPublisher = async (account: Account, pageIndex =
               "total": total count
             }
  */
-export const getFilesByApplyStatusAsPublisher = async (account: Account, status = 0, pageIndex = 1, pageSize = 10) => {
-  return await getFilesByStatus(undefined, undefined, account.id, undefined, status, pageIndex, pageSize)
+export const getDatasByApplyStatusAsPublisher = async (account: Account, status = 0, pageIndex = 1, pageSize = 10) => {
+  return await getDatasByStatus(undefined, undefined, account.id, undefined, status, pageIndex, pageSize)
 }
 
 /**
-* Gets a list of files pending approval (applying but not yet approved). This account acts as the publisher (Alice) and needs to approve them.
-* @category File Publisher(Alice) Interface
+* Gets a list of files/datas pending approval (applying but not yet approved). This account acts as the publisher (Alice) and needs to approve them.
+* @category File/Data Publisher(Alice) Interface
 * @param {Account} account - (Optional) The current account information.
 * @param {number} pageIndex - (Optional) The index of the page to retrieve. Default is 1.
-* @param {number} pageSize - (Optional) The number of files to retrieve per page. Default is 10.
-* @returns {Promise<object>} - Returns an object containing the list of files and pagination information.
+* @param {number} pageSize - (Optional) The number of files/datas to retrieve per page. Default is 10.
+* @returns {Promise<object>} - Returns an object containing the list of files/datas and pagination information.
                           {
                             "list": [
                               {
@@ -977,13 +863,13 @@ export const getFilesByApplyStatusAsPublisher = async (account: Account, status 
                           "total": total count
                         }
 */
-export const getFilesPendingApprovalAsPublisher = async (account: Account, pageIndex = 1, pageSize = 10) => {
-  return await getFilesByStatus(undefined, undefined, account.id, undefined, 1, pageIndex, pageSize)
+export const getDatasPendingApprovalAsPublisher = async (account: Account, pageIndex = 1, pageSize = 10) => {
+  return await getDatasByStatus(undefined, undefined, account.id, undefined, 1, pageIndex, pageSize)
 }
 
 /**
- * get the Approved success status files for others to use. This account acts as the publisher (Alice)
- * @category File Publisher(Alice) Interface
+ * get the Approved success status files/datas for others to use. This account acts as the publisher (Alice)
+ * @category File/Data Publisher(Alice) Interface
  * @param {Account} account - Account the current account object
  * @param {number} pageIndex - (Optional) number default 1
  * @param {number} pageSize - (Optional) number default 10
@@ -1007,17 +893,17 @@ export const getFilesPendingApprovalAsPublisher = async (account: Account, pageI
               "total": total count
             }
  */
-export const getApprovedFilesAsPublisher = async (account: Account, pageIndex = 1, pageSize = 10) => {
-  return await getFilesByStatus(undefined, undefined, account.id, undefined, 2, pageIndex, pageSize)
+export const getApprovedDatasAsPublisher = async (account: Account, pageIndex = 1, pageSize = 10) => {
+  return await getDatasByStatus(undefined, undefined, account.id, undefined, 2, pageIndex, pageSize)
 }
 
 /**
-* Gets a list of files with the "approved failed" status for others to use. This account acts as the publisher (Alice).
-* @category File Publisher(Alice) Interface
+* Gets a list of files/datas with the "approved failed" status for others to use. This account acts as the publisher (Alice).
+* @category File/Data Publisher(Alice) Interface
 * @param {Account} account - The current account information.
 * @param {number} pageIndex - The index of the page to retrieve. Default is 1.
-* @param {number} pageSize - The number of files to retrieve per page. Default is 10.
-* @returns {Promise<object>} - Returns an object containing the list of files and pagination information.
+* @param {number} pageSize - The number of files/datas to retrieve per page. Default is 10.
+* @returns {Promise<object>} - Returns an object containing the list of files/datas and pagination information.
               {
                 "list": [
                   {
@@ -1038,17 +924,17 @@ export const getApprovedFilesAsPublisher = async (account: Account, pageIndex = 
               "total": total count
             }
 */
-export const getFilesForRefusedAsPublisher = async (account: Account, pageIndex = 1, pageSize = 10) => {
-  return await getFilesByStatus(undefined, undefined, account.id, undefined, 3, pageIndex, pageSize)
+export const getDatasForRefusedAsPublisher = async (account: Account, pageIndex = 1, pageSize = 10) => {
+  return await getDatasByStatus(undefined, undefined, account.id, undefined, 3, pageIndex, pageSize)
 }
 
 /**
-* Gets a list of all files with any status as a user (Bob) using this account.
-* @category File User(Bob) Interface
+* Gets a list of all files/datas with any status as a user (Bob) using this account.
+* @category File/Data User(Bob) Interface
 * @param {Account} account - The current account information.
 * @param {number} pageIndex - The index of the page to retrieve. Default is 1.
-* @param {number} pageSize - The number of files to retrieve per page. Default is 10.
-* @returns {Promise<object>} - Returns an object containing the list of files and pagination information.
+* @param {number} pageSize - The number of files/datas to retrieve per page. Default is 10.
+* @returns {Promise<object>} - Returns an object containing the list of files/datas and pagination information.
                             {
                               "list": [
                                 {
@@ -1069,13 +955,13 @@ export const getFilesForRefusedAsPublisher = async (account: Account, pageIndex 
                             "total": total count
                           }
 */
-export const getFilesAllStatusAsUser = async (account: Account, pageIndex = 1, pageSize = 10) => {
-  return await getFilesByStatus(undefined, account.id, undefined, undefined, 0, pageIndex, pageSize)
+export const getDatasAllStatusAsUser = async (account: Account, pageIndex = 1, pageSize = 10) => {
+  return await getDatasByStatus(undefined, account.id, undefined, undefined, 0, pageIndex, pageSize)
 }
 
 /**
- * The file applicant retrieves a list of files in a specified state that need to be approved by others.
- * @category File User(Bob) Interface
+ * The file/data applicant retrieves a list of files/datas in a specified state that need to be approved by others.
+ * @category File/Data User(Bob) Interface
  * @param {Account} account -  the current account object 
  * @param status - (Optional) default 0: All state 1: Under review, 2: Approved, 3: Rejected, 4: Under approval, 5: Expired
  * @param {number} pageIndex - (Optional) number default 1
@@ -1100,17 +986,17 @@ export const getFilesAllStatusAsUser = async (account: Account, pageIndex = 1, p
               "total": total count
             }
  */
-export const getFilesByApplyStatusAsUser = async (account: Account, status = 0, pageIndex = 1, pageSize = 10) => {
-  return await getFilesByStatus(undefined, account.id, undefined, undefined, status, pageIndex, pageSize)
+export const getDatasByApplyStatusAsUser = async (account: Account, status = 0, pageIndex = 1, pageSize = 10) => {
+  return await getDatasByStatus(undefined, account.id, undefined, undefined, status, pageIndex, pageSize)
 }
 
 /**
-  * Gets a list of files pending approval (applying but not yet approved). This account acts as a user (Bob) and needs to approve them.
-  * @category File User(Bob) Interface
+  * Gets a list of files/datas pending approval (applying but not yet approved). This account acts as a user (Bob) and needs to approve them.
+  * @category File/Data User(Bob) Interface
   * @param {Account} account - The current account information.
   * @param {number} pageIndex - (Optional) The index of the page to retrieve. Default is 1.
-  * @param {number} pageSize - (Optional) The number of files to retrieve per page. Default is 10.
-  * @returns {Promise<object>} - Returns an object containing the list of files and pagination information.
+  * @param {number} pageSize - (Optional) The number of files/datas to retrieve per page. Default is 10.
+  * @returns {Promise<object>} - Returns an object containing the list of files/datas and pagination information.
                             {
                               "list": [
                                 {
@@ -1131,13 +1017,13 @@ export const getFilesByApplyStatusAsUser = async (account: Account, status = 0, 
                             "total": total count
                           }
 */
-export const getFilesPendingApprovalAsUser = async (account: Account, pageIndex = 1, pageSize = 10) => {
-  return await getFilesByStatus(undefined, account.id, undefined, undefined, 1, pageIndex, pageSize)
+export const getDatasPendingApprovalAsUser = async (account: Account, pageIndex = 1, pageSize = 10) => {
+  return await getDatasByStatus(undefined, account.id, undefined, undefined, 1, pageIndex, pageSize)
 }
 
 /**
- * The file applicant retrieves a list of files that have been approved for their own use.
- * @category File User(Bob) Interface
+ * The file applicant retrieves a list of files/datas that have been approved for their own use.
+ * @category File/Data User(Bob) Interface
  * @param {Account} account - the current account object 
  * @param {number} pageIndex - (Optional) number default 1
  * @param {number} pageSize - (Optional) number default 10
@@ -1161,28 +1047,28 @@ export const getFilesPendingApprovalAsUser = async (account: Account, pageIndex 
               "total": total count
             }
  */
-export const getApprovedFilesAsUser = async (account: Account, pageIndex = 1, pageSize = 10) => {
-  return await getFilesByStatus(undefined, account.id, undefined, undefined, 2, pageIndex, pageSize)
+export const getApprovedDatasAsUser = async (account: Account, pageIndex = 1, pageSize = 10) => {
+  return await getDatasByStatus(undefined, account.id, undefined, undefined, 2, pageIndex, pageSize)
 }
 
 /**
- * Gets a list of files with the "approved failed" status, which cannot be used by the user (Bob) using this account.
- * @category File User(Bob) Interface
+ * Gets a list of files/datas with the "approved failed" status, which cannot be used by the user (Bob) using this account.
+ * @category File/Data User(Bob) Interface
  * @param {Account} account - The current account information.
  * @param {number} pageIndex - The index of the page to retrieve. Default is 1.
- * @param {number} pageSize - The number of files to retrieve per page. Default is 10.
- * @returns {Promise<object>} - Returns an object containing the list of files and pagination information.
+ * @param {number} pageSize - The number of files/datas to retrieve per page. Default is 10.
+ * @returns {Promise<object>} - Returns an object containing the list of files/datas and pagination information.
  */
-export const getUnapprovedFilesAsUser = async (account: Account, pageIndex = 1, pageSize = 10) => {
-  return await getFilesByStatus(undefined, account.id, undefined, undefined, 3, pageIndex, pageSize)
+export const getUnapprovedDatasAsUser = async (account: Account, pageIndex = 1, pageSize = 10) => {
+  return await getDatasByStatus(undefined, account.id, undefined, undefined, 3, pageIndex, pageSize)
 }
 
 /**
- * get files info by status This account acts as the user (Bob) or publisher (Alice)
- * @category File Publisher(Alice)/User(Bob) Interface
- * @param {string} fileld - (Optional)  file's id
+ * get files/datas info by status This account acts as the user (Bob) or publisher (Alice)
+ * @category File/Data Publisher(Alice)/User(Bob) Interface
+ * @param {string} dataId - (Optional)  file/data's id
  * @param {string} proposerId - (Optional) proposer's account id
- * @param {string} fileOwnerId - (Optional) account id of the file owner
+ * @param {string} dataOwnerId - (Optional) account id of the file owner
  * @param {string} applyId - (Optional) to apply for id
  * @param {number} status - (Optional) number default 1  1 - In progress, 2 - Approved, 3 - Rejected, 4 - Under review, 5 - Expired.
  * @param {number} pageIndex - (Optional) number default 1
@@ -1207,10 +1093,10 @@ export const getUnapprovedFilesAsUser = async (account: Account, pageIndex = 1, 
               "total": total count
             }
  */
-export const getFilesByStatus = async (
-  fileId?: string,
+export const getDatasByStatus = async (
+  dataId?: string,
   proposerId?: string, //	Proposer's account id
-  fileOwnerId?: string, //Account id of the file owner
+  dataOwnerId?: string, //Account id of the file/data owner
   applyId?: string, //To apply for id
   status = 1, //Application status: 1 - In progress, 2 - Approved, 3 - Rejected, 4 - Under review, 5 - Expired.
   pageIndex = 1,
@@ -1218,12 +1104,12 @@ export const getFilesByStatus = async (
 ) => {
   //https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E7%94%B3%E8%AF%B7%E6%96%87%E4%BB%B6%E4%BD%BF%E7%94%A8%E5%88%97%E8%A1%A8
 
-  if (isBlank(applyId) && isBlank(proposerId) && isBlank(fileOwnerId)) {
+  if (isBlank(applyId) && isBlank(proposerId) && isBlank(dataOwnerId)) {
     // Message.error(
     //   `The request parameters proposer_id, file_owner_id must be passed at least one of these fields or pass the applyId field `,
     // );
     throw new Error(
-      `The proposer_id and file_owner_id parameters must be provided for at least one of these fields or the applyId field must be passed`
+      `The proposerId and dataOwnerId parameters must be provided for at least one of these fields or the applyId field must be passed`
     )
   }
 
@@ -1235,8 +1121,8 @@ export const getFilesByStatus = async (
     }
   }
 
-  if (!isBlank(fileId)) {
-    sendData['file_id'] = fileId
+  if (!isBlank(dataId)) {
+    sendData['file_id'] = dataId
   }
 
   if (!isBlank(applyId)) {
@@ -1247,8 +1133,8 @@ export const getFilesByStatus = async (
     sendData['proposer_id'] = proposerId
   }
 
-  if (!isBlank(fileOwnerId)) {
-    sendData['file_owner_id'] = fileOwnerId
+  if (!isBlank(dataOwnerId)) {
+    sendData['file_owner_id'] = dataOwnerId
   }
 
   const settingsData = await getSettingsData()
@@ -1264,9 +1150,9 @@ export const getFilesByStatus = async (
 }
 
 /**
- * The applicant of the file obtains a list of the policy information. 
+ * The applicant of the file/data obtains a list of the policy information. 
  * get information about the current of all using policies by publiser others, the current account as Bob
- * @category File User(Bob) Interface
+ * @category File/Data User(Bob) Interface
  * @param {Account} account -  current account object info      
  * @param {number} pageIndex - (Optional) number default 1
  * @param {number} pageSize - (Optional) number default 10
@@ -1301,8 +1187,8 @@ export const getInUsePoliciesInfo = async (account: Account, pageIndex = 1, page
 }
 
 /**
- * The publisher of the file obtains a list of the information of the policies published on the blockchain.
- * @category File Publisher(Alice) Interface
+ * The publisher of the file/data obtains a list of the information of the policies published on the blockchain.
+ * @category File/Data Publisher(Alice) Interface
  * @param {Account} account 
  * @param {number} pageIndex - (Optional) number default 1
  * @param {number} pageSize - (Optional) number default 10
@@ -1340,8 +1226,8 @@ export const getPublishedPoliciesInfo = async (account: Account, pageIndex = 1, 
 /**
  * Obtains a list of the information of the policies published on the blockchain.
  * @param {number} policyId - policyId
- * @param {string} creatorId - the publisher's account id of the file
- * @param {string} consumerId - the user's account id of the file
+ * @param {string} creatorId - the publisher's account id of the file/data
+ * @param {string} consumerId - the user's account id of the file/data
  * @param {string} policyLabelId - the `label` fields of the Strategy object in the Account Object
  * @param {number} pageIndex - (Optional) number default 1
  * @param {number} pageSize - (Optional) number default 10
@@ -1412,10 +1298,10 @@ export const getPoliciesInfo = async (
 
 /**
  * calcurate publish policy server fee (nlk/tnlk): By calling calcPolicyCost
- * @category File Publisher(Alice) Interface
+ * @category File/Data Publisher(Alice) Interface
  * @param {Account} publisher - the current logined Account object
- * @param {Date} startDate - Start time of file usage application in seconds
- * @param {Date} endDate - End time of file usage application in seconds
+ * @param {Date} startDate - Start time of file/data usage application in seconds
+ * @param {Date} endDate - End time of file/data usage application in seconds
  * @param {number} ursulaShares - Number of service shares
  * @returns {Promise<BigNumber>} - the amount of NLK/TNLK in wei
  */
@@ -1437,10 +1323,10 @@ export const getPolicyTokenCost = async (
 
 /**
  * Calculating service fees (nlk/tnlk) for publishing multiple policys. : By calling calcPolicysCost
- * @category File Publisher(Alice) Interface
+ * @category File/Data Publisher(Alice) Interface
  * @param {Account} publisher - the current logined Account object
- * @param {Date[]} startDates -  An array of the start time of file usage application in seconds
- * @param {Date[]} endDates -  An array of the end time of file usage application in seconds
+ * @param {Date[]} startDates -  An array of the start time of file/data usage application in seconds
+ * @param {Date[]} endDates -  An array of the end time of file/data usage application in seconds
  * @param {number[]} ursulaShares -  An array of the number of service shares
  * @returns {Promise<BigNumber>} - All services fees of the amount of NLK/TNLK in wei
  */
@@ -1462,10 +1348,10 @@ export const getPolicysTokenCost = async (
 
 /**
  * calcurate publish policy server fee (nlk/tnlk), you can get ether: Web3.utils.fromWei(costGasWei.toNumber().toString(), "ether" )
- * @category File Publisher(Alice) Interface
- * @param {Account} alice - the current logined Account object as file publisher
- * @param {Date} startDate - Start time of file usage application
- * @param {Date} endDate - End time of file usage application
+ * @category File/Data Publisher(Alice) Interface
+ * @param {Account} alice - the current logined Account object as file/data publisher
+ * @param {Date} startDate - Start time of file/data usage application
+ * @param {Date} endDate - End time of file/data usage application
  * @param {number} ursulaShares - Number of service shares
  * @returns {Promise<BigNumber>} - the amount of NLK/TNLK in wei
  */
@@ -1492,10 +1378,10 @@ const calcPolicyCost = async (
 
 /**
  * Calculating service fees (nlk/tnlk) for publishing multiple policys, you can get ether: Web3.utils.fromWei(costGasWei.toNumber().toString(), "ether" )
- * @category File Publisher(Alice) Interface
- * @param {Account} alice - the current logined Account object as file publisher
- * @param {Date[]} startDates - Start time of file usage application
- * @param {Date[]} endDates - End time of file usage application
+ * @category File/Data Publisher(Alice) Interface
+ * @param {Account} alice - the current logined Account object as file/data publisher
+ * @param {Date[]} startDates - Start time of file/data usage application
+ * @param {Date[]} endDates - End time of file/data usage application
  * @param {number[]} ursulaShares - Number of service shares
  * @returns {Promise<BigNumber>} - the amount of NLK/TNLK in wei
  */
@@ -1531,16 +1417,17 @@ const calcPolicysCost = async (
   return value
 }
 /**
- * estimate gas fees for sharing files
- * @category File Publisher(Alice) Interface
- * @param {Account} publisher - Account the account object of the file publisher (Alice)
- * @param {string} userAccountId - the account Id of the file publisher (Alice)
- * @param {string} applyId - The application ID returned to the user by the interface when applying to use a specific file
+ * estimate gas fees for sharing files/datas
+ * @category File/Data Publisher(Alice) Interface
+ * @param {Account} publisher - Account the account object of the file/data publisher (Alice)
+ * @param {string} userAccountId - the account Id of the file/data publisher (Alice)
+ * @param {string} applyId - The application ID returned to the user by the interface when applying to use a specific file/data
  * @param {number} ursulaShares - Number of service shares
- * @param {number} ursulaThreshold - The file user can download the file after obtaining the specified number of service data shares
- * @param {number} startSeconds - Start time of file usage application in seconds
- * @param {number} endSeconds - End time of file usage application in seconds
+ * @param {number} ursulaThreshold - The file/data user can download the file after obtaining the specified number of service data shares
+ * @param {Date} startDate - Start date(UTC date) of file/data usage application
+ * @param {Date} endDate - End date(UTC date) of file/data usage application
  * @param {BigNumber} serverFee - server fees by call function of `getPolicyServerGasFee`
+ * @param {BigNumber} gasPrice - the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
  * @param {string} porterUri - (Optional) the porter service url
  * @returns {Promise<BigNumber>} - the amount of bnb/tbnb in wei
  */
@@ -1553,10 +1440,11 @@ export const estimatePolicyGas = async (
   startDate: Date, //policy usage start date
   endDate: Date, //policy usage start date
   serverFee: BigNumber, //nlk in wei
+  gasPrice: BigNumber = BigNumber.from('0'), //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
   porterUri?: string
 ): Promise<BigNumber> => {
   // calcPolicyEstimateGasFee
-  const beingApprovedOrApproved: boolean = await checkFileApprovalStatusIsApprovedOrApproving(applyId)
+  const beingApprovedOrApproved: boolean = await checkDataApprovalStatusIsApprovedOrApproving(applyId)
 
   if (beingApprovedOrApproved) {
     throw new PolicyHasBeenActivedOnChain('Policy is currently active')
@@ -1584,47 +1472,45 @@ export const estimatePolicyGas = async (
 
   // const nlkEther: string = await publisher.getNLKBalance();
   // const nlkWei: string = Web3.utils.toWei(nlkEther, "ether");
-  const nlkThresholdWei: string = "10000000000000000000000000";
-  const approveNLKwei: string = nlkThresholdWei;
+  const nlkThresholdWei: string = '10000000000000000000000000'
+  const approveNLKwei: string = nlkThresholdWei
   // if(BigNumber.from(nlkThresholdWei).gt(BigNumber.from(nlkWei))){
   //   approveNLKwei = nlkWei;
   // }
-  console.log('before estimatePolicyGas approveNLK')
-  const approveGasInWei: number = await estimateApproveNLKGas(
-    publisher,
-    BigNumber.from(approveNLKwei),
-    serverFee
-  )
 
-  console.log('before policy estimatePolicyGas')
+  console.log('before estimateApproveNLKGas approveNLK')
+
+  const approveGasInWei: number = await estimateApproveNLKGas(publisher, BigNumber.from(approveNLKwei), serverFee)
+
+  console.log('before policy estimateApproveNLKGas')
+
   //Note that it takes time to evaluate gas, and since the transfer nlk function is called, it must be approved first
-  const txHash: string = await approveNLK(
-    publisher,
-    BigNumber.from(approveNLKwei),
-    serverFee,
-    false
-  );
+  const txHash: string = await approveNLK(publisher, BigNumber.from(approveNLKwei), serverFee, false)
 
-  console.log("before policy estimateCreatePolicyGas ");
-  const gasInWei: BigNumber =
-    await resultInfo.blockchainPolicy.estimateCreatePolicyGas(resultInfo.alice);
-  console.log("after policy estimatePolicyGas wei:", gasInWei.toString());
+  console.log('after policy approveNLK txHash:', txHash)
+
+  console.log('before policy estimateCreatePolicyGas ')
+
+  const gasInWei: BigNumber = await resultInfo.blockchainPolicy.estimateCreatePolicyGas(resultInfo.alice, gasPrice)
+
+  console.log('after policy estimateCreatePolicyGas wei:', gasInWei.toString())
 
   return gasInWei.add(approveGasInWei)
 }
 
 /**
  *
- * estimate the gas fee for batch (sharing files) creating policies.
- * @category File Publisher(Alice) Interface
- * @param {Account} publisher - Account the account object of the file publisher (Alice)
- * @param {string[]} userAccountIds - the account Id of the file publisher (Alice)
- * @param {string[]} applyIds - The application ID returned to the user by the interface when applying to use a specific file
+ * estimate the gas fee for batch (sharing files/datas) creating policies.
+ * @category File/Data Publisher(Alice) Interface
+ * @param {Account} publisher - Account the account object of the file/data publisher (Alice)
+ * @param {string[]} userAccountIds - the account Id of the file/data publisher (Alice)
+ * @param {string[]} applyIds - The application ID returned to the user by the interface when applying to use a specific file/data
  * @param {number[]} ursulaShares - Number of service shares
- * @param {number[]} ursulaThresholds - The file user can download the file after obtaining the specified number of service data shares
- * @param {number[]} startSeconds - Start time of file usage application in seconds
- * @param {number[]} endSeconds - End time of file usage application in seconds
+ * @param {number[]} ursulaThresholds - The file/data user can download the file/data after obtaining the specified number of service data shares
+ * @param {Date[]} startDates - Start date(UTC date) of file/data usage application
+ * @param {Date[]} endDates - End date(UTC date) of file/data usage application
  * @param {BigNumber} serverFee - server fees by call function of `getPolicyServerGasFee`
+ * @param {BigNumber} gasPrice - the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
  * @param {string} porterUri - (Optional) the porter service url
  * @returns {Promise<BigNumber>} - the amount of bnb/tbnb in wei
  */
@@ -1637,10 +1523,11 @@ export const estimatePolicysGas = async (
   startDates: Date[], //policy usage start date
   endDates: Date[], //policy usage start date
   serverFee: BigNumber, //nlk in wei
+  gasPrice: BigNumber = BigNumber.from('0'), //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
   porterUri?: string
 ): Promise<BigNumber> => {
   // calcPolicyEstimateGasFee
-  const approvingAndApprovedApplyIds: string[] = await checkMultiFileApprovalStatusIsApprovedOrApproving(applyIds)
+  const approvingAndApprovedApplyIds: string[] = await checkMultiDataApprovalStatusIsApprovedOrApproving(applyIds)
 
   if (approvingAndApprovedApplyIds.length > 0) {
     throw new PolicyHasBeenActivedOnChain(`Policys ${approvingAndApprovedApplyIds} is currently active`)
@@ -1676,18 +1563,25 @@ export const estimatePolicysGas = async (
   //   resultInfo.policyParameters.shares,
   // );
 
-  console.log('before estimatePolicyGas approveNLK')
+  console.log('before estimateApproveNLKGas')
   const approveGasInWei: number = await estimateApproveNLKGas(
     publisher,
     BigNumber.from('10000000000000000000000000'),
     serverFee
   )
 
-  console.log('before multi policy estimatePolicyGas')
+  console.log('before multi policy approveNLK')
   //Note that it takes time to evaluate gas, and since the transfer nlk function is called, it must be approved first
   const txHash: string = await approveNLK(publisher, BigNumber.from('10000000000000000000000000'), serverFee, false)
+  console.log('after multi policy approveNLK txHash:', txHash)
+
   console.log('before multi policy estimateCreatePolicyGas ')
-  const gasInWei: BigNumber = await resultInfo.multiBlockchainPolicy.estimateCreatePolicysGas(resultInfo.alice)
+
+  const gasInWei: BigNumber = await resultInfo.multiBlockchainPolicy.estimateCreatePolicysGas(
+    resultInfo.alice,
+    gasPrice
+  )
+
   console.log('after multi policy estimatePolicyGas wei:', gasInWei.toString())
 
   return gasInWei.add(approveGasInWei)
@@ -1747,7 +1641,7 @@ const getBlockchainPolicy = async (
   }
 
   //2. create policy to block chain
-  // const config = await getData();
+  // const config = await getSettingsData();
   // const porter = new Porter(porterUri);
   const label = policyData['policy_label']
   const threshold = ursulaThreshold //THRESHOLD
@@ -1816,9 +1710,7 @@ const getBlockchainPolicy = async (
     // length 66 public string to PublicKey Object
     //now @nulink_network/nulink-ts-crosschain@0.7.0 must be the version 0.7.0
     for (const ursula of ursulas) {
-      ursula.encryptingKey = PublicKey.fromBytes(
-        compressPublicKeyBuffer2(ursula.encryptingKey)
-      );
+      ursula.encryptingKey = PublicKey.fromBytes(compressPublicKeyBuffer2(ursula.encryptingKey))
     }
 
     //get ursula end
@@ -1828,7 +1720,7 @@ const getBlockchainPolicy = async (
   const strategy: Strategy | undefined = publisher.getAccountStrategyByStategyId(
     policyData['policy_label_id'] as string
   )
-  // console.log("ApprovalUseFiles strategy", strategy);
+  // console.log("ApprovalUseDatas strategy", strategy);
   // assert(strategy !== undefined);
   if (!strategy || isBlank(strategy)) {
     //` get account strategy failed, label_id ${policyData["policy_label_id"]},\n When you Restore Account, You must Import account Vault data!!!`
@@ -1954,9 +1846,7 @@ const getBlockchainPolicys = async (
     // length 66 public string to PublicKey Object
     //now @nulink_network/nulink-ts-crosschain@0.7.0 must be the version 0.7.0
     for (const ursula of ursulas) {
-      ursula.encryptingKey = PublicKey.fromBytes(
-        compressPublicKeyBuffer2(ursula.encryptingKey)
-      );
+      ursula.encryptingKey = PublicKey.fromBytes(compressPublicKeyBuffer2(ursula.encryptingKey))
     }
 
     //get ursula end
@@ -1969,7 +1859,7 @@ const getBlockchainPolicys = async (
   const ursulasArray: Array<Ursula[]> = []
 
   //2. create policy to block chain
-  // const config = await getData();
+  // const config = await getSettingsData();
   // const porter = new Porter(porterUri);
   for (let index = 0; index < policyDatas.length; index++) {
     const policyData = policyDatas[index]
@@ -2041,7 +1931,7 @@ const getBlockchainPolicys = async (
  * @param {string} applyId - string | number
  * @returns  Promise<boolean>
  */
-export const checkFileApprovalStatusIsApprovedOrApproving = async (applyId: string | number): Promise<boolean> => {
+export const checkDataApprovalStatusIsApprovedOrApproving = async (applyId: string | number): Promise<boolean> => {
   //Query whether the approval status is being approved or approving
   const data = (await getApplyDetails(applyId as string)) as any
 
@@ -2058,7 +1948,7 @@ export const checkFileApprovalStatusIsApprovedOrApproving = async (applyId: stri
  * @param {string[]} applyIds - string[]| number[]
  * @returns  Promise<string[]> -- return a list of applyIds that are not in the "pending approval" and "approved" statuses.
  */
-export const checkMultiFileApprovalStatusIsApprovedOrApproving = async (
+export const checkMultiDataApprovalStatusIsApprovedOrApproving = async (
   applyIds: string[] | number[]
 ): Promise<string[]> => {
   //Query whether the approval status is being approved or approving
@@ -2081,9 +1971,9 @@ export const checkMultiFileApprovalStatusIsApprovedOrApproving = async (
 }
 
 /**
- * Approval of application for use of Files, This account acts as Publisher (Alice) grant
+ * Approval of application for use of Files/Datas, This account acts as Publisher (Alice) grant
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
- * @category File Publisher(Alice) Interface
+ * @category File/Data Publisher(Alice) Interface
  * @param {Account} publisher - Account the current account object
  * @param {string} userAccountId - string
  * @param {string} applyId - string
@@ -2093,12 +1983,14 @@ export const checkMultiFileApprovalStatusIsApprovedOrApproving = async (
  * @param {Date} endDate - policy usage end date
  * @param {string} remark - (Optional)
  * @param {string} porterUri - (Optional) the porter services url
+ * @param {BigNumber} gasFeeInWei - (Optional) by call 'getPolicyGasFee', must be the token of the chain (e.g. bnb), not be the nlk
+ * @param {BigNumber} gasPrice - (Optional) the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
  * @returns {object} - {
  *                       txHash: 'the transaction hash of the "approve" transaction',
  *                       from: 'publisher.address'
  *                     }
  */
-export const approvalApplicationForUseFiles = async (
+export const approvalApplicationForUseDatas = async (
   publisher: Account,
   userAccountId: string, // proposer account id
   applyId: string, // Application Record ID
@@ -2109,7 +2001,8 @@ export const approvalApplicationForUseFiles = async (
   remark = '', //remark
   porterUri = '',
   //To handle whole numbers, Wei can be converted using BigNumber.from(), and Ether can be converted using ethers.utils.parseEther(). It's important to note that BigNumber.from("1.2") cannot handle decimal numbers (x.x).
-  gasFeeInWei: BigNumber = BigNumber.from('-1') //must be the token of the chain (e.g. bnb), not be the nlk
+  gasFeeInWei: BigNumber = BigNumber.from('0'), //must be the token of the chain (e.g. bnb), not be the nlk
+  gasPrice: BigNumber = BigNumber.from('0') //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
 ) => {
   //https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E6%89%B9%E5%87%86%E6%96%87%E4%BB%B6%E4%BD%BF%E7%94%A8%E7%94%B3%E8%AF%B7
   //return { txHash: enPolicy.txHash, from: publisher.address , data }
@@ -2117,7 +2010,7 @@ export const approvalApplicationForUseFiles = async (
   // console.log("the account address is:", publisher.address);
   // console.log("the account key is:", pwdDecrypt(publisher.encryptedKeyPair._privateKey, true));
 
-  const beingApprovedOrApproved: boolean = await checkFileApprovalStatusIsApprovedOrApproving(applyId)
+  const beingApprovedOrApproved: boolean = await checkDataApprovalStatusIsApprovedOrApproving(applyId)
 
   if (beingApprovedOrApproved) {
     throw new PolicyHasBeenActivedOnChain('Policy is currently active')
@@ -2141,7 +2034,7 @@ export const approvalApplicationForUseFiles = async (
   console.log(`the account token balance is: ${balance.toString()} wei ${chainConfigInfo.token_symbol}`)
   console.log(`the create policy gas fee is: ${gasFeeInWei.toString()} wei ${chainConfigInfo.token_symbol}`)
 
-  if (!gasFeeInWei.eq(BigNumber.from('-1')) && balance.lt(gasFeeInWei)) {
+  if (!gasFeeInWei.lte(BigNumber.from('0')) && balance.lt(gasFeeInWei)) {
     const balanceValue = Web3.utils.fromWei(balance.toString(), 'ether')
     const gasValue = Web3.utils.fromWei(gasFeeInWei.toString(), 'ether')
     // Message.error(
@@ -2171,9 +2064,13 @@ export const approvalApplicationForUseFiles = async (
   )
 
   // eslint-disable-next-line no-extra-boolean-cast
-  console.log(!txHashOrEmpty ? `no need approve nlk` : `txHash: ${txHashOrEmpty}`)
+  console.log(
+    !txHashOrEmpty
+      ? `approvalApplicationForUseDatas no need approve nlk`
+      : `approvalApplicationForUseDatas approveNLK txHash: ${txHashOrEmpty}`
+  )
 
-  const curNetwork: NETWORK_LIST = await getCurrentNetworkKey();
+  const curNetwork: NETWORK_LIST = await getCurrentNetworkKey()
 
   if (curNetwork === NETWORK_LIST.Horus) {
     //only mainnet can get nlk balance. if not crosschain mainnet, no nlk token, no need get nlk balance
@@ -2181,45 +2078,51 @@ export const approvalApplicationForUseFiles = async (
     //wei can use  BigNumber.from(), ether can use ethers.utils.parseEther(), because the BigNumber.from("1.2"), the number can't not be decimals (x.x)
     //await publisher.getNLKBalance() return ethers
     //Check whether the account balance is less than the policy creation cost
-    const nlkBalanceEthers: BigNumber = ethers.utils.parseEther(
-      (await publisher.getNLKBalance()) as string
-    );
-    const costServerGasEther = Web3.utils.fromWei(
-      costServerFeeWei.toString(),
-      "ether"
-    );
+    const nlkBalanceEthers: BigNumber = ethers.utils.parseEther((await publisher.getNLKBalance()) as string)
+    const costServerGasEther = Web3.utils.fromWei(costServerFeeWei.toString(), 'ether')
 
-  console.log(`the account balance is: ${nlkBalanceEthers.toString()} ether nlk`)
-  console.log(`the create policy server fee is: ${costServerGasEther.toString()} ether nlk`)
+    console.log(`the account balance is: ${nlkBalanceEthers.toString()} ether nlk`)
+    console.log(`the create policy server fee is: ${costServerGasEther.toString()} ether nlk`)
 
-  //Don't forget the mint fee (service charge), so use the method lte, not le
-  if (nlkBalanceEthers.lt(costServerFeeWei)) {
-    // Message.error(
-    //   `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerGasEther} ether`,
-    // );
-    console.log(
-      `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerGasEther} ether`
-    )
-    throw new InsufficientBalanceError(
-      `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerGasEther} ether`
-    )
-  }
+    //Don't forget the mint fee (service charge), so use the method lte, not le
+    if (nlkBalanceEthers.lt(costServerFeeWei)) {
+      // Message.error(
+      //   `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerGasEther} ether`,
+      // );
+      console.log(
+        `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerGasEther} ether`
+      )
+      throw new InsufficientBalanceError(
+        `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerGasEther} ether`
+      )
+    }
   } //end of if (curNetwork === NETWORK_LIST.Horus)
 
   // "@nucypher_network/nucypher-ts": "^0.7.0",  must be this version
-  console.log("before policy enact");
-  const waitReceipt = false;
+  console.log('before policy enact')
+  const waitReceipt = false
 
-  const web3: Web3 = await getWeb3();
-  const [GAS_PRICE_FACTOR_LEFT, GAS_PRICE_FACTOR_RIGHT] =
-    DecimalToInteger(GAS_PRICE_FACTOR);
+  const web3: Web3 = await getWeb3()
+  const [GAS_PRICE_FACTOR_LEFT, GAS_PRICE_FACTOR_RIGHT] = DecimalToInteger(GAS_PRICE_FACTOR)
+
   //estimatedGas * gasPrice * factor
-  const gasPrice = BigNumber.from(await web3.eth.getGasPrice())
-    .mul(GAS_PRICE_FACTOR_LEFT)
-    .div(GAS_PRICE_FACTOR_RIGHT);
+  if (gasPrice.lte(BigNumber.from('0'))) {
+    // the gasPrice is obtained in real time
+    gasPrice = BigNumber.from(await web3.eth.getGasPrice())
+    gasPrice = gasPrice.mul(GAS_PRICE_FACTOR_LEFT).div(GAS_PRICE_FACTOR_RIGHT)
+  } else {
+    //If the gasPrice is manually set, the GAS_PRICE_FACTOR is not set
+  }
 
-  const gesLimit: BigNumber = gasFeeInWei.div(gasPrice)
-  const enPolicy: EnactedPolicy = await resultInfo.blockchainPolicy.enact(resultInfo.ursulas, waitReceipt, gesLimit, gasPrice)
+  const _gasPrice = gasPrice
+
+  const gasLimit: BigNumber = gasFeeInWei.gt(BigNumber.from('0')) ? gasFeeInWei.div(_gasPrice) : BigNumber.from('0')
+  const enPolicy: EnactedPolicy = await resultInfo.blockchainPolicy.enact(
+    resultInfo.ursulas,
+    waitReceipt,
+    gasLimit,
+    _gasPrice
+  )
   console.log('after policy enact')
   // // Persist side-channel
   // const aliceVerifyingKey: PublicKey = alice.verifyingKey;
@@ -2228,21 +2131,13 @@ export const approvalApplicationForUseFiles = async (
   const encryptedTreasureMap: EncryptedTreasureMap = enPolicy.encryptedTreasureMap
   const encryptedTreasureMapBytes: Uint8Array = encryptedTreasureMap.toBytes()
 
-  let encryptedTreasureMapIPFS: string = ''
   //3. upload encrypt files to IPFS
-  if (ipfsSaveByBackend) {
-    //upload encrypt files to IPFS
-    encryptedTreasureMapIPFS = (
-      await setIPFSBatchDataByBackend([new Blob([encryptedTreasureMapBytes], { type: 'application/octet-stream' })])
-    )[0]
-  } else {
-    encryptedTreasureMapIPFS = await setIPFSData(encryptedTreasureMapBytes)
-  }
+  const encryptedTreasureMapIPFS: string = await StorageManager.setData([encryptedTreasureMapBytes], publisher)[0]
 
   //4. call center server to save policy info
-  const crossChainHrac: CrossChainHRAC = enPolicy.id;
-  
-  const hracBytes = crossChainHrac.toBytes();
+  const crossChainHrac: CrossChainHRAC = enPolicy.id
+
+  const hracBytes = crossChainHrac.toBytes()
 
   const sendData: any = {
     account_id: publisher.id,
@@ -2263,9 +2158,9 @@ export const approvalApplicationForUseFiles = async (
 }
 
 /**
- * Approval of applications for use of Files, This account acts as Publisher (Alice) grant. The batch version of the function refusalApplicationForUseFiles.
+ * Approval of applications for use of Files/Datas, This account acts as Publisher (Alice) grant. The batch version of the function refusalApplicationForUseDatas.
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
- * @category File Publisher(Alice) Interface
+ * @category File/Data Publisher(Alice) Interface
  * @param {Account} publisher - Account the current account object
  * @param {string[]} userAccountIds - string
  * @param {string[]} applyIds - string
@@ -2275,12 +2170,14 @@ export const approvalApplicationForUseFiles = async (
  * @param {Date[]} endDates - policy usage end date
  * @param {string} remark - (Optional)
  * @param {string} porterUri - (Optional) the porter services url
+ * @param {BigNumber} gasFeeInWei - (Optional) by call 'getPolicysGasFee', must be the token of the chain (e.g. bnb), not be the nlk
+ * @param {BigNumber} gasPrice - (Optional) the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
  * @returns {object} - {
  *                       txHash: 'the transaction hash of the "approve" transaction',
  *                       from: 'publisher.address'
  *                     }
  */
-export const approvalApplicationsForUseFiles = async (
+export const approvalApplicationsForUseDatas = async (
   publisher: Account,
   userAccountIds: string[], // proposer account id
   applyIds: string[], // Application Record ID
@@ -2291,7 +2188,8 @@ export const approvalApplicationsForUseFiles = async (
   remark = '', //remark
   porterUri = '',
   //To handle whole numbers, Wei can be converted using BigNumber.from(), and Ether can be converted using ethers.utils.parseEther(). It's important to note that BigNumber.from("1.2") cannot handle decimal numbers (x.x).
-  gasFeeInWei: BigNumber = BigNumber.from('-1') //must be the token of the chain (e.g. bnb), not be the nlk
+  gasFeeInWei: BigNumber = BigNumber.from('0'), //must be the token of the chain (e.g. bnb), not be the nlk
+  gasPrice: BigNumber = BigNumber.from('0') //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
 ) => {
   //https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E6%89%B9%E5%87%86%E6%96%87%E4%BB%B6%E4%BD%BF%E7%94%A8%E7%94%B3%E8%AF%B7
   //return { txHash: enPolicy.txHash, from: publisher.address , data }
@@ -2299,7 +2197,7 @@ export const approvalApplicationsForUseFiles = async (
   // console.log("the account address is:", publisher.address);
   // console.log("the account key is:", pwdDecrypt(publisher.encryptedKeyPair._privateKey, true));
 
-  const approvingAndApprovedApplyIds: string[] = await checkMultiFileApprovalStatusIsApprovedOrApproving(applyIds)
+  const approvingAndApprovedApplyIds: string[] = await checkMultiDataApprovalStatusIsApprovedOrApproving(applyIds)
 
   if (approvingAndApprovedApplyIds.length > 0) {
     throw new PolicyHasBeenActivedOnChain(`Policys ${approvingAndApprovedApplyIds} is currently active`)
@@ -2323,7 +2221,7 @@ export const approvalApplicationsForUseFiles = async (
   console.log(`the account token balance is: ${balance.toString()} wei ${chainConfigInfo.token_symbol}`)
   console.log(`the create policy gas fee is: ${gasFeeInWei.toString()} wei ${chainConfigInfo.token_symbol}`)
 
-  if (!gasFeeInWei.eq(BigNumber.from('-1')) && balance.lt(gasFeeInWei)) {
+  if (!gasFeeInWei.lte(BigNumber.from('0')) && balance.lt(gasFeeInWei)) {
     const balanceValue = Web3.utils.fromWei(balance.toString(), 'ether')
     const gasValue = Web3.utils.fromWei(gasFeeInWei.toString(), 'ether')
     // Message.error(
@@ -2337,53 +2235,57 @@ export const approvalApplicationsForUseFiles = async (
     )
   }
 
-  const costServerFeeWei: BigNumber = BigNumber.from("0");
+  const costServerFeeWei: BigNumber = BigNumber.from('0')
 
-  const curNetwork: NETWORK_LIST = await getCurrentNetworkKey();
+  const curNetwork: NETWORK_LIST = await getCurrentNetworkKey()
 
   if (curNetwork === NETWORK_LIST.Horus) {
     //only mainnet can get nlk balance. if not crosschain mainnet, no nlk token, no need get nlk balance
 
     //enPolicy service fee gas wei
-  const costServerFeeWei: BigNumber = await calcPolicysCost(
-    resultInfo.alice,
-    resultInfo.policyParameters.startDates,
-    resultInfo.policyParameters.endDates,
-    resultInfo.policyParameters.shares
-  )
+    const costServerFeeWei: BigNumber = await calcPolicysCost(
+      resultInfo.alice,
+      resultInfo.policyParameters.startDates,
+      resultInfo.policyParameters.endDates,
+      resultInfo.policyParameters.shares
+    )
 
-  const txHashOrEmpty: string = await approveNLK(
-    publisher,
-    BigNumber.from('10000000000000000000000000'),
-    costServerFeeWei,
-    false
-  )
+    const txHashOrEmpty: string = await approveNLK(
+      publisher,
+      BigNumber.from('10000000000000000000000000'),
+      costServerFeeWei,
+      false
+    )
 
-  // eslint-disable-next-line no-extra-boolean-cast
-  console.log(!txHashOrEmpty ? `no need approve nlk` : `txHash: ${txHashOrEmpty}`)
-
-  //wei can use  BigNumber.from(), ether can use ethers.utils.parseEther(), because the BigNumber.from("1.2"), the number can't not be decimals (x.x)
-  //await publisher.getNLKBalance() return ethers
-  //Check whether the account balance is less than the policy creation cost
-  const nlkBalanceEthers: BigNumber = ethers.utils.parseEther((await publisher.getNLKBalance()) as string)
-  const costServerGasEther = Web3.utils.fromWei(costServerFeeWei.toString(), 'ether')
-
-  console.log(`the account balance is: ${nlkBalanceEthers.toString()} ether nlk`)
-  console.log(`the create policy server fee is: ${costServerGasEther.toString()} ether nlk`)
-
-  //Don't forget the mint fee (service charge), so use the method lte, not le
-  if (nlkBalanceEthers.lt(costServerFeeWei)) {
-    // Message.error(
-    //   `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerGasEther} ether`,
-    // );
+    // eslint-disable-next-line no-extra-boolean-cast
     console.log(
-      `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerGasEther} ether`
+      !txHashOrEmpty
+        ? `approvalApplicationForUseDatas no need approve nlk`
+        : `approvalApplicationForUseDatas approveNLK txHash: ${txHashOrEmpty}`
     )
-    throw new InsufficientBalanceError(
-      `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerGasEther} ether`
-    )
-  }
-  } //end of if (curNetwork === NETWORK_LIST.Horus) 
+
+    //wei can use  BigNumber.from(), ether can use ethers.utils.parseEther(), because the BigNumber.from("1.2"), the number can't not be decimals (x.x)
+    //await publisher.getNLKBalance() return ethers
+    //Check whether the account balance is less than the policy creation cost
+    const nlkBalanceEthers: BigNumber = ethers.utils.parseEther((await publisher.getNLKBalance()) as string)
+    const costServerGasEther = Web3.utils.fromWei(costServerFeeWei.toString(), 'ether')
+
+    console.log(`the account balance is: ${nlkBalanceEthers.toString()} ether nlk`)
+    console.log(`the create policy server fee is: ${costServerGasEther.toString()} ether nlk`)
+
+    //Don't forget the mint fee (service charge), so use the method lte, not le
+    if (nlkBalanceEthers.lt(costServerFeeWei)) {
+      // Message.error(
+      //   `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerGasEther} ether`,
+      // );
+      console.log(
+        `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerGasEther} ether`
+      )
+      throw new InsufficientBalanceError(
+        `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerGasEther} ether`
+      )
+    }
+  } //end of if (curNetwork === NETWORK_LIST.Horus)
 
   // "@nucypher_network/nucypher-ts": "^0.7.0",  must be this version
   console.log('before multi policy enact')
@@ -2391,23 +2293,28 @@ export const approvalApplicationsForUseFiles = async (
 
   const web3: Web3 = await getWeb3()
 
-  const [GAS_PRICE_FACTOR_LEFT, GAS_PRICE_FACTOR_RIGHT] =
-      DecimalToInteger(GAS_PRICE_FACTOR);
-    //estimatedGas * gasPrice * factor
-    const gasPrice = BigNumber.from(await web3.eth.getGasPrice()).mul(GAS_PRICE_FACTOR_LEFT)
-      .div(GAS_PRICE_FACTOR_RIGHT);
+  const [GAS_PRICE_FACTOR_LEFT, GAS_PRICE_FACTOR_RIGHT] = DecimalToInteger(GAS_PRICE_FACTOR)
 
-  const gasLimit: BigNumber = gasFeeInWei.div(gasPrice)
+  //estimatedGas * gasPrice * factor
+  if (gasPrice.lte(BigNumber.from('0'))) {
+    // the gasPrice is obtained in real time
+    gasPrice = BigNumber.from(await web3.eth.getGasPrice())
+    gasPrice = gasPrice.mul(GAS_PRICE_FACTOR_LEFT).div(GAS_PRICE_FACTOR_RIGHT)
+  } else {
+    //If the gasPrice is manually set, the GAS_PRICE_FACTOR is not set
+  }
 
-  const gasLimitFactor = applyIds.length < 10 ? BigNumber.from('10') : BigNumber.from(applyIds.length.toString())
+  const _gasPrice = gasPrice
+
+  const gasLimit: BigNumber = gasFeeInWei.gt(BigNumber.from('0')) ? gasFeeInWei.div(_gasPrice) : BigNumber.from('0')
   //MultiPreEnactedPolicy
   const enMultiPolicy: MultiEnactedPolicy = await resultInfo.multiBlockchainPolicy.enact(
     resultInfo.ursulasArray,
     waitReceipt,
-    gasLimit.mul(gasLimitFactor),
-    gasPrice
+    gasLimit,
+    _gasPrice
   )
-  
+
   console.log('after mulit policy enact')
   // // Persist side-channel
   // const aliceVerifyingKey: PublicKey = alice.verifyingKey;
@@ -2420,45 +2327,15 @@ export const approvalApplicationsForUseFiles = async (
   const encryptedTreasureMapIPFSs: string[] = []
 
   //3. upload multiple encrypt files to IPFS
+  const cids: string[] = await StorageManager.setData(encryptedTreasureMapBytesArray, publisher)
+  encryptedTreasureMapIPFSs.push(...cids)
 
-  //notice greenfieldStorage backend API not support batch interface currently
-  if (greenfieldStorageEnable) {
-    for (
-      let index = 0;
-      index < encryptedTreasureMapBytesArray.length;
-      index++
-    ) {
-      const encryptedTreasureMapBytes: Uint8Array =
-        encryptedTreasureMapBytesArray[index];
-      const cids: string[] = await setIPFSBatchDataByBackend([
-        new Blob([encryptedTreasureMapBytes], {
-          type: "application/octet-stream",
-        }),
-      ]);
-      encryptedTreasureMapIPFSs.push(...cids);
-    }
-  } else if (ipfsSaveByBackend) {
-    //upload encrypt files to IPFS
-    const cids: string[] = await setIPFSBatchDataByBackend(
-      encryptedTreasureMapBytesArray.map(
-        (encryptedTreasureMapBytes) => new Blob([encryptedTreasureMapBytes], { type: 'application/octet-stream' })
-      )
-    )
-    encryptedTreasureMapIPFSs.push(...cids)
-  } else {
-    for (let index = 0; index < encryptedTreasureMapBytesArray.length; index++) {
-      const encryptedTreasureMapBytes: Uint8Array = encryptedTreasureMapBytesArray[index]
-      const encryptedTreasureMapIPFS = await setIPFSData(encryptedTreasureMapBytes)
-      encryptedTreasureMapIPFSs.push(encryptedTreasureMapIPFS)
-    }
-  }
-  
   //4. call center server to save policy info
-  const policy_list: object[] = [];
-  const crossChainHracs: CrossChainHRAC[] = enMultiPolicy.ids;
-  
+  const policy_list: object[] = []
+  const crossChainHracs: CrossChainHRAC[] = enMultiPolicy.ids
+
   for (let index = 0; index < crossChainHracs.length; index++) {
-    const crossChainHrac: CrossChainHRAC = crossChainHracs[index];
+    const crossChainHrac: CrossChainHRAC = crossChainHracs[index]
 
     policy_list.push({
       hrac: hexlify(crossChainHrac.toBytes() /* Uint8Array[]*/), //fromBytesByEncoding(crossChainHrac.toBytes(), 'binary'),
@@ -2482,14 +2359,14 @@ export const approvalApplicationsForUseFiles = async (
 }
 
 /**
- * Rejects the application for the use of files. This account acts as the publisher (Alice).
- * @category File Publisher(Alice) Interface
+ * Rejects the application for the use of files/datas. This account acts as the publisher (Alice).
+ * @category File/Data Publisher(Alice) Interface
  * @param {Account} publisher - The account of the publisher (Alice).
  * @param {string} applyId - The application apply ID to reject.
  * @param {string} remark - (Optional) Additional remarks for the rejection. Default is an empty string.
  * @returns {Promise<void>}
  */
-export const refusalApplicationForUseFiles = async (
+export const refusalApplicationForUseDatas = async (
   publisher: Account,
   applyId: string, // Application Record ID
   remark = '' //remark
@@ -2507,14 +2384,14 @@ export const refusalApplicationForUseFiles = async (
 }
 
 /**
- * Rejects the applications for the use of files. This account acts as the publisher (Alice). The batch version of the function refusalApplicationForUseFiles.
- * @category File Publisher(Alice) Interface
+ * Rejects the applications for the use of files/datas. This account acts as the publisher (Alice). The batch version of the function refusalApplicationForUseDatas.
+ * @category File/Data Publisher(Alice) Interface
  * @param {Account} publisher - The account of the publisher (Alice).
  * @param {string[]} applyIds - The application apply ID to reject.
  * @param {string} remark - (Optional) Additional remarks for the rejection. Default is an empty string.
  * @returns {Promise<void>}
  */
-export const refusalApplicationsForUseFiles = async (
+export const refusalApplicationsForUseDatas = async (
   publisher: Account,
   applyIds: string[], // Application Record ID
   remark = '' //remark
@@ -2532,10 +2409,10 @@ export const refusalApplicationsForUseFiles = async (
 }
 
 /**
- * Gets the file information associated with the published policy (so the policy has been published)
+ * Gets the file/data information associated with the published policy (so the policy has been published)
  * @param {string} policyId - policyId
- * @param {string} policyPublisherId - (Optional) The account id of the file publisher, acting as the role of file publisher
- * @param {string} policyUserId - (Optional) The account id of the file user, acting as the role of file applicant
+ * @param {string} policyPublisherId - (Optional) The account id of the file/data publisher, acting as the role of file publisher
+ * @param {string} policyUserId - (Optional) The account id of the file/data user, acting as the role of file applicant
  *                        Only one of the two parameters, "policyPublisherId" and "policyUserId", can be selected, or neither of them can be passed
  * @param {number} pageIndex - (Optional) number default 1
  * @param {number} pageSize - (Optional) number default 10
@@ -2560,7 +2437,7 @@ export const refusalApplicationsForUseFiles = async (
               "total": total count
             }
  */
-export const getFilesByPolicyId = async (
+export const getDataInfosByPolicyId = async (
   policyId: string, // filter policyLabelId
   policyPublisherId?: string, // policy publisher id, This account acts as Alice account.id
   policyUserId?: string, // policy user id,This account acts as Bob account.id
@@ -2596,7 +2473,7 @@ export const getFilesByPolicyId = async (
  * (Revoke)Undoes published policies, the account as publisher (Alice)
  * action: Cancel the policy and delete the association between the file and the policy and the application for using all files corresponding to the policy,the policy label records can not be delete
  * notice: the policy must be pulished can be revoked, otherwise(the policy not published)
- * revoke the apply of use files by call the api revokePermissionApplicationOfFiles
+ * revoke the apply of use files by call the api revokePermissionApplicationOfDatas
  * @internal
  * @param publisher
  * @param userAccountId
@@ -2624,21 +2501,21 @@ export const revokePublishedPolicies = async (publisher: Account, userAccountId:
 }
 
 /**
- * Gets the content of an approved file, which can be downloaded. The input parameter is obtained by calling getApprovedFilesAsUser (Account).
- * @category File User(Bob) Interface
+ * Gets the content of an approved file/data, which can be downloaded. The input parameter is obtained by calling getApprovedDatasAsUser (Account).
+ * @category File/Data User(Bob) Interface
  * @param {Account} userAccount - The current account information.
- * @param {string} policyEncryptingKey - The policy encrypting key used to encrypt the file.
+ * @param {string} policyEncryptingKey - The policy encrypting key used to encrypt the file/data.
  * @param {string} aliceVerifyingKey - The Alice verifying key used to verify the policy.
- * @param {string} fileIPFSAddress - The IPFS address of the file to download.
+ * @param {string} dataIPFSAddress - The IPFS address of the file/data to download.
  * @param {string} encryptedTreasureMapIPFSAddress - The IPFS address of the encrypted treasure map.
  * @param {string} porterUri - The URI of the porter node. Default is undefined, and will be retrieved from the API.
- * @returns {Promise<ArrayBuffer>} - Returns the file content as an ArrayBuffer.
+ * @returns {Promise<ArrayBuffer>} - Returns the file/data content as an ArrayBuffer.
  */
-export const getFileContentAsUser = async (
+export const getDataContentAsUser = async (
   userAccount: Account,
   policyEncryptingKey: string,
   aliceVerifyingKey: string, //note: adapter nucypher-ts ,this input parameter should be aliceEncryptedKey string
-  fileIPFSAddress: string,
+  dataIPFSAddress: string,
   encryptedTreasureMapIPFSAddress: string,
   crossChainHrac: CrossChainHRAC,
   porterUri?: string
@@ -2648,31 +2525,41 @@ export const getFileContentAsUser = async (
 
   if (isBlank(encryptedTreasureMapIPFSAddress)) {
     console.error(
-      "get Encrypted failed! Please check if the document has expired. If it has expired, please reapply for its use! error: encryptedTreasureMapIPFSAddress is invalid: ",
+      'get Encrypted failed! Please check if the document has expired. If it has expired, please reapply for its use! error: encryptedTreasureMapIPFSAddress is invalid: ',
       encryptedTreasureMapIPFSAddress
-    );
+    )
     throw new DecryptError(
-      "get Encrypted failed! Please check if the document has expired. If it has expired, please reapply for its use!"
-    );
+      'get Encrypted failed! Please check if the document has expired. If it has expired, please reapply for its use!'
+    )
   }
-  
+
   porterUri = porterUri || (await getPorterUrl())
 
   const bob: Bob = await makeBob(userAccount, porterUri)
   // console.log("Bob userAccount: ", userAccount);
   // console.log("porterUri: ", porterUri);
   //getFileContent from IPFS
-  const fileIpfsData: Buffer = greenfieldStorageEnable
-    ? await getGreenFieldStorageData(fileIPFSAddress)
-    : await getIPFSData(fileIPFSAddress);
+  const fileIpfsData: Uint8Array | null | undefined /*| Buffer*/ = await StorageManager.getData(dataIPFSAddress)
+
   // console.log("fileIpfsData: ", fileIpfsData);
-  const encryptedMessage: MessageKit = MessageKit.fromBytes(fileIpfsData);
-  const encryptedTreasureMapIpfsData: Buffer = greenfieldStorageEnable
-    ? await getGreenFieldStorageData(encryptedTreasureMapIPFSAddress)
-    : await getIPFSData(encryptedTreasureMapIPFSAddress);
+
+  if (isBlank(fileIpfsData)) {
+    throw new GetStorageDataError(`get encrypted data error! key: ${fileIpfsData}`)
+  }
+
+  const encryptedMessage: MessageKit = MessageKit.fromBytes(fileIpfsData as Uint8Array)
+  const encryptedTreasureMapIpfsData: Uint8Array | null | undefined /*| Buffer*/ = await StorageManager.getData(
+    encryptedTreasureMapIPFSAddress
+  )
+
+  if (isBlank(encryptedTreasureMapIpfsData)) {
+    throw new GetStorageDataError(`get encrypted TreasureMap data error! key: ${encryptedTreasureMapIPFSAddress}`)
+  }
   // console.log("encryptedTreasureMapIpfsData: ", encryptedTreasureMapIpfsData);
-  const encryptedTreasureMap: EncryptedTreasureMap =
-    EncryptedTreasureMap.fromBytes(encryptedTreasureMapIpfsData);
+  const encryptedTreasureMap: EncryptedTreasureMap = EncryptedTreasureMap.fromBytes(
+    encryptedTreasureMapIpfsData as Uint8Array
+  )
+
   // console.log("encryptedMessage: ", encryptedMessage);
   // console.log("encryptedTreasureMap: ", encryptedTreasureMap);
   // console.log("policyEncryptingKey: ", policyEncryptingKey);
@@ -2700,15 +2587,15 @@ export const getFileContentAsUser = async (
 }
 
 /**
- * Get approved document content (downloadable). The file applicant retrieves the content of a file that has been approved for their usage.
- * @category File User(Bob) Interface
+ * Get approved document content (downloadable). The file/data applicant retrieves the content of a file/data that has been approved for their usage.
+ * @category File/Data User(Bob) Interface
  * @param {Account} userAccount - Account the current account object
- * @param {string} fileId - file's id
+ * @param {string} dataId - file/data's id
  * @returns {Promise<ArrayBuffer>}
  */
-export const getFileContentByFileIdAsUser = async (userAccount: Account, fileId: string): Promise<ArrayBuffer> => {
+export const getDataContentByDataIdAsUser = async (userAccount: Account, dataId: string): Promise<ArrayBuffer> => {
   //get file info
-  const data = (await getFileDetails(fileId, userAccount.id)) as object
+  const data = (await getDataDetails(dataId, userAccount.id)) as object
 
   assert(data && !isBlank(data))
 
@@ -2718,30 +2605,28 @@ export const getFileContentByFileIdAsUser = async (userAccount: Account, fileId:
   const encryptedTreasureMapIPFSAddress = data['encrypted_treasure_map_ipfs_address']
 
   // hexlify: Convert a byte array to a hexadecimal encoded string -> arrayify: Convert a hexadecimal encoded string back to a byte array
-  const crossChainHrac: CrossChainHRAC = CrossChainHRAC.fromBytes(
-    arrayify(data["hrac"])
-  );
+  const crossChainHrac: CrossChainHRAC = CrossChainHRAC.fromBytes(arrayify(data['hrac']))
 
-  return getFileContentAsUser(
+  return getDataContentAsUser(
     userAccount,
     policyEncryptingKey,
     aliceVerifyingKey,
     fileIPFSAddress,
     encryptedTreasureMapIPFSAddress,
     crossChainHrac
-  );
-};
+  )
+}
 
 /**
  * The file publisher obtains the content of the file
- * @category File Publisher(Alice) Interface
+ * @category File/Data Publisher(Alice) Interface
  * @param {Account} userAccount - Account the current account object
  * @param {string} fileId - file's id
  * @returns {Promise<ArrayBuffer>}
  */
 export const getFileContentByFileIdAsPublisher = async (userAccount: Account, fileId: string): Promise<ArrayBuffer> => {
   //get file info
-  const data = (await getFileDetails(fileId, userAccount.id)) as object
+  const data = (await getDataDetails(fileId, userAccount.id)) as object
 
   assert(data && !isBlank(data))
 
@@ -2770,11 +2655,14 @@ export const getFileContentByFileIdAsPublisher = async (userAccount: Account, fi
   }
 
   //getFileContent from IPFS
-  const fileIpfsData: Buffer = greenfieldStorageEnable
-    ? await getGreenFieldStorageData(fileIPFSAddress)
-    : await getIPFSData(fileIPFSAddress);
+  const fileIpfsData: Uint8Array | null | undefined /*| Buffer*/ = await StorageManager.getData(fileIPFSAddress)
+
+  if (isBlank(fileIpfsData)) {
+    throw new GetStorageDataError(`publisher get encrypted data error! key: ${fileIpfsData}`)
+  }
+
   // console.log("fileIpfsData: ", fileIpfsData);
-  const encryptedMessage: MessageKit = MessageKit.fromBytes(fileIpfsData)
+  const encryptedMessage: MessageKit = MessageKit.fromBytes(fileIpfsData as Uint8Array)
 
   const privateKeyString = pwdDecrypt(strategyPrivatekey as string, true)
   // console.log("makeBob BobEncrypedPrivateKey: ",privateKeyString);
@@ -2871,9 +2759,9 @@ export const getMultiApplyDetails = async (applyIds: string[]): Promise<object[]
 }
 
 /**
-  * Retrieves the details of a file (include apply file info, file info, about policy info) by its ID and user account ID.
-  * @param {string} fileId - The ID of the file to retrieve details for.
-  * @param {string} fileUserAccountId - This parameter passes the file finder when the file consumer is not known, fileUserAccountId should be passed the current account I
+  * Retrieves the details of a file/data (include apply file/data info, file/data info, about policy info) by its ID and user account ID.
+  * @param {string} dataId - The ID of the file/data to retrieve details for.
+  * @param {string} fileUserAccountId - This parameter passes the file/data finder when the file/data consumer is not known, fileUserAccountId should be passed the current account I
   * @returns {Promise<object>} - The returned object contains the following properties:
                     {
                     file_id: string,
@@ -2900,12 +2788,12 @@ export const getMultiApplyDetails = async (applyIds: string[]): Promise<object[]
                     alice_verify_pk: string
                     }
 */
-export const getFileDetails = async (fileId: string, fileUserAccountId: string) => {
+export const getDataDetails = async (dataId: string, fileUserAccountId: string) => {
   //https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E6%96%87%E4%BB%B6%E8%AF%A6%E6%83%85
   //status: 0 => not applied (Initial state), 1=> Application in progress, 2 =>approved, 3=> rejected
 
   const sendData = {
-    file_id: fileId,
+    file_id: dataId,
     consumer_id: fileUserAccountId
   }
 
@@ -2919,7 +2807,7 @@ export const getFileDetails = async (fileId: string, fileUserAccountId: string) 
 /**
  * @internal
  * Gets information about policy labels info created by the given publisher account.
- * @category File Publisher(Alice) Interface
+ * @category File/Data Publisher(Alice) Interface
  * @param {Account} publisherAccount - The account of the publisher who created the policy labels.
  * @param {number} pageIndex - (Optional) The index of the page to retrieve. Default is 1.
  * @param {number} pageSize - (Optional) The size of each page. Default is 10.
@@ -2975,7 +2863,7 @@ export const getPolicyLabelInfosByAddr = async (accountAddress: string) => {
 /**
   * @internal
   * Gets the IDs of all policy labels created by the specified publisher account.
-  * @category File Publisher(Alice) Interface
+  * @category File/Data Publisher(Alice) Interface
   * @param {Account} publisherAccount - The account of the publisher who created the policy labels.
   * @returns {Promise<object>} - Returns an object with an array of policy label IDs.
                               {

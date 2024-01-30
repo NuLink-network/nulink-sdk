@@ -1,0 +1,26 @@
+[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / uploadDatasBySelectPolicy
+
+# Function: uploadDatasBySelectPolicy
+
+▸ **uploadDatasBySelectPolicy**(`account`, `category`, `dataList`, `policyId`): `Promise`<`string`[]\>
+
+Uploads files/datas to the server by selecting an existing policy and uploading the files encrypted with the policy's public key to IPFS.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `account` | [`Account`](../classes/Account.md) | The account to use to upload the files/datas. |
+| `category` | `string` \| [`DataCategory`](../enums/DataCategory.md) | The category of the files/datas being uploaded. Must be a valid FileCategory value or a string. |
+| `dataList` | [`DataInfo`](../types/DataInfo.md)[] | The list of files/datas to upload. Each element of the array must be an object with properties 'name' and 'dataArrayBuffer'. |
+| `policyId` | `number` | The ID of the policy to use to encrypt and upload the files/datas. |
+
+#### Returns
+
+`Promise`<`string`[]\>
+
+- Returns an array of file/data IDs uploaded to the server.
+
+#### Defined in
+
+[core/pre/api/workflow.ts:432](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/core/pre/api/workflow.ts#L432)

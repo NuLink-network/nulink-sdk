@@ -1,4 +1,4 @@
-[NuLink SDK - v0.0.6](../README.md) / [Modules](../modules.md) / getFilesInfoByStatus
+[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / getFilesInfoByStatus
 
 # Function: getFilesInfoByStatus
 
@@ -45,4 +45,4 @@ Retrieves a list of files in a specified state.
 
 #### Defined in
 
-[api/pre.ts:713](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/api/pre.ts#L713)
+[api/pre.ts:947](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/api/pre.ts#L947)

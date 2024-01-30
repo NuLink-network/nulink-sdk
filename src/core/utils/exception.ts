@@ -124,3 +124,10 @@ export class DecryptError extends Error {
     this.name = "DecryptError"; // (2)
   }
 }
+
+export class TransactionError extends Error {
+  constructor(message) {
+    super(message); // (1)
+    this.name = "TransactionError"; // (2)
+  }
+}

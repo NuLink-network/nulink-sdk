@@ -43,7 +43,12 @@ export const getPolicyServerGasFee = async (startSeconds: number, endSeconds: nu
   const startDate: Date = new Date(startSeconds * 1000) //  start_at is seconds, but Date needs milliseconds
   const endDate: Date = new Date(endSeconds * 1000) //  end_at is seconds, but Date needs milliseconds
 
-  const gasWei = await getPolicyTokenCost(account as Account, startDate, endDate, ursulaShares)
+  const gasWei = await getPolicyTokenCost(
+    account as Account,
+    startDate,
+    endDate,
+    ursulaShares
+  );
   // const gasValue = Web3.utils.fromWei(gasWei.toString(), "ether");
   return gasWei.toString()
 }
@@ -77,11 +82,21 @@ export const getPolicyServerGasFee = async (startSeconds: number, endSeconds: nu
     startDates.push(startDate);
     endDates.push(endDate);
 
-    console.log("getPolicysServerGasFee: ", index, _startSeconds, _endSeconds, ursulaShares[index]);
+    console.log(
+      "getPolicysServerGasFee: ",
+      index,
+      _startSeconds,
+      _endSeconds,
+      ursulaShares[index]
+    );
   }
 
-
-  const gasWei = await getPolicysTokenCost(account as Account, startDates, endDates, ursulaShares)
+  const gasWei = await getPolicysTokenCost(
+    account as Account,
+    startDates,
+    endDates,
+    ursulaShares
+  );
   // const gasValue = Web3.utils.fromWei(gasWei.toString(), "ether");
   return gasWei.toString()
 }
@@ -98,6 +113,7 @@ export const getPolicyServerGasFee = async (startSeconds: number, endSeconds: nu
  * @param {number} startSeconds - Start time of file usage application in seconds
  * @param {number} endSeconds - End time of file usage application in seconds
  * @param {BigNumber} serverFee - server fees by call function of `getPolicyServerGasFee`
+ * @param {BigNumber} gasPrice - the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
  * @returns {Promise<String>} - the amount of bnb/tbnb in wei
  */
 export const getPolicyGasFee = async (
@@ -107,7 +123,8 @@ export const getPolicyGasFee = async (
   ursulaThreshold: number,
   startSeconds: number, //policy usage start
   endSeconds: number, //policy usage start
-  serverFee: BigNumber // nlk fee in wei
+  serverFee: BigNumber, // nlk fee in wei
+  gasPrice: BigNumber = BigNumber.from("0") //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
 ): Promise<string> => {
   try {
     const account = await getWalletDefaultAccount()
@@ -130,8 +147,9 @@ export const getPolicyGasFee = async (
       ursulaThreshold,
       startDate,
       endDate,
-      serverFee
-    )
+      serverFee,
+      gasPrice
+    );
     // const gasValue = Web3.utils.fromWei(gasWei.toString(), "ether");
     return gasWei.toString()
   } catch (error: any) {
@@ -157,9 +175,9 @@ export const getPolicyGasFee = async (
  * @param {string[]} applyIds - The application ID returned to the user by the interface when applying to use a specific file
  * @param {number[]} ursulaShares - Number of service shares
  * @param {number[]} ursulaThreshold - The file user can download the file after obtaining the specified number of service data shares
- * @param {number[]} startSeconds - Start time of file usage application in seconds
- * @param {number[]} endSeconds - End time of file usage application in seconds
- * @param {BigNumber} serverFee - server fees by call function of `getPolicyServerGasFee`
+ * @param {number[]} startSeconds - Start time of file usage application in UTC seconds
+ * @param {number[]} endSeconds - End time of file usage application in UTC seconds
+ * @param {BigNumber} serverFee - server fees by call function of `getPolicysServerGasFee`
  * @returns {Promise<String>} - the amount of bnb/tbnb in wei
  */
 export const getPolicysGasFee = async (
@@ -169,7 +187,8 @@ export const getPolicysGasFee = async (
   ursulaThresholds: number[],
   startSeconds: number[], //policy usage start
   endSeconds: number[], //policy usage start
-  serverFee: BigNumber // nlk fee in wei
+  serverFee: BigNumber, // nlk fee in wei
+  gasPrice: BigNumber = BigNumber.from("0") //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
 ): Promise<string> => {
   try {
     const account = await getWalletDefaultAccount()
@@ -191,8 +210,14 @@ export const getPolicysGasFee = async (
       const endDate: Date = new Date(_endSeconds * 1000) //  end_at is seconds, but Date needs milliseconds
       startDates.push(startDate);
       endDates.push(endDate);
-  
-      console.log("getPolicysGasFee: ", index, _startSeconds, _endSeconds, ursulaShares[index]);
+
+      console.log(
+        "getPolicysGasFee: ",
+        index,
+        _startSeconds,
+        _endSeconds,
+        ursulaShares[index]
+      );
     }
 
     const gasWei = await getBatchCreatePolicyGasFee(
@@ -203,15 +228,19 @@ export const getPolicysGasFee = async (
       ursulaThresholds,
       startDates,
       endDates,
-      serverFee
-    )
+      serverFee,
+      gasPrice
+    );
     // const gasValue = Web3.utils.fromWei(gasWei.toString(), "ether");
     return gasWei.toString()
   } catch (error: any) {
     const error_info: string = error?.message || error
 
-    if (typeof error_info === 'string' && error_info?.toLowerCase()?.includes('policy is currently active')) {
-      console.error(error_info, error)
+    if (
+      typeof error_info === "string" &&
+      error_info?.toLowerCase()?.includes("policy is currently active")
+    ) {
+      console.error(error_info, error);
       //The policy has been created successfully, and there is no need to created again
       throw new PolicyHasBeenActivedOnChain('Policy is currently active')
     }
@@ -226,7 +255,7 @@ export const getPolicysGasFee = async (
  * get information of the logged-in user
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
- * @returns {Promise<object>} - The object containing the user information: {"name": , "address": "account address", "id": "account id", "ipfs": "IPFS",  "service": "service URL"}
+ * @returns {Promise<object>} - The object containing the user information: {"name": , "address": "account address", "id": "account id",  "service": "service URL"}
  */
 export const getLoginedUserInfo = async () => {
   //Web page Checks whether the user has logged in or get logined UserInfo. If so, the current login user name is returned
@@ -242,7 +271,6 @@ export const getLoginedUserInfo = async () => {
     name: account?.name,
     address: account?.address,
     id: account?.id,
-    ipfs: config.ipfs,
     service: config.service, //pre backend service url
     chainId: config.chainId,
     chainName: config.chainName,
@@ -358,7 +386,7 @@ export const updateUserInfo = async (data: {
  */
 export const checkFileApprovalStatusIsUnderReviewOrApproved = async (data: { applyId: string }) => {
   if (Object.prototype.hasOwnProperty.call(data, 'applyId')) {
-    return await pre.checkFileApprovalStatusIsApprovedOrApproving(data['applyId'])
+    return await pre.checkDataApprovalStatusIsApprovedOrApproving(data['applyId'])
   }
   return null
 }
@@ -374,7 +402,8 @@ export const checkFileApprovalStatusIsUnderReviewOrApproved = async (data: { app
  * @param {number} data.endSeconds
  * @param {number} data.ursulaShares
  * @param {number} data.ursulaThreshold
- * @param {BigNumber} data.gasFeeInWei - by call 'getPolicyGasFee'
+ * @param {BigNumber} data.gasFeeInWei - (Optional)  by call 'getPolicyGasFee', must be the token of the chain (e.g. bnb), not be the nlk
+ * @param {BigNumber} data.gasPrice - (Optional) the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
  * @param {string} data.remark - (Optional) remark
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @returns {Object || null} - If the "userAccountId" and "applyId" properties are not included in the "data" parameter, return null.
@@ -385,14 +414,15 @@ export const checkFileApprovalStatusIsUnderReviewOrApproved = async (data: { app
  *          }
  */
 export const ApprovalUseFiles = async (data: {
-  userAccountId: string
-  applyId: string
-  startSeconds: number
-  endSeconds: number
-  ursulaShares: number
-  ursulaThreshold: number
-  gasFeeInWei?: BigNumber
-  remark?: string
+  userAccountId: string;
+  applyId: string;
+  startSeconds: number;
+  endSeconds: number;
+  ursulaShares: number;
+  ursulaThreshold: number;
+  gasFeeInWei?: BigNumber; //by call 'getPolicyGasFee', must be the token of the chain (e.g. bnb), not be the nlk
+  gasPrice?: BigNumber; //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
+  remark?: string;
 }) => {
   if (
     data &&
@@ -410,7 +440,7 @@ export const ApprovalUseFiles = async (data: {
     const startDate: Date = new Date(Number(data['startSeconds']) * 1000) //  start_at is seconds, but Date needs milliseconds
     const endDate: Date = new Date(Number(data['endSeconds']) * 1000) //  end_at is seconds, but Date needs milliseconds
 
-    return await pre.approvalApplicationForUseFiles(
+    return await pre.approvalApplicationForUseDatas(
       publisher as Account,
       data['userAccountId'],
       data['applyId'],
@@ -418,10 +448,17 @@ export const ApprovalUseFiles = async (data: {
       data['ursulaThreshold'],
       startDate,
       endDate,
-      data && Object.prototype.hasOwnProperty.call(data, 'remark') ? data['remark'] : '',
-      '',
-      data && Object.prototype.hasOwnProperty.call(data, 'gasFeeInWei') ? data['gasFeeInWei'] : BigNumber.from('-1')
-    )
+      data && Object.prototype.hasOwnProperty.call(data, "remark")
+        ? data["remark"]
+        : "",
+      "",
+      data && Object.prototype.hasOwnProperty.call(data, "gasFeeInWei")
+        ? data["gasFeeInWei"]
+        : BigNumber.from("0"),
+      data && Object.prototype.hasOwnProperty.call(data, "gasPrice")
+        ? data["gasPrice"]
+        : BigNumber.from("0")
+    );
   }
 
   return null
@@ -439,7 +476,8 @@ export const ApprovalUseFiles = async (data: {
  * @param {number[]} data.endSeconds
  * @param {number[]} data.ursulaShares
  * @param {number[]} data.ursulaThresholds
- * @param {BigNumber} data.gasFeeInWei - by call 'getPolicysGasFee'
+ * @param {BigNumber} data.gasFeeInWei - (Optional)  by call 'getPolicysGasFee', must be the token of the chain (e.g. bnb), not be the nlk
+ * @param {BigNumber} data.gasPrice - (Optional) the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
  * @param {string} data.remark - (Optional) remark
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @returns {Object || null} - If the "userAccountIds" and "applyIds" properties are not included in the "data" parameter, return null.
@@ -450,14 +488,15 @@ export const ApprovalUseFiles = async (data: {
  *          }
  */
 export const ApprovalMultiUseFiles = async (data: {
-  userAccountIds: string []
-  applyIds: string []
-  startSecondsArray: number []
-  endSecondsArray: number []
-  ursulaShares: number []
-  ursulaThresholds: number []
-  gasFeeInWei?: BigNumber
-  remark?: string
+  userAccountIds: string[];
+  applyIds: string[];
+  startSecondsArray: number[];
+  endSecondsArray: number[];
+  ursulaShares: number[];
+  ursulaThresholds: number[];
+  gasFeeInWei?: BigNumber; //by call 'getPolicysGasFee', must be the token of the chain (e.g. bnb), not be the nlk
+  gasPrice?: BigNumber; //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
+  remark?: string;
 }) => {
   if (
     data &&
@@ -472,10 +511,14 @@ export const ApprovalMultiUseFiles = async (data: {
       )
     }
 
-    const startDates: Date [] =data['startSecondsArray'].map((startSeconds) => new Date(Number(startSeconds) * 1000) )  // start_at is seconds, but Date needs milliseconds
-    const endDates: Date [] =data['endSecondsArray'].map((endSeconds) => new Date(Number(endSeconds) * 1000) )  // end_at is seconds, but Date needs milliseconds
+    const startDates: Date[] = data["startSecondsArray"].map(
+      (startSeconds) => new Date(Number(startSeconds) * 1000)
+    ); // start_at is seconds, but Date needs milliseconds
+    const endDates: Date[] = data["endSecondsArray"].map(
+      (endSeconds) => new Date(Number(endSeconds) * 1000)
+    ); // end_at is seconds, but Date needs milliseconds
 
-    return await pre.approvalApplicationsForUseFiles(
+    return await pre.approvalApplicationsForUseDatas(
       publisher as Account,
       data['userAccountIds'],
       data['applyIds'],
@@ -483,10 +526,17 @@ export const ApprovalMultiUseFiles = async (data: {
       data['ursulaThresholds'],
       startDates,
       endDates,
-      data && Object.prototype.hasOwnProperty.call(data, 'remark') ? data['remark'] : '',
-      '',
-      data && Object.prototype.hasOwnProperty.call(data, 'gasFeeInWei') ? data['gasFeeInWei'] : BigNumber.from('-1')
-    )
+      data && Object.prototype.hasOwnProperty.call(data, "remark")
+        ? data["remark"]
+        : "",
+      "",
+      data && Object.prototype.hasOwnProperty.call(data, "gasFeeInWei")
+        ? data["gasFeeInWei"]
+        : BigNumber.from("0"),
+      data && Object.prototype.hasOwnProperty.call(data, "gasPrice")
+        ? data["gasPrice"]
+        : BigNumber.from("0")
+    );
   }
 
   return null
@@ -494,7 +544,7 @@ export const ApprovalMultiUseFiles = async (data: {
 
 /**
  * The file publisher retrieves a list of files that have been approved for use by others.
- * @category File Publisher(Alice) Interface
+ * @category File/Data Publisher(Alice) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first  
  * @param {Object} data - Object must be include the following fields in the "data" section:
@@ -529,7 +579,7 @@ export const getFilesForApprovedAsPublisher = async (data: { pageIndex?: number;
     )
   }
 
-  return await pre.getApprovedFilesAsPublisher(
+  return await pre.getApprovedDatasAsPublisher(
     account as Account,
     data && Object.prototype.hasOwnProperty.call(data, 'pageIndex') ? data['pageIndex'] : 1,
     data && Object.prototype.hasOwnProperty.call(data, 'pageSize') ? data['pageSize'] : 10
@@ -538,7 +588,7 @@ export const getFilesForApprovedAsPublisher = async (data: { pageIndex?: number;
 
 /**
  * The file applicant retrieves a list of files that have been approved for their own use.
- * @category File User(Bob) Interface
+ * @category File/Data User(Bob) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first  
  * @param {Object} data - Object must be include the following fields in the "data" section:
@@ -573,7 +623,7 @@ export const getFilesForApprovedAsUser = async (data: { pageIndex?: number; page
     )
   }
 
-  return await pre.getApprovedFilesAsUser(
+  return await pre.getApprovedDatasAsUser(
     account as Account,
     data && Object.prototype.hasOwnProperty.call(data, 'pageIndex') ? data['pageIndex'] : 1,
     data && Object.prototype.hasOwnProperty.call(data, 'pageSize') ? data['pageSize'] : 10
@@ -582,7 +632,7 @@ export const getFilesForApprovedAsUser = async (data: { pageIndex?: number; page
 
 /**
  * The file publisher retrieves a list of files in all states that need to be approved for use by others.
- * @category File Publisher(Alice) Interface
+ * @category File/Data Publisher(Alice) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first  
  * @param {Object} data - Object must be include the following fields in the "data" section:
@@ -617,7 +667,7 @@ export const getFilesForAllStatusAsPublisher = async (data: { pageIndex?: number
     )
   }
 
-  return await pre.getFilesAllStatusAsPublisher(
+  return await pre.getDatasAllStatusAsPublisher(
     account as Account,
     data && Object.prototype.hasOwnProperty.call(data, 'pageIndex') ? data['pageIndex'] : 1,
     data && Object.prototype.hasOwnProperty.call(data, 'pageSize') ? data['pageSize'] : 10
@@ -626,7 +676,7 @@ export const getFilesForAllStatusAsPublisher = async (data: { pageIndex?: number
 
 /**
  * Retrieve a list of files that have been approved for the file applicant's own use.
- * @category File User(Bob) Interface
+ * @category File/Data User(Bob) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first  
  * @param {Object} data - Object must be include the following fields in the "data" section:
@@ -661,7 +711,7 @@ export const getFilesApprovedForApplicantAsUser = async (data: { pageIndex?: num
     )
   }
 
-  return await pre.getApprovedFilesAsUser(
+  return await pre.getApprovedDatasAsUser(
     account as Account,
     data && Object.prototype.hasOwnProperty.call(data, 'pageIndex') ? data['pageIndex'] : 1,
     data && Object.prototype.hasOwnProperty.call(data, 'pageSize') ? data['pageSize'] : 10
@@ -670,7 +720,7 @@ export const getFilesApprovedForApplicantAsUser = async (data: { pageIndex?: num
 
 /**
  * Retrieve a list of files in a specified state that need to be approved for use by others, for the file publisher.
- * @category File Publisher(Alice) Interface
+ * @category File/Data Publisher(Alice) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first  
  * @param {Object} data - Object must be include the following fields in the "data" section:
@@ -710,7 +760,7 @@ export const getFilesByStatusForAllApplyAsPublisher = async (data: {
     )
   }
 
-  return await pre.getFilesByApplyStatusAsPublisher(
+  return await pre.getDatasByApplyStatusAsPublisher(
     account as Account,
     data && Object.prototype.hasOwnProperty.call(data, 'status') ? Number(data['status']) : 0,
     data && Object.prototype.hasOwnProperty.call(data, 'pageIndex') ? data['pageIndex'] : 1,
@@ -720,7 +770,7 @@ export const getFilesByStatusForAllApplyAsPublisher = async (data: {
 
 /**
  * The file applicant retrieves a list of files in a specified state that need to be approved by others.
- * @category File User(Bob) Interface
+ * @category File/Data User(Bob) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first  
  * @param {Object} data - Object must be include the following fields in the "data" section:
@@ -760,7 +810,7 @@ export const getFilesByStatusForAllApplyAsUser = async (data: {
     )
   }
 
-  return await pre.getFilesByApplyStatusAsUser(
+  return await pre.getDatasByApplyStatusAsUser(
     account as Account,
     data && Object.prototype.hasOwnProperty.call(data, 'status') ? Number(data['status']) : 0,
     data && Object.prototype.hasOwnProperty.call(data, 'pageIndex') ? data['pageIndex'] : 1,
@@ -770,7 +820,7 @@ export const getFilesByStatusForAllApplyAsUser = async (data: {
 
 /**
  * The file applicant retrieves the content of a file that has been approved for their usage.
- * @category File User(Bob) Interface
+ * @category File/Data User(Bob) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @throws {@link ParameterError} The input parameter must have the "fileId" field
@@ -789,7 +839,7 @@ export const getApprovedFileContentUrl = async (data: { fileId: string; fileName
       )
     }
 
-    const arraybuffer: ArrayBuffer = await pre.getFileContentByFileIdAsUser(account as Account, data['fileId'])
+    const arraybuffer: ArrayBuffer = await pre.getDataContentByDataIdAsUser(account as Account, data['fileId'])
     // console.log("getApprovedFileContentUrl downloadFile arrayBuffer:", arraybuffer);
     const blob = new Blob([arraybuffer], { type: 'arraybuffer' })
     const url = window.URL.createObjectURL(blob)
@@ -805,7 +855,7 @@ export const getApprovedFileContentUrl = async (data: { fileId: string; fileName
 
 /**
  * The file applicant retrieves the content of a file that has been approved for their usage.
- * @category File User(Bob) Interface
+ * @category File/Data User(Bob) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @throws {@link ParameterError} The input parameter must have the "fileId" field
@@ -822,7 +872,7 @@ export const getApprovedFileContent = async (fileId): Promise<ArrayBuffer> => {
       )
     }
 
-    const arraybuffer: ArrayBuffer = await pre.getFileContentByFileIdAsUser(account as Account, fileId)
+    const arraybuffer: ArrayBuffer = await pre.getDataContentByDataIdAsUser(account as Account, fileId)
     return arraybuffer
   } else {
     throw new exception.ParameterError(`The input parameter must have the "fileId" field`)
@@ -831,7 +881,7 @@ export const getApprovedFileContent = async (fileId): Promise<ArrayBuffer> => {
 
 /**
  * The file publisher obtains the content of the file
- * @category File Publisher(Alice) Interface
+ * @category File/Data Publisher(Alice) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @throws {@link ParameterError} The input parameter must have the "fileId" field
@@ -903,7 +953,7 @@ export const getFilesInfoByStatus = async (data: {
   fileOwnerId?: string
   applyId?: string
 }) => {
-  return await pre.getFilesByStatus(
+  return await pre.getDatasByStatus(
     data && Object.prototype.hasOwnProperty.call(data, 'fileId') ? data['fileId'] : undefined,
     data && Object.prototype.hasOwnProperty.call(data, 'proposerId') ? data['proposerId'] : undefined,
     data && Object.prototype.hasOwnProperty.call(data, 'fileOwnerId') ? data['fileOwnerId'] : undefined,
@@ -916,7 +966,7 @@ export const getFilesInfoByStatus = async (data: {
 
 /**
  * The publisher of the file obtains a list of the information of the policies.
- * @category File Publisher(Alice) Interface
+ * @category File/Data Publisher(Alice) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @param {Object} data - Object must be include the following fields in the "data" section:
@@ -964,7 +1014,7 @@ export const getPublishedPolicyInfos = async (data: { pageIndex?: number; pageSi
 /**
 /**
  * The applicant of the file obtains a list of the policy information.
- * @category File User(Bob) Interface
+ * @category File/Data User(Bob) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @param {Object} data - Object must be include the following fields in the "data" section:
@@ -1063,9 +1113,9 @@ export const getFilesInfoOfPolicy = async (data: {
 
     const accountId = (account as Account).id
     if (bPublisher) {
-      return await pre.getFilesByPolicyId(data['policyId'], accountId, undefined, pageIndex, pageSize)
+      return await pre.getDataInfosByPolicyId(data['policyId'], accountId, undefined, pageIndex, pageSize)
     } else {
-      return await pre.getFilesByPolicyId(data['policyId'], undefined, accountId, pageIndex, pageSize)
+      return await pre.getDataInfosByPolicyId(data['policyId'], undefined, accountId, pageIndex, pageSize)
     }
   } else {
     throw new exception.ParameterError(`The input parameter must have the "policyId" fields`)
@@ -1102,7 +1152,7 @@ export const getFilesInfoOfPolicy = async (data: {
  */
 export const getAllFilesInfoOfPolicy = async (data: { pageIndex?: number; pageSize?: number; policyId: string }) => {
   if (data && Object.prototype.hasOwnProperty.call(data, 'policyId')) {
-    return await pre.getFilesByPolicyId(
+    return await pre.getDataInfosByPolicyId(
       data['policyId'],
       undefined,
       undefined,
@@ -1116,34 +1166,40 @@ export const getAllFilesInfoOfPolicy = async (data: { pageIndex?: number; pageSi
 
 /**
  * send the raw transaction
+ * @throws {@link UnauthorizedError} get logined account failed, must be login account first
+ * @throws {Error} set Transaction failed exception
  * @param {string} toAddress - The recevier of the transaction, can be empty when deploying a contract.
- * @param {string} rawTxData - The call data of the transaction, can be empty for simple value transfers.
- * @param {string} value - The value of the transaction in wei.
- * @param {string} gasPrice - The gas price set by this transaction, if empty, it will use web3.eth.getGasPrice().
- * @param {boolean} estimateGas - Whether to assess gas fees.
+ * @param {string} rawTxData - (Optional) The call data of the transaction, can be empty for simple value transfers.
+ * @param {string} value - (Optional) The value of the transaction in wei.
+ * @param {string} gasPrice - (Optional) The gas price set by this transaction, if empty, it will use web3.eth.getGasPrice().
+ * @param {boolean} gasLimit - (Optional) set gas limit
+ * @param {Account} account - (Optional) The current account information. If the parameter is not passed, the function will call `getWalletDefaultAccount` to retrieve the current account.
  * @returns {Promise<string>} - Returns the transactionHash.
  */
 export const sendCustomTransaction = async (
   toAddress: string,
   rawTxData?: string,
   value?: string, //wei
-  gasPrice?: string //wei
-): Promise<string> => {
+  gasPrice?: string, //wei
+  gasLimit?: BigNumber,
+  account?: Account,
+): Promise<string | null> => {
   try {
-    const account = await getWalletDefaultAccount();
-    if (isBlank(account)) {
+    const _account = account || await getWalletDefaultAccount();
+    if (isBlank(_account)) {
       throw new exception.UnauthorizedError(
         "Please unlock account with your password first by call getWalletDefaultAccount(userpassword)"
       );
     }
 
     return sendRawTransaction(
-      account as Account,
+      _account as Account,
       toAddress,
       rawTxData,
       value,
       gasPrice,
-      false
+      false,
+      gasLimit
     );
   } catch (error: any) {
     const error_info: string = error?.message || error;
@@ -1165,28 +1221,32 @@ export const sendCustomTransaction = async (
 
 /**
  * send the raw transaction
+ * @throws {@link UnauthorizedError} get logined account failed, must be login account first
+ * @throws {Error} estimateCustomTransactionGas failed exception
  * @param {string} toAddress - The recevier of the transaction, can be empty when deploying a contract.
- * @param {string} rawTxData - The call data of the transaction, can be empty for simple value transfers.
- * @param {string} value - The value of the transaction in wei.
- * @param {string} gasPrice - The gas price set by this transaction, if empty, it will use web3.eth.getGasPrice().
- * @returns {Promise<number>} - Returns the transactionHash.
+ * @param {string} rawTxData - (Optional) The call data of the transaction, can be empty for simple value transfers.
+ * @param {string} value - (Optional) The value of the transaction in wei.
+ * @param {string} gasPrice - (Optional) The gas price set by this transaction, if empty, it will use web3.eth.getGasPrice().
+ * @param {Account} account - (Optional) The current account information. If the parameter is not passed, the function will call `getWalletDefaultAccount` to retrieve the current account.
+ * @returns {Promise<number | null>} - Returns the gasFee or null if estimate gas failed .
  */
 export const estimateCustomTransactionGas = async (
   toAddress: string,
   rawTxData?: string,
   value?: string, //wei
-  gasPrice?: string //wei
-): Promise<number> => {
+  gasPrice?: string, //wei
+  account?: Account,
+): Promise<number | null> => {
   try {
-    const account = await getWalletDefaultAccount();
-    if (isBlank(account)) {
+    const _account = account || await getWalletDefaultAccount();
+    if (isBlank(_account)) {
       throw new exception.UnauthorizedError(
         "Please unlock account with your password first by call getWalletDefaultAccount(userpassword)"
       );
     }
 
     return sendRawTransactionGas(
-      account as Account,
+      _account as Account,
       toAddress,
       rawTxData,
       value,

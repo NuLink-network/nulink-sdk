@@ -1,13 +1,13 @@
-[NuLink SDK - v0.0.6](README.md) / Modules
+[NuLink SDK - v0.5.6](README.md) / Modules
 
-# NuLink SDK - v0.0.6
+# NuLink SDK - v0.5.6
 
 ## Table of contents
 
 ### Enumerations
 
-- [FileType](enums/FileType.md)
-- [FileCategory](enums/FileCategory.md)
+- [DataType](enums/DataType.md)
+- [DataCategory](enums/DataCategory.md)
 
 ### Classes
 
@@ -18,12 +18,14 @@
 
 ### Type Aliases
 
-- [FileInfo](types/FileInfo.md)
+- [DataInfo](types/DataInfo.md)
 
 ### Functions
 
 - [getPolicyServerGasFee](functions/getPolicyServerGasFee.md)
+- [getPolicysServerGasFee](functions/getPolicysServerGasFee.md)
 - [getPolicyGasFee](functions/getPolicyGasFee.md)
+- [getPolicysGasFee](functions/getPolicysGasFee.md)
 - [getLoginedUserInfo](functions/getLoginedUserInfo.md)
 - [isUserLogined](functions/isUserLogined.md)
 - [getUserDetails](functions/getUserDetails.md)
@@ -31,6 +33,7 @@
 - [updateUserInfo](functions/updateUserInfo.md)
 - [checkFileApprovalStatusIsUnderReviewOrApproved](functions/checkFileApprovalStatusIsUnderReviewOrApproved.md)
 - [ApprovalUseFiles](functions/ApprovalUseFiles.md)
+- [ApprovalMultiUseFiles](functions/ApprovalMultiUseFiles.md)
 - [getFilesForApprovedAsPublisher](functions/getFilesForApprovedAsPublisher.md)
 - [getFilesForApprovedAsUser](functions/getFilesForApprovedAsUser.md)
 - [getFilesForAllStatusAsPublisher](functions/getFilesForAllStatusAsPublisher.md)
@@ -45,6 +48,8 @@
 - [getPolicyInfosAsUser](functions/getPolicyInfosAsUser.md)
 - [getFilesInfoOfPolicy](functions/getFilesInfoOfPolicy.md)
 - [getAllFilesInfoOfPolicy](functions/getAllFilesInfoOfPolicy.md)
+- [sendCustomTransaction](functions/sendCustomTransaction.md)
+- [estimateCustomTransactionGas](functions/estimateCustomTransactionGas.md)
 - [restoreWalletDataByRootExtendedPrivateKey](functions/restoreWalletDataByRootExtendedPrivateKey.md)
 - [restoreWalletDataByMnemonic](functions/restoreWalletDataByMnemonic.md)
 - [restoreWalletData](functions/restoreWalletData.md)
@@ -62,37 +67,44 @@
 - [IsExistAccount](functions/IsExistAccount.md)
 - [createAccount](functions/createAccount.md)
 - [getAccountInfo](functions/getAccountInfo.md)
+- [getAccountInfos](functions/getAccountInfos.md)
 - [updateAccountInfo](functions/updateAccountInfo.md)
-- [uploadFilesByCreatePolicy](functions/uploadFilesByCreatePolicy.md)
-- [uploadFilesBySelectPolicy](functions/uploadFilesBySelectPolicy.md)
-- [getUploadedFiles](functions/getUploadedFiles.md)
-- [getFileInfosByAccount](functions/getFileInfosByAccount.md)
-- [deleteUploadedFiles](functions/deleteUploadedFiles.md)
-- [getOtherShareFiles](functions/getOtherShareFiles.md)
-- [applyForFilesUsagePermission](functions/applyForFilesUsagePermission.md)
-- [revokePermissionApplicationOfFiles](functions/revokePermissionApplicationOfFiles.md)
-- [getFilesAllStatusAsPublisher](functions/getFilesAllStatusAsPublisher.md)
-- [getFilesByApplyStatusAsPublisher](functions/getFilesByApplyStatusAsPublisher.md)
-- [getFilesPendingApprovalAsPublisher](functions/getFilesPendingApprovalAsPublisher.md)
-- [getApprovedFilesAsPublisher](functions/getApprovedFilesAsPublisher.md)
-- [getFilesForRefusedAsPublisher](functions/getFilesForRefusedAsPublisher.md)
-- [getFilesAllStatusAsUser](functions/getFilesAllStatusAsUser.md)
-- [getFilesByApplyStatusAsUser](functions/getFilesByApplyStatusAsUser.md)
-- [getFilesPendingApprovalAsUser](functions/getFilesPendingApprovalAsUser.md)
-- [getApprovedFilesAsUser](functions/getApprovedFilesAsUser.md)
-- [getUnapprovedFilesAsUser](functions/getUnapprovedFilesAsUser.md)
-- [getFilesByStatus](functions/getFilesByStatus.md)
+- [uploadDatasByCreatePolicy](functions/uploadDatasByCreatePolicy.md)
+- [uploadDatasBySelectPolicy](functions/uploadDatasBySelectPolicy.md)
+- [getUploadedDatas](functions/getUploadedDatas.md)
+- [getDataInfosByAccount](functions/getDataInfosByAccount.md)
+- [deleteUploadedDatas](functions/deleteUploadedDatas.md)
+- [getOtherShareDatas](functions/getOtherShareDatas.md)
+- [applyForDatasUsagePermission](functions/applyForDatasUsagePermission.md)
+- [revokePermissionApplicationOfDatas](functions/revokePermissionApplicationOfDatas.md)
+- [getDatasAllStatusAsPublisher](functions/getDatasAllStatusAsPublisher.md)
+- [getDatasByApplyStatusAsPublisher](functions/getDatasByApplyStatusAsPublisher.md)
+- [getDatasPendingApprovalAsPublisher](functions/getDatasPendingApprovalAsPublisher.md)
+- [getApprovedDatasAsPublisher](functions/getApprovedDatasAsPublisher.md)
+- [getDatasForRefusedAsPublisher](functions/getDatasForRefusedAsPublisher.md)
+- [getDatasAllStatusAsUser](functions/getDatasAllStatusAsUser.md)
+- [getDatasByApplyStatusAsUser](functions/getDatasByApplyStatusAsUser.md)
+- [getDatasPendingApprovalAsUser](functions/getDatasPendingApprovalAsUser.md)
+- [getApprovedDatasAsUser](functions/getApprovedDatasAsUser.md)
+- [getUnapprovedDatasAsUser](functions/getUnapprovedDatasAsUser.md)
+- [getDatasByStatus](functions/getDatasByStatus.md)
 - [getInUsePoliciesInfo](functions/getInUsePoliciesInfo.md)
 - [getPublishedPoliciesInfo](functions/getPublishedPoliciesInfo.md)
 - [getPoliciesInfo](functions/getPoliciesInfo.md)
 - [getPolicyTokenCost](functions/getPolicyTokenCost.md)
+- [getPolicysTokenCost](functions/getPolicysTokenCost.md)
 - [estimatePolicyGas](functions/estimatePolicyGas.md)
-- [checkFileApprovalStatusIsApprovedOrApproving](functions/checkFileApprovalStatusIsApprovedOrApproving.md)
-- [approvalApplicationForUseFiles](functions/approvalApplicationForUseFiles.md)
-- [refusalApplicationForUseFiles](functions/refusalApplicationForUseFiles.md)
-- [getFilesByPolicyId](functions/getFilesByPolicyId.md)
-- [getFileContentAsUser](functions/getFileContentAsUser.md)
-- [getFileContentByFileIdAsUser](functions/getFileContentByFileIdAsUser.md)
+- [estimatePolicysGas](functions/estimatePolicysGas.md)
+- [checkDataApprovalStatusIsApprovedOrApproving](functions/checkDataApprovalStatusIsApprovedOrApproving.md)
+- [checkMultiDataApprovalStatusIsApprovedOrApproving](functions/checkMultiDataApprovalStatusIsApprovedOrApproving.md)
+- [approvalApplicationForUseDatas](functions/approvalApplicationForUseDatas.md)
+- [approvalApplicationsForUseDatas](functions/approvalApplicationsForUseDatas.md)
+- [refusalApplicationForUseDatas](functions/refusalApplicationForUseDatas.md)
+- [refusalApplicationsForUseDatas](functions/refusalApplicationsForUseDatas.md)
+- [getDataInfosByPolicyId](functions/getDataInfosByPolicyId.md)
+- [getDataContentAsUser](functions/getDataContentAsUser.md)
+- [getDataContentByDataIdAsUser](functions/getDataContentByDataIdAsUser.md)
 - [getFileContentByFileIdAsPublisher](functions/getFileContentByFileIdAsPublisher.md)
 - [getApplyDetails](functions/getApplyDetails.md)
-- [getFileDetails](functions/getFileDetails.md)
+- [getMultiApplyDetails](functions/getMultiApplyDetails.md)
+- [getDataDetails](functions/getDataDetails.md)

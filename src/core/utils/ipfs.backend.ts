@@ -9,7 +9,7 @@ import FormData from 'form-data'
 import { isBlank, isNotBlankAndEmptyObject } from './null'
 import { MultiFileUploadError } from './exception'
 
-export const setBatchData = async (
+export const setDatas = async (
   // account: Account,
   userDatas:
     | string[]

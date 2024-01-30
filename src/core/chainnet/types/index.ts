@@ -5,8 +5,6 @@ export type NetworkConfigOptions = {
   web3RpcUrl: string;
   chainId: number;
   chainName: string;
-  ipfs: string;
-  infura_ipfs_encrypted_auth: string;
   service: string; // fe service address
   porter: string;
   contract_info: any;

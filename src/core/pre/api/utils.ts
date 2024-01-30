@@ -1,20 +1,20 @@
-import { FileCategory } from "../types";
+import { DataCategory } from "../types";
 
-export const getFileCategoryString = (
-  fileCategory: FileCategory | string
+export const getDataCategoryString = (
+  category: DataCategory | string
 ): string => {
   let result = "";
-  if (typeof fileCategory == "number") {
-    //e.g. FileCategory.Philosophy => typeof FileCategory.Philosophy == "number"
+  if (typeof category == "number") {
+    //e.g. DataCategory.Philosophy => typeof DataCategory.Philosophy == "number"
 
-    if (typeof FileCategory[fileCategory.toString()] == "undefined") {
-      result = fileCategory.toString();
+    if (typeof DataCategory[category.toString()] == "undefined") {
+      result = category.toString();
     } else {
-      result = FileCategory[fileCategory.toString()];
+      result = DataCategory[category.toString()];
     }
   } else {
-    //typeof fileCategory == "string"
-    result = fileCategory as string;
+    //typeof category == "string"
+    result = category as string;
   }
 
   return result;

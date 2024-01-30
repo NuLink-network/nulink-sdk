@@ -1,5 +1,5 @@
 //format
-export enum FileType {
+export enum DataType {
   Text, //Includes text files, ebook files, compressed files
   Data, //Including data files
   Video,
@@ -10,7 +10,7 @@ export enum FileType {
 }
 
 //type
-export enum FileCategory {
+export enum DataCategory {
   unkown,
   Philosophy, 
   Religion, 
@@ -59,8 +59,8 @@ export const  FileType2Suffix = {
   Other: "All other formats are included", //Including all
 }
 
-export type FileInfo = {
-    name: string; //label
-    fileBinaryArrayBuffer: ArrayBuffer, //The binary representation of the contents of files By invoke 'FileReader.ReadAsArrayBuffer(file)' callback return the value: e.target.result
-    fileCategory?: FileCategory | string;
+export type DataInfo = {
+    label: string; //data label
+    dataArrayBuffer: ArrayBuffer, //The binary representation of the contents of files/data By invoke 'FileReader.ReadAsArrayBuffer(file)' callback return the value: e.target.result
+    category?: DataCategory | string;
   };

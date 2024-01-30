@@ -1,4 +1,4 @@
-[NuLink SDK - v0.0.6](../README.md) / [Modules](../modules.md) / getFilesByStatusForAllApplyAsUser
+[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / getFilesByStatusForAllApplyAsUser
 
 # Function: getFilesByStatusForAllApplyAsUser
 
@@ -45,4 +45,4 @@ UnauthorizedError get logined account failed, must be login account first
 
 #### Defined in
 
-[api/pre.ts:566](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/api/pre.ts#L566)
+[api/pre.ts:800](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/api/pre.ts#L800)

@@ -1,7 +1,7 @@
 import { Account, Strategy } from "../../hdwallet/api/account";
 import { TransactionReceipt } from "web3-core";
 // import { message as Message } from "antd";
-import { InsufficientBalanceError } from "../../utils/exception";
+import { InsufficientBalanceError, TransactionError } from "../../utils/exception";
 import { GAS_LIMIT_FACTOR, GAS_PRICE_FACTOR } from "../../chainnet/config";
 import { DecimalToInteger } from "../../utils/math";
 import Erc20TokenABI from "../../sol/abi/Erc20.json";
@@ -12,7 +12,7 @@ import { getTransactionNonceLock } from "../../utils/transaction";
 import { getWeb3, toCanonicalAddress } from "../../hdwallet/api";
 import Web3 from "web3";
 import { getCurrentNetworkKey, getSettingsData } from "../../chainnet";
-import { decrypt as pwdDecrypt } from "../../utils/passwordEncryption";
+import { decrypt as pwdDecrypt } from "../../utils/password.encryption";
 import { BigNumber } from "ethers";
 
 
@@ -23,7 +23,7 @@ import { BigNumber } from "ethers";
   * @param {string} rawTxData - The call data of the transaction, can be empty for simple value transfers.
   * @param {string} value - The value of the transaction in wei.
   * @param {string} gasPrice - The gas price set by this transaction, if empty, it will use web3.eth.getGasPrice().
-  * @returns {Promise<number>} - Returns the transactionHash.
+ * @returns {Promise<number | null>} - Returns the gasFee or null if estimate gas failed.
 */
 export const sendRawTransactionGas = async (
     account: Account,
@@ -31,38 +31,44 @@ export const sendRawTransactionGas = async (
     rawTxData?: string,
     value?: string, //wei
     gasPrice?: string //wei
-    ): Promise<number> => {
+): Promise<number | null> => {
   //approveNLKEstimateGas
-    const gasFee: string = await sendRawTransaction(
-        account,
-        toAddress,
-        rawTxData,
-        value,
-        gasPrice,
-        true
-    );
-    return Number(gasFee);
+  const gasFee: string | null = await sendRawTransaction(
+    account,
+    toAddress,
+    rawTxData,
+    value,
+    gasPrice,
+    true
+  );
+  if (isBlank(gasFee)) {
+    return null;
+  }
+  return Number(gasFee);
 };
 
 
 /**
-  * send the raw transaction
-  * @param {Account} account - Account the current account object.
-  * @param {string} toAddress - The recevier of the transaction, can be empty when deploying a contract.
-  * @param {string} rawTxData - The call data of the transaction, can be empty for simple value transfers.
-  * @param {string} value - The value of the transaction in wei.
-  * @param {string} gasPrice - The gas price set by this transaction, if empty, it will use web3.eth.getGasPrice().
-  * @param {boolean} estimateGas - Whether to assess gas fees.
-  * @returns {Promise<string>} - Returns the transactionHash.
-*/
+ * send the raw transaction
+ * @throws {@link Error} set Transaction failed or get account exception
+ * @param {Account} account - Account the current account object.
+ * @param {string} toAddress - The recevier of the transaction, can be empty when deploying a contract.
+ * @param {string} rawTxData - The call data of the transaction, can be empty for simple value transfers.
+ * @param {string} value - The value of the transaction in wei.
+ * @param {string} gasPrice - (Optional) The gas price set by this transaction, if empty, it will use web3.eth.getGasPrice().
+ * @param {boolean} estimateGas - (Optional) Whether to assess gas fees.
+ * @param {boolean} gasLimit - (Optional) set gas limit
+ * @returns {Promise<string | null >} - Returns the transactionHash or null.
+ */
 export const sendRawTransaction = async (
-    account: Account,
-    toAddress: string,
-    rawTxData?: string,
-    value?: string, //wei
-    gasPrice?: string, //wei
-    estimateGas?: boolean //default false
-): Promise<string> => {
+  account: Account,
+  toAddress: string,
+  rawTxData?: string,
+  value?: string, //wei
+  gasPrice?: string, //wei
+  estimateGas?: boolean, //default false
+  gasLimit?: BigNumber
+): Promise<string | null> => {
   // Allow my nlk to be deducted from the subscriptManager contract
 
   // const account = web3.eth.accounts.privateKeyToAccount('0x2cc983ef0f52c5e430b780e53da10ee2bb5cbb5be922a63016fc39d4d52ce962');
@@ -94,7 +100,8 @@ export const sendRawTransaction = async (
     );
     await transactionNonceLock.acquireAsync();
 
-    try {
+  let txReceipt: TransactionReceipt | null = null;
+  try {
     const txCount = await web3.eth.getTransactionCount(_fromAddress);
 
     const [GAS_PRICE_FACTOR_LEFT, GAS_PRICE_FACTOR_RIGHT] =
@@ -134,24 +141,38 @@ export const sendRawTransaction = async (
     //   rawTx["chainId"] =chainConfigInfo.chainId; // chainConfigInfo.chainId.toString(); //97
     // }
 
-    // gasUsed => estimateGas return gasUsed is the gasLimit (How many gas were used,that is the amount of gas), not the gasFee (gasLimit * _gasPrice)
-    const gasUsed: number = await web3.eth.estimateGas(rawTx as any);
-    console.log(`sendRawTransaction estimateGas Used is ${gasUsed} wei`);
-
     const [GAS_LIMIT_FACTOR_LEFT, GAS_LIMIT_FACTOR_RIGHT] =
-        DecimalToInteger(GAS_LIMIT_FACTOR);
+      DecimalToInteger(GAS_LIMIT_FACTOR);
 
-    //estimatedGas * _gasPrice * factor
-    const gasFeeInWei = BigNumber.from(gasUsed)
+    // eslint-disable-next-line no-extra-boolean-cast
+    if (!!estimateGas) {
+      // gasUsed => estimateGas return gasUsed is the gasLimit (How many gas were used,that is the amount of gas), not the gasFee (gasLimit * _gasPrice)
+      const gasUsed: number = await web3.eth.estimateGas(rawTx as any);
+      console.log(`sendRawTransaction estimateGas Used is ${gasUsed} wei`);
+
+      //estimatedGas * _gasPrice * factor
+      const gasFeeInWei = BigNumber.from(gasUsed)
         .mul(BigNumber.from(_gasPrice))
         .mul(GAS_LIMIT_FACTOR_LEFT)
         .div(GAS_LIMIT_FACTOR_RIGHT);
 
-    console.log(`sendRawTransaction estimate GasFee is ${gasFeeInWei} wei`);
-    // eslint-disable-next-line no-extra-boolean-cast
-    if (!!estimateGas) {
-        return gasFeeInWei.toString();
+      console.log(`sendRawTransaction estimate GasFee is ${gasFeeInWei} wei`);
+
+      return gasFeeInWei.toString();
     }
+
+    let gasUsed = BigNumber.from("0");
+    if (!isBlank(gasLimit) && gasLimit?.gt(BigNumber.from("0"))) {
+      gasUsed = gasLimit;
+    } else {
+      gasUsed = BigNumber.from(await web3.eth.estimateGas(rawTx as any));
+    }
+
+    //estimatedGas * _gasPrice * factor
+    const gasFeeInWei = BigNumber.from(gasUsed)
+      .mul(BigNumber.from(_gasPrice))
+      .mul(GAS_LIMIT_FACTOR_LEFT)
+      .div(GAS_LIMIT_FACTOR_RIGHT);
 
     const tokenBalanceEthers = (await account.balance()) as string; //tbnb
     const tokenBalanceWei = Web3.utils.toWei(tokenBalanceEthers);
@@ -173,9 +194,11 @@ export const sendRawTransaction = async (
 
     // https://ethereum.stackexchange.com/questions/87606/ethereumjs-tx-returned-error-invalid-sender
 
+    //param gas means gasLimit
+
     //estimatedGas * factor
-    rawTx["gasLimit"] = web3.utils.toHex(
-        BigNumber.from(gasUsed)
+    rawTx["gas" /* "gasLimit" */] = web3.utils.toHex(
+      BigNumber.from(gasUsed)
         .mul(GAS_LIMIT_FACTOR_LEFT)
         .div(GAS_LIMIT_FACTOR_RIGHT)
         .toString()
@@ -185,7 +208,7 @@ export const sendRawTransaction = async (
         rawTx as any,
         privateKeyString
     ); // privateKeyString is the length of 64
-    const txReceipt: TransactionReceipt = await web3.eth.sendSignedTransaction(
+    txReceipt = await web3.eth.sendSignedTransaction(
       signedTx.rawTransaction as string /* "0x" + serializedTx */
     );
     /*
@@ -223,8 +246,20 @@ export const sendRawTransaction = async (
         } while (isBlank(receipt));
     }
 
-    return txReceipt.transactionHash;
-    } finally {
+    //return txReceipt.transactionHash;
+  } finally {
     transactionNonceLock.release();
+  }
+
+  if (txReceipt) {
+    if (!isBlank(txReceipt.transactionHash)) {
+      return txReceipt.transactionHash;
+    } else {
+      throw new TransactionError(
+        "send raw transaction failed txReceipt: " + txReceipt
+      );
     }
+  } else {
+    return null;
+  }
 };

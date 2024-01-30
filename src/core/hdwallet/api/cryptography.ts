@@ -17,7 +17,7 @@ import encryptpwd from 'encrypt-with-password'
 import getRandomValues from 'get-random-values'
 import { store } from '../../utils/storage'
 // import { toBuffer } from "ethereumjs-util";
-import { encrypt as pwdEncrypt, decrypt as pwdDecrypt } from '../../utils/passwordEncryption'
+import { encrypt as pwdEncrypt, decrypt as pwdDecrypt } from '../../utils/password.encryption'
 import { Keccak } from "sha3";
 import md5 from "md5";
 

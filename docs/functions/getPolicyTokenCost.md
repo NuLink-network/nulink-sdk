@@ -1,4 +1,4 @@
-[NuLink SDK - v0.0.6](../README.md) / [Modules](../modules.md) / getPolicyTokenCost
+[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / getPolicyTokenCost
 
 # Function: getPolicyTokenCost
 
@@ -11,8 +11,8 @@ calcurate publish policy server fee (nlk/tnlk): By calling calcPolicyCost
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `publisher` | [`Account`](../classes/Account.md) | the current logined Account object |
-| `startDate` | `Date` | - |
-| `endDate` | `Date` | - |
+| `startDate` | `Date` | Start time of file/data usage application in seconds |
+| `endDate` | `Date` | End time of file/data usage application in seconds |
 | `ursulaShares` | `number` | Number of service shares |
 
 #### Returns
@@ -23,4 +23,4 @@ calcurate publish policy server fee (nlk/tnlk): By calling calcPolicyCost
 
 #### Defined in
 
-[core/pre/api/workflow.ts:1227](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/core/pre/api/workflow.ts#L1227)
+[core/pre/api/workflow.ts:1308](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/core/pre/api/workflow.ts#L1308)

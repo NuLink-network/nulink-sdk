@@ -1,4 +1,4 @@
-[NuLink SDK - v0.0.6](../README.md) / [Modules](../modules.md) / getApprovedFileContent
+[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / getApprovedFileContent
 
 # Function: getApprovedFileContent
 
@@ -26,4 +26,4 @@ ParameterError The input parameter must have the "fileId" field
 
 #### Defined in
 
-[api/pre.ts:631](https://github.com/NuLink-network/nulink-sdk/blob/dec95fc/src/api/pre.ts#L631)
+[api/pre.ts:865](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/api/pre.ts#L865)

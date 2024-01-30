@@ -1,0 +1,47 @@
+[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / getDatasByStatus
+
+# Function: getDatasByStatus
+
+▸ **getDatasByStatus**(`dataId?`, `proposerId?`, `dataOwnerId?`, `applyId?`, `status?`, `pageIndex?`, `pageSize?`): `Promise`<`object`\>
+
+get files/datas info by status This account acts as the user (Bob) or publisher (Alice)
+
+#### Parameters
+
+| Name | Type | Default value | Description |
+| :------ | :------ | :------ | :------ |
+| `dataId?` | `string` | `undefined` | (Optional) file/data's id |
+| `proposerId?` | `string` | `undefined` | (Optional) proposer's account id |
+| `dataOwnerId?` | `string` | `undefined` | (Optional) account id of the file owner |
+| `applyId?` | `string` | `undefined` | (Optional) to apply for id |
+| `status` | `number` | `1` | (Optional) number default 1 1 - In progress, 2 - Approved, 3 - Rejected, 4 - Under review, 5 - Expired. |
+| `pageIndex` | `number` | `1` | (Optional) number default 1 |
+| `pageSize` | `number` | `10` | (Optional) number default 10 |
+
+#### Returns
+
+`Promise`<`object`\>
+
+- {
+               "list": [
+                 {
+                   "file_id": "8feS-wp5lYhGOCtOLTKZH",
+                   "file_name": "1.jpg",
+                   "address": " file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
+                   "category": "file type category",
+                   "format": "image",
+                   "suffix": "jpg",
+                   "owner": "account name",
+                   "owner_id": "1b79f5def27bebcc71a71058a7771cc476769fc5dba32f45bcdc1b8c6e353917",
+                   "owner_avatar": "Profile picture",
+                   "thumbnail": "thumbnail mimetype and ipfs address: image/jpeg|QmUmCdMxu2MnnCmodc5VvnLqqoJn21s2M2LQqV9T5zDgYy",
+                   "created_at": 1684116370
+                 },
+                 ...
+             ],
+             "total": total count
+           }
+
+#### Defined in
+
+[core/pre/api/workflow.ts:1096](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/core/pre/api/workflow.ts#L1096)

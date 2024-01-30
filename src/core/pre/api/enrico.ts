@@ -13,7 +13,7 @@ import { compressPublicKeyBuffer } from '../../hdwallet/api/common'
 
 export const encryptMessage = (
   policyEncryptingPublicKeyString: string,
-  szDataFileBinaryArrayBuffer: ArrayBuffer[]
+  szDataBinaryArrayBuffer: ArrayBuffer[]
 ): MessageKit[] => {
 
   // console.log(CapsuleFrag);
@@ -40,7 +40,7 @@ szDataFileBinaryArrayBuffer: Multiple file arrays, each returned by a callback c
   const enrico = new Enrico(policyEncryptingPublicKey, policyEncryptingPublicKey)
 
   const szEncryptMessage: MessageKit[] = []
-  for (const dataFileBinaryArrayBuffer of szDataFileBinaryArrayBuffer) {
+  for (const dataFileBinaryArrayBuffer of szDataBinaryArrayBuffer) {
     const uInt8a = new Uint8Array(dataFileBinaryArrayBuffer)
     const encryptedMessage = enrico.encryptMessage(uInt8a)
     // const enricoVerifyingKey:PublicKey = enrico.verifyingKey;
