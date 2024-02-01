@@ -22,11 +22,11 @@ import {
 export type { BigNumber } from 'ethers'
 
 /**
- * get service fees (NLK/TNLK) for sharing files
+ * get service fees (NLK/TNLK) for sharing data/files
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
- * @param {number} startSeconds - Start time of file usage application in seconds
- * @param {number} endSeconds - End time of file usage application in seconds
+ * @param {number} startSeconds - Start time of data/file usage application in seconds
+ * @param {number} endSeconds - End time of data/file usage application in seconds
  * @param {number} ursulaShares - Number of service shares
  * @returns {string} - the amount of NLK/TNLK in wei
  */
@@ -55,11 +55,11 @@ export const getPolicyServerGasFee = async (startSeconds: number, endSeconds: nu
 
 
 /**
- * Retrieving the total of the service fees (NLK/TNLK) in bulk for file sharing purposes.
+ * Retrieving the total of the service fees (NLK/TNLK) in bulk for data/file sharing purposes.
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
- * @param {number[]} startSeconds - An array of the start time of file usage application in seconds
- * @param {number[]} endSeconds - An array of the end time of file usage application in seconds
+ * @param {number[]} startSeconds - An array of the start time of data/file usage application in seconds
+ * @param {number[]} endSeconds - An array of the end time of data/file usage application in seconds
  * @param {number[]} ursulaShares - An array of the number of service shares
  * @returns {string} - the amount of NLK/TNLK in wei
  */
@@ -102,16 +102,16 @@ export const getPolicyServerGasFee = async (startSeconds: number, endSeconds: nu
 }
 
 /**
- * estimate service gas fees for sharing files
+ * estimate service gas fees for sharing data/files
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @throws {@link PolicyHasBeenActivedOnChain} Policy has been actived(created) on chain (policy is currently active)
- * @param {string} userAccountId - the account Id of the file applicant (Bob)
- * @param {string} applyId - The application ID returned to the user by the interface when applying to use a specific file
+ * @param {string} userAccountId - the account Id of the data/file applicant (Bob)
+ * @param {string} applyId - The application ID returned to the user by the interface when applying to use a specific data/file
  * @param {number} ursulaShares - Number of service shares
- * @param {number} ursulaThreshold - The file user can download the file after obtaining the specified number of service data shares
- * @param {number} startSeconds - Start time of file usage application in seconds
- * @param {number} endSeconds - End time of file usage application in seconds
+ * @param {number} ursulaThreshold - The data/file user can download the data/file after obtaining the specified number of service data shares
+ * @param {number} startSeconds - Start time of data/file usage application in seconds
+ * @param {number} endSeconds - End time of data/file usage application in seconds
  * @param {BigNumber} serverFee - server fees by call function of `getPolicyServerGasFee`
  * @param {BigNumber} gasPrice - the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
  * @returns {Promise<String>} - the amount of bnb/tbnb in wei
@@ -167,16 +167,16 @@ export const getPolicyGasFee = async (
 }
 
 /**
- * estimate service gas fees for sharing files. The batch version of the getPolicyGasFee function.
+ * estimate service gas fees for sharing data/files. The batch version of the getPolicyGasFee function.
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @throws {@link PolicyHasBeenActivedOnChain} Policy has been actived(created) on chain (policy is currently active)
- * @param {string[]} userAccountIds - the account Id of the file applicant (Bob)
- * @param {string[]} applyIds - The application ID returned to the user by the interface when applying to use a specific file
+ * @param {string[]} userAccountIds - the account Id of the data/file applicant (Bob)
+ * @param {string[]} applyIds - The application ID returned to the user by the interface when applying to use a specific data/file
  * @param {number[]} ursulaShares - Number of service shares
- * @param {number[]} ursulaThreshold - The file user can download the file after obtaining the specified number of service data shares
- * @param {number[]} startSeconds - Start time of file usage application in UTC seconds
- * @param {number[]} endSeconds - End time of file usage application in UTC seconds
+ * @param {number[]} ursulaThreshold - The data/file user can download the data/file after obtaining the specified number of service data shares
+ * @param {number[]} startSeconds - Start time of data/file usage application in UTC seconds
+ * @param {number[]} endSeconds - End time of data/file usage application in UTC seconds
  * @param {BigNumber} serverFee - server fees by call function of `getPolicysServerGasFee`
  * @returns {Promise<String>} - the amount of bnb/tbnb in wei
  */
@@ -380,11 +380,11 @@ export const updateUserInfo = async (data: {
 /**
  * Check if the application status is "under review" or "approved"
  * @param {Object} data - Object be must be have the property of "applyId",  return null otherwise
- * @param {string} data.applyId - The ID of the file application.
+ * @param {string} data.applyId - The ID of the data/file application.
  * @returns  {Promise<boolean> || null}  param data Object be must be have the property of "applyId",  return null otherwise.
  *           Return true if the status is "under review" or "approved", false otherwise
  */
-export const checkFileApprovalStatusIsUnderReviewOrApproved = async (data: { applyId: string }) => {
+export const checkDataApprovalStatusIsUnderReviewOrApproved = async (data: { applyId: string }) => {
   if (Object.prototype.hasOwnProperty.call(data, 'applyId')) {
     return await pre.checkDataApprovalStatusIsApprovedOrApproving(data['applyId'])
   }
@@ -392,7 +392,7 @@ export const checkFileApprovalStatusIsUnderReviewOrApproved = async (data: { app
 }
 
 /**
- * Approve the user's file usage request
+ * Approve the user's data/file usage request
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @param {Object} data - the Object of update data. Object be must be have the properties: "userAccountId" and "applyId", return null otherwise
  *              The input data must include the following fields in the "data" section:
@@ -413,7 +413,7 @@ export const checkFileApprovalStatusIsUnderReviewOrApproved = async (data: { app
  *            from: 'publisher.address'
  *          }
  */
-export const ApprovalUseFiles = async (data: {
+export const ApprovalUseDatas = async (data: {
   userAccountId: string;
   applyId: string;
   startSeconds: number;
@@ -466,7 +466,7 @@ export const ApprovalUseFiles = async (data: {
 
 
 /**
- * Approve the user's multi file usage request. The batch version of the ApprovalUseFiles function.
+ * Approve the user's multi data/file usage request. The batch version of the ApprovalUseDatas function.
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @param {Object} data - the Object of update data. Object be must be have the properties: "userAccountIds" and "applyIds", return null otherwise
  *              The input data must include the following fields in the "data" section:
@@ -487,7 +487,7 @@ export const ApprovalUseFiles = async (data: {
  *            from: 'publisher.address'
  *          }
  */
-export const ApprovalMultiUseFiles = async (data: {
+export const ApprovalMultiUseDatas = async (data: {
   userAccountIds: string[];
   applyIds: string[];
   startSecondsArray: number[];
@@ -543,7 +543,7 @@ export const ApprovalMultiUseFiles = async (data: {
 }
 
 /**
- * The file publisher retrieves a list of files that have been approved for use by others.
+ * The data/file publisher retrieves a list of data/files that have been approved for use by others.
  * @category File/Data Publisher(Alice) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first  
@@ -555,8 +555,8 @@ export const ApprovalMultiUseFiles = async (data: {
                   {
                     "file_id": "8feS-wp5lYhGOCtOLTKZH",
                     "file_name": "1.jpg",
-                    "address": " file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
-                    "category": "file type category",
+                    "address": " data/file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
+                    "category": "data/file type category",
                     "format": "image",
                     "suffix": "jpg",
                     "owner": "account name",
@@ -570,7 +570,7 @@ export const ApprovalMultiUseFiles = async (data: {
               "total": total count
             }
  */
-export const getFilesForApprovedAsPublisher = async (data: { pageIndex?: number; pageSize?: number }) => {
+export const getDatasForApprovedAsPublisher = async (data: { pageIndex?: number; pageSize?: number }) => {
   const account = await getWalletDefaultAccount()
 
   if (isBlank(account)) {
@@ -587,7 +587,7 @@ export const getFilesForApprovedAsPublisher = async (data: { pageIndex?: number;
 }
 
 /**
- * The file applicant retrieves a list of files that have been approved for their own use.
+ * The data/file applicant retrieves a list of data/files that have been approved for their own use.
  * @category File/Data User(Bob) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first  
@@ -599,8 +599,8 @@ export const getFilesForApprovedAsPublisher = async (data: { pageIndex?: number;
                   {
                     "file_id": "8feS-wp5lYhGOCtOLTKZH",
                     "file_name": "1.jpg",
-                    "address": " file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
-                    "category": "file type category",
+                    "address": " data/file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
+                    "category": "data/file type category",
                     "format": "image",
                     "suffix": "jpg",
                     "owner": "account name",
@@ -614,7 +614,7 @@ export const getFilesForApprovedAsPublisher = async (data: { pageIndex?: number;
               "total": total count
             }
  */
-export const getFilesForApprovedAsUser = async (data: { pageIndex?: number; pageSize?: number }) => {
+export const getDatasForApprovedAsUser = async (data: { pageIndex?: number; pageSize?: number }) => {
   const account = await getWalletDefaultAccount()
 
   if (isBlank(account)) {
@@ -631,7 +631,7 @@ export const getFilesForApprovedAsUser = async (data: { pageIndex?: number; page
 }
 
 /**
- * The file publisher retrieves a list of files in all states that need to be approved for use by others.
+ * The data/file publisher retrieves a list of data/files in all states that need to be approved for use by others.
  * @category File/Data Publisher(Alice) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first  
@@ -643,8 +643,8 @@ export const getFilesForApprovedAsUser = async (data: { pageIndex?: number; page
                   {
                     "file_id": "8feS-wp5lYhGOCtOLTKZH",
                     "file_name": "1.jpg",
-                    "address": " file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
-                    "category": "file type category",
+                    "address": " data/file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
+                    "category": "data/file type category",
                     "format": "image",
                     "suffix": "jpg",
                     "owner": "account name",
@@ -658,7 +658,7 @@ export const getFilesForApprovedAsUser = async (data: { pageIndex?: number; page
               "total": total count
             }
  */
-export const getFilesForAllStatusAsPublisher = async (data: { pageIndex?: number; pageSize?: number }) => {
+export const getDatasForAllStatusAsPublisher = async (data: { pageIndex?: number; pageSize?: number }) => {
   const account = await getWalletDefaultAccount()
 
   if (isBlank(account)) {
@@ -675,7 +675,7 @@ export const getFilesForAllStatusAsPublisher = async (data: { pageIndex?: number
 }
 
 /**
- * Retrieve a list of files that have been approved for the file applicant's own use.
+ * Retrieve a list of data/files that have been approved for the data/file applicant's own use.
  * @category File/Data User(Bob) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first  
@@ -687,8 +687,8 @@ export const getFilesForAllStatusAsPublisher = async (data: { pageIndex?: number
                   {
                     "file_id": "8feS-wp5lYhGOCtOLTKZH",
                     "file_name": "1.jpg",
-                    "address": " file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
-                    "category": "file type category",
+                    "address": " data/file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
+                    "category": "data/file type category",
                     "format": "image",
                     "suffix": "jpg",
                     "owner": "account name",
@@ -702,7 +702,7 @@ export const getFilesForAllStatusAsPublisher = async (data: { pageIndex?: number
               "total": total count
             }
  */
-export const getFilesApprovedForApplicantAsUser = async (data: { pageIndex?: number; pageSize?: number }) => {
+export const getDatasApprovedForApplicantAsUser = async (data: { pageIndex?: number; pageSize?: number }) => {
   const account = await getWalletDefaultAccount()
 
   if (isBlank(account)) {
@@ -719,7 +719,7 @@ export const getFilesApprovedForApplicantAsUser = async (data: { pageIndex?: num
 }
 
 /**
- * Retrieve a list of files in a specified state that need to be approved for use by others, for the file publisher.
+ * Retrieve a list of data/files in a specified state that need to be approved for use by others, for the data/file publisher.
  * @category File/Data Publisher(Alice) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first  
@@ -732,8 +732,8 @@ export const getFilesApprovedForApplicantAsUser = async (data: { pageIndex?: num
                   {
                     "file_id": "8feS-wp5lYhGOCtOLTKZH",
                     "file_name": "1.jpg",
-                    "address": " file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
-                    "category": "file type category",
+                    "address": " data/file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
+                    "category": "data/file type category",
                     "format": "image",
                     "suffix": "jpg",
                     "owner": "account name",
@@ -747,7 +747,7 @@ export const getFilesApprovedForApplicantAsUser = async (data: { pageIndex?: num
               "total": total count
             }
  */
-export const getFilesByStatusForAllApplyAsPublisher = async (data: {
+export const getDatasByStatusForAllApplyAsPublisher = async (data: {
   pageIndex?: number
   pageSize?: number
   status?: string | number
@@ -769,7 +769,7 @@ export const getFilesByStatusForAllApplyAsPublisher = async (data: {
 }
 
 /**
- * The file applicant retrieves a list of files in a specified state that need to be approved by others.
+ * The data/file applicant retrieves a list of data/files in a specified state that need to be approved by others.
  * @category File/Data User(Bob) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first  
@@ -782,8 +782,8 @@ export const getFilesByStatusForAllApplyAsPublisher = async (data: {
                   {
                     "file_id": "8feS-wp5lYhGOCtOLTKZH",
                     "file_name": "1.jpg",
-                    "address": " file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
-                    "category": "file type category",
+                    "address": " data/file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
+                    "category": "data/file type category",
                     "format": "image",
                     "suffix": "jpg",
                     "owner": "account name",
@@ -819,18 +819,18 @@ export const getFilesByStatusForAllApplyAsUser = async (data: {
 }
 
 /**
- * The file applicant retrieves the content of a file that has been approved for their usage.
+ * The data/file applicant retrieves the content of a data/file that has been approved for their usage.
  * @category File/Data User(Bob) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
- * @throws {@link ParameterError} The input parameter must have the "fileId" field
+ * @throws {@link ParameterError} The input parameter must have the "dataId" field
  * @param {Object} data - Object must be include the following fields in the "data" section:
- * @param {string} data.fileId
- * @param {string} data.fileName
- * @returns {Promise<object>} - { url: "file content url", fileName: "file name" }
+ * @param {string} data.dataId
+ * @param {string} data.dataLabel
+ * @returns {Promise<object>} - { url: "data content url", dataLabel: "data label" }
  */
-export const getApprovedFileContentUrl = async (data: { fileId: string; fileName: string }) => {
-  if (data && Object.prototype.hasOwnProperty.call(data, 'fileId')) {
+export const getApprovedFileContentUrl = async (data: { dataId: string; dataLabel: string }) => {
+  if (data && Object.prototype.hasOwnProperty.call(data, 'dataId')) {
     const account = await getWalletDefaultAccount()
 
     if (isBlank(account)) {
@@ -839,31 +839,31 @@ export const getApprovedFileContentUrl = async (data: { fileId: string; fileName
       )
     }
 
-    const arraybuffer: ArrayBuffer = await pre.getDataContentByDataIdAsUser(account as Account, data['fileId'])
+    const arraybuffer: ArrayBuffer = await pre.getDataContentByDataIdAsUser(account as Account, data['dataId'])
     // console.log("getApprovedFileContentUrl downloadFile arrayBuffer:", arraybuffer);
     const blob = new Blob([arraybuffer], { type: 'arraybuffer' })
     const url = window.URL.createObjectURL(blob)
     // console.log("blob: ", blob);
     // console.log("getApprovedFileContentUrl url: ",url);
-    // chrome.runtime.sendMessage({ method: "downloadFile", data: { url: url, fileName: data["fileName"] } });
+    // chrome.runtime.sendMessage({ method: "downloadFile", data: { url: url, dataLabel: data["dataLabel"] } });
 
-    return { url: url, fileName: data['fileName'] }
+    return { url: url, dataLabel: data['dataLabel'] }
   } else {
-    throw new exception.ParameterError(`The input parameter must have the "fileId" ,"fileName" fields`)
+    throw new exception.ParameterError(`The input parameter must have the "dataId" ,"dataLabel" fields`)
   }
 }
 
 /**
- * The file applicant retrieves the content of a file that has been approved for their usage.
+ * The data/file applicant retrieves the content of a data/file that has been approved for their usage.
  * @category File/Data User(Bob) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
- * @throws {@link ParameterError} The input parameter must have the "fileId" field
- * @param {string} fileId - file's id
+ * @throws {@link ParameterError} The input parameter must have the "dataId" field
+ * @param {string} dataId - data's id
  * @returns {Promise<ArrayBuffer>}
  */
-export const getApprovedFileContent = async (fileId): Promise<ArrayBuffer> => {
-  if (!isBlank(fileId)) {
+export const getApprovedDataContent = async (dataId): Promise<ArrayBuffer> => {
+  if (!isBlank(dataId)) {
     const account = await getWalletDefaultAccount()
 
     if (isBlank(account)) {
@@ -872,26 +872,26 @@ export const getApprovedFileContent = async (fileId): Promise<ArrayBuffer> => {
       )
     }
 
-    const arraybuffer: ArrayBuffer = await pre.getDataContentByDataIdAsUser(account as Account, fileId)
+    const arraybuffer: ArrayBuffer = await pre.getDataContentByDataIdAsUser(account as Account, dataId)
     return arraybuffer
   } else {
-    throw new exception.ParameterError(`The input parameter must have the "fileId" field`)
+    throw new exception.ParameterError(`The input parameter must have the "dataId" field`)
   }
 }
 
 /**
- * The file publisher obtains the content of the file
+ * The data/file publisher obtains the content of the data/file
  * @category File/Data Publisher(Alice) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
- * @throws {@link ParameterError} The input parameter must have the "fileId" field
+ * @throws {@link ParameterError} The input parameter must have the "dataId" field
  * @param {Object} data - Object must be include the following fields in the "data" section:
- * @param {string} data.fileId
- * @param {string} data.fileName
- * @returns {Promise<object>} - { url: "file content url", fileName: "file name" }
+ * @param {string} data.dataId
+ * @param {string} data.dataLabel
+ * @returns {Promise<object>} - { url: "data content url", dataLabel: "data label" }
  */
-export const getFileContentAsPublisher = async (data: { fileId: string; fileName: string }) => {
-  if (data && Object.prototype.hasOwnProperty.call(data, 'fileId')) {
+export const getDataContentAsPublisher = async (data: { dataId: string; dataLabel: string }) => {
+  if (data && Object.prototype.hasOwnProperty.call(data, 'dataId')) {
     const account = await getWalletDefaultAccount()
 
     if (isBlank(account)) {
@@ -900,37 +900,37 @@ export const getFileContentAsPublisher = async (data: { fileId: string; fileName
       )
     }
 
-    const arraybuffer: ArrayBuffer = await pre.getFileContentByFileIdAsPublisher(account as Account, data['fileId'])
+    const arraybuffer: ArrayBuffer = await pre.getDataContentByDataIdAsPublisher(account as Account, data['dataId'])
     // console.log("getApprovedFileContentUrl downloadFile arrayBuffer:", arraybuffer);
     const blob = new Blob([arraybuffer], { type: 'arraybuffer' })
     const url = window.URL.createObjectURL(blob)
     // console.log("blob: ", blob);
     // console.log("getApprovedFileContentUrl url: ",url);
-    // chrome.runtime.sendMessage({ method: "downloadFile", data: { url: url, fileName: data["fileName"] } });
+    // chrome.runtime.sendMessage({ method: "downloadFile", data: { url: url, dataLabel: data["dataLabel"] } });
 
-    return { url: url, fileName: data['fileName'] }
+    return { url: url, dataLabel: data['dataLabel'] }
   } else {
-    throw new exception.ParameterError(`The input parameter must have the "fileId" ,"fileName" fields`)
+    throw new exception.ParameterError(`The input parameter must have the "dataId" ,"dataLabel" fields`)
   }
 }
 
 /**
- * Retrieves a list of files in a specified state.
+ * Retrieves a list of data/files in a specified state.
  * @param {Object} data - Object must be include the following fields in the "data" section:
  * @param {number} data.status - (Optional) default 0: All state 1: Under review, 2: Approved, 3: Rejected, 4: Under approval, 5: Expired
  * @param {number} data.pageIndex - (Optional) number default 1
  * @param {number} data.pageSize - (Optional) number default 10
- * @param {string} data.fileId - (Optional) filter fileId
- * @param {string} data.proposerId - (Optional) The applicant of the file
- * @param {string} data.fileOwnerId - (Optional) The publisher of the file
- * @param {string} data.applyId - (Optional) The id of the file application
+ * @param {string} data.dataId - (Optional) filter dataId
+ * @param {string} data.proposerId - (Optional) The applicant of the data/file
+ * @param {string} data.fileOwnerId - (Optional) The publisher of the data/file
+ * @param {string} data.applyId - (Optional) The id of the data/file application
  * @returns {Promise<object>} - {
                 "list": [
                   {
                     "file_id": "8feS-wp5lYhGOCtOLTKZH",
                     "file_name": "1.jpg",
-                    "address": " file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
-                    "category": "file type category",
+                    "address": " data/file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
+                    "category": "data/file type category",
                     "format": "image",
                     "suffix": "jpg",
                     "owner": "account name",
@@ -944,17 +944,17 @@ export const getFileContentAsPublisher = async (data: { fileId: string; fileName
               "total": total count
             }
  */
-export const getFilesInfoByStatus = async (data: {
+export const getDatasInfoByStatus = async (data: {
   pageIndex?: number
   pageSize?: number
   status?: string | number
-  fileId?: string
+  dataId?: string
   proposerId?: string
   fileOwnerId?: string
   applyId?: string
 }) => {
   return await pre.getDatasByStatus(
-    data && Object.prototype.hasOwnProperty.call(data, 'fileId') ? data['fileId'] : undefined,
+    data && Object.prototype.hasOwnProperty.call(data, 'dataId') ? data['dataId'] : undefined,
     data && Object.prototype.hasOwnProperty.call(data, 'proposerId') ? data['proposerId'] : undefined,
     data && Object.prototype.hasOwnProperty.call(data, 'fileOwnerId') ? data['fileOwnerId'] : undefined,
     data && Object.prototype.hasOwnProperty.call(data, 'applyId') ? data['applyId'] : undefined,
@@ -1060,28 +1060,28 @@ export const getPolicyInfosAsUser = async (data: { pageIndex?: number; pageSize?
 }
 
 /**
- * Obtain a list of files associated with the published policy information.
+ * Obtain a list of data/files associated with the published policy information.
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @throws {@link ParameterError} The input parameter must have the "policyId" field
  * @param {Object} data - Object must be include the following fields in the "data" section:
  * @param {string} data.policyId - policyId
  * @param {boolean} data.asPublisher - (Optional) default true
- *                             true: acting as the role of file publisher. 
- *                             false: acting as the role of file applicant
+ *                             true: acting as the role of data/file publisher. 
+ *                             false: acting as the role of data/file applicant
  * @param {number} data.pageIndex - (Optional) number default 1
  * @param {number} data.pageSize - (Optional) number default 10
  * @returns {Promise<object>} - {
                 "list": [
                   {
-                    "file_id": "File ID",
-                    "file_name": "File name",
-                    "owner": "File owner",
-                    "owner_id": "File owner account ID",
-                    "owner_avatar": "File owner avatar",
-                    "address": "File address",
-                    "thumbnail": "File thumbnail",
-                    "created_at": "File upload timestamp",
+                    "file_id": "Data/File ID",
+                    "file_name": "Data/File name",
+                    "owner": "Data/File owner",
+                    "owner_id": "Data/File owner account ID",
+                    "owner_avatar": "Data/File owner avatar",
+                    "address": "Data/File address",
+                    "thumbnail": "Data/File thumbnail",
+                    "created_at": "Data/File upload timestamp",
                     "policy_id": "Policy ID",
                     "policy_hrac": "Policy HRAC",
                     "policy_start_at": "Policy start timestamp",
@@ -1092,7 +1092,7 @@ export const getPolicyInfosAsUser = async (data: { pageIndex?: number; pageSize?
               "total": total count
             }
  */
-export const getFilesInfoOfPolicy = async (data: {
+export const getDatasInfoOfPolicy = async (data: {
   pageIndex?: number
   pageSize?: number
   policyId: string
@@ -1123,7 +1123,7 @@ export const getFilesInfoOfPolicy = async (data: {
 }
 
 /**
- * Obtain a list of files associated with the policy (including the files of both the file publisher and the file applicant).
+ * Obtain a list of data/files associated with the policy (including the data/files of both the data/file publisher and the file applicant).
  * @throws {@link ParameterError} The input parameter must have the "policyId" field
  * @param {Object} data - Object must be include the following fields in the "data" section:
  * @param {string} data.policyId - policyId
@@ -1132,14 +1132,14 @@ export const getFilesInfoOfPolicy = async (data: {
  * @returns {Promise<object>} - {
                 "list": [
                   {
-                    "file_id": "File ID",
-                    "file_name": "File name",
-                    "owner": "File owner",
-                    "owner_id": "File owner account ID",
-                    "owner_avatar": "File owner avatar",
-                    "address": "File address",
-                    "thumbnail": "File thumbnail",
-                    "created_at": "File upload timestamp",
+                    "file_id": "Data/File ID",
+                    "file_name": "Data/File name",
+                    "owner": "Data/File owner",
+                    "owner_id": "Data/File owner account ID",
+                    "owner_avatar": "Data/File owner avatar",
+                    "address": "Data/File address",
+                    "thumbnail": "Data/File thumbnail",
+                    "created_at": "Data/File upload timestamp",
                     "policy_id": "Policy ID",
                     "policy_hrac": "Policy HRAC",
                     "policy_start_at": "Policy start timestamp",
@@ -1150,7 +1150,7 @@ export const getFilesInfoOfPolicy = async (data: {
               "total": total count
             }
  */
-export const getAllFilesInfoOfPolicy = async (data: { pageIndex?: number; pageSize?: number; policyId: string }) => {
+export const getAllDatasInfoOfPolicy = async (data: { pageIndex?: number; pageSize?: number; policyId: string }) => {
   if (data && Object.prototype.hasOwnProperty.call(data, 'policyId')) {
     return await pre.getDataInfosByPolicyId(
       data['policyId'],

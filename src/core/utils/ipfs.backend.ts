@@ -7,7 +7,7 @@ import { serverPostFormData } from '../servernet'
 // eslint-disable-next-line import/no-extraneous-dependencies
 import FormData from 'form-data'
 import { isBlank, isNotBlankAndEmptyObject } from './null'
-import { MultiFileUploadError } from './exception'
+import { MultiDataUploadError } from './exception'
 
 export const setDatas = async (
   // account: Account,
@@ -32,7 +32,7 @@ export const setDatas = async (
         sendData.append('file', userData, `file${index + 1}`)
       }
 
-      //TODO: Verification can be done by paying on-chain, and then listening for on-chain events. If payment has been made, the file can be uploaded.
+      //TODO: Verification can be done by paying on-chain, and then listening for on-chain events. If payment has been made, the data/file can be uploaded.
       //sendData['signature'] = await signUpdateServerDataMessage(account, sendData)
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -50,7 +50,7 @@ export const setDatas = async (
         const fileData: string = dataList[index]
         if (!isNotBlankAndEmptyObject(fileData)) {
           //retList.push("");
-          throw new MultiFileUploadError(`the file upload failed! file index ${index}`)
+          throw new MultiDataUploadError(`the data/file upload failed! data/file index ${index}`)
         } else {
           retList.push(fileData['hash'])
         }

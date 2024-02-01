@@ -1,6 +1,6 @@
 // First define a concept:
-//  Alice: as the publisher of the file (file uploader).
-//  Bob: as the user of the file (file requester)
+//  Alice: as the publisher of the data/file (data/file uploader).
+//  Bob: as the user of the data/file (data/file requester)
 import { NuLinkHDWallet, Account, Strategy, AccountManager } from '../src'
 
 import assert from 'assert-ts'
@@ -27,12 +27,12 @@ import sleep from 'await-sleep'
 export const run = async () => {
 
   const dataCallback: DataCallback = { setDatas: setIPFSDatas, getData: getIPFSData }
-  //Set the external storage used by the Pre process to IPFS (for example, encrypted files uploaded by users will be stored in this storage, and users can customize the storage).
+  //Set the external storage used by the Pre process to IPFS (for example, encrypted data/files uploaded by users will be stored in this storage, and users can customize the storage).
   StorageManager.setDataCallback(dataCallback)
   // // eslint-disable-next-line no-debugger
   // debugger
   // const dataCallback2: DataCallback = { setDatas: setBEDatas, getData: getBEData }
-  // //Set the external storage used by the Pre process to IPFS (for example, encrypted files uploaded by users will be stored in this storage, and users can customize the storage).
+  // //Set the external storage used by the Pre process to IPFS (for example, encrypted data/files uploaded by users will be stored in this storage, and users can customize the storage).
   // StorageManager.setDataCallback(dataCallback2)
 
   // eslint-disable-next-line no-debugger
@@ -69,16 +69,16 @@ export const run = async () => {
 
   // Note: We only support one account currently.
 
-  //Now we can encrypt and upload a file for others to apply for download
+  //Now we can encrypt and upload a data/file for others to apply for download
 
-  //1. read a file
+  //1. read a data/file
   const plainText =
     '# encoding=utf-8\n\nimport requests\nimport json\nfrom config.web3_provider import W3\n\n\'\'\'\n    Aaveçå¬åçº¦ååºçäºä»¶å¹¶æ¥æ¾å¯æ¸ ç®è´¦æ·\n\'\'\'\n\n\nclass ListenEvent:\n    def __init__(self, chain_type, scan_address):\n        self.web3 = W3(chain_type=chain_type, num=3)\n        self.chain_type = chain_type\n        self.scan_address = scan_address\n        self.event_topic = "0xc6a898309e823ee50bac64e45ca8adba6690e99e7841c45d754e2a38e9019d9b"\n        self.api = "https://api.aurorascan.dev/api"\n        self.pool_contract = self.web3.load_contract("AAVEPool", self.scan_address)\n        self.variable_debt_token_list = [\n            ["variable-debt-usdc", "0x8b225BF698eFd7fA4A9E3FB10424711739304ACa"],\n            ["variable-debt-usdt", "0xc0D1Be1C87B56b72Db03800726AAB7e61AE9AaC7"],\n            ["variable-debt-wnear", "0xaa0E01C05a6361fe8aD037A4b142f633e418B251"],\n            ["variable-debt-weth", "0x541996252ECcF5047671302CaaFf25b4312d482e"],\n            ["variable-debt-dai", "0x1c2E8486e2aF6B168a7985Dcec3309780bEb5F25"],\n            ["variable-debt-wbtc", "0x90eCe2301214b2B86cB77326232e2b6D4b373d7B"]\n        ]\n        self.collateral_token_list = [\n            ["aUsdc", "0x0a88079323d2cCf5f83014a5351058553439499C"],\n            ["aUsdt", "0xD55f46Df9C67297619CD6b254167F5Ed1F34998e"],\n            ["aWnear", "0x6f610C3Ff9e64625ae29C2DA7663Ec100A9433bE"],\n            ["aWeth", "0x935ef78719d55b3a8a53d0ac9494a94658843953"],\n            ["aDai", "0xf4d853d5b100A739B03584b0C2840D136b16DDB8"],\n            ["aWbtc", "0x8047CC5397Fdc885ab2EE1DaEE277237ceB4AE50"]\n        ]\n        self.LIQUIDATION_CLOSE_FACTOR_PERCENT = 5000\n\n    def listen_event(self, from_block, to_block):\n        print("from_block %s, to_block %s" % (from_block, to_block))\n        params = {\n            "module": "logs",\n            "action": "getLogs",\n            "fromBlock": from_block,\n            "toBlock": to_block,\n            "address": self.scan_address,\n            "topic0": self.event_topic\n        }\n        res = requests.get(url=self.api, params=params)\n        if res.status_code == 200:\n            content = json.loads(res.content)\n            if content["status"] == "1":\n                log_info_list = content["result"]\n                for log in log_info_list:\n                    topics = log["topics"]\n                    tx_hash = log["transactionHash"]\n                    log_data = log["data"]\n                    reserve = "0x" + topics[1][26:]\n                    user = "0x" + self.web3.get_data_params(log_data, 0)[24:]\n                    user_data = self.pool_contract.functions.getUserAccountData(\n                        self.web3.w3.toChecksumAddress(user)).call()\n                    health = int(user_data[-1]) / (10 ** 18)\n                    need_liquidation = True if health < 1 else False\n                    amount = self.web3.w3.toInt(hexstr=self.web3.get_data_params(log_data, 1))\n                    borrow_rate_mode = self.web3.w3.toInt(hexstr=self.web3.get_data_params(log_data, 2))\n                    borrow_rate = self.web3.w3.toInt(hexstr=self.web3.get_data_params(log_data, 3))\n                    on_behalf_of = "0x" + topics[2][26:]\n                    print("-> tx_hash", tx_hash)\n                    print("     -> reserve", reserve)\n                    print("     -> user", user)\n                    print("     -> onBehalfOf", on_behalf_of)\n                    print("     -> amount", amount)\n                    print("     -> borrowRateMode", borrow_rate_mode)\n                    print("     -> borrowRate", borrow_rate)\n                    print("     -> borrowRate", borrow_rate)\n                    print("     -> health", health)\n                    print("     -> needLiquidation", need_liquidation)\n\n    def get_user_liquidation_info(self, user):\n        print("***** user debt info *****")\n        for debt_token_info in self.variable_debt_token_list:\n            debt_token_name, debt_token = debt_token_info\n            debt_token_contract = self.web3.get_erc20_contract(self.web3.w3.toChecksumAddress(debt_token))\n            token_amount = debt_token_contract.functions.balanceOf(\n                self.web3.w3.toChecksumAddress(user)\n            ).call()\n            max_liquidatable_debt = (token_amount * self.LIQUIDATION_CLOSE_FACTOR_PERCENT + 1e4/2) / 1e4 if token_amount > 0 else 0\n            print(debt_token_name, token_amount, max_liquidatable_debt)\n        print("***** user collateral info *****")\n        for collateral_token_info in self.collateral_token_list:\n            collateral_token_name, collateral_token = collateral_token_info\n            collateral_token_contract = self.web3.get_erc20_contract(self.web3.w3.toChecksumAddress(collateral_token))\n            token_amount = collateral_token_contract.functions.balanceOf(\n                self.web3.w3.toChecksumAddress(user)\n            ).call()\n            print(collateral_token_name, token_amount)\n\n\n\nif __name__ == "__main__":\n    listen_event = ListenEvent("AURORA", "0xa0bC830Ad82D2EAe0bCFd1D6987664A3D9264aFA")\n    # to_block = listen_event.web3.get_latest_block_num()\n    # listen_event.listen_event("62001019", to_block)\n    listen_event.get_user_liquidation_info("0xee0eb9eff81e70b06e8fe181b4a0db924816bc54")\n\n'
   const enc = new TextEncoder() // always utf-8
   const historyContent: Uint8Array = enc.encode(plainText)
 
-  //1.Alice upload file
-  const fileList: DataInfo[] = [
+  //1.Alice upload data/file
+  const dataList: DataInfo[] = [
     {
       label: `history-${nanoid()}.pdf`,
       dataArrayBuffer: historyContent.buffer
@@ -87,10 +87,10 @@ export const run = async () => {
 
   // eslint-disable-next-line no-debugger
   debugger;
-  //2. Alice encrypt and update a file to the ipfs network
-  await pre.uploadDatasByCreatePolicy(accountAlice, pre.DataCategory.History, fileList)
+  //2. Alice encrypt and update a data/file to the ipfs network
+  await pre.uploadDatasByCreatePolicy(accountAlice, pre.DataCategory.History, dataList)
 
-  //3. We can get the file just uploaded
+  //3. We can get the data/file just uploaded
   const resultList = (await pre.getUploadedDatas(accountAlice, undefined, 1, 1000)) as object
 
   /*
@@ -107,36 +107,36 @@ export const run = async () => {
   console.log('resultList["total"]>0 ', resultList['total'] > 0)
   assert(resultList && resultList['total'] > 0)
 
-  let fileIndex = -1
+  let dataIndex = -1
   for (let index = 0; index < resultList['list'].length; index++) {
     const element = resultList['list'][index]
-    if (element['file_name'] === fileList[0]['label']) {
-      fileIndex = index
+    if (element['file_name'] === dataList[0]['label']) {
+      dataIndex = index
       break
     }
   }
-  assert(fileIndex >= 0)
-  const uploadFileInfo = resultList['list'][fileIndex]
+  assert(dataIndex >= 0)
+  const uploadDataInfo = resultList['list'][dataIndex]
 
-  /*   console.log('uploadFileInfo["file_name"] ', uploadFileInfo["file_name"]);
+  /*   console.log('uploadDataInfo["file_name"] ', uploadDataInfo["file_name"]);
   console.log('fileList[0]["name"] ', fileList[0]["name"]);
-  console.log('equal1: ', uploadFileInfo["file_name"] === fileList[0]["name"]);
-  console.log('uploadFileInfo["owner_id"] ', uploadFileInfo["owner_id"] );
+  console.log('equal1: ', uploadDataInfo["file_name"] === fileList[0]["name"]);
+  console.log('uploadDataInfo["owner_id"] ', uploadDataInfo["owner_id"] );
   console.log('accountAlice.id ', accountAlice.id);
-  console.log('equal2: ', uploadFileInfo["owner_id"] === accountAlice.id); */
+  console.log('equal2: ', uploadDataInfo["owner_id"] === accountAlice.id); */
 
-  assert(uploadFileInfo['owner_id'] === accountAlice.id)
+  assert(uploadDataInfo['owner_id'] === accountAlice.id)
 
   // ............................................
   //
-  //Bob find the file on Internet
+  //Bob find the data/file on Internet
   const accountManager: AccountManager = nuLinkHDWallet.getAccountManager()
   const accountBob: Account = await accountManager.createAccount('Bob')
   // call the createAccountIfNotExist method for add user account to the center server for decouple
   await pre.createAccountIfNotExist(accountBob)
 
-  //Bob finds the file Alice has just uploaded
-  const findFileResultList = (await pre.getOtherShareDatas(
+  //Bob finds the data/file Alice has just uploaded
+  const findDataResultList = (await pre.getOtherShareDatas(
     accountBob,
     undefined,
     false,
@@ -156,25 +156,25 @@ export const run = async () => {
     }
   */
 
-  assert(findFileResultList && findFileResultList['total'] > 0)
+  assert(findDataResultList && findDataResultList['total'] > 0)
 
-  let fileIndex2 = -1
-  for (let index = 0; index < findFileResultList['list'].length; index++) {
-    const element = findFileResultList['list'][index]
-    if (element['file_name'] === fileList[0]['label']) {
-      fileIndex2 = index
+  let dataIndex2 = -1
+  for (let index = 0; index < findDataResultList['list'].length; index++) {
+    const element = findDataResultList['list'][index]
+    if (element['file_name'] === dataList[0]['label']) {
+      dataIndex2 = index
       break
     }
   }
-  assert(fileIndex2 >= 0)
+  assert(dataIndex2 >= 0)
 
-  const findFileInfo = findFileResultList['list'][fileIndex2]
-  assert(findFileInfo['owner_id'] === accountAlice.id)
+  const findDataInfo = findDataResultList['list'][dataIndex2]
+  assert(findDataInfo['owner_id'] === accountAlice.id)
 
-  const applyFileId = findFileInfo['file_id']
+  const applyDataId = findDataInfo['file_id']
 
-  //get file details
-  const fileDetails = (await pre.getDataDetails(applyFileId, accountBob.id)) as object
+  //get data/file details
+  const dataDetails = (await pre.getDataDetails(applyDataId, accountBob.id)) as object
   /*
    {
           file_id:,file_name:,thumbnail:,file_created_at:,apply_id:,status:,apply_start_at:,apply_end_at:,apply_created_at:,
@@ -182,20 +182,20 @@ export const run = async () => {
           file_ipfs_address:,policy_encrypted_pk:,encrypted_treasure_map_ipfs_address:,alice_verify_pk
     } 
  */
-  // assert(fileDetails["creator_id"] === accountAlice.id);
-  assert(fileDetails['file_id'] === applyFileId)
-  assert(parseInt(fileDetails['status']) === 0) //Is not to apply for
+  // assert(dataDetails["creator_id"] === accountAlice.id);
+  assert(dataDetails['file_id'] === applyDataId)
+  assert(parseInt(dataDetails['status']) === 0) //Is not to apply for
 
-  //Bob requests permission to use the file for 7 days
+  //Bob requests permission to use the data/file for 7 days
   try {
-    await pre.applyForDatasUsagePermission([applyFileId], accountBob, 7)
+    await pre.applyForDatasUsagePermission([applyDataId], accountBob, 7)
   } catch (e) {
-    console.log('bob apply file failed', e)
+    console.log('bob apply data/file failed', e)
     assert(false)
   }
 
-  //Alice receives Bob's file usage request
-  const filesNeedToApprovedResultList = await pre.getDatasPendingApprovalAsPublisher(accountAlice, 1, 1000)
+  //Alice receives Bob's data/file usage request
+  const dataNeedToApprovedResultList = await pre.getDatasPendingApprovalAsPublisher(accountAlice, 1, 1000)
   /*return data format: {
       list: [
         { apply_id, file_id:, proposer, proposer_id, file_owner:, file_owner_id:, policy_id, hrac, start_at:, end_at, created_at }
@@ -205,33 +205,33 @@ export const run = async () => {
     }
   */
 
-  let fileIndex3 = -1
-  for (let index = 0; index < filesNeedToApprovedResultList['list'].length; index++) {
-    const element = filesNeedToApprovedResultList['list'][index]
-    if (element['file_id'] === applyFileId) {
-      fileIndex3 = index
+  let dataIndex3 = -1
+  for (let index = 0; index < dataNeedToApprovedResultList['list'].length; index++) {
+    const element = dataNeedToApprovedResultList['list'][index]
+    if (element['file_id'] === applyDataId) {
+      dataIndex3 = index
       break
     }
   }
-  assert(fileIndex3 >= 0)
+  assert(dataIndex3 >= 0)
 
-  assert(filesNeedToApprovedResultList && filesNeedToApprovedResultList['total'] > 0)
-  const needToApprovedFileInfo = filesNeedToApprovedResultList['list'][fileIndex3]
-  assert(needToApprovedFileInfo['file_owner_id'] === accountAlice.id)
+  assert(dataNeedToApprovedResultList && dataNeedToApprovedResultList['total'] > 0)
+  const needToApprovedDataInfo = dataNeedToApprovedResultList['list'][dataIndex3]
+  assert(needToApprovedDataInfo['file_owner_id'] === accountAlice.id)
 
-  //Alice rejected the file usage request
-  await pre.refusalApplicationForUseDatas(accountAlice, needToApprovedFileInfo['apply_id'])
+  //Alice rejected the data/file usage request
+  await pre.refusalApplicationForUseDatas(accountAlice, needToApprovedDataInfo['apply_id'])
 
-  //Bob apply file for usage again. The application period is three days, less than the previous seven days
+  //Bob apply data/file for usage again. The application period is three days, less than the previous seven days
   try {
-    await pre.applyForDatasUsagePermission([applyFileId], accountBob, 3)
+    await pre.applyForDatasUsagePermission([applyDataId], accountBob, 3)
   } catch (e) {
-    console.log('bob reapply file failed', e)
+    console.log('bob reapply data/file failed', e)
     assert(false)
   }
 
-  //Alice receives Bob's file usage request again
-  const filesNeedToApprovedResultList2 = await pre.getDatasPendingApprovalAsPublisher(accountAlice, 1, 1000)
+  //Alice receives Bob's data/file usage request again
+  const dataNeedToApprovedResultList2 = await pre.getDatasPendingApprovalAsPublisher(accountAlice, 1, 1000)
   /*return data format: {
     list: [
       { apply_id, file_id:, proposer, proposer_id, file_owner:, file_owner_id:, policy_id, hrac, start_at:, end_at, days,  created_at }
@@ -241,29 +241,29 @@ export const run = async () => {
   }
   */
 
-  assert(filesNeedToApprovedResultList2 && filesNeedToApprovedResultList2['total'] > 0)
+  assert(dataNeedToApprovedResultList2 && dataNeedToApprovedResultList2['total'] > 0)
 
-  let fileIndex4 = -1
-  for (let index = 0; index < filesNeedToApprovedResultList2['list'].length; index++) {
-    const element = filesNeedToApprovedResultList2['list'][index]
-    if (element['file_id'] === applyFileId) {
-      fileIndex4 = index
+  let dataIndex4 = -1
+  for (let index = 0; index < dataNeedToApprovedResultList2['list'].length; index++) {
+    const element = dataNeedToApprovedResultList2['list'][index]
+    if (element['file_id'] === applyDataId) {
+      dataIndex4 = index
       break
     }
   }
-  assert(fileIndex4 >= 0)
+  assert(dataIndex4 >= 0)
 
-  const needToApprovedFileInfo2 = filesNeedToApprovedResultList2['list'][fileIndex4]
-  assert(needToApprovedFileInfo2['file_owner_id'] === accountAlice.id)
+  const needToApprovedDataInfo2 = dataNeedToApprovedResultList2['list'][dataIndex4]
+  assert(needToApprovedDataInfo2['file_owner_id'] === accountAlice.id)
 
-  //At this point Alice approves Bob's file usage request, Due to on-chain approval of Bob's request, we first evaluate gas and service fees
+  //At this point Alice approves Bob's data/file usage request, Due to on-chain approval of Bob's request, we first evaluate gas and service fees
 
   console.log(`accountAlice address ${accountAlice.address}`)
 
   //1. Alice calc server fee (wei): the nulink token tnlk/nlk
   const startDate: Date = new Date()
   const startMs: number = Date.parse(startDate.toString())
-  const endMs: number = startMs + (needToApprovedFileInfo2['days'] as number) * 24 * 60 * 60 * 1000
+  const endMs: number = startMs + (needToApprovedDataInfo2['days'] as number) * 24 * 60 * 60 * 1000
   const endDate: Date = new Date(endMs) //  start_at is seconds, but Date needs milliseconds
 
   const serverFeeNLKInWei: BigNumber = await pre.getPolicyTokenCost(accountAlice, startDate, endDate, 2)
@@ -274,7 +274,7 @@ export const run = async () => {
   //2. Alice calc gas fee (wei): the chain of bsc test token
   const gasFeeWei = await getPolicyGasFee(
     accountBob.id,
-    needToApprovedFileInfo2['apply_id'],
+    needToApprovedDataInfo2['apply_id'],
     2,
     1,
     startMs / 1000,
@@ -283,11 +283,11 @@ export const run = async () => {
   )
 
   //Note: Please make sure that the account has sufficient tnlk and bsc testnet tokens before this, otherwise the approval will fail
-  //Alice approves Bob's application for file usage. Whenever Alice approves a file request, an on-chain policy is created
+  //Alice approves Bob's application for data/file usage. Whenever Alice approves a data/file request, an on-chain policy is created
   await pre.approvalApplicationForUseDatas(
     accountAlice,
     accountBob.id,
-    needToApprovedFileInfo2['apply_id'],
+    needToApprovedDataInfo2['apply_id'],
     2,
     1,
     startDate,
@@ -300,8 +300,8 @@ export const run = async () => {
   //You need to wait for a while for the on-chain transaction to be confirmed and for the backend to listen for the "approve" event.
   await sleep(20000) //20 seconds
 
-  //Alice, as the publisher of the file, obtains the list of files that she has successfully approved
-  const aliceApprovedfilesList = await pre.getApprovedDatasAsPublisher(accountAlice, 1, 1000)
+  //Alice, as the publisher of the data/file, obtains the list of data/files that she has successfully approved
+  const aliceApprovedDataList = await pre.getApprovedDatasAsPublisher(accountAlice, 1, 1000)
   /*return data format: {
   list: [
     { apply_id, file_id:, proposer, proposer_id, file_owner:, file_owner_id:, policy_id, hrac, start_at:, end_at, created_at }
@@ -311,24 +311,24 @@ export const run = async () => {
 }
 */
 
-  assert(aliceApprovedfilesList && aliceApprovedfilesList['total'] > 0)
+  assert(aliceApprovedDataList && aliceApprovedDataList['total'] > 0)
 
-  let fileIndex5 = -1
-  for (let index = 0; index < aliceApprovedfilesList['list'].length; index++) {
-    const element = aliceApprovedfilesList['list'][index]
-    if (element['file_id'] === applyFileId) {
-      fileIndex5 = index
+  let dataIndex5 = -1
+  for (let index = 0; index < aliceApprovedDataList['list'].length; index++) {
+    const element = aliceApprovedDataList['list'][index]
+    if (element['file_id'] === applyDataId) {
+      dataIndex5 = index
       break
     }
   }
-  assert(fileIndex5 >= 0)
-  const aliceApprovedFileInfo = aliceApprovedfilesList['list'][fileIndex5]
-  assert(aliceApprovedFileInfo['file_owner_id'] === accountAlice.id)
-  const policyId = aliceApprovedFileInfo['policy_id']
-  console.log('file policy Id:', policyId)
+  assert(dataIndex5 >= 0)
+  const aliceApprovedDataInfo = aliceApprovedDataList['list'][dataIndex5]
+  assert(aliceApprovedDataInfo['file_owner_id'] === accountAlice.id)
+  const policyId = aliceApprovedDataInfo['policy_id']
+  console.log('data/file policy Id:', policyId)
 
-  //Bob finds out that his application has been approved by Alice. Bob now has permission to view the contents of the file
-  const bobBeApprovedfilesList = await pre.getApprovedDatasAsUser(accountBob, 1, 1000)
+  //Bob finds out that his application has been approved by Alice. Bob now has permission to view the contents of the data/file
+  const bobBeApprovedDataList = await pre.getApprovedDatasAsUser(accountBob, 1, 1000)
   /*return data format: {
   list: [
     { apply_id, file_id:, proposer, proposer_id, file_owner:, file_owner_id:, policy_id, hrac, start_at:, end_at, created_at }
@@ -338,33 +338,33 @@ export const run = async () => {
 }
 */
 
-  assert(bobBeApprovedfilesList && bobBeApprovedfilesList['total'] > 0)
+  assert(bobBeApprovedDataList && bobBeApprovedDataList['total'] > 0)
 
-  let fileIndex6 = -1
-  for (let index = 0; index < bobBeApprovedfilesList['list'].length; index++) {
-    const element = bobBeApprovedfilesList['list'][index]
-    if (element['file_id'] === applyFileId) {
-      fileIndex6 = index
+  let dataIndex6 = -1
+  for (let index = 0; index < bobBeApprovedDataList['list'].length; index++) {
+    const element = bobBeApprovedDataList['list'][index]
+    if (element['file_id'] === applyDataId) {
+      dataIndex6 = index
       break
     }
   }
-  assert(fileIndex6 >= 0)
+  assert(dataIndex6 >= 0)
 
-  const bobBeApprovedfilesInfo = bobBeApprovedfilesList['list'][fileIndex6]
-  assert(bobBeApprovedfilesInfo['file_owner_id'] === accountAlice.id)
-  const policyId2 = bobBeApprovedfilesInfo['policy_id']
+  const bobBeApprovedDataInfo = bobBeApprovedDataList['list'][dataIndex6]
+  assert(bobBeApprovedDataInfo['file_owner_id'] === accountAlice.id)
+  const policyId2 = bobBeApprovedDataInfo['policy_id']
   assert(policyId2 === policyId)
 
-  //Finally, Bob gets the contents of the file
-  const arrayBuffer: ArrayBuffer = await pre.getDataContentByDataIdAsUser(accountBob, bobBeApprovedfilesInfo['file_id'])
-  const fileContent: string = Buffer.from(arrayBuffer).toString()
-  console.log('fileContent: ', fileContent)
+  //Finally, Bob gets the contents of the data/file
+  const arrayBuffer: ArrayBuffer = await pre.getDataContentByDataIdAsUser(accountBob, bobBeApprovedDataInfo['file_id'])
+  const dataContent: string = Buffer.from(arrayBuffer).toString()
+  console.log('dataContent: ', dataContent)
   console.log('plainText: ', plainText)
-  assert(fileContent === plainText)
+  assert(dataContent === plainText)
 
   //finish
 
-  // Whenever Alice approves a file request, an on-chain policy is created
+  // Whenever Alice approves a data/file request, an on-chain policy is created
   // Alice can also obtain the on-chain policy information published by herself
   const dataPolicys = await pre.getPublishedPoliciesInfo(accountAlice, 1, 1000)
   /*
@@ -377,31 +377,31 @@ export const run = async () => {
   }*/
   assert(!isBlank(dataPolicys))
 
-  //Alice also can encrypt and update a file to the ipfs network by select an existing on-chain policy
+  //Alice also can encrypt and update a data/file to the ipfs network by select an existing on-chain policy
   const plainText2 = 'This is a philosophy book content'
   const historyContent2: Uint8Array = enc.encode(plainText2)
 
-  //1.upload file
-  const fileList2: DataInfo[] = [
+  //1.upload data/file
+  const dataList2: DataInfo[] = [
     {
       label: `philosophy-${nanoid()}.pdf`,
       dataArrayBuffer: historyContent2.buffer
     }
   ]
 
-  //Files uploaded by using published policies do not need approval. Bob can use the files directly, so there is no approval record
-  const fileIds = await pre.uploadDatasBySelectPolicy(accountAlice, pre.DataCategory.Philosophy, fileList2, policyId)
+  //Data/Files uploaded by using published policies do not need approval. Bob can use the data/files directly, so there is no approval record
+  const dataIds = await pre.uploadDatasBySelectPolicy(accountAlice, pre.DataCategory.Philosophy, dataList2, policyId)
 
-  //Bob can directly download Alice's associated policy upload file without waiting for Alice's approval,
+  //Bob can directly download Alice's associated policy upload data/file without waiting for Alice's approval,
   //because the associated policy has already been created and does not need repeated approval. Note: This publish policy value is available for Bob
-  //Bob get new upload file content
-  const arrayBuffer2: ArrayBuffer = await pre.getDataContentByDataIdAsUser(accountBob, fileIds[0])
-  const fileContent2: string = Buffer.from(arrayBuffer2).toString()
-  console.log('fileContent2: ', fileContent2)
+  //Bob get new upload data/file content
+  const arrayBuffer2: ArrayBuffer = await pre.getDataContentByDataIdAsUser(accountBob, dataIds[0])
+  const dataContent2: string = Buffer.from(arrayBuffer2).toString()
+  console.log('dataContent2: ', dataContent2)
   console.log('plainText2: ', plainText2)
-  assert(fileContent2 === plainText2)
+  assert(dataContent2 === plainText2)
 
-  //you can get all status files for mine apply: The files I applied for
+  //you can get all status data/files for mine apply: The data/files I applied for
   //status 0: all status, include:  applying，approved, rejected
   const data = (await pre.getDatasByStatus(undefined, accountBob.id, undefined, undefined, 0, 1, 1000)) as object
   /*

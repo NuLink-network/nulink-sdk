@@ -1,10 +1,10 @@
-[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / getApprovedDatasAsUser
+[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / getApprovedDatasAsUser
 
 # Function: getApprovedDatasAsUser
 
 ▸ **getApprovedDatasAsUser**(`account`, `pageIndex?`, `pageSize?`): `Promise`<`object`\>
 
-The file applicant retrieves a list of files/datas that have been approved for their own use.
+The file/data applicant retrieves a list of files/data that have been approved for their own use.
 
 #### Parameters
 
@@ -23,8 +23,8 @@ The file applicant retrieves a list of files/datas that have been approved for t
                  {
                    "file_id": "8feS-wp5lYhGOCtOLTKZH",
                    "file_name": "1.jpg",
-                   "address": " file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
-                   "category": "file type category",
+                   "address": " file/data ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
+                   "category": "file/data type category",
                    "format": "image",
                    "suffix": "jpg",
                    "owner": "account name",
@@ -40,4 +40,4 @@ The file applicant retrieves a list of files/datas that have been approved for t
 
 #### Defined in
 
-[core/pre/api/workflow.ts:1050](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/core/pre/api/workflow.ts#L1050)
+[core/pre/api/workflow.ts:1050](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L1050)

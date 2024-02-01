@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / getDataContentAsUser
+[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / getDataContentAsUser
 
 # Function: getDataContentAsUser
 
@@ -26,4 +26,4 @@ Gets the content of an approved file/data, which can be downloaded. The input pa
 
 #### Defined in
 
-[core/pre/api/workflow.ts:2514](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/core/pre/api/workflow.ts#L2514)
+[core/pre/api/workflow.ts:2514](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L2514)

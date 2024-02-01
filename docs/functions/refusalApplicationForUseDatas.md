@@ -1,10 +1,10 @@
-[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / refusalApplicationForUseDatas
+[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / refusalApplicationForUseDatas
 
 # Function: refusalApplicationForUseDatas
 
 ▸ **refusalApplicationForUseDatas**(`publisher`, `applyId`, `remark?`): `Promise`<`unknown`\>
 
-Rejects the application for the use of files/datas. This account acts as the publisher (Alice).
+Rejects the application for the use of files/data. This account acts as the publisher (Alice).
 
 #### Parameters
 
@@ -20,4 +20,4 @@ Rejects the application for the use of files/datas. This account acts as the pub
 
 #### Defined in
 
-[core/pre/api/workflow.ts:2369](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/core/pre/api/workflow.ts#L2369)
+[core/pre/api/workflow.ts:2369](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L2369)

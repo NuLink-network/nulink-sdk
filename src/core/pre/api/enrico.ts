@@ -29,7 +29,7 @@ export const encryptMessage = (
   console.log(x);
   /*
         policyEncryptingKey: Policy public key  
-szDataFileBinaryArrayBuffer: Multiple file arrays, each returned by a callback called FileReader.readAsArrayBuffer(file) e.target.result        
+szDataBinaryArrayBuffer: Multiple data/file arrays, each returned by a callback called FileReader.readAsArrayBuffer(file) e.target.result        
     */
   const policyEncryptingPublicKey: PublicKey = PublicKey.fromBytes(
     compressPublicKeyBuffer(policyEncryptingPublicKeyString)
@@ -40,8 +40,8 @@ szDataFileBinaryArrayBuffer: Multiple file arrays, each returned by a callback c
   const enrico = new Enrico(policyEncryptingPublicKey, policyEncryptingPublicKey)
 
   const szEncryptMessage: MessageKit[] = []
-  for (const dataFileBinaryArrayBuffer of szDataBinaryArrayBuffer) {
-    const uInt8a = new Uint8Array(dataFileBinaryArrayBuffer)
+  for (const dataBinaryArrayBuffer of szDataBinaryArrayBuffer) {
+    const uInt8a = new Uint8Array(dataBinaryArrayBuffer)
     const encryptedMessage = enrico.encryptMessage(uInt8a)
     // const enricoVerifyingKey:PublicKey = enrico.verifyingKey;
     szEncryptMessage.push(encryptedMessage)

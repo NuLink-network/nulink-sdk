@@ -1,10 +1,10 @@
-[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / getDatasForRefusedAsPublisher
+[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / getDatasForRefusedAsPublisher
 
 # Function: getDatasForRefusedAsPublisher
 
 ▸ **getDatasForRefusedAsPublisher**(`account`, `pageIndex?`, `pageSize?`): `Promise`<`object`\>
 
-Gets a list of files/datas with the "approved failed" status for others to use. This account acts as the publisher (Alice).
+Gets a list of files/data with the "approved failed" status for others to use. This account acts as the publisher (Alice).
 
 #### Parameters
 
@@ -12,13 +12,13 @@ Gets a list of files/datas with the "approved failed" status for others to use. 
 | :------ | :------ | :------ | :------ |
 | `account` | [`Account`](../classes/Account.md) | `undefined` | The current account information. |
 | `pageIndex` | `number` | `1` | The index of the page to retrieve. Default is 1. |
-| `pageSize` | `number` | `10` | The number of files/datas to retrieve per page. Default is 10. |
+| `pageSize` | `number` | `10` | The number of files/data to retrieve per page. Default is 10. |
 
 #### Returns
 
 `Promise`<`object`\>
 
-- Returns an object containing the list of files/datas and pagination information.
+- Returns an object containing the list of files/data and pagination information.
               {
                 "list": [
                   {
@@ -41,4 +41,4 @@ Gets a list of files/datas with the "approved failed" status for others to use. 
 
 #### Defined in
 
-[core/pre/api/workflow.ts:927](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/core/pre/api/workflow.ts#L927)
+[core/pre/api/workflow.ts:927](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L927)

@@ -1,19 +1,19 @@
-[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / uploadDatasBySelectPolicy
+[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / uploadDatasBySelectPolicy
 
 # Function: uploadDatasBySelectPolicy
 
 ▸ **uploadDatasBySelectPolicy**(`account`, `category`, `dataList`, `policyId`): `Promise`<`string`[]\>
 
-Uploads files/datas to the server by selecting an existing policy and uploading the files encrypted with the policy's public key to IPFS.
+Uploads files/data to the server by selecting an existing policy and uploading the files/data encrypted with the policy's public key to IPFS.
 
 #### Parameters
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `account` | [`Account`](../classes/Account.md) | The account to use to upload the files/datas. |
-| `category` | `string` \| [`DataCategory`](../enums/DataCategory.md) | The category of the files/datas being uploaded. Must be a valid FileCategory value or a string. |
-| `dataList` | [`DataInfo`](../types/DataInfo.md)[] | The list of files/datas to upload. Each element of the array must be an object with properties 'name' and 'dataArrayBuffer'. |
-| `policyId` | `number` | The ID of the policy to use to encrypt and upload the files/datas. |
+| `account` | [`Account`](../classes/Account.md) | The account to use to upload the files/data. |
+| `category` | `string` \| [`DataCategory`](../enums/DataCategory.md) | The category of the files/data being uploaded. Must be a valid DataCategory value or a string. |
+| `dataList` | [`DataInfo`](../types/DataInfo.md)[] | The list of files/data to upload. Each element of the array must be an object with properties 'name' and 'dataArrayBuffer'. |
+| `policyId` | `number` | The ID of the policy to use to encrypt and upload the files/data. |
 
 #### Returns
 
@@ -23,4 +23,4 @@ Uploads files/datas to the server by selecting an existing policy and uploading 
 
 #### Defined in
 
-[core/pre/api/workflow.ts:432](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/core/pre/api/workflow.ts#L432)
+[core/pre/api/workflow.ts:432](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L432)

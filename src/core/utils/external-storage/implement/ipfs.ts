@@ -44,7 +44,7 @@ export const getIPFSClient = async () => {
 /**
  * Bulk set data to ipfs
  * @param {string | InstanceType<typeof String> | ArrayBufferView | ArrayBuffer | Blob | AwaitIterable<Uint8Array> | ReadableStream<Uint8Array>} datas - upload data stream
- * @returns {Promise<string>} - the list of the file key.
+ * @returns {Promise<string>} - the list of the data/file key.
  */
 
 export const setDatas = async (
@@ -82,7 +82,7 @@ export const setDatas = async (
  * Set data to ipfs
  * @internal
  * @param {string | InstanceType<typeof String> | ArrayBufferView | ArrayBuffer | Blob | AwaitIterable<Uint8Array> | ReadableStream<Uint8Array>} userDatas - upload data stream
- * @returns {Promise<string>} - the list of the file key.
+ * @returns {Promise<string>} - the list of the data/file key.
  */
 const setData = async (
   data:

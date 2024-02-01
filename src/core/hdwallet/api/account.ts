@@ -188,8 +188,8 @@ export class Strategy extends IJson {
   }
 
   /**
-   * Returns a JSON string representation of the account local policy object for encrypted upload files.
-   * @returns {string} - Returns a JSON string representation of the account local policy object for encrypted upload files.
+   * Returns a JSON string representation of the account local policy object for encrypted upload data/files.
+   * @returns {string} - Returns a JSON string representation of the account local policy object for encrypted upload data/files.
    * @memberof Strategy
    */
   public dump(): string {
@@ -417,7 +417,7 @@ export class Account extends IJson {
     return null
   }
   /**
-   * Creates a new policy object with the specified label and a generated ID. The policy object is used to encrypt files uploaded by the user.
+   * Creates a new policy object with the specified label and a generated ID. The policy object is used to encrypt data/files uploaded by the user.
    * @param {string} label - The label to use for the new policy.
    * @returns {Promise<Strategy>} - Returns a Promise that resolves with the new policy object.
    * @memberof Account
@@ -429,7 +429,7 @@ export class Account extends IJson {
   }
 
   /**
-   * Creates a new policy object with the specified label and ID, and adds it to the policy mapping. The policy object is used to encrypt files uploaded by the user.
+   * Creates a new policy object with the specified label and ID, and adds it to the policy mapping. The policy object is used to encrypt data/files uploaded by the user.
    * @param {string} label - The label to use for the new policy.
    * @param {string} [id=''] - The optional ID to use for the new policy, If the ID parameter is not passed,
    *                          it will automatically call the generateStrategyAddressIndex function to generate a new address index for the policy object.
@@ -437,7 +437,7 @@ export class Account extends IJson {
    * @memberof Account
    */
   public async createStrategy(label: string, id = ''): Promise<Strategy> {
-    //The default label should be the name of the incoming file. If it is repeated, add the policy id identifier (uuid)
+    //The default label should be the name of the incoming data/file. If it is repeated, add the policy id identifier (uuid)
     const strategyAddressIndex = await this.generateStrategyAddressIndex()
     const strategy: Strategy = new Strategy(this.addressIndex, strategyAddressIndex, label, id)
     this.strategyMapping.set(strategyAddressIndex, strategy)
@@ -459,10 +459,10 @@ export class Account extends IJson {
    * @memberof Account
    */
   public async deleteStrategy(strategyAddressIndex: number): Promise<void> {
-    // Note: To delete the policy, note that the policy cannot be deleted if there is a file share, and delete here is the bottom-level function.
-    // Judging whether the deletion policy should be (with file sharing) should be judged by the upper-level function
+    // Note: To delete the policy, note that the policy cannot be deleted if there is a data/file share, and delete here is the bottom-level function.
+    // Judging whether the deletion policy should be (with data/file sharing) should be judged by the upper-level function
     console.warn(
-      'Delete policy, note that if there is a file share, the policy cannot be deleted. Here, the funcion is the Lowest level function. To determine whether the policy should be deleted (in a file share), it should be judged by the upper-level function'
+      'Delete policy, note that if there is a data share, the policy cannot be deleted. Here, the funcion is the Lowest level function. To determine whether the policy should be deleted (in a data/file share), it should be judged by the upper-level function'
     )
 
     let strategy: Strategy | undefined = this.strategyMapping.get(strategyAddressIndex)
@@ -1056,10 +1056,10 @@ export class AccountManager extends IJson {
    * @internal
    * Not currently implemented
    * @param _privateKey
-   * @param _dataFileBinaryString
+   * @param _dataBinaryString
    * @memberof AccountManager
    */
-  restoreAccount(_privateKey: string, _dataFileBinaryString = '') {
+  restoreAccount(_privateKey: string, _dataBinaryString = '') {
     /* Recovery of a single account (Wallet) is not supported, because a single account cannot be derived from the private key
      The extended private key (ExtendedPrivatekey) of BIP32, the sub-account is generated through the wallet root private key (ExtendedPrivatekey), the sub-account of the tree structure is deduced,
      So a single account cannot derive HDWallet.
@@ -1078,10 +1078,10 @@ export class AccountManager extends IJson {
    * @internal
    * Not currently implemented
    * @param _keystoreJson
-   * @param _dataFileBinaryString
+   * @param _dataBinaryString
    * @memberof AccountManager
    */
-  restoreAccountByKeyStoreJson(_keystoreJson: string, _dataFileBinaryString = '') {
+  restoreAccountByKeyStoreJson(_keystoreJson: string, _dataBinaryString = '') {
     /* Recovery of a single account (Wallet) is not supported, because a single account cannot be derived from the private key
      The extended private key (ExtendedPrivatekey) of BIP32, the sub-account is generated through the wallet root private key (ExtendedPrivatekey), the sub-account of the tree structure is deduced,
      So a single account cannot derive HDWallet.
@@ -1149,12 +1149,12 @@ export class AccountManager extends IJson {
    */
   public async removeAccount(addressIndex: number): Promise<Account | undefined> {
     // remove account
-    //Note: To delete an account, note that if the policy in the account has a file share, the account cannot be deleted. Delete here is the bottom-level function.
-    //Determine whether the account should be deleted (with file sharing), it should be judged by the upper-level function
+    //Note: To delete an account, note that if the policy in the account has a data/file share, the account cannot be deleted. Delete here is the bottom-level function.
+    //Determine whether the account should be deleted (with data/file sharing), it should be judged by the upper-level function
 
     //Note that there is no function to delete accounts in metamask, consider whether to block this function here
     console.warn(
-      'Delete an account, note that the policy in the account cannot delete the account if there is a file share. Delete here is the bottom-level function. To determine whether the account should be deleted (in a file share), it should be judged by the upper-level function'
+      'Delete an account, note that the policy in the account cannot delete the account if there is a data/file share. Delete here is the bottom-level function. To determine whether the account should be deleted (in a data/file share), it should be judged by the upper-level function'
     )
 
     if (addressIndex === 0) {
@@ -1761,21 +1761,21 @@ export class NuLinkHDWallet {
 
   /**
    *
-   * Restores a NuLinkHDWallet using a mnemonic phrase and optional data file binary string.
+   * Restores a NuLinkHDWallet using a mnemonic phrase and optional data/file binary string.
    * attention please: you need to call the createAccountIfNotExist method outside of this function for add user account to the center server for decouple
    * @param {string} mnemonic - The mnemonic phrase used to restore the wallet.
    * @param {string} newPassword - The password used to encrypt the wallet.
-   * @param {string} [dataFileBinaryString=''] - The optional binary string of a data file to restore the wallet from. The dataFileBinaryString is returned by the exportWalletData function
-   * If a data file binary string is provided, the wallet's account data will be restored from it. Otherwise, a new account will be created.
+   * @param {string} [dataBinaryString=''] - The optional binary string of a data/file to restore the wallet from. The dataBinaryString is returned by the exportWalletData function
+   * If a data /file binary string is provided, the wallet's account data will be restored from it. Otherwise, a new account will be created.
    * @returns {Promise<NuLinkHDWallet>} - Returns a new NuLinkHDWallet object.
-   * @throws {Error} - Throws an error if the restore wallet tag is missing or if the wallet could not be restored from the data file.
+   * @throws {Error} - Throws an error if the restore wallet tag is missing or if the wallet could not be restored from the data/file.
    * @static
    * @memberof NuLinkHDWallet
    */
   public static async restoreHDWallet(
     mnemonic: string,
     newPassword: string,
-    dataFileBinaryString = ''
+    dataBinaryString = ''
   ): Promise<NuLinkHDWallet> {
     const nulinkHDWallet = new NuLinkHDWallet()
 
@@ -1786,11 +1786,11 @@ export class NuLinkHDWallet {
     //Note that this line cannot be placed later, the wallet object getHDWallet().hdWallet needs to be used when restoring account data
     await setHDWalletInstance(nulinkHDWallet, false)
     // console.log("restoreHDWallet set _HdWallet", getHDWallet());
-    if (dataFileBinaryString) {
-      if (RESTORE_WALLET_TAG === dataFileBinaryString) {
+    if (dataBinaryString) {
+      if (RESTORE_WALLET_TAG === dataBinaryString) {
         await nulinkHDWallet.restoreDataByStrategyInfos(newPassword)
       } else {
-        await nulinkHDWallet.recoverUserData(newPassword, dataFileBinaryString)
+        await nulinkHDWallet.recoverUserData(newPassword, dataBinaryString)
       }
     } else {
       //no data so create new Account
@@ -1828,7 +1828,7 @@ export class NuLinkHDWallet {
    *
    * @param {string} privateKeyString - The root extended private key used to generate sub-accounts and access funds.
    * @param {string} newPassword - The password used to encrypt the HDWallet object.
-   * @param {string} [dataFileBinaryString=''] - Optional parameter that contains user data, such as account information, in binary form.
+   * @param {string} [dataBinaryString=''] - Optional parameter that contains user data, such as account information, in binary form.
    * @returns {Promise<NuLinkHDWallet>} - An encrypted HDWallet object containing account and user data.
    * @throws {Error}  Throws an InvalidRootExtendedPrivateKeyError if the provided private key does not follow the BIP32 standard.
    * @static
@@ -1837,7 +1837,7 @@ export class NuLinkHDWallet {
   public static async restoreHDWalletByRootExtendedPrivateKey(
     privateKeyString: string,
     newPassword: string,
-    dataFileBinaryString = ''
+    dataBinaryString = ''
   ) {
     /*
     According to the logical private key of metamask, only a single account can be recovered, but the wallet cannot be recovered. The recovery wallet is recovered through the mnemonic phrase.
@@ -1876,11 +1876,11 @@ export class NuLinkHDWallet {
     //Note that this line cannot be placed later, the wallet object getHDWallet().hdWallet needs to be used when restoring account data
     await setHDWalletInstance(nulinkHDWallet, false)
     // console.log("restoreHDWallet set _HdWallet", getHDWallet());
-    if (dataFileBinaryString) {
-      if (RESTORE_WALLET_TAG === dataFileBinaryString) {
+    if (dataBinaryString) {
+      if (RESTORE_WALLET_TAG === dataBinaryString) {
         await nulinkHDWallet.restoreDataByStrategyInfos(newPassword)
       } else {
-        await nulinkHDWallet.recoverUserData(newPassword, dataFileBinaryString)
+        await nulinkHDWallet.recoverUserData(newPassword, dataBinaryString)
       }
     } else {
       //no data so create new Account
@@ -1944,24 +1944,24 @@ export class NuLinkHDWallet {
   }
 
   // restore account by data info
-  // dataFileBinaryString is a H5 fileReader.readAsArrayBuffer() return value
+  // dataBinaryString is a H5 fileReader.readAsArrayBuffer() return value
   // attention please: you need to call the createAccountIfNotExist method outside of this function for add user account to the center server for decouple
   /**
    * Restores an account by data info (including the mnemonic (or root extended private key) and user data (strategy infos)).
    * @throws {@link UserDataCorruptedError}
    * @param {string} newPassword - The password for the new wallet.
-   * @param {string} dataFileBinaryString - The binary string data file used to restore the wallet. The dataFileBinaryString is returned by the exportWalletData function.
+   * @param {string} dataBinaryString - The binary string data/file used to restore the wallet. The dataBinaryString is returned by the exportWalletData function.
    * @returns {Promise<NuLinkHDWallet>} - Returns a new NuLinkHDWallet object with the restored account.
    * @static
    * @memberof NuLinkHDWallet
    */
   public static async restoreHDWalletByData(
     newPassword: string,
-    dataFileBinaryString: string
+    dataBinaryString: string
   ): Promise<NuLinkHDWallet> {
     let dataJson: any = null
     try {
-      dataJson = JSON.parse(dataFileBinaryString)
+      dataJson = JSON.parse(dataBinaryString)
     } catch (error) {
       console.log('parseWalletData error: ', error)
       throw new exception.UserDataCorruptedError(
@@ -1971,10 +1971,10 @@ export class NuLinkHDWallet {
 
     if (dataJson.pcode) {
       const rootExtendedPrivateKey = pwdDecrypt(dataJson.pcode, true)
-      return this.restoreHDWalletByRootExtendedPrivateKey(rootExtendedPrivateKey, newPassword, dataFileBinaryString)
+      return this.restoreHDWalletByRootExtendedPrivateKey(rootExtendedPrivateKey, newPassword, dataBinaryString)
     } else if (dataJson.mcode) {
       const mnemonic = pwdDecrypt(dataJson.mcode, true)
-      return this.restoreHDWallet(mnemonic, newPassword, dataFileBinaryString)
+      return this.restoreHDWallet(mnemonic, newPassword, dataBinaryString)
     } else {
       console.log('parseWalletData error: Wallet Wallet data missing')
       throw new exception.UserDataCorruptedError(
@@ -2084,16 +2084,16 @@ export class NuLinkHDWallet {
   }
 
   /**
-   * Recover user data to current NuLinkHDWallet object using the provided encrypted data file.
+   * Recover user data to current NuLinkHDWallet object using the provided encrypted data/file.
    * @param {string} newPassword - New password for encryption
-   * @param {string} dataFileBinaryString - Encrypted data file as a binary string
+   * @param {string} dataBinaryString - Encrypted data/file as a binary string
    * @param {DataStrategyRecoveryMode} _mode - Recovery mode for restoring data strategies
    * @return {Promise<void>} - Promise object representing the completion of recovering user data
    * @memberof NuLinkHDWallet
    */
   public async recoverUserData(
     newPassword: string,
-    dataFileBinaryString = '',
+    dataBinaryString = '',
     _mode: DataStrategyRecoveryMode = DataStrategyRecoveryMode.Union
   ) {
     //1. Data to be restored when restoring the account:
@@ -2115,7 +2115,7 @@ export class NuLinkHDWallet {
     //The logic here should be the data of all imported accounts
 
     try {
-      const dataJson = JSON.parse(dataFileBinaryString)
+      const dataJson = JSON.parse(dataBinaryString)
 
       const encryptedSymmetricKeyIv: string = dataJson.seed
       // console.log(`recoverUserData: seed encryptedSymmetricKeyIv: ${toBuffer(encryptedSymmetricKeyIv)}`);
@@ -2136,14 +2136,14 @@ export class NuLinkHDWallet {
   }
 
   /**
-   * Export user data as an encrypted file.
+   * Export user data as an encrypted data/file.
    * @param {string} password - Password for decrypt nulink wallet
-   * @return {Promise<string>} - Promise object representing the encrypted data file as a string
+   * @return {Promise<string>} - Promise object representing the encrypted data/file as a string
    * @memberof NuLinkHDWallet
    */
   public async exportUserData(password: string): Promise<string> {
-    //Export user data, return the file stream, the front end needs to be downloaded directly to the local
-    //The logic here should be to export the data of all accounts to 1 file
+    //Export user data, return the data/file stream, the front end needs to be downloaded directly to the local
+    //The logic here should be to export the data of all accounts to file
 
     //The beginning of the exported json file should be the key and iv of the symmetric key encrypted by the private key, followed by data
     // { seed: encryptedstring({ key: ekey, iv: iv}), data: encrypteddata}
@@ -2619,14 +2619,14 @@ export class NuLinkHDWallet {
     })
   }
 
-  public static async parseUserDataVersionInfo(dataFileBinaryString: string): Promise<any | undefined> {
+  public static async parseUserDataVersionInfo(dataBinaryString: string): Promise<any | undefined> {
     //return sorted strategyId list
 
-    if (!dataFileBinaryString) {
+    if (!dataBinaryString) {
       return undefined
     }
 
-    const jsonObj = JSON.parse(dataFileBinaryString)
+    const jsonObj = JSON.parse(dataBinaryString)
 
     if (!jsonObj?.strategyIds) {
       throw new exception.UserDataVersionLowError(
@@ -2641,7 +2641,7 @@ export class NuLinkHDWallet {
       const accountIdsJsonObject = JSON.parse(accountIdsJsonString)
 
       if (util.isBlank(strategyIdsJsonObject?.strategyIds) || util.isBlank(accountIdsJsonObject?.accountIds)) {
-        //please make sure the dataFileBinaryString is not empty
+        //please make sure the dataBinaryString is not empty
         throw new exception.UserDataCorruptedError('Data corrupted or tampered with by others !!')
       }
 
@@ -2666,9 +2666,9 @@ export class NuLinkHDWallet {
     // // console.log(`recoverUserData: seed encryptedSymmetricKeyIv: ${toBuffer(encryptedSymmetricKeyIv)}`);
     // const save: boolean = false; //must be false, don't save, otherwise, the current data is overwritten
     // const cryptoBroker = await this.getCryptoBroker(encryptedSymmetricKeyIv, true, save);
-    // dataFileBinaryString = await cryptoBroker.decryptData(jsonObj.data);
+    // dataBinaryString = await cryptoBroker.decryptData(jsonObj.data);
 
-    // jsonObj = JSON.parse(dataFileBinaryString);
+    // jsonObj = JSON.parse(dataBinaryString);
 
     // const nulinkHDWallet = new NuLinkHDWallet();
 

@@ -297,12 +297,12 @@ export const updateAccountInfo = async (account: Account, updateData: Record<str
 }
 
 /**
- * Uploads files/datas to the server by creating a new local policy and uploading the files encrypted with the policy's public key to IPFS.
+ * Uploads files/data to the server by creating a new local policy and uploading the files/data encrypted with the policy's public key to IPFS.
  * @category File/Data Publisher(Alice) Interface
- * @param {Account} account - The account to use to create the policy and upload the files/datas.
- * @param {DataCategory | string} category - The category of the files/datas being uploaded. Must be a valid DataCategory value or a string.
- * @param {DataInfo[]} dataInfoList - The list of files/datas to upload. Each element of the array must be an object with properties 'label' and 'dataArrayBuffer'.
- * @returns {Promise<Strategy>} - Returns the strategy used to upload the files/datas.
+ * @param {Account} account - The account to use to create the policy and upload the files/data.
+ * @param {DataCategory | string} category - The category of the files/data being uploaded. Must be a valid DataCategory value or a string.
+ * @param {DataInfo[]} dataInfoList - The list of files/data to upload. Each element of the array must be an object with properties 'label' and 'dataArrayBuffer'.
+ * @returns {Promise<Strategy>} - Returns the strategy used to upload the files/data.
  */
 export const uploadDatasByCreatePolicy = async (
   account: Account,
@@ -338,7 +338,7 @@ export const uploadDatasByCreatePolicy = async (
   for (const dataInfo of dataInfoList) {
     dataContentList.push(dataInfo.dataArrayBuffer)
   }
-  // console.log("uploadDatasByCreatePolicy fileContentList", fileContentList);
+  // console.log("uploadDatasByCreatePolicy dataContentList", dataContentList);
 
   const _encryptMessages: MessageKit[] = encryptMessage(strategy.strategyKeyPair._publicKey, dataContentList)
   // console.log("uploadDatasByCreatePolicy _encryptMessages", _encryptMessages);
@@ -421,21 +421,21 @@ export const uploadDatasByCreatePolicy = async (
   return strategy
 }
 /**
- * Uploads files/datas to the server by selecting an existing policy and uploading the files encrypted with the policy's public key to IPFS.
+ * Uploads files/data to the server by selecting an existing policy and uploading the files/data encrypted with the policy's public key to IPFS.
  * @category File/Data Publisher(Alice) Interface
- * @param {Account} account - The account to use to upload the files/datas.
- * @param {DataCategory | string} category - The category of the files/datas being uploaded. Must be a valid FileCategory value or a string.
- * @param {DataInfo[]} dataList - The list of files/datas to upload. Each element of the array must be an object with properties 'name' and 'dataArrayBuffer'.
- * @param {number} policyId - The ID of the policy to use to encrypt and upload the files/datas.
+ * @param {Account} account - The account to use to upload the files/data.
+ * @param {DataCategory | string} category - The category of the files/data being uploaded. Must be a valid DataCategory value or a string.
+ * @param {DataInfo[]} dataList - The list of files/data to upload. Each element of the array must be an object with properties 'name' and 'dataArrayBuffer'.
+ * @param {number} policyId - The ID of the policy to use to encrypt and upload the files/data.
  * @returns {Promise<string[]>} - Returns an array of file/data IDs uploaded to the server.
  */
 export const uploadDatasBySelectPolicy = async (
   account: Account,
-  category: DataCategory | string, //File category, according to the design: only one category is allowed to be uploaded in batches, and different categories need to be uploaded separately
-  dataList: DataInfo[], //file information list
+  category: DataCategory | string, //Data category, according to the design: only one category is allowed to be uploaded in batches, and different categories need to be uploaded separately
+  dataList: DataInfo[], //data/file information list
   policyId: number // policy info id
 ): Promise<string[]> => {
-  //return file id array
+  //return data/file id array
 
   let label = getDataCategoryString(category)
   if (!label) {
@@ -471,7 +471,7 @@ export const uploadDatasBySelectPolicy = async (
     const dataId = nanoid()
 
     //The generation of thumbnail logic should be handled by a third-party DApp, rather than implemented in the pre-process. Therefore, it needs to be moved to the third-party DApp, and this part should be blocked
-    //generate and upload thumbnail files to IPFS
+    //generate and upload thumbnail data/files to IPFS
     // eslint-disable-next-line prefer-const
     let thumbnail = ''
     //try {
@@ -520,13 +520,13 @@ export const uploadDatasBySelectPolicy = async (
 }
 
 /**
-* Gets a list of files/datas uploaded by the specified account from the server. This account acts as the publisher
+* Gets a list of files/data uploaded by the specified account from the server. This account acts as the publisher
 * @category File/Data Publisher(Alice) Interface
 * @param {Account} account - The account to retrieve the file/data list for.
-* @param {string} dataLabel - (Optional) The name of the file/data to search for. Leave blank to retrieve all files/datas.
+* @param {string} dataLabel - (Optional) The name of the file/data to search for. Leave blank to retrieve all files/data.
 * @param {number} pageIndex - (Optional) The index of the page to retrieve. Default is 1.
-* @param {number} pageSize - (Optional) The number of files/datas to retrieve per page. Default is 10.
-* @returns {Promise<object>} - Returns an object containing the list of files/datas and pagination information.
+* @param {number} pageSize - (Optional) The number of files/data to retrieve per page. Default is 10.
+* @returns {Promise<object>} - Returns an object containing the list of files/data and pagination information.
             {
                 list: [
                   {
@@ -548,13 +548,13 @@ export const getUploadedDatas = async (account: Account, dataLabel?: string, pag
 }
 
 /**
-* Gets a list of files/datas uploaded by the specified account from the server. This account acts as the publisher
+* Gets a list of files/data uploaded by the specified account from the server. This account acts as the publisher
 * @category File/Data Publisher(Alice) Interface
 * @param {Account} account - The account to retrieve the file/data list for.
-* @param {string} dataLabel - (Optional) The label of the file/data to search for. Leave blank to retrieve all files/datas.
+* @param {string} dataLabel - (Optional) The label of the file/data to search for. Leave blank to retrieve all files/data.
 * @param {number} pageIndex - (Optional) The index of the page to retrieve. Default is 1.
-* @param {number} pageSize - (Optional) The number of files/datas to retrieve per page. Default is 10.
-* @returns {Promise<object>} - Returns an object containing the list of files/datas and pagination information.
+* @param {number} pageSize - (Optional) The number of files/data to retrieve per page. Default is 10.
+* @returns {Promise<object>} - Returns an object containing the list of files/data and pagination information.
             {
                 list: [
                   {
@@ -593,16 +593,16 @@ export const getDataInfosByAccount = async (account: Account, dataLabel?: string
 }
 
 /**
- * Deletes the specified files/datas uploaded by the account from the server, This account acts as the publisher
+ * Deletes the specified files/data uploaded by the account from the server, This account acts as the publisher
  * @category File/Data Publisher(Alice) Interface
- * @param {Account} account - The account that owns the files/datas to be deleted.
+ * @param {Account} account - The account that owns the files/data to be deleted.
  * @param {string[]} dataIds - An array of file/data IDs to delete.
  * @returns {Promise<void>}
  */
 export const deleteUploadedDatas = async (account: Account, dataIds: string[]) => {
   //https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E5%88%A0%E9%99%A4%E6%96%87%E4%BB%B6
   /*  
-          return the list of deleted files/datas is displayed: [
+          return the list of deleted files/data is displayed: [
               {"file_id": "", "file_name": ""},
               ...
             ]
@@ -621,7 +621,7 @@ export const deleteUploadedDatas = async (account: Account, dataIds: string[]) =
 }
 
 /**
-* Gets a list of files/datas shared by others (files uploaded by the current account are not included). This account acts as the user(Bob).
+* Gets a list of files/data shared by others (files uploaded by the current account are not included). This account acts as the user(Bob).
 * @category File/Data User(Bob) Interface
 * @param {Account} account - The current account information.
 * @param {string} dataLabel - (Optional) The name of the file/data to search for. support fuzzy query. Leave blank to retrieve all files.
@@ -630,8 +630,8 @@ export const deleteUploadedDatas = async (account: Account, dataIds: string[]) =
 * @param {DataType} dataType - (Optional) The type of the file/data to search for.
 * @param {boolean} descOrder - (Optional) Whether to sort by upload time in reverse order.
 * @param {number} pageIndex - (Optional) The index of the page to retrieve. Default is 1.
-* @param {number} pageSize - (Optional) The number of files/datas to retrieve per page. Default is 10.
-* @returns {Promise<object>} - Returns an object containing the list of files/datas and pagination information.
+* @param {number} pageSize - (Optional) The number of files/data to retrieve per page. Default is 10.
+* @returns {Promise<object>} - Returns an object containing the list of files/data and pagination information.
                         {
                             total: number
                             list: [{
@@ -652,7 +652,7 @@ export const deleteUploadedDatas = async (account: Account, dataIds: string[]) =
 export const getOtherShareDatas = async (
   account: Account, //current account info
   dataLabel?: string, //file_name support fuzzy query
-  include?: boolean, //indicates whether the query result contains file list data of the current account
+  include?: boolean, //indicates whether the query result contains file/data list data of the current account
   category?: DataCategory | string,
   dataType?: DataType,
   descOrder = true, //Whether to sort by upload time in reverse order
@@ -699,7 +699,7 @@ return data format: {
 }
 
 /**
- * Applies for file/data usage permission for the specified files/datas, This account acts as the user(Bob).
+ * Applies for file/data usage permission for the specified files/data, This account acts as the user(Bob).
  * @category File/Data User(Bob) Interface
  * @param {string[]} dataIds - An array of file IDs to apply for usage permission.
  * @param {Account} account - The account that applies for the permission.
@@ -726,8 +726,8 @@ export const applyForDatasUsagePermission = async (dataIds: string[], account: A
     }`,
   ); */
 
-  // console.log("apply file user account", account);
-  // console.log("apply file file_ids", fileIds);
+  // console.log("apply data user account", account);
+  // console.log("apply data file_ids", dataIds);
 
   const settingsData = await getSettingsData()
   sendData['chain_id'] = settingsData.chainId
@@ -740,7 +740,7 @@ export const applyForDatasUsagePermission = async (dataIds: string[], account: A
 }
 
 /**
- * Revokes the permission application of the specified files/datas. This account acts as the user(Bob).
+ * Revokes the permission application of the specified files/data. This account acts as the user(Bob).
  * If it has been approved or failed, it can not be revoked.
  * The background service processing logic is such that if there are multiple permission applications, either all of them will be successful or none of them will be successful.
  * @category File/Data User(Bob) Interface
@@ -767,7 +767,7 @@ export const revokePermissionApplicationOfDatas = async (
 }
 
 /**
- * The file/data publisher retrieves a list of files/datas in all states.
+ * The file/data publisher retrieves a list of files/data in all states.
  * @category File/Data Publisher(Alice) Interface  
  * @param {Account} account - the current account object 
  * @param {number} pageIndex - (Optional) number default 1
@@ -777,8 +777,8 @@ export const revokePermissionApplicationOfDatas = async (
                   {
                     "file_id": "8feS-wp5lYhGOCtOLTKZH",
                     "file_name": "1.jpg",
-                    "address": " file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
-                    "category": "file type category",
+                    "address": " file/data ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
+                    "category": "file/data type category",
                     "format": "image",
                     "suffix": "jpg",
                     "owner": "account name",
@@ -806,7 +806,7 @@ export const getDatasAllStatusAsPublisher = async (account: Account, pageIndex =
 }
 
 /**
- * Retrieve a list of files/datas in a specified state that need to be approved for use by others, for the file/data publisher.
+ * Retrieve a list of files/data in a specified state that need to be approved for use by others, for the file/data publisher.
  * @category File/Data Publisher(Alice) Interface
  * @param {Account} account - the current account object 
  * @param {number} status - (Optional) default 0: All state 1: Under review, 2: Approved, 3: Rejected, 4: Under approval, 5: Expired
@@ -817,8 +817,8 @@ export const getDatasAllStatusAsPublisher = async (account: Account, pageIndex =
                   {
                     "file_id": "8feS-wp5lYhGOCtOLTKZH",
                     "file_name": "1.jpg",
-                    "address": " file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
-                    "category": "file type category",
+                    "address": " file/data ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
+                    "category": "file/data type category",
                     "format": "image",
                     "suffix": "jpg",
                     "owner": "account name",
@@ -837,19 +837,19 @@ export const getDatasByApplyStatusAsPublisher = async (account: Account, status 
 }
 
 /**
-* Gets a list of files/datas pending approval (applying but not yet approved). This account acts as the publisher (Alice) and needs to approve them.
+* Gets a list of files/data pending approval (applying but not yet approved). This account acts as the publisher (Alice) and needs to approve them.
 * @category File/Data Publisher(Alice) Interface
 * @param {Account} account - (Optional) The current account information.
 * @param {number} pageIndex - (Optional) The index of the page to retrieve. Default is 1.
-* @param {number} pageSize - (Optional) The number of files/datas to retrieve per page. Default is 10.
-* @returns {Promise<object>} - Returns an object containing the list of files/datas and pagination information.
+* @param {number} pageSize - (Optional) The number of files/data to retrieve per page. Default is 10.
+* @returns {Promise<object>} - Returns an object containing the list of files/data and pagination information.
                           {
                             "list": [
                               {
                                 "file_id": "8feS-wp5lYhGOCtOLTKZH",
                                 "file_name": "1.jpg",
-                                "address": " file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
-                                "category": "file type category",
+                                "address": " file/data ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
+                                "category": "file/data type category",
                                 "format": "image",
                                 "suffix": "jpg",
                                 "owner": "account name",
@@ -868,7 +868,7 @@ export const getDatasPendingApprovalAsPublisher = async (account: Account, pageI
 }
 
 /**
- * get the Approved success status files/datas for others to use. This account acts as the publisher (Alice)
+ * get the Approved success status files/data for others to use. This account acts as the publisher (Alice)
  * @category File/Data Publisher(Alice) Interface
  * @param {Account} account - Account the current account object
  * @param {number} pageIndex - (Optional) number default 1
@@ -878,8 +878,8 @@ export const getDatasPendingApprovalAsPublisher = async (account: Account, pageI
                   {
                     "file_id": "8feS-wp5lYhGOCtOLTKZH",
                     "file_name": "1.jpg",
-                    "address": " file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
-                    "category": "file type category",
+                    "address": " file/data ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
+                    "category": "file/data type category",
                     "format": "image",
                     "suffix": "jpg",
                     "owner": "account name",
@@ -898,12 +898,12 @@ export const getApprovedDatasAsPublisher = async (account: Account, pageIndex = 
 }
 
 /**
-* Gets a list of files/datas with the "approved failed" status for others to use. This account acts as the publisher (Alice).
+* Gets a list of files/data with the "approved failed" status for others to use. This account acts as the publisher (Alice).
 * @category File/Data Publisher(Alice) Interface
 * @param {Account} account - The current account information.
 * @param {number} pageIndex - The index of the page to retrieve. Default is 1.
-* @param {number} pageSize - The number of files/datas to retrieve per page. Default is 10.
-* @returns {Promise<object>} - Returns an object containing the list of files/datas and pagination information.
+* @param {number} pageSize - The number of files/data to retrieve per page. Default is 10.
+* @returns {Promise<object>} - Returns an object containing the list of files/data and pagination information.
               {
                 "list": [
                   {
@@ -929,12 +929,12 @@ export const getDatasForRefusedAsPublisher = async (account: Account, pageIndex 
 }
 
 /**
-* Gets a list of all files/datas with any status as a user (Bob) using this account.
+* Gets a list of all files/data with any status as a user (Bob) using this account.
 * @category File/Data User(Bob) Interface
 * @param {Account} account - The current account information.
 * @param {number} pageIndex - The index of the page to retrieve. Default is 1.
-* @param {number} pageSize - The number of files/datas to retrieve per page. Default is 10.
-* @returns {Promise<object>} - Returns an object containing the list of files/datas and pagination information.
+* @param {number} pageSize - The number of files/data to retrieve per page. Default is 10.
+* @returns {Promise<object>} - Returns an object containing the list of files/data and pagination information.
                             {
                               "list": [
                                 {
@@ -960,7 +960,7 @@ export const getDatasAllStatusAsUser = async (account: Account, pageIndex = 1, p
 }
 
 /**
- * The file/data applicant retrieves a list of files/datas in a specified state that need to be approved by others.
+ * The file/data applicant retrieves a list of files/data in a specified state that need to be approved by others.
  * @category File/Data User(Bob) Interface
  * @param {Account} account -  the current account object 
  * @param status - (Optional) default 0: All state 1: Under review, 2: Approved, 3: Rejected, 4: Under approval, 5: Expired
@@ -971,8 +971,8 @@ export const getDatasAllStatusAsUser = async (account: Account, pageIndex = 1, p
                   {
                     "file_id": "8feS-wp5lYhGOCtOLTKZH",
                     "file_name": "1.jpg",
-                    "address": " file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
-                    "category": "file type category",
+                    "address": " file/data ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
+                    "category": "file/data type category",
                     "format": "image",
                     "suffix": "jpg",
                     "owner": "account name",
@@ -991,19 +991,19 @@ export const getDatasByApplyStatusAsUser = async (account: Account, status = 0, 
 }
 
 /**
-  * Gets a list of files/datas pending approval (applying but not yet approved). This account acts as a user (Bob) and needs to approve them.
+  * Gets a list of files/data pending approval (applying but not yet approved). This account acts as a user (Bob) and needs to approve them.
   * @category File/Data User(Bob) Interface
   * @param {Account} account - The current account information.
   * @param {number} pageIndex - (Optional) The index of the page to retrieve. Default is 1.
-  * @param {number} pageSize - (Optional) The number of files/datas to retrieve per page. Default is 10.
-  * @returns {Promise<object>} - Returns an object containing the list of files/datas and pagination information.
+  * @param {number} pageSize - (Optional) The number of files/data to retrieve per page. Default is 10.
+  * @returns {Promise<object>} - Returns an object containing the list of files/data and pagination information.
                             {
                               "list": [
                                 {
                                   "file_id": "8feS-wp5lYhGOCtOLTKZH",
                                   "file_name": "1.jpg",
-                                  "address": " file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
-                                  "category": "file type category",
+                                  "address": " file/data ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
+                                  "category": "file/data type category",
                                   "format": "image",
                                   "suffix": "jpg",
                                   "owner": "account name",
@@ -1022,7 +1022,7 @@ export const getDatasPendingApprovalAsUser = async (account: Account, pageIndex 
 }
 
 /**
- * The file applicant retrieves a list of files/datas that have been approved for their own use.
+ * The file/data applicant retrieves a list of files/data that have been approved for their own use.
  * @category File/Data User(Bob) Interface
  * @param {Account} account - the current account object 
  * @param {number} pageIndex - (Optional) number default 1
@@ -1032,8 +1032,8 @@ export const getDatasPendingApprovalAsUser = async (account: Account, pageIndex 
                   {
                     "file_id": "8feS-wp5lYhGOCtOLTKZH",
                     "file_name": "1.jpg",
-                    "address": " file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
-                    "category": "file type category",
+                    "address": " file/data ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
+                    "category": "file/data type category",
                     "format": "image",
                     "suffix": "jpg",
                     "owner": "account name",
@@ -1052,23 +1052,23 @@ export const getApprovedDatasAsUser = async (account: Account, pageIndex = 1, pa
 }
 
 /**
- * Gets a list of files/datas with the "approved failed" status, which cannot be used by the user (Bob) using this account.
+ * Gets a list of files/data with the "approved failed" status, which cannot be used by the user (Bob) using this account.
  * @category File/Data User(Bob) Interface
  * @param {Account} account - The current account information.
  * @param {number} pageIndex - The index of the page to retrieve. Default is 1.
- * @param {number} pageSize - The number of files/datas to retrieve per page. Default is 10.
- * @returns {Promise<object>} - Returns an object containing the list of files/datas and pagination information.
+ * @param {number} pageSize - The number of files/data to retrieve per page. Default is 10.
+ * @returns {Promise<object>} - Returns an object containing the list of files/data and pagination information.
  */
 export const getUnapprovedDatasAsUser = async (account: Account, pageIndex = 1, pageSize = 10) => {
   return await getDatasByStatus(undefined, account.id, undefined, undefined, 3, pageIndex, pageSize)
 }
 
 /**
- * get files/datas info by status This account acts as the user (Bob) or publisher (Alice)
+ * get files/data info by status This account acts as the user (Bob) or publisher (Alice)
  * @category File/Data Publisher(Alice)/User(Bob) Interface
  * @param {string} dataId - (Optional)  file/data's id
  * @param {string} proposerId - (Optional) proposer's account id
- * @param {string} dataOwnerId - (Optional) account id of the file owner
+ * @param {string} dataOwnerId - (Optional) account id of the file/data owner
  * @param {string} applyId - (Optional) to apply for id
  * @param {number} status - (Optional) number default 1  1 - In progress, 2 - Approved, 3 - Rejected, 4 - Under review, 5 - Expired.
  * @param {number} pageIndex - (Optional) number default 1
@@ -1078,8 +1078,8 @@ export const getUnapprovedDatasAsUser = async (account: Account, pageIndex = 1, 
                   {
                     "file_id": "8feS-wp5lYhGOCtOLTKZH",
                     "file_name": "1.jpg",
-                    "address": " file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
-                    "category": "file type category",
+                    "address": " file/data ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
+                    "category": "file/data type category",
                     "format": "image",
                     "suffix": "jpg",
                     "owner": "account name",
@@ -1417,7 +1417,7 @@ const calcPolicysCost = async (
   return value
 }
 /**
- * estimate gas fees for sharing files/datas
+ * estimate gas fees for sharing files/data
  * @category File/Data Publisher(Alice) Interface
  * @param {Account} publisher - Account the account object of the file/data publisher (Alice)
  * @param {string} userAccountId - the account Id of the file/data publisher (Alice)
@@ -1500,7 +1500,7 @@ export const estimatePolicyGas = async (
 
 /**
  *
- * estimate the gas fee for batch (sharing files/datas) creating policies.
+ * estimate the gas fee for batch (sharing files/data) creating policies.
  * @category File/Data Publisher(Alice) Interface
  * @param {Account} publisher - Account the account object of the file/data publisher (Alice)
  * @param {string[]} userAccountIds - the account Id of the file/data publisher (Alice)
@@ -1881,7 +1881,7 @@ const getBlockchainPolicys = async (
     const strategy: Strategy | undefined = publisher.getAccountStrategyByStategyId(
       policyData['policy_label_id'] as string
     )
-    // console.log("ApprovalUseFiles strategy", strategy);
+    // console.log("ApprovalUseDatas strategy", strategy);
     // assert(strategy !== undefined);
     if (!strategy || isBlank(strategy)) {
       //` get account strategy failed, label_id ${policyData["policy_label_id"]},\n When you Restore Account, You must Import account Vault data!!!`
@@ -2131,7 +2131,7 @@ export const approvalApplicationForUseDatas = async (
   const encryptedTreasureMap: EncryptedTreasureMap = enPolicy.encryptedTreasureMap
   const encryptedTreasureMapBytes: Uint8Array = encryptedTreasureMap.toBytes()
 
-  //3. upload encrypt files to IPFS
+  //3. upload encrypt files/data to IPFS
   const encryptedTreasureMapIPFS: string = await StorageManager.setData([encryptedTreasureMapBytes], publisher)[0]
 
   //4. call center server to save policy info
@@ -2359,7 +2359,7 @@ export const approvalApplicationsForUseDatas = async (
 }
 
 /**
- * Rejects the application for the use of files/datas. This account acts as the publisher (Alice).
+ * Rejects the application for the use of files/data. This account acts as the publisher (Alice).
  * @category File/Data Publisher(Alice) Interface
  * @param {Account} publisher - The account of the publisher (Alice).
  * @param {string} applyId - The application apply ID to reject.
@@ -2384,7 +2384,7 @@ export const refusalApplicationForUseDatas = async (
 }
 
 /**
- * Rejects the applications for the use of files/datas. This account acts as the publisher (Alice). The batch version of the function refusalApplicationForUseDatas.
+ * Rejects the applications for the use of files/data. This account acts as the publisher (Alice). The batch version of the function refusalApplicationForUseDatas.
  * @category File/Data Publisher(Alice) Interface
  * @param {Account} publisher - The account of the publisher (Alice).
  * @param {string[]} applyIds - The application apply ID to reject.
@@ -2411,22 +2411,22 @@ export const refusalApplicationsForUseDatas = async (
 /**
  * Gets the file/data information associated with the published policy (so the policy has been published)
  * @param {string} policyId - policyId
- * @param {string} policyPublisherId - (Optional) The account id of the file/data publisher, acting as the role of file publisher
- * @param {string} policyUserId - (Optional) The account id of the file/data user, acting as the role of file applicant
+ * @param {string} policyPublisherId - (Optional) The account id of the file/data publisher, acting as the role of file/data publisher
+ * @param {string} policyUserId - (Optional) The account id of the file/data user, acting as the role of file/data applicant
  *                        Only one of the two parameters, "policyPublisherId" and "policyUserId", can be selected, or neither of them can be passed
  * @param {number} pageIndex - (Optional) number default 1
  * @param {number} pageSize - (Optional) number default 10
  * @returns {Promise<object>} - {
                 "list": [
                   {
-                    "file_id": "File ID",
-                    "file_name": "File name",
-                    "owner": "File owner",
-                    "owner_id": "File owner account ID",
-                    "owner_avatar": "File owner avatar",
-                    "address": "File address",
-                    "thumbnail": "File thumbnail",
-                    "created_at": "File upload timestamp",
+                    "file_id": "Data/File ID",
+                    "file_name": "Data/File name",
+                    "owner": "Data/File owner",
+                    "owner_id": "Data/File owner account ID",
+                    "owner_avatar": "Data/File owner avatar",
+                    "address": "Data/File address",
+                    "thumbnail": "Data/File thumbnail",
+                    "created_at": "Data/File upload timestamp",
                     "policy_id": "Policy ID",
                     "policy_hrac": "Policy HRAC",
                     "policy_start_at": "Policy start timestamp",
@@ -2471,9 +2471,9 @@ export const getDataInfosByPolicyId = async (
 
 /**
  * (Revoke)Undoes published policies, the account as publisher (Alice)
- * action: Cancel the policy and delete the association between the file and the policy and the application for using all files corresponding to the policy,the policy label records can not be delete
+ * action: Cancel the policy and delete the association between the file/data and the policy and the application for using all files corresponding to the policy,the policy label records can not be delete
  * notice: the policy must be pulished can be revoked, otherwise(the policy not published)
- * revoke the apply of use files by call the api revokePermissionApplicationOfDatas
+ * revoke the apply of use files/data by call the api revokePermissionApplicationOfDatas
  * @internal
  * @param publisher
  * @param userAccountId
@@ -2538,16 +2538,16 @@ export const getDataContentAsUser = async (
   const bob: Bob = await makeBob(userAccount, porterUri)
   // console.log("Bob userAccount: ", userAccount);
   // console.log("porterUri: ", porterUri);
-  //getFileContent from IPFS
-  const fileIpfsData: Uint8Array | null | undefined /*| Buffer*/ = await StorageManager.getData(dataIPFSAddress)
+  //getDataContent from IPFS
+  const dataIpfsData: Uint8Array | null | undefined /*| Buffer*/ = await StorageManager.getData(dataIPFSAddress)
 
-  // console.log("fileIpfsData: ", fileIpfsData);
+  // console.log("dataIpfsData: ", dataIpfsData);
 
-  if (isBlank(fileIpfsData)) {
-    throw new GetStorageDataError(`get encrypted data error! key: ${fileIpfsData}`)
+  if (isBlank(dataIpfsData)) {
+    throw new GetStorageDataError(`get encrypted data error! key: ${dataIpfsData}`)
   }
 
-  const encryptedMessage: MessageKit = MessageKit.fromBytes(fileIpfsData as Uint8Array)
+  const encryptedMessage: MessageKit = MessageKit.fromBytes(dataIpfsData as Uint8Array)
   const encryptedTreasureMapIpfsData: Uint8Array | null | undefined /*| Buffer*/ = await StorageManager.getData(
     encryptedTreasureMapIPFSAddress
   )
@@ -2594,14 +2594,14 @@ export const getDataContentAsUser = async (
  * @returns {Promise<ArrayBuffer>}
  */
 export const getDataContentByDataIdAsUser = async (userAccount: Account, dataId: string): Promise<ArrayBuffer> => {
-  //get file info
+  //get file/data info
   const data = (await getDataDetails(dataId, userAccount.id)) as object
 
   assert(data && !isBlank(data))
 
   const policyEncryptingKey = data['policy_encrypted_pk']
   const aliceVerifyingKey = data['alice_verify_pk']
-  const fileIPFSAddress = data['file_ipfs_address']
+  const dataIPFSAddress = data['file_ipfs_address']
   const encryptedTreasureMapIPFSAddress = data['encrypted_treasure_map_ipfs_address']
 
   // hexlify: Convert a byte array to a hexadecimal encoded string -> arrayify: Convert a hexadecimal encoded string back to a byte array
@@ -2611,32 +2611,32 @@ export const getDataContentByDataIdAsUser = async (userAccount: Account, dataId:
     userAccount,
     policyEncryptingKey,
     aliceVerifyingKey,
-    fileIPFSAddress,
+    dataIPFSAddress,
     encryptedTreasureMapIPFSAddress,
     crossChainHrac
   )
 }
 
 /**
- * The file publisher obtains the content of the file
+ * The file/data publisher obtains the content of the file/data
  * @category File/Data Publisher(Alice) Interface
  * @param {Account} userAccount - Account the current account object
- * @param {string} fileId - file's id
+ * @param {string} dataId - data/file's id
  * @returns {Promise<ArrayBuffer>}
  */
-export const getFileContentByFileIdAsPublisher = async (userAccount: Account, fileId: string): Promise<ArrayBuffer> => {
-  //get file info
-  const data = (await getDataDetails(fileId, userAccount.id)) as object
+export const getDataContentByDataIdAsPublisher = async (userAccount: Account, dataId: string): Promise<ArrayBuffer> => {
+  //get data info
+  const data = (await getDataDetails(dataId, userAccount.id)) as object
 
   assert(data && !isBlank(data))
 
   const policyEncryptingKey = data['policy_encrypted_pk'] || ''
   const aliceVerifyingKey = data['alice_verify_pk'] || '' //account.encryptedKeyPair._publicKey
-  const fileIPFSAddress = data['file_ipfs_address']
+  const dataIPFSAddress = data['file_ipfs_address']
 
-  //Firstcheck whether the file belongs to the user
+  //Firstcheck whether the file/data belongs to the user
   if (userAccount.encryptedKeyPair._publicKey.toLowerCase() !== aliceVerifyingKey.toLowerCase()) {
-    throw new Error('Illegal request: you must be the file uploader to decrypt') // data recovery failed
+    throw new Error('Illegal request: you must be the file/data uploader to decrypt') // data recovery failed
   }
 
   let strategyPrivatekey: string | null = null
@@ -2654,15 +2654,15 @@ export const getFileContentByFileIdAsPublisher = async (userAccount: Account, fi
     throw new Error('Failed to obtain strategy information') // data recovery failed
   }
 
-  //getFileContent from IPFS
-  const fileIpfsData: Uint8Array | null | undefined /*| Buffer*/ = await StorageManager.getData(fileIPFSAddress)
+  //getDataContent from IPFS
+  const dataIpfsData: Uint8Array | null | undefined /*| Buffer*/ = await StorageManager.getData(dataIPFSAddress)
 
-  if (isBlank(fileIpfsData)) {
-    throw new GetStorageDataError(`publisher get encrypted data error! key: ${fileIpfsData}`)
+  if (isBlank(dataIpfsData)) {
+    throw new GetStorageDataError(`publisher get encrypted data error! key: ${dataIpfsData}`)
   }
 
-  // console.log("fileIpfsData: ", fileIpfsData);
-  const encryptedMessage: MessageKit = MessageKit.fromBytes(fileIpfsData as Uint8Array)
+  // console.log("dataIpfsData: ", dataIpfsData);
+  const encryptedMessage: MessageKit = MessageKit.fromBytes(dataIpfsData as Uint8Array)
 
   const privateKeyString = pwdDecrypt(strategyPrivatekey as string, true)
   // console.log("makeBob BobEncrypedPrivateKey: ",privateKeyString);
@@ -2761,7 +2761,7 @@ export const getMultiApplyDetails = async (applyIds: string[]): Promise<object[]
 /**
   * Retrieves the details of a file/data (include apply file/data info, file/data info, about policy info) by its ID and user account ID.
   * @param {string} dataId - The ID of the file/data to retrieve details for.
-  * @param {string} fileUserAccountId - This parameter passes the file/data finder when the file/data consumer is not known, fileUserAccountId should be passed the current account I
+  * @param {string} dataUserAccountId - This parameter passes the file/data finder when the file/data consumer is not known, dataUserAccountId should be passed the current account I
   * @returns {Promise<object>} - The returned object contains the following properties:
                     {
                     file_id: string,
@@ -2788,13 +2788,13 @@ export const getMultiApplyDetails = async (applyIds: string[]): Promise<object[]
                     alice_verify_pk: string
                     }
 */
-export const getDataDetails = async (dataId: string, fileUserAccountId: string) => {
+export const getDataDetails = async (dataId: string, dataUserAccountId: string) => {
   //https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E6%96%87%E4%BB%B6%E8%AF%A6%E6%83%85
   //status: 0 => not applied (Initial state), 1=> Application in progress, 2 =>approved, 3=> rejected
 
   const sendData = {
     file_id: dataId,
-    consumer_id: fileUserAccountId
+    consumer_id: dataUserAccountId
   }
 
   const settingsData = await getSettingsData()

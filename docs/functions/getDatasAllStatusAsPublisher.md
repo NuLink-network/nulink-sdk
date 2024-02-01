@@ -1,10 +1,10 @@
-[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / getDatasAllStatusAsPublisher
+[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / getDatasAllStatusAsPublisher
 
 # Function: getDatasAllStatusAsPublisher
 
 ▸ **getDatasAllStatusAsPublisher**(`account`, `pageIndex?`, `pageSize?`): `Promise`<`object`\>
 
-The file/data publisher retrieves a list of files/datas in all states.
+The file/data publisher retrieves a list of files/data in all states.
 
 #### Parameters
 
@@ -23,8 +23,8 @@ The file/data publisher retrieves a list of files/datas in all states.
                  {
                    "file_id": "8feS-wp5lYhGOCtOLTKZH",
                    "file_name": "1.jpg",
-                   "address": " file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
-                   "category": "file type category",
+                   "address": " file/data ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
+                   "category": "file/data type category",
                    "format": "image",
                    "suffix": "jpg",
                    "owner": "account name",
@@ -40,4 +40,4 @@ The file/data publisher retrieves a list of files/datas in all states.
 
 #### Defined in
 
-[core/pre/api/workflow.ts:795](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/core/pre/api/workflow.ts#L795)
+[core/pre/api/workflow.ts:795](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L795)

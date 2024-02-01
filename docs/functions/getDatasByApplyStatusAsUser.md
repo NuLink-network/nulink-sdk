@@ -1,10 +1,10 @@
-[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / getDatasByApplyStatusAsUser
+[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / getDatasByApplyStatusAsUser
 
 # Function: getDatasByApplyStatusAsUser
 
 ▸ **getDatasByApplyStatusAsUser**(`account`, `status?`, `pageIndex?`, `pageSize?`): `Promise`<`object`\>
 
-The file/data applicant retrieves a list of files/datas in a specified state that need to be approved by others.
+The file/data applicant retrieves a list of files/data in a specified state that need to be approved by others.
 
 #### Parameters
 
@@ -24,8 +24,8 @@ The file/data applicant retrieves a list of files/datas in a specified state tha
                  {
                    "file_id": "8feS-wp5lYhGOCtOLTKZH",
                    "file_name": "1.jpg",
-                   "address": " file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
-                   "category": "file type category",
+                   "address": " file/data ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
+                   "category": "file/data type category",
                    "format": "image",
                    "suffix": "jpg",
                    "owner": "account name",
@@ -41,4 +41,4 @@ The file/data applicant retrieves a list of files/datas in a specified state tha
 
 #### Defined in
 
-[core/pre/api/workflow.ts:989](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/core/pre/api/workflow.ts#L989)
+[core/pre/api/workflow.ts:989](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L989)

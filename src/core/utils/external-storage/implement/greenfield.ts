@@ -9,7 +9,7 @@ import SingletonService from 'singleton-service'
 import { Client, IObjectResultType } from '@bnb-chain/greenfield-chain-sdk'
 import * as exception from '../../exception'
 import { Account } from '../../../hdwallet/api/account'
-import { MultiFileUploadError } from "../../exception";
+import { MultiDataUploadError } from "../../exception";
 import { decrypt as pwdDecrypt } from "../../password.encryption";
 import {
   signUpdateServerDataMessage,
@@ -64,10 +64,10 @@ export const getData = async (objectName: string): Promise<Buffer> => {
 }
 
 /**
- * Set data to storage. The entry points for uploading files to various storage services
+ * Set data to storage. The entry points for uploading data/files to various storage services
  * @param {Account} account - Account the current account object.
  * @param {string[] | InstanceType<typeof String>[] | ArrayBufferView[] | ArrayBuffer[] | Blob[] | AwaitIterable<Uint8Array>[] | ReadableStream<Uint8Array>[]} datas - upload data stream
- * @returns {Promise<string[]>} - the list of the file key.
+ * @returns {Promise<string[]>} - the list of the data/file key.
  */
 export const setDatas = async (
   datas:
@@ -143,7 +143,7 @@ const _setDatas = async (
         const fileData: string = dataList[index]
         if (!isNotBlankAndEmptyObject(fileData)) {
           //retList.push("");
-          throw new MultiFileUploadError(`The pre storage: file upload failed! file index ${index}`)
+          throw new MultiDataUploadError(`The pre storage: data/file upload failed! data/file index ${index}`)
         } else {
           retList.push(fileData['hash'])
         }

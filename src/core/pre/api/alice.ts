@@ -1,4 +1,4 @@
-//  Alice: as the publisher of the file (file uploader). 
+//  Alice: as the publisher of the data/file (data/file uploader). 
 
 import { privateKeyBuffer } from "../../hdwallet/api/common";
 import {

@@ -1,8 +1,8 @@
-[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / checkFileApprovalStatusIsUnderReviewOrApproved
+[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / checkDataApprovalStatusIsUnderReviewOrApproved
 
-# Function: checkFileApprovalStatusIsUnderReviewOrApproved
+# Function: checkDataApprovalStatusIsUnderReviewOrApproved
 
-▸ **checkFileApprovalStatusIsUnderReviewOrApproved**(`data`): `Promise`<``null`` \| `boolean`\>
+▸ **checkDataApprovalStatusIsUnderReviewOrApproved**(`data`): `Promise`<``null`` \| `boolean`\>
 
 Check if the application status is "under review" or "approved"
 
@@ -11,7 +11,7 @@ Check if the application status is "under review" or "approved"
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `data` | `Object` | Object be must be have the property of "applyId", return null otherwise |
-| `data.applyId` | `string` | The ID of the file application. |
+| `data.applyId` | `string` | The ID of the data/file application. |
 
 #### Returns
 
@@ -22,4 +22,4 @@ param data Object be must be have the property of "applyId",  return null otherw
 
 #### Defined in
 
-[api/pre.ts:387](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/api/pre.ts#L387)
+[api/pre.ts:387](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/api/pre.ts#L387)

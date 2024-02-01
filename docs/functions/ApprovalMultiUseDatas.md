@@ -1,10 +1,10 @@
-[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / ApprovalMultiUseFiles
+[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / ApprovalMultiUseDatas
 
-# Function: ApprovalMultiUseFiles
+# Function: ApprovalMultiUseDatas
 
-▸ **ApprovalMultiUseFiles**(`data`): `Promise`<`any`\>
+▸ **ApprovalMultiUseDatas**(`data`): `Promise`<`any`\>
 
-Approve the user's multi file usage request. The batch version of the ApprovalUseFiles function.
+Approve the user's multi data/file usage request. The batch version of the ApprovalUseDatas function.
 Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
 
 **`Throws`**
@@ -39,4 +39,4 @@ UnauthorizedError get logined account failed, must be login account first
 
 #### Defined in
 
-[api/pre.ts:490](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/api/pre.ts#L490)
+[api/pre.ts:490](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/api/pre.ts#L490)

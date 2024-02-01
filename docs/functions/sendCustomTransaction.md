@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / sendCustomTransaction
+[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / sendCustomTransaction
 
 # Function: sendCustomTransaction
 
@@ -33,4 +33,4 @@ set Transaction failed exception
 
 #### Defined in
 
-[api/pre.ts:1179](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/api/pre.ts#L1179)
+[api/pre.ts:1179](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/api/pre.ts#L1179)

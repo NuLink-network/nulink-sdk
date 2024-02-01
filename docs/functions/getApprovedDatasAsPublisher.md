@@ -1,10 +1,10 @@
-[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / getApprovedDatasAsPublisher
+[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / getApprovedDatasAsPublisher
 
 # Function: getApprovedDatasAsPublisher
 
 ▸ **getApprovedDatasAsPublisher**(`account`, `pageIndex?`, `pageSize?`): `Promise`<`object`\>
 
-get the Approved success status files/datas for others to use. This account acts as the publisher (Alice)
+get the Approved success status files/data for others to use. This account acts as the publisher (Alice)
 
 #### Parameters
 
@@ -23,8 +23,8 @@ get the Approved success status files/datas for others to use. This account acts
                  {
                    "file_id": "8feS-wp5lYhGOCtOLTKZH",
                    "file_name": "1.jpg",
-                   "address": " file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
-                   "category": "file type category",
+                   "address": " file/data ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
+                   "category": "file/data type category",
                    "format": "image",
                    "suffix": "jpg",
                    "owner": "account name",
@@ -40,4 +40,4 @@ get the Approved success status files/datas for others to use. This account acts
 
 #### Defined in
 
-[core/pre/api/workflow.ts:896](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/core/pre/api/workflow.ts#L896)
+[core/pre/api/workflow.ts:896](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L896)

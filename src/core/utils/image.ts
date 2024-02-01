@@ -18,12 +18,12 @@ const checkImgType = (fileName: string) => {
 
 export const getBlurThumbnail = async (
   imageArrayBuffer: ArrayBuffer | Buffer | string,
-  fileName: string,
+  dataLabel: string,
 ): Promise<ThumbailResult | null> => {
-  //TODO:  Currently, only thumbnail images and Gaussian blur are supported.  Add other kinds of file to thumbnail later
+  //TODO:  Currently, only thumbnail images and Gaussian blur are supported.  Add other kinds of file/data to thumbnail later
 
-  if (!checkImgType(fileName)) {
-    console.log("unsupported convert to the thumbnail file name: ", fileName);
+  if (!checkImgType(dataLabel)) {
+    console.log("unsupported convert to the thumbnail file/data name: ", dataLabel);
     return null;
   }
   //image: ArrayBuffer or image file path

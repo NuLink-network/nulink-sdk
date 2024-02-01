@@ -1,6 +1,6 @@
-[NuLink SDK - v0.5.6](README.md) / Modules
+[NuLink SDK - v0.5.7](README.md) / Modules
 
-# NuLink SDK - v0.5.6
+# NuLink SDK - v0.5.7
 
 ## Table of contents
 
@@ -31,23 +31,23 @@
 - [getUserDetails](functions/getUserDetails.md)
 - [getUserByAccountId](functions/getUserByAccountId.md)
 - [updateUserInfo](functions/updateUserInfo.md)
-- [checkFileApprovalStatusIsUnderReviewOrApproved](functions/checkFileApprovalStatusIsUnderReviewOrApproved.md)
-- [ApprovalUseFiles](functions/ApprovalUseFiles.md)
-- [ApprovalMultiUseFiles](functions/ApprovalMultiUseFiles.md)
-- [getFilesForApprovedAsPublisher](functions/getFilesForApprovedAsPublisher.md)
-- [getFilesForApprovedAsUser](functions/getFilesForApprovedAsUser.md)
-- [getFilesForAllStatusAsPublisher](functions/getFilesForAllStatusAsPublisher.md)
-- [getFilesApprovedForApplicantAsUser](functions/getFilesApprovedForApplicantAsUser.md)
-- [getFilesByStatusForAllApplyAsPublisher](functions/getFilesByStatusForAllApplyAsPublisher.md)
+- [checkDataApprovalStatusIsUnderReviewOrApproved](functions/checkDataApprovalStatusIsUnderReviewOrApproved.md)
+- [ApprovalUseDatas](functions/ApprovalUseDatas.md)
+- [ApprovalMultiUseDatas](functions/ApprovalMultiUseDatas.md)
+- [getDatasForApprovedAsPublisher](functions/getDatasForApprovedAsPublisher.md)
+- [getDatasForApprovedAsUser](functions/getDatasForApprovedAsUser.md)
+- [getDatasForAllStatusAsPublisher](functions/getDatasForAllStatusAsPublisher.md)
+- [getDatasApprovedForApplicantAsUser](functions/getDatasApprovedForApplicantAsUser.md)
+- [getDatasByStatusForAllApplyAsPublisher](functions/getDatasByStatusForAllApplyAsPublisher.md)
 - [getFilesByStatusForAllApplyAsUser](functions/getFilesByStatusForAllApplyAsUser.md)
 - [getApprovedFileContentUrl](functions/getApprovedFileContentUrl.md)
-- [getApprovedFileContent](functions/getApprovedFileContent.md)
-- [getFileContentAsPublisher](functions/getFileContentAsPublisher.md)
-- [getFilesInfoByStatus](functions/getFilesInfoByStatus.md)
+- [getApprovedDataContent](functions/getApprovedDataContent.md)
+- [getDataContentAsPublisher](functions/getDataContentAsPublisher.md)
+- [getDatasInfoByStatus](functions/getDatasInfoByStatus.md)
 - [getPublishedPolicyInfos](functions/getPublishedPolicyInfos.md)
 - [getPolicyInfosAsUser](functions/getPolicyInfosAsUser.md)
-- [getFilesInfoOfPolicy](functions/getFilesInfoOfPolicy.md)
-- [getAllFilesInfoOfPolicy](functions/getAllFilesInfoOfPolicy.md)
+- [getDatasInfoOfPolicy](functions/getDatasInfoOfPolicy.md)
+- [getAllDatasInfoOfPolicy](functions/getAllDatasInfoOfPolicy.md)
 - [sendCustomTransaction](functions/sendCustomTransaction.md)
 - [estimateCustomTransactionGas](functions/estimateCustomTransactionGas.md)
 - [restoreWalletDataByRootExtendedPrivateKey](functions/restoreWalletDataByRootExtendedPrivateKey.md)
@@ -104,7 +104,7 @@
 - [getDataInfosByPolicyId](functions/getDataInfosByPolicyId.md)
 - [getDataContentAsUser](functions/getDataContentAsUser.md)
 - [getDataContentByDataIdAsUser](functions/getDataContentByDataIdAsUser.md)
-- [getFileContentByFileIdAsPublisher](functions/getFileContentByFileIdAsPublisher.md)
+- [getDataContentByDataIdAsPublisher](functions/getDataContentByDataIdAsPublisher.md)
 - [getApplyDetails](functions/getApplyDetails.md)
 - [getMultiApplyDetails](functions/getMultiApplyDetails.md)
 - [getDataDetails](functions/getDataDetails.md)

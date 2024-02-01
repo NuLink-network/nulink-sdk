@@ -1,8 +1,8 @@
-[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / getDataDetails
+[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / getDataDetails
 
 # Function: getDataDetails
 
-▸ **getDataDetails**(`dataId`, `fileUserAccountId`): `Promise`<`unknown`\>
+▸ **getDataDetails**(`dataId`, `dataUserAccountId`): `Promise`<`unknown`\>
 
 Retrieves the details of a file/data (include apply file/data info, file/data info, about policy info) by its ID and user account ID.
 
@@ -11,7 +11,7 @@ Retrieves the details of a file/data (include apply file/data info, file/data in
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `dataId` | `string` | The ID of the file/data to retrieve details for. |
-| `fileUserAccountId` | `string` | This parameter passes the file/data finder when the file/data consumer is not known, fileUserAccountId should be passed the current account I |
+| `dataUserAccountId` | `string` | This parameter passes the file/data finder when the file/data consumer is not known, dataUserAccountId should be passed the current account I |
 
 #### Returns
 
@@ -45,4 +45,4 @@ Retrieves the details of a file/data (include apply file/data info, file/data in
 
 #### Defined in
 
-[core/pre/api/workflow.ts:2791](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/core/pre/api/workflow.ts#L2791)
+[core/pre/api/workflow.ts:2791](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L2791)

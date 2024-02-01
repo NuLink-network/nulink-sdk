@@ -1,10 +1,10 @@
-[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / getApprovedFileContentUrl
+[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / getDataContentAsPublisher
 
-# Function: getApprovedFileContentUrl
+# Function: getDataContentAsPublisher
 
-▸ **getApprovedFileContentUrl**(`data`): `Promise`<{ `url`: `string` = url; `dataLabel`: `string`  }\>
+▸ **getDataContentAsPublisher**(`data`): `Promise`<{ `url`: `string` = url; `dataLabel`: `string`  }\>
 
-The data/file applicant retrieves the content of a data/file that has been approved for their usage.
+The data/file publisher obtains the content of the data/file
 
 **`Throws`**
 
@@ -30,4 +30,4 @@ ParameterError The input parameter must have the "dataId" field
 
 #### Defined in
 
-[api/pre.ts:832](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/api/pre.ts#L832)
+[api/pre.ts:893](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/api/pre.ts#L893)

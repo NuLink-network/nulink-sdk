@@ -1,10 +1,10 @@
-[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / getOtherShareDatas
+[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / getOtherShareDatas
 
 # Function: getOtherShareDatas
 
 ▸ **getOtherShareDatas**(`account`, `dataLabel?`, `include?`, `category?`, `dataType?`, `descOrder?`, `pageIndex?`, `pageSize?`): `Promise`<`unknown`\>
 
-Gets a list of files/datas shared by others (files uploaded by the current account are not included). This account acts as the user(Bob).
+Gets a list of files/data shared by others (files uploaded by the current account are not included). This account acts as the user(Bob).
 
 #### Parameters
 
@@ -17,13 +17,13 @@ Gets a list of files/datas shared by others (files uploaded by the current accou
 | `dataType?` | [`DataType`](../enums/DataType.md) | `undefined` | (Optional) The type of the file/data to search for. |
 | `descOrder` | `boolean` | `true` | (Optional) Whether to sort by upload time in reverse order. |
 | `pageIndex` | `number` | `1` | (Optional) The index of the page to retrieve. Default is 1. |
-| `pageSize` | `number` | `10` | (Optional) The number of files/datas to retrieve per page. Default is 10. |
+| `pageSize` | `number` | `10` | (Optional) The number of files/data to retrieve per page. Default is 10. |
 
 #### Returns
 
 `Promise`<`unknown`\>
 
-- Returns an object containing the list of files/datas and pagination information.
+- Returns an object containing the list of files/data and pagination information.
                         {
                             total: number
                             list: [{
@@ -43,4 +43,4 @@ Gets a list of files/datas shared by others (files uploaded by the current accou
 
 #### Defined in
 
-[core/pre/api/workflow.ts:652](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/core/pre/api/workflow.ts#L652)
+[core/pre/api/workflow.ts:652](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L652)

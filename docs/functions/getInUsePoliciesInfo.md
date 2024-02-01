@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / getInUsePoliciesInfo
+[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / getInUsePoliciesInfo
 
 # Function: getInUsePoliciesInfo
 
@@ -44,4 +44,4 @@ get information about the current of all using policies by publiser others, the 
 
 #### Defined in
 
-[core/pre/api/workflow.ts:1182](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/core/pre/api/workflow.ts#L1182)
+[core/pre/api/workflow.ts:1182](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L1182)

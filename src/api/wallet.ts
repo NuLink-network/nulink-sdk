@@ -13,13 +13,13 @@ import * as exception from '../core/utils/exception'
  * @internal
  * @throws {@link UserDataCorruptedError, UserDataVersionLowError}
  */
-export const checkUserDataVersionMatch = async (dataFileBinaryString: string): Promise<boolean> => {
-  if (!dataFileBinaryString) {
+export const checkUserDataVersionMatch = async (dataBinaryString: string): Promise<boolean> => {
+  if (!dataBinaryString) {
     return false
   }
 
   try {
-    const dataInfo = await NuLinkHDWallet.parseUserDataVersionInfo(dataFileBinaryString)
+    const dataInfo = await NuLinkHDWallet.parseUserDataVersionInfo(dataBinaryString)
     if (isBlank(dataInfo)) {
       //please make sure the dataFileBinaryString is not empty
       return false
@@ -109,11 +109,11 @@ export const restoreWalletDataByMnemonic = async (newPassword: string, mnemonic:
  * Restores an account by data info (including the mnemonic (or root extended private key) and user data (strategy infos)).
  * @throws {@link UserDataCorruptedError, UserDataVersionLowError}
  * @param {string} newPassword - The password for the new wallet.
- * @param {string} dataFileBinaryString - The binary string data file used to restore the wallet. The dataFileBinaryString is returned by the exportWalletData function.
+ * @param {string} dataBinaryString - The binary string data/file used to restore the wallet. The dataBinaryString is returned by the exportWalletData function.
  * @returns {Promise<NuLinkHDWallet>} - Returns a new NuLinkHDWallet object with the restored account.
  */
-export const restoreWalletData = async (newPassword: string, dataFileBinaryString: string): Promise<NuLinkHDWallet> => {
-  const jsonData = dataFileBinaryString
+export const restoreWalletData = async (newPassword: string, dataBinaryString: string): Promise<NuLinkHDWallet> => {
+  const jsonData = dataBinaryString
   if (jsonData) {
     // const originPassword = state as string;
 

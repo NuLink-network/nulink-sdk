@@ -1,10 +1,10 @@
-[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / estimatePolicysGas
+[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / estimatePolicysGas
 
 # Function: estimatePolicysGas
 
 ▸ **estimatePolicysGas**(`publisher`, `userAccountIds`, `applyIds`, `ursulaShares`, `ursulaThresholds`, `startDates`, `endDates`, `serverFee`, `gasPrice?`, `porterUri?`): `Promise`<`BigNumber`\>
 
-estimate the gas fee for batch (sharing files/datas) creating policies.
+estimate the gas fee for batch (sharing files/data) creating policies.
 
 #### Parameters
 
@@ -29,4 +29,4 @@ estimate the gas fee for batch (sharing files/datas) creating policies.
 
 #### Defined in
 
-[core/pre/api/workflow.ts:1517](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/core/pre/api/workflow.ts#L1517)
+[core/pre/api/workflow.ts:1517](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L1517)

@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / getUserByAccountId
+[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / getUserByAccountId
 
 # Function: getUserByAccountId
 
@@ -37,4 +37,4 @@ Retrieve user information details by user account Id
 
 #### Defined in
 
-[api/pre.ts:346](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/api/pre.ts#L346)
+[api/pre.ts:346](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/api/pre.ts#L346)

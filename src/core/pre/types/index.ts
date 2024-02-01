@@ -1,11 +1,11 @@
 //format
 export enum DataType {
-  Text, //Includes text files, ebook files, compressed files
-  Data, //Including data files
+  Text, //Includes text files/data, ebook files/data, compressed files/data
+  Data, //Including data files/data
   Video,
   Audio,
-  Image, //Includes 3D image files, bitmap files, vector files
-  Executable, //executable file
+  Image, //Includes 3D image files/data, bitmap files/data, vector files/data
+  Executable, //executable file/data
   Other,
 }
 
@@ -49,7 +49,7 @@ export enum DataCategory {
 /**
  * @internal
  */
-export const  FileType2Suffix = {
+export const  DataType2Suffix = {
   Text : ["ADOC", "ANS", "APKG", "ASC", "ASS", "BBL", "BIB", "BIBTEX", "CSK", "CSV", "DES", "DOC", "DOCM", "DOCX", "FDF", "FDX", "FDXT", "HWP", "INFO", "LOG", "LST", "LTX", "MARKDN", "MARKDOWN", "MBOX", "MD", "MDOWN", "MSG", "NFO", "ODM", "ODT", "OTT", "PAGES", "PSB", "RTF", "SMI", "SRT", "SSA", "STRINGS", "SXW", "TEX", "TXT", "VMG", "VNT", "WP5", "WPD", "WPS", "WPS", "WRI", "XFDF","ACSM", "APNX", "AZW", "AZW1", "AZW3", "CB7", "CBA", "CBR", "CBT", "CBZ", "CEB", "CEBX", "CHM", "EPUB", "FB2", "IBOOKS", "LIT", "MOBI", "PDG", "SNB", "TEB", "TPZ", "UMD","PDF","1", "7Z", "ACE", "ALZ", "ARC", "ARJ", "B1", "BR", "BZ", "BZ2", "BZIP", "BZIP2", "CAB", "CB7", "CBR", "CBT", "CBZ", "CPGZ", "CPIO", "DD", "DEB", "EDXZ", "EGG", "EMZ", "ENLX", "GZ", "GZIP", "HQX", "ISZ", "JAR", "KZ", "LHA", "LZ", "LZ4", "LZH", "LZMA", "LZO", "MPQ", "PAK", "PEA", "PET", "PKG", "PUP", "R00", "R01", "R02", "R03", "R04", "R05", "RAR", "RPM", "SHAR", "SHR", "SIT", "SITX", "TAR", "TAR", "BZ2", "TAR", "GZ", "TAR", "LZ", "TAR", "LZMA", "TAR", "XZ", "TAR", "Z", "TAZ", "TB2", "TBZ", "TBZ2", "TGZ", "TLZ", "TLZMA", "TPZ", "TXZ", "TZ", "UUE", "WHL", "XAR", "XIP", "XZ", "Z", "ZIP", "ZIPX"],
   Data: ["AAE", "ACA", "ADT", "AIFB", "APPROJ", "BDIC", "BIN", "BLG", "CERT", "CRTX", "CSV", "DAT", "DATA", "DCR", "DDB", "DEF", "DIF", "DPS", "DSL", "DTP", "EFX", "EM", "ENL", "ENLX", "ENW", "FCPEVENT", "FLIPCHART", "FLO", "FLO", "FLP", "FRM", "GAN", "GCW", "GED", "GEDCOM", "GMS", "GRD", "H4", "H5", "HDF", "HDF4", "HDF5", "HE4", "HE5", "HSC", "IDX", "JMS", "JPR", "JSON", "KEY", "LD2", "LIB", "LSD", "M", "MARC", "MBX", "MDX", "MM", "MMF", "MPP", "MTB", "NOTEBOOK", "OBB", "ODF", "ODP", "OFX", "OTP", "OVA", "OVF", "PDB", "PES", "PPS", "PPSM", "PPSX"],
   Video: ["264", "3G2", "3GP", "3GP2", "3GPP", "3GPP2", "AAF", "AEP", "AEPX", "AET", "AETX", "AMV", "ARF", "ASF", "ASX", "AVI", "BIK", "CAMPROJ", "CAMREC", "CED", "CMPROJ", "CMREC", "CSF", "DAT", "DIVX", "DV", "DZM", "F4P", "F4V", "FLA", "FLC", "FLH", "FLI", "FLIC", "FLP", "FLV", "FLX", "H264", "IFF", "IFO", "ISMC", "ISMV", "M1V", "M2P", "M2T", "M2TS", "M2V", "M4V", "MK3D", "MKS", "MKV", "MOV", "MP2V", "MP4", "MP4V", "MPE", "MPEG", "MPEG1", "MPEG2", "MPEG4", "MPG", "MPV", "MPV2", "MSWMM", "MT2S", "MTS", "NUT", "OGM", "OGX", "OVG", "PDS", "QLV", "QMV", "QSV", "QT", "R3D", "RAM", "RM", "RMD", "RMHD", "RMM", "RMVB", "RP", "RV", "SRT", "STL", "SWF", "TREC", "TS", "USF", "VOB", "VRO", "VTT", "WEBM", "WMMP"],

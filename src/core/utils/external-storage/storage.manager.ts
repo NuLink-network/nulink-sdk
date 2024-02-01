@@ -40,10 +40,10 @@ export class StorageManager {
   }
 
   /**
-   * Set datas to storage (invoke the callback function of `setDatas`). The entry points for uploading files to various storage services.
+   * Set datas to storage (invoke the callback function of `setDatas`). The entry points for uploading data/files to various storage services.
    * @param {string[] | InstanceType<typeof String>[] | ArrayBufferView[] | ArrayBuffer[] | Blob[] | AwaitIterable<Uint8Array>[] | ReadableStream<Uint8Array>[]} datas - upload data stream
    * @param {Account} account - (Optional) This parameter can be used if you need to use current account information (for example, to sign with an account)
-   * @returns {Promise<string[]>} - the list of the file key/hash/cid.
+   * @returns {Promise<string[]>} - the list of the data/file key/hash/cid.
    */
   static async setData(datas: DataType, account: Account): Promise<string[]> {
     if (StorageManager.dataCallback && StorageManager.dataCallback.setDatas) {

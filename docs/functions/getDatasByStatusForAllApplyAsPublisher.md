@@ -1,10 +1,10 @@
-[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / getFilesByStatusForAllApplyAsPublisher
+[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / getDatasByStatusForAllApplyAsPublisher
 
-# Function: getFilesByStatusForAllApplyAsPublisher
+# Function: getDatasByStatusForAllApplyAsPublisher
 
-▸ **getFilesByStatusForAllApplyAsPublisher**(`data`): `Promise`<`object`\>
+▸ **getDatasByStatusForAllApplyAsPublisher**(`data`): `Promise`<`object`\>
 
-Retrieve a list of files in a specified state that need to be approved for use by others, for the file publisher.
+Retrieve a list of data/files in a specified state that need to be approved for use by others, for the data/file publisher.
 
 **`Throws`**
 
@@ -28,8 +28,8 @@ UnauthorizedError get logined account failed, must be login account first
                  {
                    "file_id": "8feS-wp5lYhGOCtOLTKZH",
                    "file_name": "1.jpg",
-                   "address": " file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
-                   "category": "file type category",
+                   "address": " data/file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
+                   "category": "data/file type category",
                    "format": "image",
                    "suffix": "jpg",
                    "owner": "account name",
@@ -45,4 +45,4 @@ UnauthorizedError get logined account failed, must be login account first
 
 #### Defined in
 
-[api/pre.ts:750](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/api/pre.ts#L750)
+[api/pre.ts:750](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/api/pre.ts#L750)

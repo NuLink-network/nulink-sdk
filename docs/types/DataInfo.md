@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / DataInfo
+[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / DataInfo
 
 # Type alias: DataInfo
 
@@ -14,4 +14,4 @@
 
 #### Defined in
 
-[core/pre/types/index.ts:62](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/core/pre/types/index.ts#L62)
+[core/pre/types/index.ts:62](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/types/index.ts#L62)

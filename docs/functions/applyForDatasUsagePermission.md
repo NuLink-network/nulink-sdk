@@ -1,10 +1,10 @@
-[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / applyForDatasUsagePermission
+[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / applyForDatasUsagePermission
 
 # Function: applyForDatasUsagePermission
 
 ▸ **applyForDatasUsagePermission**(`dataIds`, `account`, `usageDays?`): `Promise`<`unknown`\>
 
-Applies for file/data usage permission for the specified files/datas, This account acts as the user(Bob).
+Applies for file/data usage permission for the specified files/data, This account acts as the user(Bob).
 
 #### Parameters
 
@@ -20,4 +20,4 @@ Applies for file/data usage permission for the specified files/datas, This accou
 
 #### Defined in
 
-[core/pre/api/workflow.ts:709](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/core/pre/api/workflow.ts#L709)
+[core/pre/api/workflow.ts:709](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L709)

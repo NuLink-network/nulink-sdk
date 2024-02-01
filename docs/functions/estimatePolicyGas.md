@@ -1,10 +1,10 @@
-[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / estimatePolicyGas
+[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / estimatePolicyGas
 
 # Function: estimatePolicyGas
 
 ▸ **estimatePolicyGas**(`publisher`, `userAccountId`, `applyId`, `ursulaShares`, `ursulaThreshold`, `startDate`, `endDate`, `serverFee`, `gasPrice?`, `porterUri?`): `Promise`<`BigNumber`\>
 
-estimate gas fees for sharing files/datas
+estimate gas fees for sharing files/data
 
 #### Parameters
 
@@ -29,4 +29,4 @@ estimate gas fees for sharing files/datas
 
 #### Defined in
 
-[core/pre/api/workflow.ts:1434](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/core/pre/api/workflow.ts#L1434)
+[core/pre/api/workflow.ts:1434](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L1434)

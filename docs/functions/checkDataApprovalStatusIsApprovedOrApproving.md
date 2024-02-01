@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / checkDataApprovalStatusIsApprovedOrApproving
+[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / checkDataApprovalStatusIsApprovedOrApproving
 
 # Function: checkDataApprovalStatusIsApprovedOrApproving
 
@@ -20,4 +20,4 @@ Promise<boolean>
 
 #### Defined in
 
-[core/pre/api/workflow.ts:1934](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/core/pre/api/workflow.ts#L1934)
+[core/pre/api/workflow.ts:1934](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L1934)

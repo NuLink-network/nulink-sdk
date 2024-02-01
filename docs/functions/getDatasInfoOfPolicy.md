@@ -1,10 +1,10 @@
-[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / getFilesInfoOfPolicy
+[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / getDatasInfoOfPolicy
 
-# Function: getFilesInfoOfPolicy
+# Function: getDatasInfoOfPolicy
 
-▸ **getFilesInfoOfPolicy**(`data`): `Promise`<`unknown`\>
+▸ **getDatasInfoOfPolicy**(`data`): `Promise`<`unknown`\>
 
-Obtain a list of files associated with the published policy information.
+Obtain a list of data/files associated with the published policy information.
 Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
 
 **`Throws`**
@@ -23,7 +23,7 @@ ParameterError The input parameter must have the "policyId" field
 | `data.pageIndex?` | `number` | (Optional) number default 1 |
 | `data.pageSize?` | `number` | (Optional) number default 10 |
 | `data.policyId` | `string` | policyId |
-| `data.asPublisher?` | `boolean` | (Optional) default true true: acting as the role of file publisher. false: acting as the role of file applicant |
+| `data.asPublisher?` | `boolean` | (Optional) default true true: acting as the role of data/file publisher. false: acting as the role of data/file applicant |
 
 #### Returns
 
@@ -32,14 +32,14 @@ ParameterError The input parameter must have the "policyId" field
 - {
                "list": [
                  {
-                   "file_id": "File ID",
-                   "file_name": "File name",
-                   "owner": "File owner",
-                   "owner_id": "File owner account ID",
-                   "owner_avatar": "File owner avatar",
-                   "address": "File address",
-                   "thumbnail": "File thumbnail",
-                   "created_at": "File upload timestamp",
+                   "file_id": "Data/File ID",
+                   "file_name": "Data/File name",
+                   "owner": "Data/File owner",
+                   "owner_id": "Data/File owner account ID",
+                   "owner_avatar": "Data/File owner avatar",
+                   "address": "Data/File address",
+                   "thumbnail": "Data/File thumbnail",
+                   "created_at": "Data/File upload timestamp",
                    "policy_id": "Policy ID",
                    "policy_hrac": "Policy HRAC",
                    "policy_start_at": "Policy start timestamp",
@@ -52,4 +52,4 @@ ParameterError The input parameter must have the "policyId" field
 
 #### Defined in
 
-[api/pre.ts:1095](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/api/pre.ts#L1095)
+[api/pre.ts:1095](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/api/pre.ts#L1095)

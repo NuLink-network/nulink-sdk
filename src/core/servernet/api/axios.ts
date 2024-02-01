@@ -15,7 +15,6 @@ export const getServerUrl = async () => {
   //return server url endsWith without "/"
   const config = await getSettingsData();
 
-  //call server interface to save strategy and file info
   const serverUrl = config.service.endsWith("/")
     ? config.service.slice(0, -1)
     : config.service;
@@ -31,7 +30,6 @@ export const getServerUrl = async () => {
 /* export const getGreenFieldStorageServerUrl = async () => {
   //return server url endsWith without "/"
 
-  //call server interface to save strategy and file info
   let greenFieldStorageServerUrl: string =
     (process.env.REACT_APP_GREENFIELD_STORAGE_SERVER_URL as string) || "";
   const serverUrl = greenFieldStorageServerUrl.endsWith("/")
@@ -193,7 +191,7 @@ axiosRetry(axios, {
   },
 });
 
-//uploadFileInfo
+//uploadDataInfo
 export const serverPostFormData = async (
   urlPath: string,
   data: FormData,
@@ -208,7 +206,6 @@ export const serverPostFormData = async (
     },
   };
 
-  //call server interface to save strategy and file info
   urlPath = urlPath.startsWith("/") ? urlPath : "/" + urlPath;
 
   //note: The same key will be overwritten
@@ -234,7 +231,6 @@ export const serverPost = async (
     },
   };
 
-  //call server interface to save strategy and file info
   urlPath = urlPath.startsWith("/") ? urlPath : "/" + urlPath;
 
   //note: The same key will be overwritten
@@ -259,7 +255,6 @@ export const serverGet = async (
     },
   };
 
-  //call server interface to save strategy and file info
   urlPath = urlPath.startsWith("/") ? urlPath : "/" + urlPath;
 
   //note: The same key will be overwritten

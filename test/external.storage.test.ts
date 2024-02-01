@@ -45,7 +45,7 @@ export const run = async () => {
   // eslint-disable-next-line no-debugger
   debugger
   const dataCallback: DataCallback = { setDatas: setIPFSDatas, getData: getIPFSData }
-  //Set the external storage used by the Pre process to IPFS (for example, encrypted files uploaded by users will be stored in this storage, and users can customize the storage).
+  //Set the external storage used by the Pre process to IPFS (for example, encrypted data/files uploaded by users will be stored in this storage, and users can customize the storage).
   StorageManager.setDataCallback(dataCallback)
   console.log("StorageManager.dataCallback.setDatas.length: ", (StorageManager as any).dataCallback.setDatas.length);
   const buffer = Buffer.from('Hello world', 'utf-8')
@@ -57,7 +57,7 @@ export const run = async () => {
   // eslint-disable-next-line no-debugger
   debugger
   const dataCallback2: DataCallback = { setDatas: setBEDatas, getData: getBEData }
-  //Set the external storage used by the Pre process to IPFS (for example, encrypted files uploaded by users will be stored in this storage, and users can customize the storage).
+  //Set the external storage used by the Pre process to IPFS (for example, encrypted data/files uploaded by users will be stored in this storage, and users can customize the storage).
   StorageManager.setDataCallback(dataCallback2)
   console.log("StorageManager.dataCallback.setDatas.length: ", (StorageManager as any).dataCallback.setDatas.length);
   const cids2: string[] = await StorageManager.setData([new Uint8Array(buffer)], accountAlice)

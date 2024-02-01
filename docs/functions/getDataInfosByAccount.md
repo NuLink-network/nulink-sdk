@@ -1,25 +1,25 @@
-[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / getDataInfosByAccount
+[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / getDataInfosByAccount
 
 # Function: getDataInfosByAccount
 
 ▸ **getDataInfosByAccount**(`account`, `dataLabel?`, `pageIndex?`, `pageSize?`): `Promise`<`unknown`\>
 
-Gets a list of files/datas uploaded by the specified account from the server. This account acts as the publisher
+Gets a list of files/data uploaded by the specified account from the server. This account acts as the publisher
 
 #### Parameters
 
 | Name | Type | Default value | Description |
 | :------ | :------ | :------ | :------ |
 | `account` | [`Account`](../classes/Account.md) | `undefined` | The account to retrieve the file/data list for. |
-| `dataLabel?` | `string` | `undefined` | (Optional) The label of the file/data to search for. Leave blank to retrieve all files/datas. |
+| `dataLabel?` | `string` | `undefined` | (Optional) The label of the file/data to search for. Leave blank to retrieve all files/data. |
 | `pageIndex` | `number` | `1` | (Optional) The index of the page to retrieve. Default is 1. |
-| `pageSize` | `number` | `10` | (Optional) The number of files/datas to retrieve per page. Default is 10. |
+| `pageSize` | `number` | `10` | (Optional) The number of files/data to retrieve per page. Default is 10. |
 
 #### Returns
 
 `Promise`<`unknown`\>
 
-- Returns an object containing the list of files/datas and pagination information.
+- Returns an object containing the list of files/data and pagination information.
             {
                 list: [
                   {
@@ -38,4 +38,4 @@ Gets a list of files/datas uploaded by the specified account from the server. Th
 
 #### Defined in
 
-[core/pre/api/workflow.ts:574](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/core/pre/api/workflow.ts#L574)
+[core/pre/api/workflow.ts:574](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L574)

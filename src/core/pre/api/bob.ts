@@ -1,4 +1,4 @@
-//  Bob: as the user of the file (file requester)
+//  Bob: as the user of the data/file (data/file requester)
 
 import { Account } from "../../hdwallet/api/account";
 import { privateKeyBuffer } from "../../hdwallet/api/common";

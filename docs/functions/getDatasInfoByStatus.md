@@ -1,10 +1,10 @@
-[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / getFilesInfoByStatus
+[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / getDatasInfoByStatus
 
-# Function: getFilesInfoByStatus
+# Function: getDatasInfoByStatus
 
-▸ **getFilesInfoByStatus**(`data`): `Promise`<`object`\>
+▸ **getDatasInfoByStatus**(`data`): `Promise`<`object`\>
 
-Retrieves a list of files in a specified state.
+Retrieves a list of data/files in a specified state.
 
 #### Parameters
 
@@ -14,10 +14,10 @@ Retrieves a list of files in a specified state.
 | `data.pageIndex?` | `number` | (Optional) number default 1 |
 | `data.pageSize?` | `number` | (Optional) number default 10 |
 | `data.status?` | `string` \| `number` | (Optional) default 0: All state 1: Under review, 2: Approved, 3: Rejected, 4: Under approval, 5: Expired |
-| `data.fileId?` | `string` | (Optional) filter fileId |
-| `data.proposerId?` | `string` | (Optional) The applicant of the file |
-| `data.fileOwnerId?` | `string` | (Optional) The publisher of the file |
-| `data.applyId?` | `string` | (Optional) The id of the file application |
+| `data.dataId?` | `string` | (Optional) filter dataId |
+| `data.proposerId?` | `string` | (Optional) The applicant of the data/file |
+| `data.fileOwnerId?` | `string` | (Optional) The publisher of the data/file |
+| `data.applyId?` | `string` | (Optional) The id of the data/file application |
 
 #### Returns
 
@@ -28,8 +28,8 @@ Retrieves a list of files in a specified state.
                  {
                    "file_id": "8feS-wp5lYhGOCtOLTKZH",
                    "file_name": "1.jpg",
-                   "address": " file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
-                   "category": "file type category",
+                   "address": " data/file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
+                   "category": "data/file type category",
                    "format": "image",
                    "suffix": "jpg",
                    "owner": "account name",
@@ -45,4 +45,4 @@ Retrieves a list of files in a specified state.
 
 #### Defined in
 
-[api/pre.ts:947](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/api/pre.ts#L947)
+[api/pre.ts:947](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/api/pre.ts#L947)

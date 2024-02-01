@@ -7,7 +7,7 @@ import { serverPostFormData } from '../../../servernet'
 // eslint-disable-next-line import/no-extraneous-dependencies
 import FormData from 'form-data'
 import { isBlank, isNotBlankAndEmptyObject } from '../../null'
-import { MultiFileUploadError } from '../../exception'
+import { MultiDataUploadError } from '../../exception'
 import { decrypt as pwdDecrypt } from '../../password.encryption'
 import { signUpdateServerDataMessage } from '../utils'
 import { create, IPFSHTTPClient } from 'ipfs-http-client'
@@ -45,10 +45,10 @@ export const getIPFSClient = async () => {
 }
 
 /**
- * Set data to storage. The entry points for uploading files to various storage services
+ * Set data to storage. The entry points for uploading data/files to various storage services
  * @param {Account} account - Account the current account object.
  * @param {string[] | InstanceType<typeof String>[] | ArrayBufferView[] | ArrayBuffer[] | Blob[] | AwaitIterable<Uint8Array>[] | ReadableStream<Uint8Array>[]} userDatas - upload data stream
- * @returns {Promise<string[]>} - the list of the file key.
+ * @returns {Promise<string[]>} - the list of the data/file key.
  */
 export const setDatas = async (
   datas:   
@@ -88,7 +88,7 @@ export const setDatas = async (
  * @internal
  * @param {Account} account - Account the current account object
  * @param {string[] | InstanceType<typeof String>[] | ArrayBufferView[] | ArrayBuffer[] | Blob[] | AwaitIterable<Uint8Array>[] | ReadableStream<Uint8Array>[]} datas - upload data stream
- * @returns {Promise<string[]>} - the list of the file key.
+ * @returns {Promise<string[]>} - the list of the data/file key.
  */
 const _setDatas = async (
   datas: Blob[],
@@ -130,7 +130,7 @@ const _setDatas = async (
         const fileData: string = dataList[index]
         if (!isNotBlankAndEmptyObject(fileData)) {
           //retList.push("");
-          throw new MultiFileUploadError(`The pre storage: file upload failed! file index ${index}`)
+          throw new MultiDataUploadError(`The pre storage: data/file upload failed! data/file index ${index}`)
         } else {
           retList.push(fileData['hash'])
         }

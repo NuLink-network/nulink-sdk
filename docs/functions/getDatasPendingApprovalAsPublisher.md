@@ -1,10 +1,10 @@
-[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / getDatasPendingApprovalAsPublisher
+[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / getDatasPendingApprovalAsPublisher
 
 # Function: getDatasPendingApprovalAsPublisher
 
 ▸ **getDatasPendingApprovalAsPublisher**(`account`, `pageIndex?`, `pageSize?`): `Promise`<`object`\>
 
-Gets a list of files/datas pending approval (applying but not yet approved). This account acts as the publisher (Alice) and needs to approve them.
+Gets a list of files/data pending approval (applying but not yet approved). This account acts as the publisher (Alice) and needs to approve them.
 
 #### Parameters
 
@@ -12,20 +12,20 @@ Gets a list of files/datas pending approval (applying but not yet approved). Thi
 | :------ | :------ | :------ | :------ |
 | `account` | [`Account`](../classes/Account.md) | `undefined` | (Optional) The current account information. |
 | `pageIndex` | `number` | `1` | (Optional) The index of the page to retrieve. Default is 1. |
-| `pageSize` | `number` | `10` | (Optional) The number of files/datas to retrieve per page. Default is 10. |
+| `pageSize` | `number` | `10` | (Optional) The number of files/data to retrieve per page. Default is 10. |
 
 #### Returns
 
 `Promise`<`object`\>
 
-- Returns an object containing the list of files/datas and pagination information.
+- Returns an object containing the list of files/data and pagination information.
                           {
                             "list": [
                               {
                                 "file_id": "8feS-wp5lYhGOCtOLTKZH",
                                 "file_name": "1.jpg",
-                                "address": " file ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
-                                "category": "file type category",
+                                "address": " file/data ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
+                                "category": "file/data type category",
                                 "format": "image",
                                 "suffix": "jpg",
                                 "owner": "account name",
@@ -41,4 +41,4 @@ Gets a list of files/datas pending approval (applying but not yet approved). Thi
 
 #### Defined in
 
-[core/pre/api/workflow.ts:866](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/core/pre/api/workflow.ts#L866)
+[core/pre/api/workflow.ts:866](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L866)

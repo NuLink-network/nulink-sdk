@@ -97,10 +97,10 @@ export class ParameterError extends Error {
 }
 
 
-export class MultiFileUploadError extends Error {
+export class MultiDataUploadError extends Error {
   constructor(message) {
     super(message); // (1)
-    this.name = "MultiFileUploadError"; // (2)
+    this.name = "MultiDataUploadError"; // (2)
   }
 }
 

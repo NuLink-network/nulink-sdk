@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.6](../README.md) / [Modules](../modules.md) / getPublishedPoliciesInfo
+[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / getPublishedPoliciesInfo
 
 # Function: getPublishedPoliciesInfo
 
@@ -43,4 +43,4 @@ The publisher of the file/data obtains a list of the information of the policies
 
 #### Defined in
 
-[core/pre/api/workflow.ts:1219](https://github.com/NuLink-network/nulink-sdk/blob/9e77a59/src/core/pre/api/workflow.ts#L1219)
+[core/pre/api/workflow.ts:1219](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L1219)
