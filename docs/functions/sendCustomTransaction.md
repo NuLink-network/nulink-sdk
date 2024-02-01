@@ -33,4 +33,4 @@ set Transaction failed exception
 
 #### Defined in
 
-[api/pre.ts:1179](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/api/pre.ts#L1179)
+[api/pre.ts:1199](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/api/pre.ts#L1199)

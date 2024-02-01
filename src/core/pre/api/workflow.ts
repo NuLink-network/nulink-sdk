@@ -107,6 +107,7 @@ export const signUpdateServerDataMessage = async (account: Account, data: 'dataD
 
 /**
  * create account to center server
+ * @category Wallet Account
  * @param {Account} account - the current logined account object
  * @returns {Promise<void>}
  */
@@ -118,9 +119,10 @@ export const createAccountIfNotExist = async (account: Account) => {
 }
 
 /**
-Determines whether an account exists on the server.
-@param {Account} account - the current logined account object
-@returns {Promise<boolean>} - Returns true if the account exists on the server, otherwise returns false.
+* Determines whether an account exists on the server.
+* @category Wallet Account
+* @param {Account} account - the current logined account object
+* @returns {Promise<boolean>} - Returns true if the account exists on the server, otherwise returns false.
 */
 export const IsExistAccount = async (account: Account): Promise<boolean> => {
   const sendData = {
@@ -138,6 +140,7 @@ export const IsExistAccount = async (account: Account): Promise<boolean> => {
 
 /**
  * Sends a request to create an account on the server.
+ * @category Wallet Account
  * @param {Account} account - the account object
  * @returns {Promise<void>}
  */
@@ -159,6 +162,7 @@ export const createAccount = async (account: Account) => {
 
 /**
  * get account info by account id
+ * @category Wallet Account
  * @param {string} - accountId 
  * @returns {Promise<object>} - account information details
  *          {
@@ -192,6 +196,7 @@ export const getAccountInfo = async (accountId: string) => {
 
 /**
  * get account infos by multiple account ids
+ * @category Wallet Account
  * @param {string[]} - accountId s
  * @returns {Promise<object>} - account information details list
  * 
@@ -241,6 +246,7 @@ export const getAccountInfos = async (accountIds: string[]): Promise<object[]> =
 }
 
 /** update info of current user account
+ * @category Wallet Account
  * @param {Account} account - the current account object
  * @param {string} avatar - (Optional) the photo of current account
  * @param {string} nickname - (Optional) the nickname of current account
@@ -298,7 +304,7 @@ export const updateAccountInfo = async (account: Account, updateData: Record<str
 
 /**
  * Uploads files/data to the server by creating a new local policy and uploading the files/data encrypted with the policy's public key to IPFS.
- * @category File/Data Publisher(Alice) Interface
+ * @category Data Publisher(Alice) Upload Data
  * @param {Account} account - The account to use to create the policy and upload the files/data.
  * @param {DataCategory | string} category - The category of the files/data being uploaded. Must be a valid DataCategory value or a string.
  * @param {DataInfo[]} dataInfoList - The list of files/data to upload. Each element of the array must be an object with properties 'label' and 'dataArrayBuffer'.
@@ -422,7 +428,7 @@ export const uploadDatasByCreatePolicy = async (
 }
 /**
  * Uploads files/data to the server by selecting an existing policy and uploading the files/data encrypted with the policy's public key to IPFS.
- * @category File/Data Publisher(Alice) Interface
+ * @category Data Publisher(Alice) Upload Data
  * @param {Account} account - The account to use to upload the files/data.
  * @param {DataCategory | string} category - The category of the files/data being uploaded. Must be a valid DataCategory value or a string.
  * @param {DataInfo[]} dataList - The list of files/data to upload. Each element of the array must be an object with properties 'name' and 'dataArrayBuffer'.
@@ -521,7 +527,7 @@ export const uploadDatasBySelectPolicy = async (
 
 /**
 * Gets a list of files/data uploaded by the specified account from the server. This account acts as the publisher
-* @category File/Data Publisher(Alice) Interface
+* @category Data Publisher(Alice) Data Details
 * @param {Account} account - The account to retrieve the file/data list for.
 * @param {string} dataLabel - (Optional) The name of the file/data to search for. Leave blank to retrieve all files/data.
 * @param {number} pageIndex - (Optional) The index of the page to retrieve. Default is 1.
@@ -530,13 +536,13 @@ export const uploadDatasBySelectPolicy = async (
             {
                 list: [
                   {
-                    {string} file_id - File/Data ID
-                    {string} file_name - File/Data name
-                    {string} owner - File/Data owner
-                    {string} owner_id - File/Data owner account ID
-                    {string} address - File/Data address
-                    {string} thumbnail - File/Data thumbnail
-                    {number} created_at - File/Data upload timestamp
+                    {string} file_id - Data ID
+                    {string} file_name - Data name
+                    {string} owner - Data owner
+                    {string} owner_id - Data owner account ID
+                    {string} address - Data address
+                    {string} thumbnail - Data thumbnail
+                    {number} created_at - Data upload timestamp
                   },
                   ...
                 ],
@@ -549,7 +555,7 @@ export const getUploadedDatas = async (account: Account, dataLabel?: string, pag
 
 /**
 * Gets a list of files/data uploaded by the specified account from the server. This account acts as the publisher
-* @category File/Data Publisher(Alice) Interface
+* @category Data Publisher(Alice) Data Details
 * @param {Account} account - The account to retrieve the file/data list for.
 * @param {string} dataLabel - (Optional) The label of the file/data to search for. Leave blank to retrieve all files/data.
 * @param {number} pageIndex - (Optional) The index of the page to retrieve. Default is 1.
@@ -558,13 +564,13 @@ export const getUploadedDatas = async (account: Account, dataLabel?: string, pag
             {
                 list: [
                   {
-                    {string} file_id - File/Data ID
-                    {string} file_name - File/Data name
-                    {string} owner - File/Data owner
-                    {string} owner_id - File/Data owner account ID
-                    {string} address - File/Data address
-                    {string} thumbnail - File/Data thumbnail
-                    {number} created_at - File/Data upload timestamp
+                    {string} file_id - Data ID
+                    {string} file_name - Data name
+                    {string} owner - Data owner
+                    {string} owner_id - Data owner account ID
+                    {string} address - Data address
+                    {string} thumbnail - Data thumbnail
+                    {number} created_at - Data upload timestamp
                   },
                   ...
                 ],
@@ -594,7 +600,7 @@ export const getDataInfosByAccount = async (account: Account, dataLabel?: string
 
 /**
  * Deletes the specified files/data uploaded by the account from the server, This account acts as the publisher
- * @category File/Data Publisher(Alice) Interface
+ * @category Data Publisher(Alice) Data Details
  * @param {Account} account - The account that owns the files/data to be deleted.
  * @param {string[]} dataIds - An array of file/data IDs to delete.
  * @returns {Promise<void>}
@@ -622,7 +628,7 @@ export const deleteUploadedDatas = async (account: Account, dataIds: string[]) =
 
 /**
 * Gets a list of files/data shared by others (files uploaded by the current account are not included). This account acts as the user(Bob).
-* @category File/Data User(Bob) Interface
+* @category Data User(Bob) Data Details
 * @param {Account} account - The current account information.
 * @param {string} dataLabel - (Optional) The name of the file/data to search for. support fuzzy query. Leave blank to retrieve all files.
 * @param {boolean} include - Indicates whether the query result contains file/data list data of the current account.
@@ -635,17 +641,17 @@ export const deleteUploadedDatas = async (account: Account, dataIds: string[]) =
                         {
                             total: number
                             list: [{
-                                file_id: string - File/Data ID
-                                file_name: string - File/Data name
-                                category: string - File/Data category/type
-                                format: string - File/Data format
-                                suffix: string - File/Data suffix
-                                address: string - File/Data address
-                                thumbnail: string - File/Data thumbnail
-                                owner: string - File/Data owner
-                                owner_id: string - File/Data owner's account ID
-                                owner_avatar: string - File/Data owner's avatar
-                                created_at: number - File/Data upload timestamp
+                                file_id: string - Data ID
+                                file_name: string - Data name
+                                category: string - Data category/type
+                                format: string - Data format
+                                suffix: string - Data suffix
+                                address: string - Data address
+                                thumbnail: string - Data thumbnail
+                                owner: string - Data owner
+                                owner_id: string - Data owner's account ID
+                                owner_avatar: string - Data owner's avatar
+                                created_at: number - Data upload timestamp
                             }]
                         }
 */
@@ -700,7 +706,7 @@ return data format: {
 
 /**
  * Applies for file/data usage permission for the specified files/data, This account acts as the user(Bob).
- * @category File/Data User(Bob) Interface
+ * @category Data User(Bob) Request Data
  * @param {string[]} dataIds - An array of file IDs to apply for usage permission.
  * @param {Account} account - The account that applies for the permission.
  * @param {number} usageDays - (Optional) The validity period of the application, in days. Default is 7.
@@ -743,7 +749,7 @@ export const applyForDatasUsagePermission = async (dataIds: string[], account: A
  * Revokes the permission application of the specified files/data. This account acts as the user(Bob).
  * If it has been approved or failed, it can not be revoked.
  * The background service processing logic is such that if there are multiple permission applications, either all of them will be successful or none of them will be successful.
- * @category File/Data User(Bob) Interface
+ * @category Data User(Bob) Request Data
  * @param {Account} account - The account that revokes the permission application.
  * @param {number[]} applyIds - An array of application applyIds to revoke.
  * @returns {Promise<object>} - Returns an empty object.
@@ -768,7 +774,7 @@ export const revokePermissionApplicationOfDatas = async (
 
 /**
  * The file/data publisher retrieves a list of files/data in all states.
- * @category File/Data Publisher(Alice) Interface  
+ * @category Data Publisher(Alice) Approval Details  
  * @param {Account} account - the current account object 
  * @param {number} pageIndex - (Optional) number default 1
  * @param {number} pageSize - (Optional) number default 10
@@ -807,7 +813,7 @@ export const getDatasAllStatusAsPublisher = async (account: Account, pageIndex =
 
 /**
  * Retrieve a list of files/data in a specified state that need to be approved for use by others, for the file/data publisher.
- * @category File/Data Publisher(Alice) Interface
+ * @category Data Publisher(Alice) Approval Details
  * @param {Account} account - the current account object 
  * @param {number} status - (Optional) default 0: All state 1: Under review, 2: Approved, 3: Rejected, 4: Under approval, 5: Expired
  * @param {number} pageIndex - (Optional) number default 1
@@ -838,7 +844,7 @@ export const getDatasByApplyStatusAsPublisher = async (account: Account, status 
 
 /**
 * Gets a list of files/data pending approval (applying but not yet approved). This account acts as the publisher (Alice) and needs to approve them.
-* @category File/Data Publisher(Alice) Interface
+* @category Data Publisher(Alice) Approval Details
 * @param {Account} account - (Optional) The current account information.
 * @param {number} pageIndex - (Optional) The index of the page to retrieve. Default is 1.
 * @param {number} pageSize - (Optional) The number of files/data to retrieve per page. Default is 10.
@@ -869,7 +875,7 @@ export const getDatasPendingApprovalAsPublisher = async (account: Account, pageI
 
 /**
  * get the Approved success status files/data for others to use. This account acts as the publisher (Alice)
- * @category File/Data Publisher(Alice) Interface
+ * @category Data Publisher(Alice) Approval Details
  * @param {Account} account - Account the current account object
  * @param {number} pageIndex - (Optional) number default 1
  * @param {number} pageSize - (Optional) number default 10
@@ -899,7 +905,7 @@ export const getApprovedDatasAsPublisher = async (account: Account, pageIndex = 
 
 /**
 * Gets a list of files/data with the "approved failed" status for others to use. This account acts as the publisher (Alice).
-* @category File/Data Publisher(Alice) Interface
+* @category Data Publisher(Alice) Approval Details
 * @param {Account} account - The current account information.
 * @param {number} pageIndex - The index of the page to retrieve. Default is 1.
 * @param {number} pageSize - The number of files/data to retrieve per page. Default is 10.
@@ -930,7 +936,7 @@ export const getDatasForRefusedAsPublisher = async (account: Account, pageIndex 
 
 /**
 * Gets a list of all files/data with any status as a user (Bob) using this account.
-* @category File/Data User(Bob) Interface
+* @category Data User(Bob) Approval Details
 * @param {Account} account - The current account information.
 * @param {number} pageIndex - The index of the page to retrieve. Default is 1.
 * @param {number} pageSize - The number of files/data to retrieve per page. Default is 10.
@@ -961,7 +967,7 @@ export const getDatasAllStatusAsUser = async (account: Account, pageIndex = 1, p
 
 /**
  * The file/data applicant retrieves a list of files/data in a specified state that need to be approved by others.
- * @category File/Data User(Bob) Interface
+ * @category Data User(Bob) Approval Details
  * @param {Account} account -  the current account object 
  * @param status - (Optional) default 0: All state 1: Under review, 2: Approved, 3: Rejected, 4: Under approval, 5: Expired
  * @param {number} pageIndex - (Optional) number default 1
@@ -992,7 +998,7 @@ export const getDatasByApplyStatusAsUser = async (account: Account, status = 0, 
 
 /**
   * Gets a list of files/data pending approval (applying but not yet approved). This account acts as a user (Bob) and needs to approve them.
-  * @category File/Data User(Bob) Interface
+  * @category Data User(Bob) Approval Details 
   * @param {Account} account - The current account information.
   * @param {number} pageIndex - (Optional) The index of the page to retrieve. Default is 1.
   * @param {number} pageSize - (Optional) The number of files/data to retrieve per page. Default is 10.
@@ -1023,7 +1029,7 @@ export const getDatasPendingApprovalAsUser = async (account: Account, pageIndex 
 
 /**
  * The file/data applicant retrieves a list of files/data that have been approved for their own use.
- * @category File/Data User(Bob) Interface
+ * @category Data User(Bob) Approval Details
  * @param {Account} account - the current account object 
  * @param {number} pageIndex - (Optional) number default 1
  * @param {number} pageSize - (Optional) number default 10
@@ -1053,7 +1059,7 @@ export const getApprovedDatasAsUser = async (account: Account, pageIndex = 1, pa
 
 /**
  * Gets a list of files/data with the "approved failed" status, which cannot be used by the user (Bob) using this account.
- * @category File/Data User(Bob) Interface
+ * @category Data User(Bob) Approval Details 
  * @param {Account} account - The current account information.
  * @param {number} pageIndex - The index of the page to retrieve. Default is 1.
  * @param {number} pageSize - The number of files/data to retrieve per page. Default is 10.
@@ -1065,7 +1071,8 @@ export const getUnapprovedDatasAsUser = async (account: Account, pageIndex = 1, 
 
 /**
  * get files/data info by status This account acts as the user (Bob) or publisher (Alice)
- * @category File/Data Publisher(Alice)/User(Bob) Interface
+ * @category Data Publisher(Alice) Approval Details
+ * @category Data User(Bob) Approval Details
  * @param {string} dataId - (Optional)  file/data's id
  * @param {string} proposerId - (Optional) proposer's account id
  * @param {string} dataOwnerId - (Optional) account id of the file/data owner
@@ -1152,7 +1159,7 @@ export const getDatasByStatus = async (
 /**
  * The applicant of the file/data obtains a list of the policy information. 
  * get information about the current of all using policies by publiser others, the current account as Bob
- * @category File/Data User(Bob) Interface
+ * @category Data User(Bob) Policys
  * @param {Account} account -  current account object info      
  * @param {number} pageIndex - (Optional) number default 1
  * @param {number} pageSize - (Optional) number default 10
@@ -1188,7 +1195,7 @@ export const getInUsePoliciesInfo = async (account: Account, pageIndex = 1, page
 
 /**
  * The publisher of the file/data obtains a list of the information of the policies published on the blockchain.
- * @category File/Data Publisher(Alice) Interface
+ * @category Data Publisher(Alice) Policys
  * @param {Account} account 
  * @param {number} pageIndex - (Optional) number default 1
  * @param {number} pageSize - (Optional) number default 10
@@ -1225,6 +1232,8 @@ export const getPublishedPoliciesInfo = async (account: Account, pageIndex = 1, 
 
 /**
  * Obtains a list of the information of the policies published on the blockchain.
+ * @category Data Publisher(Alice) Policys
+ * @category Data User(Bob) Policys
  * @param {number} policyId - policyId
  * @param {string} creatorId - the publisher's account id of the file/data
  * @param {string} consumerId - the user's account id of the file/data
@@ -1298,7 +1307,7 @@ export const getPoliciesInfo = async (
 
 /**
  * calcurate publish policy server fee (nlk/tnlk): By calling calcPolicyCost
- * @category File/Data Publisher(Alice) Interface
+ * @category Data Publisher(Alice) Approval
  * @param {Account} publisher - the current logined Account object
  * @param {Date} startDate - Start time of file/data usage application in seconds
  * @param {Date} endDate - End time of file/data usage application in seconds
@@ -1323,7 +1332,7 @@ export const getPolicyTokenCost = async (
 
 /**
  * Calculating service fees (nlk/tnlk) for publishing multiple policys. : By calling calcPolicysCost
- * @category File/Data Publisher(Alice) Interface
+ * @category Data Publisher(Alice) Approval (Multi)
  * @param {Account} publisher - the current logined Account object
  * @param {Date[]} startDates -  An array of the start time of file/data usage application in seconds
  * @param {Date[]} endDates -  An array of the end time of file/data usage application in seconds
@@ -1348,7 +1357,7 @@ export const getPolicysTokenCost = async (
 
 /**
  * calcurate publish policy server fee (nlk/tnlk), you can get ether: Web3.utils.fromWei(costGasWei.toNumber().toString(), "ether" )
- * @category File/Data Publisher(Alice) Interface
+ * @category Data Publisher(Alice) Approval
  * @param {Account} alice - the current logined Account object as file/data publisher
  * @param {Date} startDate - Start time of file/data usage application
  * @param {Date} endDate - End time of file/data usage application
@@ -1378,7 +1387,7 @@ const calcPolicyCost = async (
 
 /**
  * Calculating service fees (nlk/tnlk) for publishing multiple policys, you can get ether: Web3.utils.fromWei(costGasWei.toNumber().toString(), "ether" )
- * @category File/Data Publisher(Alice) Interface
+ * @category Data Publisher(Alice) Approval (Multi)
  * @param {Account} alice - the current logined Account object as file/data publisher
  * @param {Date[]} startDates - Start time of file/data usage application
  * @param {Date[]} endDates - End time of file/data usage application
@@ -1418,7 +1427,7 @@ const calcPolicysCost = async (
 }
 /**
  * estimate gas fees for sharing files/data
- * @category File/Data Publisher(Alice) Interface
+ * @category Data Publisher(Alice) Approval
  * @param {Account} publisher - Account the account object of the file/data publisher (Alice)
  * @param {string} userAccountId - the account Id of the file/data publisher (Alice)
  * @param {string} applyId - The application ID returned to the user by the interface when applying to use a specific file/data
@@ -1426,7 +1435,7 @@ const calcPolicysCost = async (
  * @param {number} ursulaThreshold - The file/data user can download the file after obtaining the specified number of service data shares
  * @param {Date} startDate - Start date(UTC date) of file/data usage application
  * @param {Date} endDate - End date(UTC date) of file/data usage application
- * @param {BigNumber} serverFee - server fees by call function of `getPolicyServerGasFee`
+ * @param {BigNumber} serverFee - server fees by call function of `getPolicyServerFee`
  * @param {BigNumber} gasPrice - the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
  * @param {string} porterUri - (Optional) the porter service url
  * @returns {Promise<BigNumber>} - the amount of bnb/tbnb in wei
@@ -1501,7 +1510,7 @@ export const estimatePolicyGas = async (
 /**
  *
  * estimate the gas fee for batch (sharing files/data) creating policies.
- * @category File/Data Publisher(Alice) Interface
+ * @category Data Publisher(Alice) Approval (Multi)
  * @param {Account} publisher - Account the account object of the file/data publisher (Alice)
  * @param {string[]} userAccountIds - the account Id of the file/data publisher (Alice)
  * @param {string[]} applyIds - The application ID returned to the user by the interface when applying to use a specific file/data
@@ -1509,7 +1518,7 @@ export const estimatePolicyGas = async (
  * @param {number[]} ursulaThresholds - The file/data user can download the file/data after obtaining the specified number of service data shares
  * @param {Date[]} startDates - Start date(UTC date) of file/data usage application
  * @param {Date[]} endDates - End date(UTC date) of file/data usage application
- * @param {BigNumber} serverFee - server fees by call function of `getPolicyServerGasFee`
+ * @param {BigNumber} serverFee - server fees by call function of `getPolicyServerFee`
  * @param {BigNumber} gasPrice - the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
  * @param {string} porterUri - (Optional) the porter service url
  * @returns {Promise<BigNumber>} - the amount of bnb/tbnb in wei
@@ -1928,6 +1937,8 @@ const getBlockchainPolicys = async (
 
 /**
  * Check if the application status is "under review" or "approved"
+ * @category Data Publisher(Alice) Data Details
+ * @category Data User(Bob) Data Details
  * @param {string} applyId - string | number
  * @returns  Promise<boolean>
  */
@@ -1945,6 +1956,8 @@ export const checkDataApprovalStatusIsApprovedOrApproving = async (applyId: stri
 
 /**
  * Check whether the status of multiple applications is "under review" or "approved".
+ * @category Data Publisher(Alice) Data Details
+ * @category Data User(Bob) Data Details
  * @param {string[]} applyIds - string[]| number[]
  * @returns  Promise<string[]> -- return a list of applyIds that are not in the "pending approval" and "approved" statuses.
  */
@@ -1973,7 +1986,7 @@ export const checkMultiDataApprovalStatusIsApprovedOrApproving = async (
 /**
  * Approval of application for use of Files/Datas, This account acts as Publisher (Alice) grant
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
- * @category File/Data Publisher(Alice) Interface
+ * @category Data Publisher(Alice) Approval
  * @param {Account} publisher - Account the current account object
  * @param {string} userAccountId - string
  * @param {string} applyId - string
@@ -2160,7 +2173,7 @@ export const approvalApplicationForUseDatas = async (
 /**
  * Approval of applications for use of Files/Datas, This account acts as Publisher (Alice) grant. The batch version of the function refusalApplicationForUseDatas.
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
- * @category File/Data Publisher(Alice) Interface
+ * @category Data Publisher(Alice) Approval (Multi)
  * @param {Account} publisher - Account the current account object
  * @param {string[]} userAccountIds - string
  * @param {string[]} applyIds - string
@@ -2360,7 +2373,7 @@ export const approvalApplicationsForUseDatas = async (
 
 /**
  * Rejects the application for the use of files/data. This account acts as the publisher (Alice).
- * @category File/Data Publisher(Alice) Interface
+ * @category Data Publisher(Alice) Approval
  * @param {Account} publisher - The account of the publisher (Alice).
  * @param {string} applyId - The application apply ID to reject.
  * @param {string} remark - (Optional) Additional remarks for the rejection. Default is an empty string.
@@ -2385,7 +2398,7 @@ export const refusalApplicationForUseDatas = async (
 
 /**
  * Rejects the applications for the use of files/data. This account acts as the publisher (Alice). The batch version of the function refusalApplicationForUseDatas.
- * @category File/Data Publisher(Alice) Interface
+ * @category Data Publisher(Alice) Approval (Multi)
  * @param {Account} publisher - The account of the publisher (Alice).
  * @param {string[]} applyIds - The application apply ID to reject.
  * @param {string} remark - (Optional) Additional remarks for the rejection. Default is an empty string.
@@ -2410,6 +2423,7 @@ export const refusalApplicationsForUseDatas = async (
 
 /**
  * Gets the file/data information associated with the published policy (so the policy has been published)
+ * @category Data Publisher(Alice) Data Details
  * @param {string} policyId - policyId
  * @param {string} policyPublisherId - (Optional) The account id of the file/data publisher, acting as the role of file/data publisher
  * @param {string} policyUserId - (Optional) The account id of the file/data user, acting as the role of file/data applicant
@@ -2502,7 +2516,7 @@ export const revokePublishedPolicies = async (publisher: Account, userAccountId:
 
 /**
  * Gets the content of an approved file/data, which can be downloaded. The input parameter is obtained by calling getApprovedDatasAsUser (Account).
- * @category File/Data User(Bob) Interface
+ * @category Data User(Bob) Download Data
  * @param {Account} userAccount - The current account information.
  * @param {string} policyEncryptingKey - The policy encrypting key used to encrypt the file/data.
  * @param {string} aliceVerifyingKey - The Alice verifying key used to verify the policy.
@@ -2588,7 +2602,7 @@ export const getDataContentAsUser = async (
 
 /**
  * Get approved document content (downloadable). The file/data applicant retrieves the content of a file/data that has been approved for their usage.
- * @category File/Data User(Bob) Interface
+ * @category Data User(Bob) Download Data
  * @param {Account} userAccount - Account the current account object
  * @param {string} dataId - file/data's id
  * @returns {Promise<ArrayBuffer>}
@@ -2619,7 +2633,7 @@ export const getDataContentByDataIdAsUser = async (userAccount: Account, dataId:
 
 /**
  * The file/data publisher obtains the content of the file/data
- * @category File/Data Publisher(Alice) Interface
+ * @category Data Publisher(Alice) Download Data
  * @param {Account} userAccount - Account the current account object
  * @param {string} dataId - data/file's id
  * @returns {Promise<ArrayBuffer>}
@@ -2677,6 +2691,7 @@ export const getDataContentByDataIdAsPublisher = async (userAccount: Account, da
 
 /**
  * Gets the details of an application record.
+ * @category Data Apply Details
  * @param {string} applyId - The ID of the application record.
  * @returns {Promise<object>} - Returns an object containing the details of the application record, or null if the record does not exist.
  *              {
@@ -2711,6 +2726,7 @@ export const getApplyDetails = async (applyId: string) => {
 
 /**
  * Gets the details of multiple application records.
+ * @category Data Apply Details
  * @param {string []} applyId - The ID of the application record.
  * @returns {Promise<object[]>} - Returns an array object containing the multiple details of the application record, or null if the record does not exist.
  *              {
@@ -2760,6 +2776,8 @@ export const getMultiApplyDetails = async (applyIds: string[]): Promise<object[]
 
 /**
   * Retrieves the details of a file/data (include apply file/data info, file/data info, about policy info) by its ID and user account ID.
+  * @category Data Publisher(Alice) Data Details
+  * @category Data User(Bob) Data Details
   * @param {string} dataId - The ID of the file/data to retrieve details for.
   * @param {string} dataUserAccountId - This parameter passes the file/data finder when the file/data consumer is not known, dataUserAccountId should be passed the current account I
   * @returns {Promise<object>} - The returned object contains the following properties:
@@ -2807,7 +2825,7 @@ export const getDataDetails = async (dataId: string, dataUserAccountId: string) 
 /**
  * @internal
  * Gets information about policy labels info created by the given publisher account.
- * @category File/Data Publisher(Alice) Interface
+ * @category Data Publisher(Alice) Policys
  * @param {Account} publisherAccount - The account of the publisher who created the policy labels.
  * @param {number} pageIndex - (Optional) The index of the page to retrieve. Default is 1.
  * @param {number} pageSize - (Optional) The size of each page. Default is 10.
@@ -2863,7 +2881,7 @@ export const getPolicyLabelInfosByAddr = async (accountAddress: string) => {
 /**
   * @internal
   * Gets the IDs of all policy labels created by the specified publisher account.
-  * @category File/Data Publisher(Alice) Interface
+  * @category Data Publisher(Alice) Policys
   * @param {Account} publisherAccount - The account of the publisher who created the policy labels.
   * @returns {Promise<object>} - Returns an object with an array of policy label IDs.
                               {

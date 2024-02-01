@@ -43,4 +43,4 @@ The publisher of the file/data obtains a list of the information of the policies
 
 #### Defined in
 
-[core/pre/api/workflow.ts:1219](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L1219)
+[core/pre/api/workflow.ts:1226](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/core/pre/api/workflow.ts#L1226)

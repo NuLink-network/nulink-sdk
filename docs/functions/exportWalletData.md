@@ -20,4 +20,4 @@ Exports the wallet data as a binary string.
 
 #### Defined in
 
-[api/wallet.ts:145](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/api/wallet.ts#L145)
+[api/wallet.ts:149](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/api/wallet.ts#L149)

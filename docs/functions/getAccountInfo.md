@@ -36,4 +36,4 @@ get account info by account id
 
 #### Defined in
 
-[core/pre/api/workflow.ts:181](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L181)
+[core/pre/api/workflow.ts:185](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/core/pre/api/workflow.ts#L185)

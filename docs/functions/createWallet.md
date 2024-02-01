@@ -22,4 +22,4 @@ If no mnemonic phrase is provided, one will be generated automatically.
 
 #### Defined in
 
-[api/wallet.ts:157](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/api/wallet.ts#L157)
+[api/wallet.ts:162](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/api/wallet.ts#L162)

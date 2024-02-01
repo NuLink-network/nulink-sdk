@@ -21,4 +21,4 @@ restore wallet by the strategys of account stored in the backend db.
 
 #### Defined in
 
-[api/wallet.ts:74](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/api/wallet.ts#L74)
+[api/wallet.ts:75](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/api/wallet.ts#L75)

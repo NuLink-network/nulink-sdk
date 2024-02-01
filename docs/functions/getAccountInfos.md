@@ -39,4 +39,4 @@ get account infos by multiple account ids
 
 #### Defined in
 
-[core/pre/api/workflow.ts:217](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L217)
+[core/pre/api/workflow.ts:222](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/core/pre/api/workflow.ts#L222)

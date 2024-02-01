@@ -5,6 +5,7 @@
 ▸ **getDatasApprovedForApplicantAsUser**(`data`): `Promise`<`object`\>
 
 Retrieve a list of data/files that have been approved for the data/file applicant's own use.
+Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
 
 **`Throws`**
 
@@ -44,4 +45,4 @@ UnauthorizedError get logined account failed, must be login account first
 
 #### Defined in
 
-[api/pre.ts:705](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/api/pre.ts#L705)
+[api/pre.ts:718](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/api/pre.ts#L718)

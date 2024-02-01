@@ -25,4 +25,4 @@ UserDataCorruptedError, UserDataVersionLowError
 
 #### Defined in
 
-[api/wallet.ts:115](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/api/wallet.ts#L115)
+[api/wallet.ts:118](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/api/wallet.ts#L118)

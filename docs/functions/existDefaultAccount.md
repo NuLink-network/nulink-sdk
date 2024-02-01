@@ -14,4 +14,4 @@ Determines whether there is a default account in local storage.
 
 #### Defined in
 
-[api/wallet.ts:217](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/api/wallet.ts#L217)
+[api/wallet.ts:225](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/api/wallet.ts#L225)

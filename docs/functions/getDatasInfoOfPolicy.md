@@ -5,7 +5,7 @@
 ▸ **getDatasInfoOfPolicy**(`data`): `Promise`<`unknown`\>
 
 Obtain a list of data/files associated with the published policy information.
-Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
+Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown
 
 **`Throws`**
 
@@ -52,4 +52,4 @@ ParameterError The input parameter must have the "policyId" field
 
 #### Defined in
 
-[api/pre.ts:1095](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/api/pre.ts#L1095)
+[api/pre.ts:1112](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/api/pre.ts#L1112)

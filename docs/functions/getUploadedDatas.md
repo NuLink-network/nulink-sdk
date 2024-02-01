@@ -23,13 +23,13 @@ Gets a list of files/data uploaded by the specified account from the server. Thi
             {
                 list: [
                   {
-                    {string} file_id - File/Data ID
-                    {string} file_name - File/Data name
-                    {string} owner - File/Data owner
-                    {string} owner_id - File/Data owner account ID
-                    {string} address - File/Data address
-                    {string} thumbnail - File/Data thumbnail
-                    {number} created_at - File/Data upload timestamp
+                    {string} file_id - Data ID
+                    {string} file_name - Data name
+                    {string} owner - Data owner
+                    {string} owner_id - Data owner account ID
+                    {string} address - Data address
+                    {string} thumbnail - Data thumbnail
+                    {number} created_at - Data upload timestamp
                   },
                   ...
                 ],
@@ -38,4 +38,4 @@ Gets a list of files/data uploaded by the specified account from the server. Thi
 
 #### Defined in
 
-[core/pre/api/workflow.ts:546](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L546)
+[core/pre/api/workflow.ts:552](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/core/pre/api/workflow.ts#L552)

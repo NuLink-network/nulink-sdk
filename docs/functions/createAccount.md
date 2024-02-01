@@ -18,4 +18,4 @@ Sends a request to create an account on the server.
 
 #### Defined in
 
-[core/pre/api/workflow.ts:144](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L144)
+[core/pre/api/workflow.ts:147](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/core/pre/api/workflow.ts#L147)

@@ -39,4 +39,4 @@ UnauthorizedError get logined account failed, must be login account first
 
 #### Defined in
 
-[api/pre.ts:416](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/api/pre.ts#L416)
+[api/pre.ts:428](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/api/pre.ts#L428)

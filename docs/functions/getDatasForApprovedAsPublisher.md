@@ -5,6 +5,7 @@
 ▸ **getDatasForApprovedAsPublisher**(`data`): `Promise`<`object`\>
 
 The data/file publisher retrieves a list of data/files that have been approved for use by others.
+Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
 
 **`Throws`**
 
@@ -44,4 +45,4 @@ UnauthorizedError get logined account failed, must be login account first
 
 #### Defined in
 
-[api/pre.ts:573](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/api/pre.ts#L573)
+[api/pre.ts:586](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/api/pre.ts#L586)

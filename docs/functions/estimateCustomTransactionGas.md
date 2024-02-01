@@ -32,4 +32,4 @@ estimateCustomTransactionGas failed exception
 
 #### Defined in
 
-[api/pre.ts:1233](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/api/pre.ts#L1233)
+[api/pre.ts:1254](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/api/pre.ts#L1254)

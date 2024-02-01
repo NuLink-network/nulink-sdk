@@ -67,6 +67,7 @@ export const checkUserDataVersionMatch = async (dataBinaryString: string): Promi
 
 /**
  * restore wallet by the strategys of account stored in the backend db.
+ * @category Wallet Account 
  * @param {string} newPassword - new password
  * @param {string} rootExtendedPrivateKey - BIP32 root Extended PrivateKey. base58Key format：be startwith 'xprv'
  * @returns {Promise<NuLinkHDWallet>} - Returns a new NuLinkHDWallet object with the restored account.
@@ -89,6 +90,7 @@ export const restoreWalletDataByRootExtendedPrivateKey = async (
 
 /**
  * Restores an account by the strategies of the account stored in the backend database.
+ * @category Wallet Account 
  * @param {string} newPassword - The password for the new wallet.
  * @param {string} mnemonic - The mnemonic phrase used to restore the wallet.
  * @returns {Promise<NuLinkHDWallet>} - Returns a new NuLinkHDWallet object with the restored account.
@@ -107,6 +109,7 @@ export const restoreWalletDataByMnemonic = async (newPassword: string, mnemonic:
 }
 /**
  * Restores an account by data info (including the mnemonic (or root extended private key) and user data (strategy infos)).
+ * @category Wallet Account 
  * @throws {@link UserDataCorruptedError, UserDataVersionLowError}
  * @param {string} newPassword - The password for the new wallet.
  * @param {string} dataBinaryString - The binary string data/file used to restore the wallet. The dataBinaryString is returned by the exportWalletData function.
@@ -139,6 +142,7 @@ export const restoreWalletData = async (newPassword: string, dataBinaryString: s
 
 /**
  * Exports the wallet data as a binary string.
+ * @category Wallet Account 
  * @param {string} password - The password used to decrypt the wallet.
  * @returns {Promise<string | undefined>} - Returns a binary string of the exported wallet data. Returns undefined if the wallet could not be loaded.
  */
@@ -150,6 +154,7 @@ export const exportWalletData = async (password: string): Promise<string | undef
 /**
  * Creates a new wallet with the specified password and optional mnemonic phrase.
  * If no mnemonic phrase is provided, one will be generated automatically.
+ * @category Wallet Account 
  * @param {string} password - The password used to encrypt the wallet.
  * @param {string} mnemonic - (Optional) The optional mnemonic phrase used to generate the wallet or generate a mnemonic phrase automatically
  * @returns {Promise<NuLinkHDWallet>} - Returns a new NuLinkHDWallet object.
@@ -171,9 +176,10 @@ export const createWallet = async (password: string, mnemonic: string = ''): Pro
 }
 
 /**
- *  The front end loads different pages according to the status returned by this function, whether to display account information or restore the account
- *  Note:  If no password is passed to the loadHDwallet function, it will attempt to obtain the wallet object from memory.
- *  If it cannot be obtained, null is returned. In this case, the function needs to be called again with the user's password to retrieve the wallet object.
+ * The front end loads different pages according to the status returned by this function, whether to display account information or restore the account
+ * Note: If no password is passed to the loadHDwallet function, it will attempt to obtain the wallet object from memory.
+ * If it cannot be obtained, null is returned. In this case, the function needs to be called again with the user's password to retrieve the wallet object.
+ * @category Wallet Account 
  * @throws {@link PasswordDecryptError}
  * @param {string} password - (Optional) If no password is passed to the loadHDwallet function, it will attempt to obtain the wallet object from memory.
  *  If it cannot be obtained, null is returned. In this case, the function needs to be called again with the user's password to retrieve the wallet object.
@@ -188,6 +194,7 @@ export const loadWallet = async (password?: string): Promise<NuLinkHDWallet | nu
 
 /**
  * Verifies a password by comparing it to the previously saved hashed password.
+ * @category Wallet Account 
  * @throws {@link AssertionError} - Throws an error if the hdWallet or passwordHash is blank.
  * @param {string} password - The password to verify.
  * @returns {Promise<boolean | undefined>} - Returns true if the password is verified, false otherwise. Returns undefined if the wallet could not be retrieved.
@@ -212,6 +219,7 @@ export const verifyPassword = async (password: string): Promise<boolean | undefi
 
 /**
  * Determines whether there is a default account in local storage.
+ * @category Wallet Account 
  * @returns {Promise<boolean>} - Returns true if a default account exists, false otherwise.
  */
 export const existDefaultAccount = async (): Promise<boolean> => {
@@ -220,6 +228,7 @@ export const existDefaultAccount = async (): Promise<boolean> => {
 
 /**
  * Logs out the user by clearing the local storage.
+ * @category Wallet Account 
  * @returns {Promise<void>}
  */
 export const logoutWallet = async () => {
@@ -230,6 +239,7 @@ export const logoutWallet = async () => {
  *  get the default account from wallet
  *  Note: If no password is passed to the getWalletDefaultAccount function, it will attempt to obtain the wallet object from memory.
  *  If it cannot be obtained, null is returned. In this case, the function needs to be called again with the user's password to retrieve the wallet object.
+ * @category Wallet Account 
  * @throws {@link PasswordDecryptError}
  * @param {string} [password='']
  * @return {Promise<Account | null>}
@@ -253,6 +263,7 @@ export const getWalletDefaultAccount = async (password?: string): Promise<Accoun
 
 /**
  * Attempts to unlock the NuLinkHDWallet with the given password.
+ * @category Wallet Account 
  * @param {string} password - The password used to decrypt the wallet.
  * @returns {Promise<boolean>} - Returns true if the password is correct, false otherwise.
  */
@@ -266,9 +277,10 @@ export const unlockWallet = async (password: string): Promise<boolean> => {
 }
 
 /**
- *  get the wallet's mnemonic
- *  Note:  If no password is passed to the getWalletDefaultAccount function, it will attempt to obtain the wallet object from memory.
- *  If it cannot be obtained, null is returned. In this case, the function needs to be called again with the user's password to retrieve the wallet object.
+ * get the wallet's mnemonic
+ * Note:  If no password is passed to the getWalletDefaultAccount function, it will attempt to obtain the wallet object from memory.
+ * If it cannot be obtained, null is returned. In this case, the function needs to be called again with the user's password to retrieve the wallet object.
+ * @category Wallet Account 
  * @throws {@link PasswordDecryptError}
  * @param {string} [password='']
  * @return {Promise<string | null | undefined>} Returns the mnemonic phrase if the password is correct, otherwise returns null. Returns undefined if the wallet could not be loaded.
@@ -279,9 +291,10 @@ export const getMnemonic = async (password: string): Promise<string | null | und
 }
 
 /**
- *  get the wallet's mnemonic
- *  Note:  If no password is passed to the getWalletDefaultAccount function, it will attempt to obtain the wallet object from memory.
- *  If it cannot be obtained, null is returned. In this case, the function needs to be called again with the user's password to retrieve the wallet object.
+ * get the wallet's mnemonic
+ * Note:  If no password is passed to the getWalletDefaultAccount function, it will attempt to obtain the wallet object from memory.
+ * If it cannot be obtained, null is returned. In this case, the function needs to be called again with the user's password to retrieve the wallet object.
+ * @category Wallet Account 
  * @throws {@link PasswordDecryptError}
  * @param {string} [password='']
  * @return {Promise<string | null>} - Returns the privateKey of the default account if the password is correct, otherwise returns null.

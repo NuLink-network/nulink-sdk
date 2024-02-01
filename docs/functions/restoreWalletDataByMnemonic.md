@@ -21,4 +21,4 @@ Restores an account by the strategies of the account stored in the backend datab
 
 #### Defined in
 
-[api/wallet.ts:96](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/api/wallet.ts#L96)
+[api/wallet.ts:98](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/api/wallet.ts#L98)

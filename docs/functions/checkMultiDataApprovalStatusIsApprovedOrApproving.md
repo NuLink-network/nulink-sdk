@@ -20,4 +20,4 @@ Promise<string[]> -- return a list of applyIds that are not in the "pending appr
 
 #### Defined in
 
-[core/pre/api/workflow.ts:1951](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L1951)
+[core/pre/api/workflow.ts:1964](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/core/pre/api/workflow.ts#L1964)

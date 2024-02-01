@@ -20,4 +20,4 @@ Determines whether an account exists on the server.
 
 #### Defined in
 
-[core/pre/api/workflow.ts:125](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L125)
+[core/pre/api/workflow.ts:127](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/core/pre/api/workflow.ts#L127)

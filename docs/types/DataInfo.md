@@ -14,4 +14,4 @@
 
 #### Defined in
 
-[core/pre/types/index.ts:62](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/types/index.ts#L62)
+[core/pre/types/index.ts:62](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/core/pre/types/index.ts#L62)

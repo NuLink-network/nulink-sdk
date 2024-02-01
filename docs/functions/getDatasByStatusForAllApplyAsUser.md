@@ -1,10 +1,11 @@
-[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / getFilesByStatusForAllApplyAsUser
+[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / getDatasByStatusForAllApplyAsUser
 
-# Function: getFilesByStatusForAllApplyAsUser
+# Function: getDatasByStatusForAllApplyAsUser
 
-▸ **getFilesByStatusForAllApplyAsUser**(`data`): `Promise`<`object`\>
+▸ **getDatasByStatusForAllApplyAsUser**(`data`): `Promise`<`object`\>
 
 The data/file applicant retrieves a list of data/files in a specified state that need to be approved by others.
+Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
 
 **`Throws`**
 
@@ -45,4 +46,4 @@ UnauthorizedError get logined account failed, must be login account first
 
 #### Defined in
 
-[api/pre.ts:800](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/api/pre.ts#L800)
+[api/pre.ts:813](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/api/pre.ts#L813)

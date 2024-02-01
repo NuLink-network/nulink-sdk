@@ -41,4 +41,4 @@ Gets a list of files/data pending approval (applying but not yet approved). This
 
 #### Defined in
 
-[core/pre/api/workflow.ts:1020](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L1020)
+[core/pre/api/workflow.ts:1026](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/core/pre/api/workflow.ts#L1026)

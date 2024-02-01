@@ -22,7 +22,7 @@
 
 #### Defined in
 
-[core/pre/types/index.ts:3](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/types/index.ts#L3)
+[core/pre/types/index.ts:3](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/core/pre/types/index.ts#L3)
 
 ___
 
@@ -32,7 +32,7 @@ ___
 
 #### Defined in
 
-[core/pre/types/index.ts:4](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/types/index.ts#L4)
+[core/pre/types/index.ts:4](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/core/pre/types/index.ts#L4)
 
 ___
 
@@ -42,7 +42,7 @@ ___
 
 #### Defined in
 
-[core/pre/types/index.ts:5](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/types/index.ts#L5)
+[core/pre/types/index.ts:5](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/core/pre/types/index.ts#L5)
 
 ___
 
@@ -52,7 +52,7 @@ ___
 
 #### Defined in
 
-[core/pre/types/index.ts:6](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/types/index.ts#L6)
+[core/pre/types/index.ts:6](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/core/pre/types/index.ts#L6)
 
 ___
 
@@ -62,7 +62,7 @@ ___
 
 #### Defined in
 
-[core/pre/types/index.ts:7](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/types/index.ts#L7)
+[core/pre/types/index.ts:7](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/core/pre/types/index.ts#L7)
 
 ___
 
@@ -72,7 +72,7 @@ ___
 
 #### Defined in
 
-[core/pre/types/index.ts:8](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/types/index.ts#L8)
+[core/pre/types/index.ts:8](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/core/pre/types/index.ts#L8)
 
 ___
 
@@ -82,4 +82,4 @@ ___
 
 #### Defined in
 
-[core/pre/types/index.ts:9](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/types/index.ts#L9)
+[core/pre/types/index.ts:9](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/core/pre/types/index.ts#L9)

@@ -13,7 +13,7 @@
   "allReflectionsHaveOwnDocument": true,
   "sort": ["source-order"],
   // "media": "media",
-  "categorizeByGroup": false,
+  "categorizeByGroup": true,
   "excludePrivate": true,
   // "excludeProtected": true,
   "excludeInternal": true,
@@ -55,10 +55,10 @@
   },
   "navigationLinks": {
     "Docs": "https://docs.nulink.org/get-started/introduction",
-    "GitHub": "https://github.com/NuLink-network/nulink-sdk"
+    "GitHub": "https://github.com/NuLink-network/nulink-sdk/tree/crosschain"
   },
   "sidebarLinks": {
-    "API": "https://docs.nulink.org/products/nulink_sdk"
+    "API": "https://github.com/NuLink-network/nulink-sdk"
   },
   "watch": true
 }

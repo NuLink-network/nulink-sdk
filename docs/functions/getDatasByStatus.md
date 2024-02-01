@@ -44,4 +44,4 @@ get files/data info by status This account acts as the user (Bob) or publisher (
 
 #### Defined in
 
-[core/pre/api/workflow.ts:1096](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L1096)
+[core/pre/api/workflow.ts:1103](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/core/pre/api/workflow.ts#L1103)

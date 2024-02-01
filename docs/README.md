@@ -10,17 +10,20 @@ NuLink SDK / [Modules](modules.md)
 NuLink SDK is a software development kit designed to support privacy computing in the NuLink network.
 
 ## Prerequisites
-* The current SDK only supports javascript/typescript language development
+
+- The current SDK only supports javascript/typescript language development
 
 ## Supported Networks
-* Horus (Default networks, bsc testnet)
-* ~~ConFlux Espace~~ (Deprecated) [how to switch networks](#SwitchNetworks)
+
+- Horus (Default networks, bsc testnet)
+- ~~ConFlux Espace~~ (Deprecated) [how to switch networks](#SwitchNetworks)
 
 ## How to Use
-* [You can directly install the nulink-sdk library provided by the official](#Install)
-* [You can also build the code yourself.](#BuildSource)
 
-###  <a id="Install">Install</a>
+- [You can directly install the nulink-sdk library provided by the official](#Install)
+- [You can also build the code yourself](#BuildSource)
+
+### <a id="Install">Install</a>
 
 ```shell
 #for npm
@@ -33,17 +36,21 @@ yarn add @nulink_network/nulink-sdk
 ### <a id="BuildSource">Build Source</a>
 
 #### Set up your environment
+
 1. select a configuration file of your usage environment
- -  Development Environment (.env.dev)
- -  Production Environment  (.env.prod)
- -  Custom Environment (.env.example)
-  
+
+- Development Environment (.env.dev)
+- Production Environment (.env.prod)
+- Custom Environment (.env.example)
+
 2. Rename configuration file to .env
+
 - for Development Environment: rename .env.dev to .env
 - for Production Environment: rename .env.prod to .env
 - for Custom Environment: rename .env.example to .env, [then you need to modify the configuration file manually](#customEnvConfig)
 
 ##### <a id="customEnvConfig">Set configuration for a custom environment </a>
+
 ```javascript
 //Modify config:
 //the sdk backend testnet server address. in the nulink testnet,
@@ -55,7 +62,7 @@ REACT_APP_CENTRALIZED_SERVER_URL=xxxxx
 //the nulink bsc testnet porter address. in the nulink testnet,
 //you can use the address: https://agent.testnet.nulink.org/porter
 REACT_APP_BSC_TESTNET_PORTER_URI= xxxxx
-//the network's (e.g. bsc testnet) web3 rpc url. example: 
+//the network's (e.g. bsc testnet) web3 rpc url. example:
 REACT_APP_BSC_TESTNET_WEB3_RPC_URL=xxxxx
 ```
 
@@ -69,7 +76,9 @@ REACT_APP_BSC_TESTNET_WEB3_RPC_URL=xxxxx
 ## Usage
 
 ### <a id="SwitchNetworks">SelectNetworks</a>
+
 When nulink supports multiple networks, users can set their preferred network using the following method:
+
 ```javascript
 
 import {setCurrentNetworkKey} from "@nulink_network/nulink-sdk";
@@ -96,7 +105,7 @@ import {
 ```
 
 Then, you need to implement the <b>setDatas</b> and <b>getData</b> methods of the DataCallback structure.
-  Since we need to upload data (files) in batches in our use case, while usually retrieving them one by one, we need to implement the <b>setDatas</b> method for batch uploading and the <b>getData</b> method for retrieving data individually.
+Since we need to upload data (files) in batches in our use case, while usually retrieving them one by one, we need to implement the <b>setDatas</b> method for batch uploading and the <b>getData</b> method for retrieving data individually.
 
 ```javascript
 
@@ -105,9 +114,11 @@ const dataCallback: DataCallback = { setDatas: setIPFSDatas, getData: getIPFSDat
   StorageManager.setDataCallback(dataCallback)
 
 ```
-  After setting up the callback functions, when we upload files using the uploadDatasByCreatePolicy method in pre, the callback function <b>setDatas</b> you have set will be automatically invoked. Later, when we retrieve files using getDataContentAsUser, the <b>getData</b> function will be automatically called.
 
-  The <b>setDatas</b> and <b>getData</b> types are as follows:
+After setting up the callback functions, when we upload files using the uploadDatasByCreatePolicy method in pre, the callback function <b>setDatas</b> you have set will be automatically invoked. Later, when we retrieve files using getDataContentAsUser, the <b>getData</b> function will be automatically called.
+
+The <b>setDatas</b> and <b>getData</b> types are as follows:
+
 ```javascript
 
 export type DataCallback = {
@@ -123,7 +134,7 @@ export type AsyncGetDataCallback = (key: string) => Promise<Buffer | Uint8Array 
 
 <b>Notes</b>:
 
-    Please note that the Account parameter is optional. If the setDatas callback function defined by the user requires account information (such as signing data with the account's private key), the callback function can be defined with an additional parameter for the account. In the pre process, when the setDatas callback function is called, the account information will be passed to the user-defined callback function, allowing the callback function to access the current account information (account parameter). 
+    Please note that the Account parameter is optional. If the setDatas callback function defined by the user requires account information (such as signing data with the account's private key), the callback function can be defined with an additional parameter for the account. In the pre process, when the setDatas callback function is called, the account information will be passed to the user-defined callback function, allowing the callback function to access the current account information (account parameter).
 
 <b>More details</b>:
 
@@ -213,7 +224,7 @@ Next, we will upload data using the account we just created, which we'll refer t
 
 ```javascript
 
-// account Alice: as the publisher of the file (file uploader). 
+// account Alice: as the publisher of the file (file uploader).
 
 // Note: We only support one account currently.
 
@@ -260,7 +271,7 @@ assert(uploadDataInfo["owner_id"] === accountAlice.id);
 
 Then: Bob, far away on the other side of the ocean, wants to use Alice's uploaded data.
 
-   1.create wallet for Bob
+1.create wallet for Bob
 
 ```javascript
 // Bob, far away on the other side of the ocean, wants to use Alice's uploaded data
@@ -329,7 +340,7 @@ try {
 
 4.Alice reviews the usage requests from others for the data she uploaded.
 
-  At first, Alice rejected Bob's request to use the data.
+At first, Alice rejected Bob's request to use the data.
 
 ```javascript
 //Alice receives Bob's data usage request
@@ -372,7 +383,8 @@ try {
 }
 ```
 
-6.Alice is moved by Bob's persistence and after much consideration, she finally agrees to Bob's usage request.Since we need to send approval transactions to the current blockchain network, we first need to assess the gas fees as well as the service fees for requesting others' usage.
+### <a id="ApproveData">Alice approves Bob's request to use the file</a>
+1.Alice is moved by Bob's persistence and after much consideration, she finally agrees to Bob's usage request.Since we need to send approval transactions to the current blockchain network, we first need to assess the gas fees as well as the service fees for requesting others' usage.
 
 ```javascript
 //Alice receives Bob's file usage request again
@@ -448,7 +460,7 @@ await approvalApplicationForUseDatas(
 );
 ```
 
-7.<space>As it is an on-chain transaction, there might be some delay. At this point, we need to wait for the on-chain transaction to be successfully confirmed by web3 before Alice can view her latest list of approved documents.
+2.<space>As it is an on-chain transaction, there might be some delay. At this point, we need to wait for the on-chain transaction to be successfully confirmed by web3 before Alice can view her latest list of approved documents.
 
 ```javascript
 
@@ -477,8 +489,10 @@ let aliceApprovedDataList: any = null;
   assert(aliceApprovedDataList && aliceApprovedDataList["total"] > 0);
 ```
 
-8.<space>At this point, Bob checks his list of requested files and discovers that Alice has approved his request to use the file.
+### <a id="BobGetData">Bob checks his list of requested files, and he can use the data now</a>
+1.<space>At this point, Bob checks his list of requested files and discovers that Alice has approved his request to use the file.
 So, Bob obtains the details of the document for future reference and downloading.
+
 ```javascript
 
 //Record this policy ID and account Bob for future use.
@@ -500,7 +514,7 @@ const dataIndex2s: number[] = [] //Array(numReqData).fill(-1);
       const bobBeApprovedDataList = await pre.getApprovedDatasAsUser(_accountBob, 1, 1000)
       /*return data format: {
                               list: [
-                                { apply_id, file_id:, proposer, proposer_id, file_owner:, file_owner_id:, policy_id, hrac,        
+                                { apply_id, file_id:, proposer, proposer_id, file_owner:, file_owner_id:, policy_id, hrac,
                                   start_at:, end_at, created_at }
                                 ...
                               ],
@@ -527,7 +541,8 @@ const dataIndex2s: number[] = [] //Array(numReqData).fill(-1);
 
 ```
 
-9.<space>At this point, Bob downloads and views the data.
+2.<space>At this point, Bob downloads and views the data.
+
 ```javascript
       //Finally, Bob gets the contents of the data/file
       const arrayBuffer: ArrayBuffer = await pre.getDataContentByDataIdAsUser(
@@ -546,8 +561,11 @@ const dataIndex2s: number[] = [] //Array(numReqData).fill(-1);
   assert(dataIndex2s.length >= 0 && dataIndex2s.length > 0)
   //finish
 ```
-10.Also, Whenever Alice approves a file request, an on-chain policy is created.
+
+### <a id="AliceMore">Alice obtain the on-chain policy information published by herself</a>
+Also, Whenever Alice approves a file request, an on-chain policy is created.
 Alice can also obtain the on-chain policy information published by herself
+
 ```javascript
 
 // Whenever Alice approves a file request, an on-chain policy is created
@@ -557,7 +575,9 @@ const dataPolicys = await getPublishedPoliciesInfo(accountAlice, 1, 1000);
 assert(!isBlank(dataPolicys));
 ```
 
-11.Alice also can encrypt and update a file to the ipfs network by select an existing on-chain policy
+### <a id="AliceUploadDataBySelectPolicy">Alice upload file by select Published Policy</a>
+1.Alice also can encrypt and update a file to the ipfs network by select an existing on-chain policy
+
 ```javascript
 //Alice also can encrypt and update a file to the ipfs network by select an existing on-chain policy
 const plainText2 = "This is a philosophy book content";
@@ -579,7 +599,10 @@ const fileIds = await uploadDatasBySelectPolicy(
   policyId
 );
 ```
-12.Bob can directly download Alice's associated policy upload file without waiting for Alice's approval, because the associated policy has already been created and does not need repeated approval.
+
+### <a id="BobGetDataNoNeedApproveByAlice">Bob get data no need approve by Alice's published policys</a>
+2.Bob can directly download Alice's associated policy upload file without waiting for Alice's approval, because the associated policy has already been created and does not need repeated approval.
+
 ```javascript
 //Bob can directly download Alice's associated policy upload file without waiting for Alice's approval,
 //because the associated policy has already been created and does not need repeated approval. Note: This publish policy value is available for Bob
@@ -608,7 +631,9 @@ const data = (await getDatasByStatus(
 assert(data && !isBlank(data) && data["total"] > 0);
 ```
 
-13. we also can restore wallet by mnemonic
+### <a id="restoreWalletByMnemonic">Restore wallet by mnemonic</a>
+For wallet more info, you can also restore wallet by mnemonic
+
 ```javascript
 // we also can restore wallet by mnemonic
 
@@ -632,9 +657,11 @@ await logoutWallet();
 ```
 
 ## API docs
+
 <!--[API](./docs/modules.md) -->
+
 [API Details](https://github.com/NuLink-network/nulink-sdk/blob/main/docs/modules.md)
 
-## More examples 
+## More examples
 
 [nulink-sdk-demo](https://github.com/NuLink-network/nulink-sdk-demo)

@@ -44,4 +44,4 @@ get information about the current of all using policies by publiser others, the 
 
 #### Defined in
 
-[core/pre/api/workflow.ts:1182](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L1182)
+[core/pre/api/workflow.ts:1189](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/core/pre/api/workflow.ts#L1189)

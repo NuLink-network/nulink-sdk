@@ -1,8 +1,8 @@
-[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / getPolicysServerGasFee
+[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / getPolicysServerFee
 
-# Function: getPolicysServerGasFee
+# Function: getPolicysServerFee
 
-▸ **getPolicysServerGasFee**(`startSeconds`, `endSeconds`, `ursulaShares`): `Promise`<`string`\>
+▸ **getPolicysServerFee**(`startSeconds`, `endSeconds`, `ursulaShares`): `Promise`<`string`\>
 
 Retrieving the total of the service fees (NLK/TNLK) in bulk for data/file sharing purposes.
 Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
@@ -27,4 +27,4 @@ UnauthorizedError get logined account failed, must be login account first
 
 #### Defined in
 
-[api/pre.ts:66](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/api/pre.ts#L66)
+[api/pre.ts:68](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/api/pre.ts#L68)

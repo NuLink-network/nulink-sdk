@@ -27,20 +27,20 @@ Gets a list of files/data shared by others (files uploaded by the current accoun
                         {
                             total: number
                             list: [{
-                                file_id: string - File/Data ID
-                                file_name: string - File/Data name
-                                category: string - File/Data category/type
-                                format: string - File/Data format
-                                suffix: string - File/Data suffix
-                                address: string - File/Data address
-                                thumbnail: string - File/Data thumbnail
-                                owner: string - File/Data owner
-                                owner_id: string - File/Data owner's account ID
-                                owner_avatar: string - File/Data owner's avatar
-                                created_at: number - File/Data upload timestamp
+                                file_id: string - Data ID
+                                file_name: string - Data name
+                                category: string - Data category/type
+                                format: string - Data format
+                                suffix: string - Data suffix
+                                address: string - Data address
+                                thumbnail: string - Data thumbnail
+                                owner: string - Data owner
+                                owner_id: string - Data owner's account ID
+                                owner_avatar: string - Data owner's avatar
+                                created_at: number - Data upload timestamp
                             }]
                         }
 
 #### Defined in
 
-[core/pre/api/workflow.ts:652](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L652)
+[core/pre/api/workflow.ts:658](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/core/pre/api/workflow.ts#L658)

@@ -20,4 +20,4 @@ Rejects the application for the use of files/data. This account acts as the publ
 
 #### Defined in
 
-[core/pre/api/workflow.ts:2369](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L2369)
+[core/pre/api/workflow.ts:2382](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/core/pre/api/workflow.ts#L2382)

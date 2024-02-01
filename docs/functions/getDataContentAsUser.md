@@ -26,4 +26,4 @@ Gets the content of an approved file/data, which can be downloaded. The input pa
 
 #### Defined in
 
-[core/pre/api/workflow.ts:2514](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L2514)
+[core/pre/api/workflow.ts:2528](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/core/pre/api/workflow.ts#L2528)

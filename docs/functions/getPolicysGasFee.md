@@ -25,7 +25,7 @@ PolicyHasBeenActivedOnChain Policy has been actived(created) on chain (policy is
 | `ursulaThresholds` | `number`[] | - |
 | `startSeconds` | `number`[] | Start time of data/file usage application in UTC seconds |
 | `endSeconds` | `number`[] | End time of data/file usage application in UTC seconds |
-| `serverFee` | `BigNumber` | server fees by call function of `getPolicysServerGasFee` |
+| `serverFee` | `BigNumber` | server fees by call function of `getPolicysServerFee` |
 | `gasPrice` | `BigNumber` | - |
 
 #### Returns
@@ -36,4 +36,4 @@ PolicyHasBeenActivedOnChain Policy has been actived(created) on chain (policy is
 
 #### Defined in
 
-[api/pre.ts:183](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/api/pre.ts#L183)
+[api/pre.ts:187](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/api/pre.ts#L187)

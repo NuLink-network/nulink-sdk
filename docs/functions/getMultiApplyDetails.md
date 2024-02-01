@@ -28,4 +28,4 @@ Gets the details of multiple application records.
 
 #### Defined in
 
-[core/pre/api/workflow.ts:2725](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L2725)
+[core/pre/api/workflow.ts:2741](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/core/pre/api/workflow.ts#L2741)

@@ -12,4 +12,4 @@ Logs out the user by clearing the local storage.
 
 #### Defined in
 
-[api/wallet.ts:225](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/api/wallet.ts#L225)
+[api/wallet.ts:234](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/api/wallet.ts#L234)

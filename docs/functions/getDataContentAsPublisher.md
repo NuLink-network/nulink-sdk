@@ -5,6 +5,7 @@
 ▸ **getDataContentAsPublisher**(`data`): `Promise`<{ `url`: `string` = url; `dataLabel`: `string`  }\>
 
 The data/file publisher obtains the content of the data/file
+Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown
 
 **`Throws`**
 
@@ -30,4 +31,4 @@ ParameterError The input parameter must have the "dataId" field
 
 #### Defined in
 
-[api/pre.ts:893](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/api/pre.ts#L893)
+[api/pre.ts:906](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/api/pre.ts#L906)

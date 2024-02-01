@@ -17,7 +17,7 @@ estimate gas fees for sharing files/data
 | `ursulaThreshold` | `number` | The file/data user can download the file after obtaining the specified number of service data shares |
 | `startDate` | `Date` | Start date(UTC date) of file/data usage application |
 | `endDate` | `Date` | End date(UTC date) of file/data usage application |
-| `serverFee` | `BigNumber` | server fees by call function of `getPolicyServerGasFee` |
+| `serverFee` | `BigNumber` | server fees by call function of `getPolicyServerFee` |
 | `gasPrice` | `BigNumber` | the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time |
 | `porterUri?` | `string` | (Optional) the porter service url |
 
@@ -29,4 +29,4 @@ estimate gas fees for sharing files/data
 
 #### Defined in
 
-[core/pre/api/workflow.ts:1434](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L1434)
+[core/pre/api/workflow.ts:1443](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/core/pre/api/workflow.ts#L1443)

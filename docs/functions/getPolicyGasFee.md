@@ -25,7 +25,7 @@ PolicyHasBeenActivedOnChain Policy has been actived(created) on chain (policy is
 | `ursulaThreshold` | `number` | The data/file user can download the data/file after obtaining the specified number of service data shares |
 | `startSeconds` | `number` | Start time of data/file usage application in seconds |
 | `endSeconds` | `number` | End time of data/file usage application in seconds |
-| `serverFee` | `BigNumber` | server fees by call function of `getPolicyServerGasFee` |
+| `serverFee` | `BigNumber` | server fees by call function of `getPolicyServerFee` |
 | `gasPrice` | `BigNumber` | the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time |
 
 #### Returns
@@ -36,4 +36,4 @@ PolicyHasBeenActivedOnChain Policy has been actived(created) on chain (policy is
 
 #### Defined in
 
-[api/pre.ts:119](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/api/pre.ts#L119)
+[api/pre.ts:122](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/api/pre.ts#L122)

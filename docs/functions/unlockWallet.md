@@ -20,4 +20,4 @@ Attempts to unlock the NuLinkHDWallet with the given password.
 
 #### Defined in
 
-[api/wallet.ts:259](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/api/wallet.ts#L259)
+[api/wallet.ts:270](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/api/wallet.ts#L270)

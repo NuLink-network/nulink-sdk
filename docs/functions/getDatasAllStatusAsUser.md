@@ -41,4 +41,4 @@ Gets a list of all files/data with any status as a user (Bob) using this account
 
 #### Defined in
 
-[core/pre/api/workflow.ts:958](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L958)
+[core/pre/api/workflow.ts:964](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/core/pre/api/workflow.ts#L964)

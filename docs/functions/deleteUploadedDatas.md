@@ -19,4 +19,4 @@ Deletes the specified files/data uploaded by the account from the server, This a
 
 #### Defined in
 
-[core/pre/api/workflow.ts:602](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L602)
+[core/pre/api/workflow.ts:608](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/core/pre/api/workflow.ts#L608)

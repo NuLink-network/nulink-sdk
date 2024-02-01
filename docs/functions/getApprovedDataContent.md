@@ -5,6 +5,7 @@
 ▸ **getApprovedDataContent**(`dataId`): `Promise`<`ArrayBuffer`\>
 
 The data/file applicant retrieves the content of a data/file that has been approved for their usage.
+Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
 
 **`Throws`**
 
@@ -26,4 +27,4 @@ ParameterError The input parameter must have the "dataId" field
 
 #### Defined in
 
-[api/pre.ts:865](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/api/pre.ts#L865)
+[api/pre.ts:878](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/api/pre.ts#L878)

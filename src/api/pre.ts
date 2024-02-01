@@ -24,13 +24,14 @@ export type { BigNumber } from 'ethers'
 /**
  * get service fees (NLK/TNLK) for sharing data/files
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
+ * @category Data Publisher(Alice) Approval
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @param {number} startSeconds - Start time of data/file usage application in seconds
  * @param {number} endSeconds - End time of data/file usage application in seconds
  * @param {number} ursulaShares - Number of service shares
  * @returns {string} - the amount of NLK/TNLK in wei
  */
-export const getPolicyServerGasFee = async (startSeconds: number, endSeconds: number, ursulaShares: number) => {
+export const getPolicyServerFee = async (startSeconds: number, endSeconds: number, ursulaShares: number) => {
   const account = await getWalletDefaultAccount()
   if (isBlank(account)) {
     throw new exception.UnauthorizedError(
@@ -57,13 +58,14 @@ export const getPolicyServerGasFee = async (startSeconds: number, endSeconds: nu
 /**
  * Retrieving the total of the service fees (NLK/TNLK) in bulk for data/file sharing purposes.
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
+ * @category Data Publisher(Alice) Approval (Multi)
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @param {number[]} startSeconds - An array of the start time of data/file usage application in seconds
  * @param {number[]} endSeconds - An array of the end time of data/file usage application in seconds
  * @param {number[]} ursulaShares - An array of the number of service shares
  * @returns {string} - the amount of NLK/TNLK in wei
  */
- export const getPolicysServerGasFee = async (startSeconds: number [], endSeconds: number [], ursulaShares: number []) => {
+ export const getPolicysServerFee = async (startSeconds: number [], endSeconds: number [], ursulaShares: number []) => {
   const account = await getWalletDefaultAccount()
   if (isBlank(account)) {
     throw new exception.UnauthorizedError(
@@ -83,7 +85,7 @@ export const getPolicyServerGasFee = async (startSeconds: number, endSeconds: nu
     endDates.push(endDate);
 
     console.log(
-      "getPolicysServerGasFee: ",
+      "getPolicysServerFee: ",
       index,
       _startSeconds,
       _endSeconds,
@@ -104,6 +106,7 @@ export const getPolicyServerGasFee = async (startSeconds: number, endSeconds: nu
 /**
  * estimate service gas fees for sharing data/files
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
+ * @category Data Publisher(Alice) Approval 
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @throws {@link PolicyHasBeenActivedOnChain} Policy has been actived(created) on chain (policy is currently active)
  * @param {string} userAccountId - the account Id of the data/file applicant (Bob)
@@ -112,7 +115,7 @@ export const getPolicyServerGasFee = async (startSeconds: number, endSeconds: nu
  * @param {number} ursulaThreshold - The data/file user can download the data/file after obtaining the specified number of service data shares
  * @param {number} startSeconds - Start time of data/file usage application in seconds
  * @param {number} endSeconds - End time of data/file usage application in seconds
- * @param {BigNumber} serverFee - server fees by call function of `getPolicyServerGasFee`
+ * @param {BigNumber} serverFee - server fees by call function of `getPolicyServerFee`
  * @param {BigNumber} gasPrice - the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
  * @returns {Promise<String>} - the amount of bnb/tbnb in wei
  */
@@ -169,6 +172,7 @@ export const getPolicyGasFee = async (
 /**
  * estimate service gas fees for sharing data/files. The batch version of the getPolicyGasFee function.
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
+ * @category Data Publisher(Alice) Approval (Multi)
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @throws {@link PolicyHasBeenActivedOnChain} Policy has been actived(created) on chain (policy is currently active)
  * @param {string[]} userAccountIds - the account Id of the data/file applicant (Bob)
@@ -177,7 +181,7 @@ export const getPolicyGasFee = async (
  * @param {number[]} ursulaThreshold - The data/file user can download the data/file after obtaining the specified number of service data shares
  * @param {number[]} startSeconds - Start time of data/file usage application in UTC seconds
  * @param {number[]} endSeconds - End time of data/file usage application in UTC seconds
- * @param {BigNumber} serverFee - server fees by call function of `getPolicysServerGasFee`
+ * @param {BigNumber} serverFee - server fees by call function of `getPolicysServerFee`
  * @returns {Promise<String>} - the amount of bnb/tbnb in wei
  */
 export const getPolicysGasFee = async (
@@ -254,6 +258,7 @@ export const getPolicysGasFee = async (
 /**
  * get information of the logged-in user
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
+ * @category Wallet Account 
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @returns {Promise<object>} - The object containing the user information: {"name": , "address": "account address", "id": "account id",  "service": "service URL"}
  */
@@ -280,6 +285,7 @@ export const getLoginedUserInfo = async () => {
 /**
  * Retrieve if the default account is logged in
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
+ * @category Wallet Account 
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @returns {Promise<Boolean>}
  */
@@ -291,6 +297,7 @@ export const isUserLogined = async (): Promise<boolean> => {
 /**
  * Retrieve user information details
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
+ * @category Wallet Account 
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @returns {Promise<object>} - User information details:
  *                {
@@ -323,6 +330,7 @@ export const getUserDetails = async () => {
 
 /**
  * Retrieve user information details by user account Id
+ * @category Wallet Account 
  * @param {Object} data - Object be must be have the property of "accountId",  null otherwise
  * @param {string} data.accountId - account's Id
  * @returns {Promise<object>} - User information details:
@@ -351,6 +359,7 @@ export const getUserByAccountId = async (data: { accountId: string }) => {
 }
 
 /** update info of current user account
+ * @category Wallet Account 
  * @param {Object} data - the Object of update data. The input data must be one or more fields in the "data" section
  * @param {string} data.avatar - (Optional) the photo of current account
  * @param {string} data.nickname - (Optional) the nickname of current account
@@ -379,6 +388,8 @@ export const updateUserInfo = async (data: {
 
 /**
  * Check if the application status is "under review" or "approved"
+ * @category Data Publisher(Alice) Data Details
+ * @category Data User(Bob) Data Details
  * @param {Object} data - Object be must be have the property of "applyId",  return null otherwise
  * @param {string} data.applyId - The ID of the data/file application.
  * @returns  {Promise<boolean> || null}  param data Object be must be have the property of "applyId",  return null otherwise.
@@ -394,6 +405,7 @@ export const checkDataApprovalStatusIsUnderReviewOrApproved = async (data: { app
 /**
  * Approve the user's data/file usage request
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
+ * @category Data Publisher(Alice) Approval
  * @param {Object} data - the Object of update data. Object be must be have the properties: "userAccountId" and "applyId", return null otherwise
  *              The input data must include the following fields in the "data" section:
  * @param {string} data.userAccountId
@@ -468,6 +480,7 @@ export const ApprovalUseDatas = async (data: {
 /**
  * Approve the user's multi data/file usage request. The batch version of the ApprovalUseDatas function.
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
+ * @category Data Publisher(Alice) Approval (Multi)
  * @param {Object} data - the Object of update data. Object be must be have the properties: "userAccountIds" and "applyIds", return null otherwise
  *              The input data must include the following fields in the "data" section:
  * @param {string[]} data.userAccountIds
@@ -544,8 +557,8 @@ export const ApprovalMultiUseDatas = async (data: {
 
 /**
  * The data/file publisher retrieves a list of data/files that have been approved for use by others.
- * @category File/Data Publisher(Alice) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
+ * @category Data Publisher(Alice) Approval Details 
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first  
  * @param {Object} data - Object must be include the following fields in the "data" section:
  * @param {number} data.pageIndex - (Optional) number default 1
@@ -588,8 +601,8 @@ export const getDatasForApprovedAsPublisher = async (data: { pageIndex?: number;
 
 /**
  * The data/file applicant retrieves a list of data/files that have been approved for their own use.
- * @category File/Data User(Bob) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
+ * @category Data User(Bob) Download Data
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first  
  * @param {Object} data - Object must be include the following fields in the "data" section:
  * @param {number} data.pageIndex - (Optional) number default 1
@@ -632,8 +645,8 @@ export const getDatasForApprovedAsUser = async (data: { pageIndex?: number; page
 
 /**
  * The data/file publisher retrieves a list of data/files in all states that need to be approved for use by others.
- * @category File/Data Publisher(Alice) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
+ * @category Data Publisher(Alice) Approval Details 
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first  
  * @param {Object} data - Object must be include the following fields in the "data" section:
  * @param {number} data.pageIndex - (Optional) number default 1
@@ -676,8 +689,8 @@ export const getDatasForAllStatusAsPublisher = async (data: { pageIndex?: number
 
 /**
  * Retrieve a list of data/files that have been approved for the data/file applicant's own use.
- * @category File/Data User(Bob) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
+ * @category Data User(Bob) Data Details
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first  
  * @param {Object} data - Object must be include the following fields in the "data" section:
  * @param {number} data.pageIndex - (Optional) number default 1
@@ -720,8 +733,8 @@ export const getDatasApprovedForApplicantAsUser = async (data: { pageIndex?: num
 
 /**
  * Retrieve a list of data/files in a specified state that need to be approved for use by others, for the data/file publisher.
- * @category File/Data Publisher(Alice) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
+ * @category Data Publisher(Alice) Approval Details 
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first  
  * @param {Object} data - Object must be include the following fields in the "data" section:
  * @param {number} data.status - (Optional) default 0: All state 1: Under review, 2: Approved, 3: Rejected, 4: Under approval, 5: Expired
@@ -770,8 +783,8 @@ export const getDatasByStatusForAllApplyAsPublisher = async (data: {
 
 /**
  * The data/file applicant retrieves a list of data/files in a specified state that need to be approved by others.
- * @category File/Data User(Bob) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
+ * @category Data User(Bob) Data Details
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first  
  * @param {Object} data - Object must be include the following fields in the "data" section:
  * @param {number} data.status - (Optional) default 0: All state 1: Under review, 2: Approved, 3: Rejected, 4: Under approval, 5: Expired
@@ -797,7 +810,7 @@ export const getDatasByStatusForAllApplyAsPublisher = async (data: {
               "total": total count
             }
  */
-export const getFilesByStatusForAllApplyAsUser = async (data: {
+export const getDatasByStatusForAllApplyAsUser = async (data: {
   pageIndex?: number
   pageSize?: number
   status?: string | number
@@ -820,8 +833,8 @@ export const getFilesByStatusForAllApplyAsUser = async (data: {
 
 /**
  * The data/file applicant retrieves the content of a data/file that has been approved for their usage.
- * @category File/Data User(Bob) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
+ * @category Data User(Bob) Download Data
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @throws {@link ParameterError} The input parameter must have the "dataId" field
  * @param {Object} data - Object must be include the following fields in the "data" section:
@@ -855,8 +868,8 @@ export const getApprovedFileContentUrl = async (data: { dataId: string; dataLabe
 
 /**
  * The data/file applicant retrieves the content of a data/file that has been approved for their usage.
- * @category File/Data User(Bob) Interface
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
+ * @category Data User(Bob) Download Data
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @throws {@link ParameterError} The input parameter must have the "dataId" field
  * @param {string} dataId - data's id
@@ -881,8 +894,8 @@ export const getApprovedDataContent = async (dataId): Promise<ArrayBuffer> => {
 
 /**
  * The data/file publisher obtains the content of the data/file
- * @category File/Data Publisher(Alice) Interface
- * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
+ * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown
+ * @category Data Publisher(Alice) Download Data
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @throws {@link ParameterError} The input parameter must have the "dataId" field
  * @param {Object} data - Object must be include the following fields in the "data" section:
@@ -916,6 +929,8 @@ export const getDataContentAsPublisher = async (data: { dataId: string; dataLabe
 
 /**
  * Retrieves a list of data/files in a specified state.
+ * @category Data Publisher(Alice) Data Details 
+ * @category Data User(Bob) Data Details 
  * @param {Object} data - Object must be include the following fields in the "data" section:
  * @param {number} data.status - (Optional) default 0: All state 1: Under review, 2: Approved, 3: Rejected, 4: Under approval, 5: Expired
  * @param {number} data.pageIndex - (Optional) number default 1
@@ -966,8 +981,8 @@ export const getDatasInfoByStatus = async (data: {
 
 /**
  * The publisher of the file obtains a list of the information of the policies.
- * @category File/Data Publisher(Alice) Interface
- * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
+ * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown
+ * @category Data Publisher(Alice) Policys
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @param {Object} data - Object must be include the following fields in the "data" section:
  * @param {number} data.pageIndex - (Optional) number default 1
@@ -1011,11 +1026,11 @@ export const getPublishedPolicyInfos = async (data: { pageIndex?: number; pageSi
   )
 }
 
+
 /**
-/**
- * The applicant of the file obtains a list of the policy information.
- * @category File/Data User(Bob) Interface
- * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
+ * The applicant of the file obtains a list of the policy information
+ * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown
+ * @category Data User(Bob) Policys
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @param {Object} data - Object must be include the following fields in the "data" section:
  * @param {number} data.pageIndex - (Optional) number default 1
@@ -1061,7 +1076,9 @@ export const getPolicyInfosAsUser = async (data: { pageIndex?: number; pageSize?
 
 /**
  * Obtain a list of data/files associated with the published policy information.
- * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
+ * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown
+ * @category Data Publisher(Alice) Policys
+ * @category Data User(Bob) Policys
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @throws {@link ParameterError} The input parameter must have the "policyId" field
  * @param {Object} data - Object must be include the following fields in the "data" section:
@@ -1124,6 +1141,8 @@ export const getDatasInfoOfPolicy = async (data: {
 
 /**
  * Obtain a list of data/files associated with the policy (including the data/files of both the data/file publisher and the file applicant).
+ * @category Data Publisher(Alice) Policys
+ * @category Data User(Bob) Policys
  * @throws {@link ParameterError} The input parameter must have the "policyId" field
  * @param {Object} data - Object must be include the following fields in the "data" section:
  * @param {string} data.policyId - policyId
@@ -1166,6 +1185,7 @@ export const getAllDatasInfoOfPolicy = async (data: { pageIndex?: number; pageSi
 
 /**
  * send the raw transaction
+ * @category Send Raw Transaction 
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @throws {Error} set Transaction failed exception
  * @param {string} toAddress - The recevier of the transaction, can be empty when deploying a contract.
@@ -1221,6 +1241,7 @@ export const sendCustomTransaction = async (
 
 /**
  * send the raw transaction
+ * @category Send Raw Transaction 
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @throws {Error} estimateCustomTransactionGas failed exception
  * @param {string} toAddress - The recevier of the transaction, can be empty when deploying a contract.

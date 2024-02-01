@@ -5,8 +5,8 @@
 ▸ **getDefaultAccountPrivateKey**(`password?`): `Promise`<``null`` \| `string`\>
 
 get the wallet's mnemonic
- Note:  If no password is passed to the getWalletDefaultAccount function, it will attempt to obtain the wallet object from memory.
- If it cannot be obtained, null is returned. In this case, the function needs to be called again with the user's password to retrieve the wallet object.
+Note:  If no password is passed to the getWalletDefaultAccount function, it will attempt to obtain the wallet object from memory.
+If it cannot be obtained, null is returned. In this case, the function needs to be called again with the user's password to retrieve the wallet object.
 
 **`Throws`**
 
@@ -26,4 +26,4 @@ PasswordDecryptError
 
 #### Defined in
 
-[api/wallet.ts:289](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/api/wallet.ts#L289)
+[api/wallet.ts:302](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/api/wallet.ts#L302)

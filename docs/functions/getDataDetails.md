@@ -45,4 +45,4 @@ Retrieves the details of a file/data (include apply file/data info, file/data in
 
 #### Defined in
 
-[core/pre/api/workflow.ts:2791](https://github.com/NuLink-network/nulink-sdk/blob/11cbdd7/src/core/pre/api/workflow.ts#L2791)
+[core/pre/api/workflow.ts:2809](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/core/pre/api/workflow.ts#L2809)
