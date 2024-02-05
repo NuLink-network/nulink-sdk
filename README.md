@@ -661,7 +661,7 @@ await logoutWallet();
 
 <!--[API](./docs/modules.md) -->
 
-[API Details](https://github.com/NuLink-network/nulink-sdk/blob/main/docs/modules.md)
+[API Details](https://github.com/NuLink-network/nulink-sdk/tree/crosschain/docs/modules.md)
 
 ## More examples
 
