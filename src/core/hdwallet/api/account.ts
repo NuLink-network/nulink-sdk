@@ -439,6 +439,7 @@ export class Account extends IJson {
   public async createStrategy(label: string, id = ''): Promise<Strategy> {
     //The default label should be the name of the incoming data/file. If it is repeated, add the policy id identifier (uuid)
     const strategyAddressIndex = await this.generateStrategyAddressIndex()
+    console.log(`createStrategy strategyAddressIndex: ${strategyAddressIndex}`)
     const strategy: Strategy = new Strategy(this.addressIndex, strategyAddressIndex, label, id)
     this.strategyMapping.set(strategyAddressIndex, strategy)
     //Synchronize the hdWallet object

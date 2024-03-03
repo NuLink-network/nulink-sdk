@@ -44,14 +44,14 @@ export const getPolicyServerFee = async (startSeconds: number, endSeconds: numbe
   const startDate: Date = new Date(startSeconds * 1000) //  start_at is seconds, but Date needs milliseconds
   const endDate: Date = new Date(endSeconds * 1000) //  end_at is seconds, but Date needs milliseconds
 
-  const gasWei = await getPolicyTokenCost(
+  const serverWei = await getPolicyTokenCost(
     account as Account,
     startDate,
     endDate,
     ursulaShares
   );
-  // const gasValue = Web3.utils.fromWei(gasWei.toString(), "ether");
-  return gasWei.toString()
+  // const gasValue = Web3.utils.fromWei(serverWei.toString(), "ether");
+  return serverWei.toString()
 }
 
 
@@ -93,14 +93,14 @@ export const getPolicyServerFee = async (startSeconds: number, endSeconds: numbe
     );
   }
 
-  const gasWei = await getPolicysTokenCost(
+  const serverWei = await getPolicysTokenCost(
     account as Account,
     startDates,
     endDates,
     ursulaShares
   );
-  // const gasValue = Web3.utils.fromWei(gasWei.toString(), "ether");
-  return gasWei.toString()
+  // const gasValue = Web3.utils.fromWei(serverWei.toString(), "ether");
+  return serverWei.toString()
 }
 
 /**

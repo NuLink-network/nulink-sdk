@@ -1326,8 +1326,8 @@ export const getPolicyTokenCost = async (
   // const endDate: Date = new Date(endSeconds * 1000); //  end_at is seconds, but Date needs milliseconds
 
   //return wei
-  const gasWei = await calcPolicyCost(alice, startDate, endDate, ursulaShares)
-  return gasWei
+  const serverWei = await calcPolicyCost(alice, startDate, endDate, ursulaShares)
+  return serverWei
 }
 
 /**
@@ -1351,8 +1351,8 @@ export const getPolicysTokenCost = async (
   // const endDate: Date = new Date(endSeconds * 1000); //  end_at is seconds, but Date needs milliseconds
 
   //return wei
-  const gasWei = await calcPolicysCost(alice, startDates, endDates, ursulaShares)
-  return gasWei
+  const serverWei = await calcPolicysCost(alice, startDates, endDates, ursulaShares)
+  return serverWei
 }
 
 /**
@@ -1549,7 +1549,13 @@ export const estimatePolicysGas = async (
    *    policyParameters: MultiBlockchainPolicyParameters
    *    alice: Alice
    *    ursulasArray: Array<Ursula[]>
-   *    publisherAccount: Account
+   *    publisherAccount: Account,
+   * 
+   *     deDuplicationInfo: {
+   *     multiBlockchainPolicy: MultiBlockchainPolicy;
+   *     strategys: Strategy[];
+   *     policyParameters: MultiBlockchainPolicyParameters;
+   *     ursulasArray: Array<Ursula[]>;
    *  }
    */
   const resultInfo = await getBlockchainPolicys(
@@ -1567,9 +1573,9 @@ export const estimatePolicysGas = async (
   // //enPolicy service fee wei
   // const costServerFeeWei: BigNumber = await calcPolicyCost(
   //   resultInfo.alice,
-  //   resultInfo.policyParameters.startDate,
-  //   resultInfo.policyParameters.endDate,
-  //   resultInfo.policyParameters.shares,
+  //   resultInfo.deDuplicationInfo.policyParameters.startDate,
+  //   resultInfo.deDuplicationInfo.policyParameters.endDate,
+  //   resultInfo.deDuplicationInfo.policyParameters.shares,
   // );
 
   console.log('before estimateApproveNLKGas')
@@ -1586,7 +1592,7 @@ export const estimatePolicysGas = async (
 
   console.log('before multi policy estimateCreatePolicyGas ')
 
-  const gasInWei: BigNumber = await resultInfo.multiBlockchainPolicy.estimateCreatePolicysGas(
+  const gasInWei: BigNumber = await resultInfo.deDuplicationInfo.multiBlockchainPolicy.estimateCreatePolicysGas(
     resultInfo.alice,
     gasPrice
   )
@@ -1734,7 +1740,7 @@ const getBlockchainPolicy = async (
   if (!strategy || isBlank(strategy)) {
     //` get account strategy failed, label_id ${policyData["policy_label_id"]},\n When you Restore Account, You must Import account Vault data!!!`
     throw new Error(
-      `The user's data version is outdated and cannot be imported. Please export the latest data to prevent data loss!`
+      `The user's data version is outdated and cannot be imported. Please export the latest data to prevent data loss! id: ${policyData["policy_label_id"] as string}`
     )
   }
 
@@ -1776,6 +1782,12 @@ const getBlockchainPolicys = async (
   alice: Alice
   ursulasArray: Array<Ursula[]>
   publisherAccount: Account
+  deDuplicationInfo: {
+    multiBlockchainPolicy: MultiBlockchainPolicy;
+    strategys: Strategy[];
+    policyParameters: MultiBlockchainPolicyParameters;
+    ursulasArray: Array<Ursula[]>;
+  };
 }> => {
   //https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E6%89%B9%E5%87%86%E6%96%87%E4%BB%B6%E4%BD%BF%E7%94%A8%E7%94%B3%E8%AF%B7
   //return {}
@@ -1862,10 +1874,27 @@ const getBlockchainPolicys = async (
     // console.log("ursulas:",ursulas);
   }
 
-  const bobs: RemoteBob[] = []
-  const labels: string[] = []
-  const strategys: Strategy[] = []
-  const ursulasArray: Array<Ursula[]> = []
+  //Filter out identical (local) policy information corresponding to HRAC (Hierarchical Role-Based Access Control) on the chain. Identical HRAC refers to the same file publisher, the same file consumer, and the same local policy.
+  //alice only one, so filter hrac by: `${bob_pk}_${policy_id}`
+  const pulisherUserPolicyIds: Set<string> = new Set();
+
+  const bobs: RemoteBob[] = [];
+  const labels: string[] = [];
+  const strategys: Strategy[] = [];
+  const ursulasArray: Array<Ursula[]> = [];
+  const retUrsulaShares: number[] = []; //n   m of n => 3 of 5
+  const retThresholds: number[] = []; // m
+  const retStartDates: Date[] = [];
+  const retEndDates: Date[] = [];
+
+  const deDuplicationBobs: RemoteBob[] = [];
+  const deDuplicationLabels: string[] = [];
+  const deDuplicationStrategys: Strategy[] = [];
+  const deDuplicationUrsulasArray: Array<Ursula[]> = [];
+  const deDuplicationRetUrsulaShares: number[] = []; //n   m of n => 3 of 5
+  const deDuplicationRetThresholds: number[] = []; // m
+  const deDuplicationRetStartDates: Date[] = [];
+  const deDuplicationRetEndDates: Date[] = [];
 
   //2. create policy to block chain
   // const config = await getSettingsData();
@@ -1880,60 +1909,121 @@ const getBlockchainPolicys = async (
     // const endMs: number = startMs + (policyData["days"] as number) * 24 * 60 * 60 * 1000;
     // const endDate: Date = new Date(endMs); //  start_at is seconds, but Date needs milliseconds
 
+    const policy_label_id = policyData["policy_label_id"] as string;
+    const strategy: Strategy | undefined =
+      publisher.getAccountStrategyByStategyId(policy_label_id);
+
+    console.log("policy_label_id: ", policy_label_id);
+    // console.log("ApprovalUseFiles strategy", strategy);
+    // assert(strategy !== undefined);
+    if (!strategy || isBlank(strategy)) {
+      //` get account strategy failed, label_id ${policy_label_id},\n When you Restore Account, You must Import account Vault data!!!`
+      throw new Error(
+        `The user's data version is outdated and cannot be imported. Please export the latest data to prevent data loss! id: ${policyData["policy_label_id"] as string}`
+      )
+    }
+
     // Note Bob, Enrico's Encrypted PK SK is the same as Verify PK SK.  Alice verify PK can use encrypted PK.
 
-    const bob: RemoteBob = makeRemoteBob(userInfo['encrypted_pk'], userInfo['encrypted_pk']) //userInfo["verify_pk"]);
+    const bob: RemoteBob = makeRemoteBob(
+      userInfo["encrypted_pk"],
+      userInfo["encrypted_pk"]
+    ); //userInfo["verify_pk"]);
 
     // console.log("Bob encrypted_pk: ", userInfo["encrypted_pk"]);
     // console.log("Bob verify_pk: ", userInfo["verify_pk"]);
 
-    const strategy: Strategy | undefined = publisher.getAccountStrategyByStategyId(
-      policyData['policy_label_id'] as string
-    )
-    // console.log("ApprovalUseDatas strategy", strategy);
-    // assert(strategy !== undefined);
-    if (!strategy || isBlank(strategy)) {
-      //` get account strategy failed, label_id ${policyData["policy_label_id"]},\n When you Restore Account, You must Import account Vault data!!!`
-      throw new Error(
-        `The user's data version is outdated and cannot be imported. Please export the latest data to prevent data loss!`
-      )
-    }
-
     // console.log("the account address is:", publisher.address);
     // console.log("the account key is:", pwdDecrypt(publisher.encryptedKeyPair._privateKey, true));
 
-    const shares = ursulaShares[index]
-    const sharesUrsulas: Ursula[] = getRandomElementsFromArray(ursulas ?? [], shares)
+    const shares = ursulaShares[index];
+    const sharesUrsulas: Ursula[] = getRandomElementsFromArray(
+      ursulas ?? [],
+      shares
+    );
 
-    strategys.push(strategy)
-    bobs.push(bob)
-    labels.push(label)
-    ursulasArray.push(sharesUrsulas)
+    const pulisherUserPolicyId = `${userInfo["encrypted_pk"]}_${policy_label_id}`;
+
+    if (pulisherUserPolicyIds.has(pulisherUserPolicyId)) {
+      //Without deduplication, only record the indices of data in policyData that correspond to the same HRAC.
+      ////Deduplicate based on identical HRAC
+      //continue;
+    } else {
+      //Deduplicate identical HRAC values, only add if they do not already exist.
+      deDuplicationStrategys.push(strategy);
+      deDuplicationBobs.push(bob);
+      deDuplicationLabels.push(label);
+      deDuplicationUrsulasArray.push(sharesUrsulas);
+      deDuplicationRetUrsulaShares.push(shares);
+      deDuplicationRetThresholds.push(ursulaThresholds[index]);
+      deDuplicationRetStartDates.push(startDates[index]);
+      deDuplicationRetEndDates.push(endDates[index]);
+
+      pulisherUserPolicyIds.add(pulisherUserPolicyId);
+    }
+
+    strategys.push(strategy);
+    bobs.push(bob);
+    labels.push(label);
+    ursulasArray.push(sharesUrsulas);
+    retUrsulaShares.push(shares);
+    retThresholds.push(ursulaThresholds[index]);
+    retStartDates.push(startDates[index]);
+    retEndDates.push(endDates[index]);
   }
 
-  const multiBlockchainPolicyParameters: MultiBlockchainPolicyParameters = {
-    bobs: bobs,
-    labels: labels,
-    thresholds: ursulaThresholds,
-    shares: ursulaShares,
-    startDates: startDates,
-    endDates: endDates
-  }
+  //const multiBlockchainPolicyParameters: MultiBlockchainPolicyParameters = {
+  //  bobs: bobs,
+  //  labels: labels,
+  //  thresholds: retThresholds,
+  //  shares: retUrsulaShares,
+  //  startDates: retStartDates,
+  //  endDates: retEndDates,
+  //};
+  //
+  //console.log(`getBlockchainPolicys before createMultiChainPolicy`);
+  //const policy: MultiBlockchainPolicy = await createMultiChainPolicy(
+  //  alice,
+  //  multiBlockchainPolicyParameters,
+  //  strategys
+  //);
 
-  console.log(`getBlockchainPolicys before createMultiChainPolicy`)
-  const policy: MultiBlockchainPolicy = await createMultiChainPolicy(alice, multiBlockchainPolicyParameters, strategys)
-  console.log(`getBlockchainPolicys after createMultiChainPolicy`)
+  const deDuplicationMultiBlockchainPolicyParameters: MultiBlockchainPolicyParameters =
+    {
+      bobs: deDuplicationBobs,
+      labels: deDuplicationLabels,
+      thresholds: deDuplicationRetThresholds,
+      shares: deDuplicationRetUrsulaShares,
+      startDates: deDuplicationRetStartDates,
+      endDates: deDuplicationRetEndDates,
+    };
+
+  console.log(`getBlockchainPolicys before createMultiChainPolicy`);
+  const deDuplicationPolicy: MultiBlockchainPolicy =
+    await createMultiChainPolicy(
+      alice,
+      deDuplicationMultiBlockchainPolicyParameters,
+      deDuplicationStrategys
+    );
+
+  console.log(`getBlockchainPolicys after createMultiChainPolicy`);
   // "@nucypher_network/nucypher-ts": "^0.7.0",  must be this version
 
   return {
-    multiBlockchainPolicy: policy,
+    multiBlockchainPolicy: deDuplicationPolicy, //policy,
     strategys: strategys,
-    policyParameters: multiBlockchainPolicyParameters,
+    policyParameters: deDuplicationMultiBlockchainPolicyParameters, //multiBlockchainPolicyParameters,
     alice: alice,
     ursulasArray: ursulasArray,
-    publisherAccount: publisher
-  }
-}
+    publisherAccount: publisher,
+    deDuplicationInfo: {
+      multiBlockchainPolicy: deDuplicationPolicy,
+      strategys: deDuplicationStrategys,
+      policyParameters: deDuplicationMultiBlockchainPolicyParameters,
+      ursulasArray: deDuplicationUrsulasArray,
+    },
+  };
+};
 
 /**
  * Check if the application status is "under review" or "approved"
@@ -2258,10 +2348,10 @@ export const approvalApplicationsForUseDatas = async (
     //enPolicy service fee gas wei
     const costServerFeeWei: BigNumber = await calcPolicysCost(
       resultInfo.alice,
-      resultInfo.policyParameters.startDates,
-      resultInfo.policyParameters.endDates,
-      resultInfo.policyParameters.shares
-    )
+      resultInfo.deDuplicationInfo.policyParameters.startDates,
+      resultInfo.deDuplicationInfo.policyParameters.endDates,
+      resultInfo.deDuplicationInfo.policyParameters.shares
+    );
 
     const txHashOrEmpty: string = await approveNLK(
       publisher,
@@ -2321,8 +2411,8 @@ export const approvalApplicationsForUseDatas = async (
 
   const gasLimit: BigNumber = gasFeeInWei.gt(BigNumber.from('0')) ? gasFeeInWei.div(_gasPrice) : BigNumber.from('0')
   //MultiPreEnactedPolicy
-  const enMultiPolicy: MultiEnactedPolicy = await resultInfo.multiBlockchainPolicy.enact(
-    resultInfo.ursulasArray,
+  const enMultiPolicy: MultiEnactedPolicy = await resultInfo.deDuplicationInfo.multiBlockchainPolicy.enact(
+    resultInfo.deDuplicationInfo.ursulasArray,
     waitReceipt,
     gasLimit,
     _gasPrice
