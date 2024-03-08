@@ -131,3 +131,10 @@ export class TransactionError extends Error {
     this.name = "TransactionError"; // (2)
   }
 }
+
+export class GetTransactionReceiptError extends Error {
+  constructor(message) {
+    super(message); // (1)
+    this.name = "GetTransactionReceiptError"; // (2)
+  }
+}

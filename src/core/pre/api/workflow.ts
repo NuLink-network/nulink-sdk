@@ -10,6 +10,7 @@ import { GAS_LIMIT_FACTOR, GAS_PRICE_FACTOR } from '../../chainnet/config'
 import { DecimalToInteger } from '../../utils/math'
 import { hexlify, arrayify } from 'ethers/lib/utils'
 //import { arrayify } from '@ethersproject/bytes'
+import { TransactionReceipt } from "web3-core";
 
 // notice: bacause the MessageKit use the SecretKey import from nucypher-ts, so you  must be use the nucypher-ts's SecretKey PublicKey , not use the nucypher-core's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -74,7 +75,9 @@ import {
   InsufficientBalanceError,
   PolicyHasBeenActivedOnChain,
   GetStrategyError,
-  DecryptError
+  DecryptError,
+  GetTransactionReceiptError,
+  TransactionError,
 } from '../../utils/exception'
 import { getWeb3 } from '../../hdwallet/api'
 import { getRandomElementsFromArray } from '../../../core/utils'
@@ -2419,6 +2422,35 @@ export const approvalApplicationsForUseDatas = async (
   )
 
   console.log('after mulit policy enact')
+  if (!isBlank(enMultiPolicy.txHash)) {
+    let receipt: any = null;
+
+    let retryTimes = 80;
+    do {
+      try {
+        receipt = await web3.eth.getTransactionReceipt(enMultiPolicy.txHash);
+      //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
+      } catch (error) {
+        console.log("getTransactionReceipt createPolicy txHash retrying, error: ", error);
+      }
+
+      if(isBlank(receipt)){
+        await sleep(1000);
+      }
+      retryTimes--;
+    } while (isBlank(receipt) && retryTimes > 0);
+
+    const txReceipt = receipt as TransactionReceipt;
+
+    //  //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
+    if (null == txReceipt || !txReceipt.status) {
+      throw new GetTransactionReceiptError(
+        `getTransactionReceipt!  transaction Hash is ${enMultiPolicy.txHash}`
+      );
+    }
+  } else {
+    throw new TransactionError(`send transaction Approve failed!`);
+  }
   // // Persist side-channel
   // const aliceVerifyingKey: PublicKey = alice.verifyingKey;
   // const policyEncryptingKey: PublicKey = enPolicy.policyKey;

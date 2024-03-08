@@ -29,7 +29,7 @@ export const getBlurThumbnail = async (
   //image: ArrayBuffer or image file path
   //return Buffer is thumbnail's buffer, string is image MiME type string, eg: 'image/png'
 
-  //const myArrayBuffer = readFileSync("C:/Users/wangyi/Desktop/5.png", null).buffer;
+  //const myArrayBuffer = readFileSync("C:/Users/xxx/Desktop/5.png", null).buffer;
   //const buf = Buffer.from(myArrayBuffer, 0, myArrayBuffer.byteLength);
   let buf /* :Buffer | string */;
   if (imageArrayBuffer instanceof ArrayBuffer) {
