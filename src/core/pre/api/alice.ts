@@ -244,18 +244,25 @@ export class BlockchainPolicy {
     const startTimestamp = toEpoch(this.startDate);
     const endTimestamp = toEpoch(this.endDate);
     const ownerAddress = await publisher.web3Provider.getAddress();
-    // const value = await SubscriptionManagerAgent.getPolicyCost(
-    //   publisher.web3Provider.provider,
-    //   this.shares,
-    //   startTimestamp,
-    //   endTimestamp,
-    // );
+
+    const curNetwork: NETWORK_LIST = await getCurrentNetworkKey();
+
+    let value: BigNumber = BigNumber.from("100"); //bsc testnet Contract error, value must be greater than 0
+    if (!(curNetwork in [NETWORK_LIST.Horus, NETWORK_LIST.HorusMainNet])) {
+      //The sidechain does not have an NLK. It is necessary to convert to the base currency (such as Matic). The value of the transfer needs to be calculated by calling getPolicysCost.
+      value = await SubscriptionManagerAgent.getPolicyCost(
+        publisher.web3Provider.provider,
+        this.shares,
+        startTimestamp,
+        endTimestamp
+      );
+    }
 
     try {
       const gasUsedAmounts =
         await SubscriptionManagerAgent.estimateGasByCreatePolicy(
           publisher.web3Provider,
-          BigNumber.from("100"), //Contract error, value must be greater than 0 //BigNumber.from("0"),
+          value,
           this.hrac.toBytes(),
           this.shares,
           startTimestamp,
@@ -603,17 +610,25 @@ export class MultiBlockchainPolicy {
     );
     const endTimestamps = this.endDates.map((endDate) => toEpoch(endDate));
     const ownerAddress = await publisher.web3Provider.getAddress();
-/*     const value = await SubscriptionManagerAgent.getPolicyCost(
-      publisher.web3Provider.provider,
-      this.shares,
-      startTimestamp,
-      endTimestamp
-    ); */
+
+    const curNetwork: NETWORK_LIST = await getCurrentNetworkKey();
+
+    let value: BigNumber = BigNumber.from("100"); //bsc testnet Contract error, value must be greater than 0
+    if (!(curNetwork in [NETWORK_LIST.Horus, NETWORK_LIST.HorusMainNet])) {
+      //The sidechain does not have an NLK. It is necessary to convert to the base currency (such as Matic). The value of the transfer needs to be calculated by calling getPolicysCost.
+      value = await SubscriptionManagerAgent.getPolicysCost(
+        publisher.web3Provider.provider,
+        this.shares,
+        startTimestamps,
+        endTimestamps
+      );
+    }
+
     try {
       const gasUsedAmounts =
         await SubscriptionManagerAgent.estimateGasByCreatePolicys(
           publisher.web3Provider,
-          /* value */ BigNumber.from("100"), //Contract error, value must be greater than 0
+          value,
           this.hracs.map((hrac) => hrac.toBytes()),
           this.shares,
           startTimestamps,
