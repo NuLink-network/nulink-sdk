@@ -2184,22 +2184,23 @@ export const approvalApplicationForUseDatas = async (
     //wei can use  BigNumber.from(), ether can use ethers.utils.parseEther(), because the BigNumber.from("1.2"), the number can't not be decimals (x.x)
     //await publisher.getNLKBalance() return ethers
     //Check whether the account balance is less than the policy creation cost
-    const nlkBalanceEthers: BigNumber = ethers.utils.parseEther((await publisher.getNLKBalance()) as string)
-    const costServerGasEther = Web3.utils.fromWei(costServerFeeWei.toString(), 'ether')
+    const nlkEther = await publisher.getNLKBalance();
+    const nlkBalanceWei: BigNumber = ethers.utils.parseEther((nlkEther) as string);
+    const costServerEther = Web3.utils.fromWei(costServerFeeWei.toString(), 'ether')
 
-    console.log(`the account balance is: ${nlkBalanceEthers.toString()} ether nlk`)
-    console.log(`the create policy server fee is: ${costServerGasEther.toString()} ether nlk`)
+    console.log(`the account balance is: ${nlkBalanceWei.toString()} ether nlk`)
+    console.log(`the create policy server fee is: ${costServerEther.toString()} ether nlk`)
 
     //Don't forget the mint fee (service charge), so use the method lte, not le
-    if (nlkBalanceEthers.lt(costServerFeeWei)) {
+    if (nlkBalanceWei.lt(costServerFeeWei)) {
       // Message.error(
-      //   `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerGasEther} ether`,
+      //   `The account ${publisher.address} balance of ${nlkEther} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerEther} ether`,
       // );
       console.log(
-        `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerGasEther} ether`
+        `The account ${publisher.address} balance of ${nlkEther} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerEther} ether`
       )
       throw new InsufficientBalanceError(
-        `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerGasEther} ether`
+        `The account ${publisher.address} balance of ${nlkEther} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerEther} ether`
       )
     }
   } //end of if (curNetwork === NETWORK_LIST.Horus)
@@ -2374,21 +2375,21 @@ export const approvalApplicationsForUseDatas = async (
     //await publisher.getNLKBalance() return ethers
     //Check whether the account balance is less than the policy creation cost
     const nlkBalanceEthers: BigNumber = ethers.utils.parseEther((await publisher.getNLKBalance()) as string)
-    const costServerGasEther = Web3.utils.fromWei(costServerFeeWei.toString(), 'ether')
+    const costServerEther = Web3.utils.fromWei(costServerFeeWei.toString(), 'ether')
 
     console.log(`the account balance is: ${nlkBalanceEthers.toString()} ether nlk`)
-    console.log(`the create policy server fee is: ${costServerGasEther.toString()} ether nlk`)
+    console.log(`the create policy server fee is: ${costServerEther.toString()} ether nlk`)
 
     //Don't forget the mint fee (service charge), so use the method lte, not le
     if (nlkBalanceEthers.lt(costServerFeeWei)) {
       // Message.error(
-      //   `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerGasEther} ether`,
+      //   `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerEther} ether`,
       // );
       console.log(
-        `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerGasEther} ether`
+        `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerEther} ether`
       )
       throw new InsufficientBalanceError(
-        `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerGasEther} ether`
+        `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerEther} ether`
       )
     }
   } //end of if (curNetwork === NETWORK_LIST.Horus)

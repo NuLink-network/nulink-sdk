@@ -248,7 +248,7 @@ export class BlockchainPolicy {
     const curNetwork: NETWORK_LIST = await getCurrentNetworkKey();
 
     let value: BigNumber = BigNumber.from("100"); //bsc testnet Contract error, value must be greater than 0
-    if (!(curNetwork in [NETWORK_LIST.Horus, NETWORK_LIST.HorusMainNet])) {
+    if (!([NETWORK_LIST.Horus, NETWORK_LIST.HorusMainNet].includes(curNetwork))) {
       //The sidechain does not have an NLK. It is necessary to convert to the base currency (such as Matic). The value of the transfer needs to be calculated by calling getPolicysCost.
       value = await SubscriptionManagerAgent.getPolicyCost(
         publisher.web3Provider.provider,
@@ -614,7 +614,7 @@ export class MultiBlockchainPolicy {
     const curNetwork: NETWORK_LIST = await getCurrentNetworkKey();
 
     let value: BigNumber = BigNumber.from("100"); //bsc testnet Contract error, value must be greater than 0
-    if (!(curNetwork in [NETWORK_LIST.Horus, NETWORK_LIST.HorusMainNet])) {
+    if (!([NETWORK_LIST.Horus, NETWORK_LIST.HorusMainNet].includes(curNetwork))) {
       //The sidechain does not have an NLK. It is necessary to convert to the base currency (such as Matic). The value of the transfer needs to be calculated by calling getPolicysCost.
       value = await SubscriptionManagerAgent.getPolicysCost(
         publisher.web3Provider.provider,
