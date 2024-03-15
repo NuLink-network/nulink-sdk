@@ -2224,13 +2224,65 @@ export const approvalApplicationForUseDatas = async (
   const _gasPrice = gasPrice
 
   const gasLimit: BigNumber = gasFeeInWei.gt(BigNumber.from('0')) ? gasFeeInWei.div(_gasPrice) : BigNumber.from('0')
-  const enPolicy: EnactedPolicy = await resultInfo.blockchainPolicy.enact(
-    resultInfo.ursulas,
-    waitReceipt,
-    gasLimit,
-    _gasPrice
-  )
+  let enPolicy: EnactedPolicy;
+  try 
+  {
+    enPolicy = await resultInfo.blockchainPolicy.enact(
+      resultInfo.ursulas,
+      waitReceipt,
+      gasLimit,
+      _gasPrice
+    )
+  } catch (error) {
+    enPolicy = await resultInfo.blockchainPolicy.enact(
+      resultInfo.ursulas,
+      waitReceipt,
+      BigNumber.from('0'),//gasLimit,
+      BigNumber.from('0')//_gasPrice
+    )
+  }
+
   console.log('after policy enact')
+
+  if (enPolicy && !isBlank(enPolicy.txHash)) {
+    console.log(`enPolicy txHash: ${enPolicy.txHash}`);
+    let receipt: any = null;
+
+    let retryTimes = 100;
+    do {
+      try {
+        receipt = await web3.eth.getTransactionReceipt(enPolicy.txHash);
+        //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
+      } catch (error) {
+        console.log(
+          `getTransactionReceipt createPolicy txHash: ${enPolicy.txHash} retrying, error: `,
+          error
+        );
+      }
+
+      if (isBlank(receipt)) {
+        await sleep(3000);
+      }
+      retryTimes--;
+    } while (isBlank(receipt) && retryTimes > 0);
+
+    const txReceipt = receipt as TransactionReceipt;
+
+    //const transaction = await web3.eth.getTransaction(enPolicy.txHash);
+    //  //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
+    if (null == txReceipt || !txReceipt.status) {
+      const transaction = await web3.eth.getTransaction(enPolicy.txHash);
+      //console.log("transaction.input:", transaction.input);
+      console.log("transaction:", transaction);
+
+      throw new GetTransactionReceiptError(
+        `getTransactionReceipt error: transaction Hash is ${enPolicy.txHash}, Please set a larger gaslimit or try approve again!`
+      );
+    }
+  } else {
+    throw new TransactionError(`send transaction Approve failed!`);
+  }
+
   // // Persist side-channel
   // const aliceVerifyingKey: PublicKey = alice.verifyingKey;
   // const policyEncryptingKey: PublicKey = enPolicy.policyKey;
@@ -2415,15 +2467,28 @@ export const approvalApplicationsForUseDatas = async (
 
   const gasLimit: BigNumber = gasFeeInWei.gt(BigNumber.from('0')) ? gasFeeInWei.div(_gasPrice) : BigNumber.from('0')
   //MultiPreEnactedPolicy
-  const enMultiPolicy: MultiEnactedPolicy = await resultInfo.deDuplicationInfo.multiBlockchainPolicy.enact(
-    resultInfo.deDuplicationInfo.ursulasArray,
-    waitReceipt,
-    gasLimit,
-    _gasPrice
-  )
+  let enMultiPolicy: MultiEnactedPolicy;
+  try {
+    enMultiPolicy = await resultInfo.deDuplicationInfo.multiBlockchainPolicy.enact(
+      resultInfo.deDuplicationInfo.ursulasArray,
+      waitReceipt,
+      gasLimit,
+      _gasPrice
+    )
+  } catch (error) {
+    enMultiPolicy = await resultInfo.deDuplicationInfo.multiBlockchainPolicy.enact(
+      resultInfo.deDuplicationInfo.ursulasArray,
+      waitReceipt,
+      BigNumber.from("0"),//gasLimit,
+      BigNumber.from("0"),//_gasPrice
+    )
+  }
+
 
   console.log('after mulit policy enact')
-  if (!isBlank(enMultiPolicy.txHash)) {
+
+  if (enMultiPolicy && !isBlank(enMultiPolicy.txHash)) {
+    console.log(`enMultiPolicy txHash: ${enMultiPolicy.txHash}`);
     let receipt: any = null;
 
     let retryTimes = 80;
@@ -2445,8 +2510,12 @@ export const approvalApplicationsForUseDatas = async (
 
     //  //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
     if (null == txReceipt || !txReceipt.status) {
+      const transaction = await web3.eth.getTransaction(enMultiPolicy.txHash);
+      //console.log("transaction.input:", transaction.input);
+      console.log("transaction:", transaction);
+
       throw new GetTransactionReceiptError(
-        `getTransactionReceipt!  transaction Hash is ${enMultiPolicy.txHash}`
+        `getTransactionReceipt error: transaction Hash is ${enMultiPolicy.txHash}, Please set a larger gaslimit or try approve again!`
       );
     }
   } else {

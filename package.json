@@ -1,6 +1,6 @@
 {
   "name": "@nulink_network/nulink-sdk",
-  "version": "0.5.15",
+  "version": "0.5.17",
   "private": false,
   "dependencies": {
     "@bnb-chain/greenfield-chain-sdk": "^0.2.2",
