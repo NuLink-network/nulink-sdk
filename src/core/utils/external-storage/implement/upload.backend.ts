@@ -106,6 +106,8 @@ const _setDatas = async (
         sendData.append('file', userData, `file${index + 1}`)
       }
 
+      sendData.append("account_id", account.id, "account_id");
+      
       const signature = await signUpdateServerDataMessage(
         pwdDecrypt((account as Account).encryptedKeyPair._privateKey, true),
         sendData
