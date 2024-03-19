@@ -41,9 +41,10 @@ export const setDatas = async (
       sendData.append("account_id", account.id);
       sendData.append(`timestamp`, _signData["timestamp"]);
 
-      const blob = new Blob([signature], { type: 'text/plain' });
-
-      sendData.append("signature", blob, `signature`);
+      // const blob = new Blob([signature], { type: 'text/plain' });
+      // sendData.append("signature", blob, `signature`);
+      sendData.append("signature", signature);
+      
 
       //unsigned data 
       for (let index = 0; index < userDatas.length; index++) {
