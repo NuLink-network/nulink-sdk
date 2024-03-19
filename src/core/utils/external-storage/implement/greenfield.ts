@@ -112,21 +112,29 @@ const _setDatas = async (
   let i = 0
   do {
     try {
-      const sendData: FormData = new FormData()
+      //FormData does not support signing
+      const _signData = {}; 
+      _signData["account_id"] = account.id;
 
+      const signature = await signUpdateServerDataMessage(
+        pwdDecrypt((account as Account).encryptedKeyPair._privateKey, true),
+        _signData
+      );
+
+
+      const sendData: FormData = new FormData();
+      sendData.append("account_id", account.id);
+      sendData.append(`timestamp`, _signData["timestamp"]);
+
+      // const blob = new Blob([signature], { type: 'text/plain' });
+      // sendData.append("signature", blob, `signature`);
+      sendData.append("signature", signature);
+
+      //unsigned data 
       for (let index = 0; index < datas.length; index++) {
         const userData = datas[index]
         sendData.append('file', userData, `file${index + 1}`)
       }
-
-      const signature = await signUpdateServerDataMessage(
-        pwdDecrypt((account as Account).encryptedKeyPair._privateKey, true),
-        sendData
-      )
-
-      const blob = new Blob([signature], { type: 'text/plain' })
-
-      sendData.append('signature', blob, `signature`)
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const data = (await serverPostFormData('/file/batch-upload-file', sendData)) as object

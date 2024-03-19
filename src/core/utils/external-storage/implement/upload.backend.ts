@@ -51,33 +51,30 @@ export const getIPFSClient = async () => {
  * @returns {Promise<string[]>} - the list of the data/file key.
  */
 export const setDatas = async (
-  datas:   
-  | string[]
-  | InstanceType<typeof String>[]
-  | ArrayBufferView[]
-  | ArrayBuffer[]
-  | Blob[]
-  | AwaitIterable<Uint8Array>[]
-  | ReadableStream<Uint8Array>[],
-  
+  datas:
+    | string[]
+    | InstanceType<typeof String>[]
+    | ArrayBufferView[]
+    | ArrayBuffer[]
+    | Blob[]
+    | AwaitIterable<Uint8Array>[]
+    | ReadableStream<Uint8Array>[],
+
   account: Account
 ): Promise<string[]> => {
   const blobDatas: Blob[] = []
   for (let index = 0; index < datas.length; index++) {
-
     const data = datas[index]
-    
+
     if (!(data instanceof Blob)) {
       blobDatas.push(
         new Blob([data as any /*Uint8Array*/], {
           type: 'application/octet-stream'
         })
       )
+    } else {
+      blobDatas.push(data as Blob /*Blob*/)
     }
-    else{
-      blobDatas.push(data as Blob/*Blob*/);
-    }
-
   }
 
   return await _setDatas(blobDatas, account)
@@ -90,32 +87,34 @@ export const setDatas = async (
  * @param {string[] | InstanceType<typeof String>[] | ArrayBufferView[] | ArrayBuffer[] | Blob[] | AwaitIterable<Uint8Array>[] | ReadableStream<Uint8Array>[]} datas - upload data stream
  * @returns {Promise<string[]>} - the list of the data/file key.
  */
-const _setDatas = async (
-  datas: Blob[],
-  account: Account
-): Promise<string[]> => {
+const _setDatas = async (datas: Blob[], account: Account): Promise<string[]> => {
   //return cid string array
 
   let i = 0
   do {
     try {
-      const sendData: FormData = new FormData()
+      //FormData does not support signing
+      const _signData = {}
+      _signData['account_id'] = account.id
 
+      const signature = await signUpdateServerDataMessage(
+        pwdDecrypt((account as Account).encryptedKeyPair._privateKey, true),
+        _signData
+      )
+
+      const sendData: FormData = new FormData()
+      sendData.append('account_id', account.id)
+      sendData.append(`timestamp`, _signData['timestamp'])
+
+      // const blob = new Blob([signature], { type: 'text/plain' });
+      // sendData.append("signature", blob, `signature`);
+      sendData.append("signature", signature);
+
+      //unsigned data
       for (let index = 0; index < datas.length; index++) {
         const userData = datas[index]
         sendData.append('file', userData, `file${index + 1}`)
       }
-
-      sendData.append("account_id", account.id, "account_id");
-      
-      const signature = await signUpdateServerDataMessage(
-        pwdDecrypt((account as Account).encryptedKeyPair._privateKey, true),
-        sendData
-      )
-
-      const blob = new Blob([signature], { type: 'text/plain' })
-
-      sendData.append('signature', blob, `signature`)
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const data = (await serverPostFormData('/file/batch-upload-file', sendData)) as object

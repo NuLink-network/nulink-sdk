@@ -99,7 +99,7 @@ export const getServerTimeStamp = async (): Promise<string> => {
 /**
  * @internal
  */
-export const signUpdateServerDataMessage = async (account: Account, data: 'dataDict') => {
+export const signUpdateServerDataMessage = async (account: Account, data: any /* "dataDict" */) => {
   // Do not use local time. Gets UTC real time in milliseconds with 0.001 precision from http://worldtimeapi.org/api/timezone/Etc/UTC.
   //data["timestamp"] = (new Date().getTime() / 1000) | 0; // Discard the decimal number
   //UTC real time

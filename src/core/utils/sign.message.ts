@@ -61,13 +61,18 @@ export const sortLexObject2String = (data: any /*: 'dataDict' */) => {
 
 // EIP-191 sign
 export const signMessage = async (
-  messageData: "dataDict",
+  messageData: any, //"dataDict",
   privateKey: string
 ): Promise<string> => {
   //privateKey start with 0x
 
   //https://github.com/ethers-io/ethers.js/issues/447
   const wallet = new ethers.Wallet(privateKey);
+  
+  if(messageData instanceof FormData)
+  {
+    throw new Error("signMessage not support type: form-data lib's FormData")
+  }
 
   //Sorting all parameters in lexicographic order.
   const message: string = sortLexObject2String(messageData);

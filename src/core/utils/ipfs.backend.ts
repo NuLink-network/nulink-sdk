@@ -8,6 +8,8 @@ import { serverPostFormData } from '../servernet'
 import FormData from 'form-data'
 import { isBlank, isNotBlankAndEmptyObject } from './null'
 import { MultiDataUploadError } from './exception'
+import { signUpdateServerDataMessage } from '../pre'
+import { decrypt as pwdDecrypt } from "./password.encryption";
 
 export const setDatas = async (
   // account: Account,
@@ -25,15 +27,29 @@ export const setDatas = async (
   let i = 0
   do {
     try {
-      const sendData: FormData = new FormData()
+      //FormData does not support signing
+      const _signData = {}; 
+      _signData["account_id"] = account.id;
 
+      const signature = await signUpdateServerDataMessage(
+        pwdDecrypt((account as Account).encryptedKeyPair._privateKey, true),
+        _signData
+      );
+
+
+      const sendData: FormData = new FormData();
+      sendData.append("account_id", account.id);
+      sendData.append(`timestamp`, _signData["timestamp"]);
+
+      const blob = new Blob([signature], { type: 'text/plain' });
+
+      sendData.append("signature", blob, `signature`);
+
+      //unsigned data 
       for (let index = 0; index < userDatas.length; index++) {
         const userData = userDatas[index]
         sendData.append('file', userData, `file${index + 1}`)
       }
-
-      //TODO: Verification can be done by paying on-chain, and then listening for on-chain events. If payment has been made, the data/file can be uploaded.
-      //sendData['signature'] = await signUpdateServerDataMessage(account, sendData)
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const data = (await serverPostFormData('/file/batch-upload-file', sendData)) as object
