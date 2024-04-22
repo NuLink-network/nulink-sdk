@@ -1,6 +1,6 @@
-[NuLink SDK - v0.5.7](README.md) / Modules
+[NuLink SDK - v0.5.17](README.md) / Modules
 
-# NuLink SDK - v0.5.7
+# NuLink SDK - v0.5.17
 
 ## Table of contents
 
@@ -29,41 +29,41 @@
 
 - [getPolicyServerFee](functions/getPolicyServerFee.md)
 - [getPolicyGasFee](functions/getPolicyGasFee.md)
-- [ApprovalUseDatas](functions/ApprovalUseDatas.md)
+- [ApprovalUseData](functions/ApprovalUseData.md)
 - [getPolicyTokenCost](functions/getPolicyTokenCost.md)
 - [estimatePolicyGas](functions/estimatePolicyGas.md)
-- [approvalApplicationForUseDatas](functions/approvalApplicationForUseDatas.md)
-- [refusalApplicationForUseDatas](functions/refusalApplicationForUseDatas.md)
+- [approvalApplicationForUseData](functions/approvalApplicationForUseData.md)
+- [refusalApplicationForUseData](functions/refusalApplicationForUseData.md)
 
 ### Data Publisher(Alice) Approval (Multi) Functions
 
 - [getPolicysServerFee](functions/getPolicysServerFee.md)
 - [getPolicysGasFee](functions/getPolicysGasFee.md)
-- [ApprovalMultiUseDatas](functions/ApprovalMultiUseDatas.md)
+- [ApprovalMultiUseData](functions/ApprovalMultiUseData.md)
 - [getPolicysTokenCost](functions/getPolicysTokenCost.md)
 - [estimatePolicysGas](functions/estimatePolicysGas.md)
-- [approvalApplicationsForUseDatas](functions/approvalApplicationsForUseDatas.md)
-- [refusalApplicationsForUseDatas](functions/refusalApplicationsForUseDatas.md)
+- [approvalApplicationsForUseData](functions/approvalApplicationsForUseData.md)
+- [refusalApplicationsForUseData](functions/refusalApplicationsForUseData.md)
 
 ### Data Publisher(Alice) Approval Details Functions
 
-- [getDatasForApprovedAsPublisher](functions/getDatasForApprovedAsPublisher.md)
-- [getDatasForAllStatusAsPublisher](functions/getDatasForAllStatusAsPublisher.md)
-- [getDatasByStatusForAllApplyAsPublisher](functions/getDatasByStatusForAllApplyAsPublisher.md)
-- [getDatasAllStatusAsPublisher](functions/getDatasAllStatusAsPublisher.md)
-- [getDatasByApplyStatusAsPublisher](functions/getDatasByApplyStatusAsPublisher.md)
-- [getDatasPendingApprovalAsPublisher](functions/getDatasPendingApprovalAsPublisher.md)
-- [getApprovedDatasAsPublisher](functions/getApprovedDatasAsPublisher.md)
-- [getDatasForRefusedAsPublisher](functions/getDatasForRefusedAsPublisher.md)
-- [getDatasByStatus](functions/getDatasByStatus.md)
+- [getDataForApprovedAsPublisher](functions/getDataForApprovedAsPublisher.md)
+- [getDataForAllStatusAsPublisher](functions/getDataForAllStatusAsPublisher.md)
+- [getDataByStatusForAllApplyAsPublisher](functions/getDataByStatusForAllApplyAsPublisher.md)
+- [getDataAllStatusAsPublisher](functions/getDataAllStatusAsPublisher.md)
+- [getDataByApplyStatusAsPublisher](functions/getDataByApplyStatusAsPublisher.md)
+- [getDataPendingApprovalAsPublisher](functions/getDataPendingApprovalAsPublisher.md)
+- [getApprovedDataAsPublisher](functions/getApprovedDataAsPublisher.md)
+- [getDataForRefusedAsPublisher](functions/getDataForRefusedAsPublisher.md)
+- [getDataByStatus](functions/getDataByStatus.md)
 
 ### Data Publisher(Alice) Data Details Functions
 
 - [checkDataApprovalStatusIsUnderReviewOrApproved](functions/checkDataApprovalStatusIsUnderReviewOrApproved.md)
-- [getDatasInfoByStatus](functions/getDatasInfoByStatus.md)
-- [getUploadedDatas](functions/getUploadedDatas.md)
+- [getDataInfoByStatus](functions/getDataInfoByStatus.md)
+- [getUploadedData](functions/getUploadedData.md)
 - [getDataInfosByAccount](functions/getDataInfosByAccount.md)
-- [deleteUploadedDatas](functions/deleteUploadedDatas.md)
+- [deleteUploadedData](functions/deleteUploadedData.md)
 - [checkDataApprovalStatusIsApprovedOrApproving](functions/checkDataApprovalStatusIsApprovedOrApproving.md)
 - [checkMultiDataApprovalStatusIsApprovedOrApproving](functions/checkMultiDataApprovalStatusIsApprovedOrApproving.md)
 - [getDataInfosByPolicyId](functions/getDataInfosByPolicyId.md)
@@ -77,39 +77,39 @@
 ### Data Publisher(Alice) Policys Functions
 
 - [getPublishedPolicyInfos](functions/getPublishedPolicyInfos.md)
-- [getDatasInfoOfPolicy](functions/getDatasInfoOfPolicy.md)
-- [getAllDatasInfoOfPolicy](functions/getAllDatasInfoOfPolicy.md)
+- [getDataInfoOfPolicy](functions/getDataInfoOfPolicy.md)
+- [getAllDataInfoOfPolicy](functions/getAllDataInfoOfPolicy.md)
 - [getPublishedPoliciesInfo](functions/getPublishedPoliciesInfo.md)
 - [getPoliciesInfo](functions/getPoliciesInfo.md)
 
 ### Data Publisher(Alice) Upload Data Functions
 
-- [uploadDatasByCreatePolicy](functions/uploadDatasByCreatePolicy.md)
-- [uploadDatasBySelectPolicy](functions/uploadDatasBySelectPolicy.md)
+- [uploadDataByCreatePolicy](functions/uploadDataByCreatePolicy.md)
+- [uploadDataBySelectPolicy](functions/uploadDataBySelectPolicy.md)
 
 ### Data User(Bob) Approval Details Functions
 
-- [getDatasAllStatusAsUser](functions/getDatasAllStatusAsUser.md)
-- [getDatasByApplyStatusAsUser](functions/getDatasByApplyStatusAsUser.md)
-- [getDatasPendingApprovalAsUser](functions/getDatasPendingApprovalAsUser.md)
-- [getApprovedDatasAsUser](functions/getApprovedDatasAsUser.md)
-- [getUnapprovedDatasAsUser](functions/getUnapprovedDatasAsUser.md)
-- [getDatasByStatus](functions/getDatasByStatus.md)
+- [getDataAllStatusAsUser](functions/getDataAllStatusAsUser.md)
+- [getDataByApplyStatusAsUser](functions/getDataByApplyStatusAsUser.md)
+- [getDataPendingApprovalAsUser](functions/getDataPendingApprovalAsUser.md)
+- [getApprovedDataAsUser](functions/getApprovedDataAsUser.md)
+- [getUnapprovedDataAsUser](functions/getUnapprovedDataAsUser.md)
+- [getDataByStatus](functions/getDataByStatus.md)
 
 ### Data User(Bob) Data Details Functions
 
 - [checkDataApprovalStatusIsUnderReviewOrApproved](functions/checkDataApprovalStatusIsUnderReviewOrApproved.md)
-- [getDatasApprovedForApplicantAsUser](functions/getDatasApprovedForApplicantAsUser.md)
-- [getDatasByStatusForAllApplyAsUser](functions/getDatasByStatusForAllApplyAsUser.md)
-- [getDatasInfoByStatus](functions/getDatasInfoByStatus.md)
-- [getOtherShareDatas](functions/getOtherShareDatas.md)
+- [getDataApprovedForApplicantAsUser](functions/getDataApprovedForApplicantAsUser.md)
+- [getDataByStatusForAllApplyAsUser](functions/getDataByStatusForAllApplyAsUser.md)
+- [getDataInfoByStatus](functions/getDataInfoByStatus.md)
+- [getOtherShareData](functions/getOtherShareData.md)
 - [checkDataApprovalStatusIsApprovedOrApproving](functions/checkDataApprovalStatusIsApprovedOrApproving.md)
 - [checkMultiDataApprovalStatusIsApprovedOrApproving](functions/checkMultiDataApprovalStatusIsApprovedOrApproving.md)
 - [getDataDetails](functions/getDataDetails.md)
 
 ### Data User(Bob) Download Data Functions
 
-- [getDatasForApprovedAsUser](functions/getDatasForApprovedAsUser.md)
+- [getDataForApprovedAsUser](functions/getDataForApprovedAsUser.md)
 - [getApprovedFileContentUrl](functions/getApprovedFileContentUrl.md)
 - [getApprovedDataContent](functions/getApprovedDataContent.md)
 - [getDataContentAsUser](functions/getDataContentAsUser.md)
@@ -118,15 +118,15 @@
 ### Data User(Bob) Policys Functions
 
 - [getPolicyInfosAsUser](functions/getPolicyInfosAsUser.md)
-- [getDatasInfoOfPolicy](functions/getDatasInfoOfPolicy.md)
-- [getAllDatasInfoOfPolicy](functions/getAllDatasInfoOfPolicy.md)
+- [getDataInfoOfPolicy](functions/getDataInfoOfPolicy.md)
+- [getAllDataInfoOfPolicy](functions/getAllDataInfoOfPolicy.md)
 - [getInUsePoliciesInfo](functions/getInUsePoliciesInfo.md)
 - [getPoliciesInfo](functions/getPoliciesInfo.md)
 
 ### Data User(Bob) Request Data Functions
 
-- [applyForDatasUsagePermission](functions/applyForDatasUsagePermission.md)
-- [revokePermissionApplicationOfDatas](functions/revokePermissionApplicationOfDatas.md)
+- [applyForDataUsagePermission](functions/applyForDataUsagePermission.md)
+- [revokePermissionApplicationOfData](functions/revokePermissionApplicationOfData.md)
 
 ### Send Raw Transaction Functions
 

@@ -8,8 +8,10 @@ export type NetworkConfigOptions = {
   service: string; // fe service address
   porter: string;
   contract_info: any;
-  token_symbol: string;
-  nlk_token_symbol: string;
+  tokenAddress: string;
+  tokenSymbol: string;
+  nlkTokenAddress: string;
+  nlkTokenSymbol: string;
 };
 /**
  * @internal

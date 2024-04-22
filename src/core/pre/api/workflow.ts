@@ -313,12 +313,12 @@ export const updateAccountInfo = async (account: Account, updateData: Record<str
  * @param {DataInfo[]} dataInfoList - The list of files/data to upload. Each element of the array must be an object with properties 'label' and 'dataArrayBuffer'.
  * @returns {Promise<Strategy>} - Returns the strategy used to upload the files/data.
  */
-export const uploadDatasByCreatePolicy = async (
+export const uploadDataByCreatePolicy = async (
   account: Account,
   category: DataCategory | string, //data category, according to the design: only one category is allowed to be uploaded in batches, and different categories need to be uploaded separately
-  dataInfoList: DataInfo[] //data information list
+  dataInfoList: DataInfo[]  //data information list //just allow upload one file
 ): Promise<Strategy> => {
-  console.log('uploadDatasByCreatePolicy account', account)
+  console.log('uploadDataByCreatePolicy account', account)
 
   let label = getDataCategoryString(category)
   if (!label) {
@@ -332,9 +332,9 @@ export const uploadDatasByCreatePolicy = async (
 
   // Number.isNaN(parseInt("Philosophy"))
   const strategy: Strategy = await account.createStrategyByLabel(label)
-  // console.log("uploadDatasByCreatePolicy strategy", strategy);
+  // console.log("uploadDataByCreatePolicy strategy", strategy);
 
-  // console.log("uploadDatasByCreatePolicy dataList", dataList);
+  // console.log("uploadDataByCreatePolicy dataList", dataList);
   /*   //for test start
   const plainText = "This is a history book content";
   const enc = new TextEncoder(); // always utf-8
@@ -347,17 +347,17 @@ export const uploadDatasByCreatePolicy = async (
   for (const dataInfo of dataInfoList) {
     dataContentList.push(dataInfo.dataArrayBuffer)
   }
-  // console.log("uploadDatasByCreatePolicy dataContentList", dataContentList);
+  // console.log("uploadDataByCreatePolicy dataContentList", dataContentList);
 
   const _encryptMessages: MessageKit[] = encryptMessage(strategy.strategyKeyPair._publicKey, dataContentList)
-  // console.log("uploadDatasByCreatePolicy _encryptMessages", _encryptMessages);
+  // console.log("uploadDataByCreatePolicy _encryptMessages", _encryptMessages);
   const mockIPFSAddressList: string[] = []
 
-  const datas: Uint8Array[] = _encryptMessages.map((encryptMessage) => encryptMessage.toBytes() /*Uint8Array*/)
-  const cids: string[] = await StorageManager.setData(datas, account)
+  const data: Uint8Array[] = _encryptMessages.map((encryptMessage) => encryptMessage.toBytes() /*Uint8Array*/)
+  const cids: string[] = await StorageManager.setData(data, account)
   mockIPFSAddressList.push(...cids)
 
-  // console.log("uploadDatasByCreatePolicy mockIPFSAddressList", mockIPFSAddressList);
+  // console.log("uploadDataByCreatePolicy mockIPFSAddressList", mockIPFSAddressList);
   const dataInfos: object[] = []
   for (let index = 0; index < dataInfoList.length; index++) {
     const dataInfo = dataInfoList[index]
@@ -402,7 +402,7 @@ export const uploadDatasByCreatePolicy = async (
     }
     dataInfos.push(_data)
   }
-  // console.log("uploadDatasByCreatePolicy dataInfos", dataInfos);
+  // console.log("uploadDataByCreatePolicy dataInfos", dataInfos);
   try {
     const sendData: any = {
       files: dataInfos,
@@ -426,7 +426,7 @@ export const uploadDatasByCreatePolicy = async (
     throw error
   }
 
-  // console.log("uploadDatasByCreatePolicy after serverPost", data);
+  // console.log("uploadDataByCreatePolicy after serverPost", data);
   return strategy
 }
 /**
@@ -438,7 +438,7 @@ export const uploadDatasByCreatePolicy = async (
  * @param {number} policyId - The ID of the policy to use to encrypt and upload the files/data.
  * @returns {Promise<string[]>} - Returns an array of file/data IDs uploaded to the server.
  */
-export const uploadDatasBySelectPolicy = async (
+export const uploadDataBySelectPolicy = async (
   account: Account,
   category: DataCategory | string, //Data category, according to the design: only one category is allowed to be uploaded in batches, and different categories need to be uploaded separately
   dataList: DataInfo[], //data/file information list
@@ -469,8 +469,8 @@ export const uploadDatasBySelectPolicy = async (
 
   const mockIPFSAddressList: string[] = []
 
-  const datas: Uint8Array[] = _encryptMessages.map((encryptMessage) => encryptMessage.toBytes() /*Uint8Array*/)
-  const cids: string[] = await StorageManager.setData(datas, account)
+  const data: Uint8Array[] = _encryptMessages.map((encryptMessage) => encryptMessage.toBytes() /*Uint8Array*/)
+  const cids: string[] = await StorageManager.setData(data, account)
   mockIPFSAddressList.push(...cids)
 
   const retInfo: string[] = []
@@ -523,7 +523,7 @@ export const uploadDatasBySelectPolicy = async (
 
   //Select an existing policy
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const data = await serverPost('/file/upload', sendData)
+  const resultData = await serverPost('/file/upload', sendData)
 
   return retInfo
 }
@@ -552,7 +552,7 @@ export const uploadDatasBySelectPolicy = async (
                 total: total cnt
             }
 */
-export const getUploadedDatas = async (account: Account, dataLabel?: string, pageIndex = 1, pageSize = 10) => {
+export const getUploadedData = async (account: Account, dataLabel?: string, pageIndex = 1, pageSize = 10) => {
   return await getDataInfosByAccount(account, dataLabel, pageIndex, pageSize)
 }
 
@@ -608,7 +608,7 @@ export const getDataInfosByAccount = async (account: Account, dataLabel?: string
  * @param {string[]} dataIds - An array of file/data IDs to delete.
  * @returns {Promise<void>}
  */
-export const deleteUploadedDatas = async (account: Account, dataIds: string[]) => {
+export const deleteUploadedData = async (account: Account, dataIds: string[]) => {
   //https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E5%88%A0%E9%99%A4%E6%96%87%E4%BB%B6
   /*  
           return the list of deleted files/data is displayed: [
@@ -658,7 +658,7 @@ export const deleteUploadedDatas = async (account: Account, dataIds: string[]) =
                             }]
                         }
 */
-export const getOtherShareDatas = async (
+export const getOtherShareData = async (
   account: Account, //current account info
   dataLabel?: string, //file_name support fuzzy query
   include?: boolean, //indicates whether the query result contains file/data list data of the current account
@@ -715,7 +715,7 @@ return data format: {
  * @param {number} usageDays - (Optional) The validity period of the application, in days. Default is 7.
  * @returns {Promise<void>}
  */
-export const applyForDatasUsagePermission = async (dataIds: string[], account: Account, usageDays = 7) => {
+export const applyForDataUsagePermission = async (dataIds: string[], account: Account, usageDays = 7) => {
   // https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E7%94%B3%E8%AF%B7%E6%96%87%E4%BB%B6%E4%BD%BF%E7%94%A8
   //TODO:  Consider returning the apply record ID
 
@@ -757,7 +757,7 @@ export const applyForDatasUsagePermission = async (dataIds: string[], account: A
  * @param {number[]} applyIds - An array of application applyIds to revoke.
  * @returns {Promise<object>} - Returns an empty object.
  */
-export const revokePermissionApplicationOfDatas = async (
+export const revokePermissionApplicationOfData = async (
   account: Account, //Bob
   applyIds: number[] //Application Record ID
 ) => {
@@ -801,7 +801,7 @@ export const revokePermissionApplicationOfDatas = async (
               "total": total count
             }
  */
-export const getDatasAllStatusAsPublisher = async (account: Account, pageIndex = 1, pageSize = 10) => {
+export const getDataAllStatusAsPublisher = async (account: Account, pageIndex = 1, pageSize = 10) => {
   /*return data format: {
   list: [
     { apply_id, file_id:, proposer, proposer_id, file_owner:, file_owner_id:, policy_id, hrac, start_at:, end_at, days, created_at }
@@ -811,7 +811,7 @@ export const getDatasAllStatusAsPublisher = async (account: Account, pageIndex =
 }
 */
 
-  return await getDatasByStatus(undefined, undefined, account.id, undefined, 0, pageIndex, pageSize)
+  return await getDataByStatus(undefined, undefined, account.id, undefined, 0, pageIndex, pageSize)
 }
 
 /**
@@ -841,8 +841,8 @@ export const getDatasAllStatusAsPublisher = async (account: Account, pageIndex =
               "total": total count
             }
  */
-export const getDatasByApplyStatusAsPublisher = async (account: Account, status = 0, pageIndex = 1, pageSize = 10) => {
-  return await getDatasByStatus(undefined, undefined, account.id, undefined, status, pageIndex, pageSize)
+export const getDataByApplyStatusAsPublisher = async (account: Account, status = 0, pageIndex = 1, pageSize = 10) => {
+  return await getDataByStatus(undefined, undefined, account.id, undefined, status, pageIndex, pageSize)
 }
 
 /**
@@ -872,8 +872,8 @@ export const getDatasByApplyStatusAsPublisher = async (account: Account, status 
                           "total": total count
                         }
 */
-export const getDatasPendingApprovalAsPublisher = async (account: Account, pageIndex = 1, pageSize = 10) => {
-  return await getDatasByStatus(undefined, undefined, account.id, undefined, 1, pageIndex, pageSize)
+export const getDataPendingApprovalAsPublisher = async (account: Account, pageIndex = 1, pageSize = 10) => {
+  return await getDataByStatus(undefined, undefined, account.id, undefined, 1, pageIndex, pageSize)
 }
 
 /**
@@ -902,8 +902,8 @@ export const getDatasPendingApprovalAsPublisher = async (account: Account, pageI
               "total": total count
             }
  */
-export const getApprovedDatasAsPublisher = async (account: Account, pageIndex = 1, pageSize = 10) => {
-  return await getDatasByStatus(undefined, undefined, account.id, undefined, 2, pageIndex, pageSize)
+export const getApprovedDataAsPublisher = async (account: Account, pageIndex = 1, pageSize = 10) => {
+  return await getDataByStatus(undefined, undefined, account.id, undefined, 2, pageIndex, pageSize)
 }
 
 /**
@@ -933,8 +933,8 @@ export const getApprovedDatasAsPublisher = async (account: Account, pageIndex = 
               "total": total count
             }
 */
-export const getDatasForRefusedAsPublisher = async (account: Account, pageIndex = 1, pageSize = 10) => {
-  return await getDatasByStatus(undefined, undefined, account.id, undefined, 3, pageIndex, pageSize)
+export const getDataForRefusedAsPublisher = async (account: Account, pageIndex = 1, pageSize = 10) => {
+  return await getDataByStatus(undefined, undefined, account.id, undefined, 3, pageIndex, pageSize)
 }
 
 /**
@@ -964,8 +964,8 @@ export const getDatasForRefusedAsPublisher = async (account: Account, pageIndex 
                             "total": total count
                           }
 */
-export const getDatasAllStatusAsUser = async (account: Account, pageIndex = 1, pageSize = 10) => {
-  return await getDatasByStatus(undefined, account.id, undefined, undefined, 0, pageIndex, pageSize)
+export const getDataAllStatusAsUser = async (account: Account, pageIndex = 1, pageSize = 10) => {
+  return await getDataByStatus(undefined, account.id, undefined, undefined, 0, pageIndex, pageSize)
 }
 
 /**
@@ -995,8 +995,8 @@ export const getDatasAllStatusAsUser = async (account: Account, pageIndex = 1, p
               "total": total count
             }
  */
-export const getDatasByApplyStatusAsUser = async (account: Account, status = 0, pageIndex = 1, pageSize = 10) => {
-  return await getDatasByStatus(undefined, account.id, undefined, undefined, status, pageIndex, pageSize)
+export const getDataByApplyStatusAsUser = async (account: Account, status = 0, pageIndex = 1, pageSize = 10) => {
+  return await getDataByStatus(undefined, account.id, undefined, undefined, status, pageIndex, pageSize)
 }
 
 /**
@@ -1026,8 +1026,8 @@ export const getDatasByApplyStatusAsUser = async (account: Account, status = 0, 
                             "total": total count
                           }
 */
-export const getDatasPendingApprovalAsUser = async (account: Account, pageIndex = 1, pageSize = 10) => {
-  return await getDatasByStatus(undefined, account.id, undefined, undefined, 1, pageIndex, pageSize)
+export const getDataPendingApprovalAsUser = async (account: Account, pageIndex = 1, pageSize = 10) => {
+  return await getDataByStatus(undefined, account.id, undefined, undefined, 1, pageIndex, pageSize)
 }
 
 /**
@@ -1056,8 +1056,8 @@ export const getDatasPendingApprovalAsUser = async (account: Account, pageIndex 
               "total": total count
             }
  */
-export const getApprovedDatasAsUser = async (account: Account, pageIndex = 1, pageSize = 10) => {
-  return await getDatasByStatus(undefined, account.id, undefined, undefined, 2, pageIndex, pageSize)
+export const getApprovedDataAsUser = async (account: Account, pageIndex = 1, pageSize = 10) => {
+  return await getDataByStatus(undefined, account.id, undefined, undefined, 2, pageIndex, pageSize)
 }
 
 /**
@@ -1068,8 +1068,8 @@ export const getApprovedDatasAsUser = async (account: Account, pageIndex = 1, pa
  * @param {number} pageSize - The number of files/data to retrieve per page. Default is 10.
  * @returns {Promise<object>} - Returns an object containing the list of files/data and pagination information.
  */
-export const getUnapprovedDatasAsUser = async (account: Account, pageIndex = 1, pageSize = 10) => {
-  return await getDatasByStatus(undefined, account.id, undefined, undefined, 3, pageIndex, pageSize)
+export const getUnapprovedDataAsUser = async (account: Account, pageIndex = 1, pageSize = 10) => {
+  return await getDataByStatus(undefined, account.id, undefined, undefined, 3, pageIndex, pageSize)
 }
 
 /**
@@ -1103,7 +1103,7 @@ export const getUnapprovedDatasAsUser = async (account: Account, pageIndex = 1, 
               "total": total count
             }
  */
-export const getDatasByStatus = async (
+export const getDataByStatus = async (
   dataId?: string,
   proposerId?: string, //	Proposer's account id
   dataOwnerId?: string, //Account id of the file/data owner
@@ -1738,7 +1738,7 @@ const getBlockchainPolicy = async (
   const strategy: Strategy | undefined = publisher.getAccountStrategyByStategyId(
     policyData['policy_label_id'] as string
   )
-  // console.log("ApprovalUseDatas strategy", strategy);
+  // console.log("ApprovalUseData strategy", strategy);
   // assert(strategy !== undefined);
   if (!strategy || isBlank(strategy)) {
     //` get account strategy failed, label_id ${policyData["policy_label_id"]},\n When you Restore Account, You must Import account Vault data!!!`
@@ -1813,9 +1813,9 @@ const getBlockchainPolicys = async (
 
   //1. get apply policy info
   //return {start_at, end_at, policy_label, policy_label_id, file_owner_id,proposer_id,file_id}
-  const policyDatas = await getMultiApplyDetails(applyIds)
-  // assert(policyDatas && !isBlank(policyDatas));
-  if (!policyDatas || isBlank(policyDatas)) {
+  const multiPolicyData = await getMultiApplyDetails(applyIds)
+  // assert(multiPolicyData && !isBlank(multiPolicyData));
+  if (!multiPolicyData || isBlank(multiPolicyData)) {
     throw new Error(`Failed to retrieve policyData information from the database for apply ID: ${applyIds}`)
   }
 
@@ -1902,9 +1902,9 @@ const getBlockchainPolicys = async (
   //2. create policy to block chain
   // const config = await getSettingsData();
   // const porter = new Porter(porterUri);
-  for (let index = 0; index < policyDatas.length; index++) {
-    const policyData = policyDatas[index]
-    const label = policyData['policy_label']
+  for (let index = 0; index < multiPolicyData.length; index++) {
+    const _policyData = multiPolicyData[index]
+    const label = _policyData['policy_label']
 
     const userInfo = userInfos[index]
     // const startDate: Date = new Date();
@@ -1912,7 +1912,7 @@ const getBlockchainPolicys = async (
     // const endMs: number = startMs + (policyData["days"] as number) * 24 * 60 * 60 * 1000;
     // const endDate: Date = new Date(endMs); //  start_at is seconds, but Date needs milliseconds
 
-    const policy_label_id = policyData["policy_label_id"] as string;
+    const policy_label_id = _policyData["policy_label_id"] as string;
     const strategy: Strategy | undefined =
       publisher.getAccountStrategyByStategyId(policy_label_id);
 
@@ -1922,7 +1922,7 @@ const getBlockchainPolicys = async (
     if (!strategy || isBlank(strategy)) {
       //` get account strategy failed, label_id ${policy_label_id},\n When you Restore Account, You must Import account Vault data!!!`
       throw new Error(
-        `The user's data version is outdated and cannot be imported. Please export the latest data to prevent data loss! id: ${policyData["policy_label_id"] as string}`
+        `The user's data version is outdated and cannot be imported. Please export the latest data to prevent data loss! id: ${_policyData["policy_label_id"] as string}`
       )
     }
 
@@ -2014,10 +2014,10 @@ const getBlockchainPolicys = async (
 
   return {
     multiBlockchainPolicy: deDuplicationPolicy, //policy,
-    strategys: strategys,
+    strategys: deDuplicationStrategys,
     policyParameters: deDuplicationMultiBlockchainPolicyParameters, //multiBlockchainPolicyParameters,
     alice: alice,
-    ursulasArray: ursulasArray,
+    ursulasArray: deDuplicationUrsulasArray,
     publisherAccount: publisher,
     deDuplicationInfo: {
       multiBlockchainPolicy: deDuplicationPolicy,
@@ -2058,16 +2058,16 @@ export const checkMultiDataApprovalStatusIsApprovedOrApproving = async (
   applyIds: string[] | number[]
 ): Promise<string[]> => {
   //Query whether the approval status is being approved or approving
-  const policyDatas = await getMultiApplyDetails(applyIds as string[])
+  const multiPolicyData = await getMultiApplyDetails(applyIds as string[])
 
-  if (!policyDatas || isBlank(policyDatas)) {
+  if (!multiPolicyData || isBlank(multiPolicyData)) {
     throw new Error(`Failed to retrieve policyData information from the database for apply ID: ${applyIds}`)
   }
 
   const approveApplyIds: string[] = []
-  for (let index = 0; index < policyDatas.length; index++) {
-    const policyData = policyDatas[index] as object
-    if (policyDatas && [2, 4].includes((policyData as any)?.status)) {
+  for (let index = 0; index < multiPolicyData.length; index++) {
+    const policyData = multiPolicyData[index] as object
+    if (multiPolicyData && [2, 4].includes((policyData as any)?.status)) {
       //2: approved , 4: approving
       approveApplyIds.push(applyIds[index] as string)
     }
@@ -2077,7 +2077,7 @@ export const checkMultiDataApprovalStatusIsApprovedOrApproving = async (
 }
 
 /**
- * Approval of application for use of Files/Datas, This account acts as Publisher (Alice) grant
+ * Approval of application for use of Files/Data, This account acts as Publisher (Alice) grant
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @category Data Publisher(Alice) Approval
  * @param {Account} publisher - Account the current account object
@@ -2096,7 +2096,7 @@ export const checkMultiDataApprovalStatusIsApprovedOrApproving = async (
  *                       from: 'publisher.address'
  *                     }
  */
-export const approvalApplicationForUseDatas = async (
+export const approvalApplicationForUseData = async (
   publisher: Account,
   userAccountId: string, // proposer account id
   applyId: string, // Application Record ID
@@ -2137,20 +2137,20 @@ export const approvalApplicationForUseDatas = async (
   const balance: BigNumber = await getBalance(publisher.address)
   const chainConfigInfo = await getSettingsData()
 
-  console.log(`the account token balance is: ${balance.toString()} wei ${chainConfigInfo.token_symbol}`)
-  console.log(`the create policy gas fee is: ${gasFeeInWei.toString()} wei ${chainConfigInfo.token_symbol}`)
+  console.log(`the account token balance is: ${balance.toString()} wei ${chainConfigInfo.tokenSymbol}`)
+  console.log(`the create policy gas fee is: ${gasFeeInWei.toString()} wei ${chainConfigInfo.tokenSymbol}`)
 
   if (!gasFeeInWei.lte(BigNumber.from('0')) && balance.lt(gasFeeInWei)) {
     const balanceValue = Web3.utils.fromWei(balance.toString(), 'ether')
     const gasValue = Web3.utils.fromWei(gasFeeInWei.toString(), 'ether')
     // Message.error(
-    //   `The account (${publisher.address}) balance of ${balanceValue} ether in [token] ${chainConfigInfo.token_symbol} is insufficient to publish a policy with a gas value of ${gasValue} ether`,
+    //   `The account (${publisher.address}) balance of ${balanceValue} ether in [token] ${chainConfigInfo.tokenSymbol} is insufficient to publish a policy with a gas value of ${gasValue} ether`,
     // );
     console.log(
-      `The account (${publisher.address}) balance of ${balanceValue} ether in [token] ${chainConfigInfo.token_symbol} is insufficient to publish a policy with a gas value of ${gasValue} ether`
+      `The account (${publisher.address}) balance of ${balanceValue} ether in [token] ${chainConfigInfo.tokenSymbol} is insufficient to publish a policy with a gas value of ${gasValue} ether`
     )
     throw new InsufficientBalanceError(
-      `The account (${publisher.address}) balance of ${balanceValue} ether in [token] ${chainConfigInfo.token_symbol} is insufficient to publish a policy with a gas value of ${gasValue} ether`
+      `The account (${publisher.address}) balance of ${balanceValue} ether in [token] ${chainConfigInfo.tokenSymbol} is insufficient to publish a policy with a gas value of ${gasValue} ether`
     )
   }
 
@@ -2172,8 +2172,8 @@ export const approvalApplicationForUseDatas = async (
   // eslint-disable-next-line no-extra-boolean-cast
   console.log(
     !txHashOrEmpty
-      ? `approvalApplicationForUseDatas no need approve nlk`
-      : `approvalApplicationForUseDatas approveNLK txHash: ${txHashOrEmpty}`
+      ? `approvalApplicationForUseData no need approve nlk`
+      : `approvalApplicationForUseData approveNLK txHash: ${txHashOrEmpty}`
   )
 
   const curNetwork: NETWORK_LIST = await getCurrentNetworkKey()
@@ -2194,13 +2194,13 @@ export const approvalApplicationForUseDatas = async (
     //Don't forget the mint fee (service charge), so use the method lte, not le
     if (nlkBalanceWei.lt(costServerFeeWei)) {
       // Message.error(
-      //   `The account ${publisher.address} balance of ${nlkEther} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerEther} ether`,
+      //   `The account ${publisher.address} balance of ${nlkEther} ether in [token] ${chainConfigInfo.nlkTokenSymbol} is insufficient to publish policy with a value of ${costServerEther} ether`,
       // );
       console.log(
-        `The account ${publisher.address} balance of ${nlkEther} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerEther} ether`
+        `The account ${publisher.address} balance of ${nlkEther} ether in [token] ${chainConfigInfo.nlkTokenSymbol} is insufficient to publish policy with a value of ${costServerEther} ether`
       )
       throw new InsufficientBalanceError(
-        `The account ${publisher.address} balance of ${nlkEther} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerEther} ether`
+        `The account ${publisher.address} balance of ${nlkEther} ether in [token] ${chainConfigInfo.nlkTokenSymbol} is insufficient to publish policy with a value of ${costServerEther} ether`
       )
     }
   } //end of if (curNetwork === NETWORK_LIST.Horus)
@@ -2317,7 +2317,7 @@ export const approvalApplicationForUseDatas = async (
 }
 
 /**
- * Approval of applications for use of Files/Datas, This account acts as Publisher (Alice) grant. The batch version of the function refusalApplicationForUseDatas.
+ * Approval of applications for use of Files/Data, This account acts as Publisher (Alice) grant. The batch version of the function refusalApplicationForUseData.
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @category Data Publisher(Alice) Approval (Multi)
  * @param {Account} publisher - Account the current account object
@@ -2336,7 +2336,7 @@ export const approvalApplicationForUseDatas = async (
  *                       from: 'publisher.address'
  *                     }
  */
-export const approvalApplicationsForUseDatas = async (
+export const approvalApplicationsForUseData = async (
   publisher: Account,
   userAccountIds: string[], // proposer account id
   applyIds: string[], // Application Record ID
@@ -2377,20 +2377,20 @@ export const approvalApplicationsForUseDatas = async (
   const balance: BigNumber = await getBalance(publisher.address)
   const chainConfigInfo = await getSettingsData()
 
-  console.log(`the account token balance is: ${balance.toString()} wei ${chainConfigInfo.token_symbol}`)
-  console.log(`the create policy gas fee is: ${gasFeeInWei.toString()} wei ${chainConfigInfo.token_symbol}`)
+  console.log(`the account token balance is: ${balance.toString()} wei ${chainConfigInfo.tokenSymbol}`)
+  console.log(`the create policy gas fee is: ${gasFeeInWei.toString()} wei ${chainConfigInfo.tokenSymbol}`)
 
   if (!gasFeeInWei.lte(BigNumber.from('0')) && balance.lt(gasFeeInWei)) {
     const balanceValue = Web3.utils.fromWei(balance.toString(), 'ether')
     const gasValue = Web3.utils.fromWei(gasFeeInWei.toString(), 'ether')
     // Message.error(
-    //   `The account (${publisher.address}) balance of ${balanceValue} ether in [token] ${chainConfigInfo.token_symbol} is insufficient to publish a policy with a gas value of ${gasValue} ether`,
+    //   `The account (${publisher.address}) balance of ${balanceValue} ether in [token] ${chainConfigInfo.tokenSymbol} is insufficient to publish a policy with a gas value of ${gasValue} ether`,
     // );
     console.log(
-      `The account (${publisher.address}) balance of ${balanceValue} ether in [token] ${chainConfigInfo.token_symbol} is insufficient to publish a policy with a gas value of ${gasValue} ether`
+      `The account (${publisher.address}) balance of ${balanceValue} ether in [token] ${chainConfigInfo.tokenSymbol} is insufficient to publish a policy with a gas value of ${gasValue} ether`
     )
     throw new InsufficientBalanceError(
-      `The account (${publisher.address}) balance of ${balanceValue} ether in [token] ${chainConfigInfo.token_symbol} is insufficient to publish a policy with a gas value of ${gasValue} ether`
+      `The account (${publisher.address}) balance of ${balanceValue} ether in [token] ${chainConfigInfo.tokenSymbol} is insufficient to publish a policy with a gas value of ${gasValue} ether`
     )
   }
 
@@ -2419,8 +2419,8 @@ export const approvalApplicationsForUseDatas = async (
     // eslint-disable-next-line no-extra-boolean-cast
     console.log(
       !txHashOrEmpty
-        ? `approvalApplicationForUseDatas no need approve nlk`
-        : `approvalApplicationForUseDatas approveNLK txHash: ${txHashOrEmpty}`
+        ? `approvalApplicationForUseData no need approve nlk`
+        : `approvalApplicationForUseData approveNLK txHash: ${txHashOrEmpty}`
     )
 
     //wei can use  BigNumber.from(), ether can use ethers.utils.parseEther(), because the BigNumber.from("1.2"), the number can't not be decimals (x.x)
@@ -2435,13 +2435,13 @@ export const approvalApplicationsForUseDatas = async (
     //Don't forget the mint fee (service charge), so use the method lte, not le
     if (nlkBalanceEthers.lt(costServerFeeWei)) {
       // Message.error(
-      //   `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerEther} ether`,
+      //   `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlkTokenSymbol} is insufficient to publish policy with a value of ${costServerEther} ether`,
       // );
       console.log(
-        `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerEther} ether`
+        `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlkTokenSymbol} is insufficient to publish policy with a value of ${costServerEther} ether`
       )
       throw new InsufficientBalanceError(
-        `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlk_token_symbol} is insufficient to publish policy with a value of ${costServerEther} ether`
+        `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlkTokenSymbol} is insufficient to publish policy with a value of ${costServerEther} ether`
       )
     }
   } //end of if (curNetwork === NETWORK_LIST.Horus)
@@ -2467,22 +2467,29 @@ export const approvalApplicationsForUseDatas = async (
 
   const gasLimit: BigNumber = gasFeeInWei.gt(BigNumber.from('0')) ? gasFeeInWei.div(_gasPrice) : BigNumber.from('0')
   //MultiPreEnactedPolicy
-  let enMultiPolicy: MultiEnactedPolicy;
-  try {
-    enMultiPolicy = await resultInfo.deDuplicationInfo.multiBlockchainPolicy.enact(
-      resultInfo.deDuplicationInfo.ursulasArray,
-      waitReceipt,
-      gasLimit,
-      _gasPrice
-    )
-  } catch (error) {
-    enMultiPolicy = await resultInfo.deDuplicationInfo.multiBlockchainPolicy.enact(
-      resultInfo.deDuplicationInfo.ursulasArray,
-      waitReceipt,
-      BigNumber.from("0"),//gasLimit,
-      BigNumber.from("0"),//_gasPrice
-    )
-  }
+  //let enMultiPolicy: MultiEnactedPolicy;
+  // try {
+  //   enMultiPolicy = await resultInfo.deDuplicationInfo.multiBlockchainPolicy.enact(
+  //     resultInfo.deDuplicationInfo.ursulasArray,
+  //     waitReceipt,
+  //     gasLimit,
+  //     _gasPrice
+  //   )
+  // } catch (error) {
+  //   enMultiPolicy = await resultInfo.deDuplicationInfo.multiBlockchainPolicy.enact(
+  //     resultInfo.deDuplicationInfo.ursulasArray,
+  //     waitReceipt,
+  //     BigNumber.from("0"),//gasLimit,
+  //     BigNumber.from("0"),//_gasPrice
+  //   )
+  // }
+
+  const enMultiPolicy = await resultInfo.deDuplicationInfo.multiBlockchainPolicy.enact(
+    resultInfo.deDuplicationInfo.ursulasArray,
+    waitReceipt,
+    BigNumber.from("0"),//gasLimit,
+    BigNumber.from("0"),//_gasPrice
+  )
 
 
   console.log('after mulit policy enact')
@@ -2571,7 +2578,7 @@ export const approvalApplicationsForUseDatas = async (
  * @param {string} remark - (Optional) Additional remarks for the rejection. Default is an empty string.
  * @returns {Promise<void>}
  */
-export const refusalApplicationForUseDatas = async (
+export const refusalApplicationForUseData = async (
   publisher: Account,
   applyId: string, // Application Record ID
   remark = '' //remark
@@ -2589,14 +2596,14 @@ export const refusalApplicationForUseDatas = async (
 }
 
 /**
- * Rejects the applications for the use of files/data. This account acts as the publisher (Alice). The batch version of the function refusalApplicationForUseDatas.
+ * Rejects the applications for the use of files/data. This account acts as the publisher (Alice). The batch version of the function refusalApplicationForUseData.
  * @category Data Publisher(Alice) Approval (Multi)
  * @param {Account} publisher - The account of the publisher (Alice).
  * @param {string[]} applyIds - The application apply ID to reject.
  * @param {string} remark - (Optional) Additional remarks for the rejection. Default is an empty string.
  * @returns {Promise<void>}
  */
-export const refusalApplicationsForUseDatas = async (
+export const refusalApplicationsForUseData = async (
   publisher: Account,
   applyIds: string[], // Application Record ID
   remark = '' //remark
@@ -2679,7 +2686,7 @@ export const getDataInfosByPolicyId = async (
  * (Revoke)Undoes published policies, the account as publisher (Alice)
  * action: Cancel the policy and delete the association between the file/data and the policy and the application for using all files corresponding to the policy,the policy label records can not be delete
  * notice: the policy must be pulished can be revoked, otherwise(the policy not published)
- * revoke the apply of use files/data by call the api revokePermissionApplicationOfDatas
+ * revoke the apply of use files/data by call the api revokePermissionApplicationOfData
  * @internal
  * @param publisher
  * @param userAccountId
@@ -2707,7 +2714,7 @@ export const revokePublishedPolicies = async (publisher: Account, userAccountId:
 }
 
 /**
- * Gets the content of an approved file/data, which can be downloaded. The input parameter is obtained by calling getApprovedDatasAsUser (Account).
+ * Gets the content of an approved file/data, which can be downloaded. The input parameter is obtained by calling getApprovedDataAsUser (Account).
  * @category Data User(Bob) Download Data
  * @param {Account} userAccount - The current account information.
  * @param {string} policyEncryptingKey - The policy encrypting key used to encrypt the file/data.

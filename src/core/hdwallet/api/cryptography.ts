@@ -365,7 +365,7 @@ export class CryptoBroker {
     }
   }
 
-  private async removeSavedDatas(saveKeys: string[]) {
+  private async removeSavedMultiData(saveKeys: string[]) {
     //Try not to call this function. Deleting a key without logic alone will destroy the overall storage interface.
     //Unless you know the consequences of deleting a key (such as load failure), don't do this lightly.
     //Given this, this function is set to private

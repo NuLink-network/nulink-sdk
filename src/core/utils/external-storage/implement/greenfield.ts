@@ -66,11 +66,11 @@ export const getData = async (objectName: string): Promise<Buffer> => {
 /**
  * Set data to storage. The entry points for uploading data/files to various storage services
  * @param {Account} account - Account the current account object.
- * @param {string[] | InstanceType<typeof String>[] | ArrayBufferView[] | ArrayBuffer[] | Blob[] | AwaitIterable<Uint8Array>[] | ReadableStream<Uint8Array>[]} datas - upload data stream
+ * @param {string[] | InstanceType<typeof String>[] | ArrayBufferView[] | ArrayBuffer[] | Blob[] | AwaitIterable<Uint8Array>[] | ReadableStream<Uint8Array>[]} data - upload data stream
  * @returns {Promise<string[]>} - the list of the data/file key.
  */
-export const setDatas = async (
-  datas:
+export const setMultiData = async (
+  data:
     | string[]
     | InstanceType<typeof String>[]
     | ArrayBufferView[]
@@ -82,22 +82,22 @@ export const setDatas = async (
 ): Promise<string[]> => {
   //Greenfield nodes do not support bulk upload. So you need to pass them one by one.
   const retList: any = []
-  for (let index = 0; index < datas.length; index++) {
-    const userData = datas[index]
-    retList.push(await _setDatas( [userData as any], account))
+  for (let index = 0; index < data.length; index++) {
+    const userData = data[index]
+    retList.push(await _setMultiData( [userData as any], account))
   }
   return retList
 }
 
 /**
- * setDatas: upload pre data function, internal use
+ * setData: upload pre data function, internal use
  * @internal
  * @param {Account} account - Account the current account object
- * @param {string[] | InstanceType<typeof String>[] | ArrayBufferView[] | ArrayBuffer[] | Blob[] | AwaitIterable<Uint8Array>[] | ReadableStream<Uint8Array>[]} datas - upload data stream
+ * @param {string[] | InstanceType<typeof String>[] | ArrayBufferView[] | ArrayBuffer[] | Blob[] | AwaitIterable<Uint8Array>[] | ReadableStream<Uint8Array>[]} data - upload data stream
  * @returns {Promise<string[]>} - the list of the file key.
  */
-const _setDatas = async (
-  datas:
+const _setMultiData = async (
+  data:
     | string[]
     | InstanceType<typeof String>[]
     | ArrayBufferView[]
@@ -131,15 +131,15 @@ const _setDatas = async (
       sendData.append("signature", signature);
 
       //unsigned data 
-      for (let index = 0; index < datas.length; index++) {
-        const userData = datas[index]
+      for (let index = 0; index < data.length; index++) {
+        const userData = data[index]
         sendData.append('file', userData, `file${index + 1}`)
       }
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const data = (await serverPostFormData('/file/batch-upload-file', sendData)) as object
+      const _data = (await serverPostFormData('/file/batch-upload-file', sendData)) as object
 
-      let dataList = data['list']
+      let dataList = _data['list']
 
       if (isBlank(dataList)) {
         return []

@@ -1,5 +1,6 @@
 import { ethers } from "ethers";
 import { isBlank } from "./null";
+import FormData from "form-data";
 
 /**
  * {
@@ -68,7 +69,7 @@ export const signMessage = async (
 
   //https://github.com/ethers-io/ethers.js/issues/447
   const wallet = new ethers.Wallet(privateKey);
-  
+
   if(messageData instanceof FormData)
   {
     throw new Error("signMessage not support type: form-data lib's FormData")

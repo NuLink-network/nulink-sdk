@@ -138,3 +138,9 @@ export class GetTransactionReceiptError extends Error {
     this.name = "GetTransactionReceiptError"; // (2)
   }
 }
+export class ApplyNotExist extends Error {
+  constructor(message) {
+    super(message); // (1)
+    this.name = "ApplyNotExist"; // (2)
+  }
+}

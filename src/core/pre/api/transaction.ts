@@ -181,11 +181,11 @@ export const sendRawTransaction = async (
     // Calculate if the balance is enough to cover the fee of sendRawTransaction
     if (BigNumber.from(tokenBalanceWei).lt(gasFeeInWei)) {
         const tips = `Insufficient balance ${tokenBalanceEthers} ${
-        chainConfigInfo.token_symbol
+        chainConfigInfo.tokenSymbol
         } for sendRawTransaction ${Web3.utils.fromWei(
         gasFeeInWei.toString(),
         "ether"
-        )} ${chainConfigInfo.token_symbol}`;
+        )} ${chainConfigInfo.tokenSymbol}`;
 
         //Message.error(tips);
         console.error("sendRawTransaction error: ", tips);

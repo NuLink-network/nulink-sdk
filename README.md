@@ -97,34 +97,34 @@ first, we need to import package
 import {
   StorageManager,
   DataCallback,
-  setIPFSDatas,
+  setIPFSData,
   getIPFSData,
 } from '@nulink_network/nulink-sdk'
 ```
 
-Then, you need to implement the <b>setDatas</b> and <b>getData</b> methods of the DataCallback structure.
-Since we need to upload data (files) in batches in our use case, while usually retrieving them one by one, we need to implement the <b>setDatas</b> method for batch uploading and the <b>getData</b> method for retrieving data individually.
+Then, you need to implement the <b>setData</b> and <b>getData</b> methods of the DataCallback structure.
+Since we need to upload data (files) in batches in our use case, while usually retrieving them one by one, we need to implement the <b>setData</b> method for batch uploading and the <b>getData</b> method for retrieving data individually.
 
 ```javascript
 
-const dataCallback: DataCallback = { setDatas: setIPFSDatas, getData: getIPFSData }
+const dataCallback: DataCallback = { setData: setIPFSData, getData: getIPFSData }
   //Set the external storage used by the Pre process to IPFS (for example, encrypted files uploaded by users will be stored in this storage, and users can customize the storage).
   StorageManager.setDataCallback(dataCallback)
 
 ```
 
-After setting up the callback functions, when we upload files using the uploadDatasByCreatePolicy method in pre, the callback function <b>setDatas</b> you have set will be automatically invoked. Later, when we retrieve files using getDataContentAsUser, the <b>getData</b> function will be automatically called.
+After setting up the callback functions, when we upload files using the uploadDataByCreatePolicy method in pre, the callback function <b>setData</b> you have set will be automatically invoked. Later, when we retrieve files using getDataContentAsUser, the <b>getData</b> function will be automatically called.
 
-The <b>setDatas</b> and <b>getData</b> types are as follows:
+The <b>setData</b> and <b>getData</b> types are as follows:
 
 ```javascript
 
 export type DataCallback = {
-    setDatas: AsyncSetDatasCallback;
+    setData: AsyncSetDataCallback;
     getData: AsyncGetDataCallback;
 };
 
-export type AsyncSetDatasCallback = ((datas: DataType, account: Account) => Promise<string[]>) | ((datas: DataType) => Promise<string[]>);
+export type AsyncSetDataCallback = ((data: DataType, account: Account) => Promise<string[]>) | ((data: DataType) => Promise<string[]>);
 
 export type AsyncGetDataCallback = (key: string) => Promise<Buffer | Uint8Array | null | undefined>;
 
@@ -132,7 +132,7 @@ export type AsyncGetDataCallback = (key: string) => Promise<Buffer | Uint8Array 
 
 <b>Notes</b>:
 
-    Please note that the Account parameter is optional. If the setDatas callback function defined by the user requires account information (such as signing data with the account's private key), the callback function can be defined with an additional parameter for the account. In the pre process, when the setDatas callback function is called, the account information will be passed to the user-defined callback function, allowing the callback function to access the current account information (account parameter).
+    Please note that the Account parameter is optional. If the setData callback function defined by the user requires account information (such as signing data with the account's private key), the callback function can be defined with an additional parameter for the account. In the pre process, when the setData callback function is called, the account information will be passed to the user-defined callback function, allowing the callback function to access the current account information (account parameter).
 
 <b>More details</b>:
 
@@ -159,22 +159,22 @@ import {
   getPolicyGasFee,
   type DataInfo,
   DataCategory,
-  uploadDatasByCreatePolicy,
-  getUploadedDatas,
+  uploadDataByCreatePolicy,
+  getUploadedData,
   createAccountIfNotExist,
-  getOtherShareDatas,
+  getOtherShareData,
   getDataDetails,
-  applyForDatasUsagePermission,
-  getDatasPendingApprovalAsPublisher,
-  refusalApplicationForUseDatas,
+  applyForDataUsagePermission,
+  getDataPendingApprovalAsPublisher,
+  refusalApplicationForUseData,
   getPolicyTokenCost,
-  approvalApplicationForUseDatas,
-  getApprovedDatasAsPublisher,
-  getApprovedDatasAsUser,
+  approvalApplicationForUseData,
+  getApprovedDataAsPublisher,
+  getApprovedDataAsUser,
   getDataContentByDataIdAsUser,
   getPublishedPoliciesInfo,
-  uploadDatasBySelectPolicy,
-  getDatasByStatus,
+  uploadDataBySelectPolicy,
+  getDataByStatus,
   getMnemonic,
   getDefaultAccountPrivateKey,
   logoutWallet,
@@ -238,16 +238,17 @@ const historyContent: Uint8Array = enc.encode(plainText);
 //1.Alice upload file
 const dataList: DataInfo[] = [
   {
+    //label: A unique identifier for the file (similar to the file name) that is displayed to the user who needs to apply for the file
     label: `history-${nanoid()}.pdf`,
     dataArrayBuffer: historyContent.buffer,
   },
 ];
 
 //2. Alice encrypt and update a file to the ipfs network
-await uploadDatasByCreatePolicy(accountAlice, DataCategory.History, dataList);
+await uploadDataByCreatePolicy(accountAlice, DataCategory.History, dataList);
 
 //3. We can get the file just uploaded
-const resultList = (await getUploadedDatas(accountAlice, undefined, 1, 1000)) as object;
+const resultList = (await getUploadedData(accountAlice, undefined, 1, 1000)) as object;
 
 console.log("resultList: ", resultList);
 console.log('resultList["total"]>0 ', resultList["total"] > 0);
@@ -297,7 +298,7 @@ assert(nuLinkHDWallet);
 
 ```javascript
 //Bob finds the file Bob has just uploaded
-const dataDataResultList = (await getOtherShareDatas(_accountBob,undefined, false, undefined,
+const dataDataResultList = (await getOtherShareData(_accountBob,undefined, false, undefined,
 undefined, undefined, 1, 1000
 )) as object;
 
@@ -331,7 +332,7 @@ assert(parseInt(dataDetails["status"]) === 0); //Is not to apply for
 ```javascript
 //Bob requests permission to use the data for 7 days
 try {
-  await applyForDatasUsagePermission([applyDataId], _accountBob, 7);
+  await applyForDataUsagePermission([applyDataId], _accountBob, 7);
 } catch (e) {
   console.log("bob apply data failed", e);
   assert(false);
@@ -346,7 +347,7 @@ At first, Alice rejected Bob's request to use the data.
 //Alice receives Bob's data usage request
 
 // Alice reviews the usage requests from others for the data she uploaded.
-const dataNeedToApprovedResultList = await getDatasPendingApprovalAsPublisher(accountAlice, 1, 1000);
+const dataNeedToApprovedResultList = await getDataPendingApprovalAsPublisher(accountAlice, 1, 1000);
 
 let fileIndex3 = -1;
 for (
@@ -368,7 +369,7 @@ const needToApprovedDataInfo =
 assert(needToApprovedDataInfo["file_owner_id"] === accountAlice.id);
 
 //Alice rejected the file usage request
-await refusalApplicationForUseDatas(accountAlice, needToApprovedDataInfo["apply_id"]);
+await refusalApplicationForUseData(accountAlice, needToApprovedDataInfo["apply_id"]);
 ```
 
 5.Bob finds this file to be very useful, so he makes a second request.
@@ -376,7 +377,7 @@ await refusalApplicationForUseDatas(accountAlice, needToApprovedDataInfo["apply_
 ```javascript
 //Bob apply file for usage again. The application period is three days, less than the previous seven days
 try {
-  await applyForDatasUsagePermission([applyDataId], _accountBob, 3);
+  await applyForDataUsagePermission([applyDataId], _accountBob, 3);
 } catch (e) {
   console.log("bob reapply file failed", e);
   assert(false);
@@ -388,7 +389,7 @@ try {
 
 ```javascript
 //Alice receives Bob's file usage request again
-const dataNeedToApprovedResultList2 = await getDatasPendingApprovalAsPublisher(accountAlice, 1, 1000);
+const dataNeedToApprovedResultList2 = await getDataPendingApprovalAsPublisher(accountAlice, 1, 1000);
 
 assert(
   dataNeedToApprovedResultList2 &&
@@ -414,7 +415,9 @@ assert(needToApprovedDataInfo2["file_owner_id"] === accountAlice.id);
 
 //At this point Alice approves Bob's file usage request, Due to on-chain approval of Bob's request, we first evaluate gas and service fees
 
-//1. Alice calc server fee (wei): the nulink token tnlk/nlk
+//1. Alice calc server fee (wei): 
+//    For the main chain TBSC/BSC, the token is TNLK/NLK. 
+//    For the side chains, they use the native currency of the respective chain (e.g., Mumbai uses TMATIC/MATIC, OKX X1 Chain uses TOKB/OKB).
 const startDate: Date = new Date();
 const startMs: number = Date.parse(startDate.toString());
 const endMs: number =
@@ -438,7 +441,7 @@ const gasFeeWei = await getPolicyGasFee(
 );
 
 //First, let's record the list of requests from other individuals that Alice has already approved, for future reference.
-  const aliceApprovedfilesListLast = await getApprovedDatasAsPublisher(
+  const aliceApprovedfilesListLast = await getApprovedDataAsPublisher(
     accountAlice,
     1,
     1000
@@ -446,7 +449,7 @@ const gasFeeWei = await getPolicyGasFee(
 
 //Note: Please make sure that the account has sufficient tnlk and bsc testnet tokens before this, otherwise the approval will fail
 //Alice approves Bob's application for file usage. Whenever Alice approves a file request, an on-chain policy is created
-await approvalApplicationForUseDatas(
+await approvalApplicationForUseData(
   accountAlice,
   _accountBob.id,
   needToApprovedDataInfo2["apply_id"],
@@ -468,7 +471,7 @@ let aliceApprovedDataList: any = null;
   do {
     await sleep(10000); //10 seconds
     //Alice, as the publisher of the file, obtains the list of files that she has successfully approved
-    aliceApprovedDataList = await getApprovedDatasAsPublisher(
+    aliceApprovedDataList = await getApprovedDataAsPublisher(
       accountAlice,
       1,
       1000
@@ -512,7 +515,7 @@ const dataIndex2s: number[] = [] //Array(numReqData).fill(-1);
       const _accountBob = bobAccountId2AccountMap[accountBobId]
       accountBob = _accountBob;
       //Bob finds out that his application has been approved by Alice. Bob now has permission to view the contents of the file
-      const bobBeApprovedDataList = await pre.getApprovedDatasAsUser(_accountBob, 1, 1000)
+      const bobBeApprovedDataList = await pre.getApprovedDataAsUser(_accountBob, 1, 1000)
       /*return data format: {
                               list: [
                                 { apply_id, file_id:, proposer, proposer_id, file_owner:, file_owner_id:, policy_id, hrac,
@@ -593,7 +596,7 @@ const dataList2: DataInfo[] = [
 ];
 
 //Files/Data uploaded by using published policies do not need approval. Bob can use the files directly, so there is no approval record
-const fileIds = await uploadDatasBySelectPolicy(
+const fileIds = await uploadDataBySelectPolicy(
   accountAlice,
   DataCategory.Philosophy,
   dataList2,
@@ -619,7 +622,7 @@ assert(dataContent2 === plainText2);
 
 //you can get all status files for mine apply: The files I applied for
 //status 0: all status, include:  applying, approved, rejected
-const data = (await getDatasByStatus(
+const data = (await getDataByStatus(
   undefined,
   _accountBob.id,
   undefined,

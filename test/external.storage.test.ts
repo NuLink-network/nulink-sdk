@@ -4,9 +4,9 @@ import {
   isBlank,
   StorageManager,
   DataCallback,
-  setIPFSDatas,
+  setIPFSData,
   getIPFSData,
-  setBEDatas,
+  setBEData,
   getBEData
 } from '../src/core/utils'
 
@@ -44,10 +44,10 @@ export const run = async () => {
 
   // eslint-disable-next-line no-debugger
   debugger
-  const dataCallback: DataCallback = { setDatas: setIPFSDatas, getData: getIPFSData }
+  const dataCallback: DataCallback = { setData: setIPFSData, getData: getIPFSData }
   //Set the external storage used by the Pre process to IPFS (for example, encrypted data/files uploaded by users will be stored in this storage, and users can customize the storage).
   StorageManager.setDataCallback(dataCallback)
-  console.log("StorageManager.dataCallback.setDatas.length: ", (StorageManager as any).dataCallback.setDatas.length);
+  console.log("StorageManager.dataCallback.setData.length: ", (StorageManager as any).dataCallback.setData.length);
   const buffer = Buffer.from('Hello world', 'utf-8')
   const cids: string[] = await StorageManager.setData([new Uint8Array(buffer)], null as any)
   console.log(`cids: ${cids}`)
@@ -56,10 +56,10 @@ export const run = async () => {
   console.log(`fileData: ${fileData}`)
   // eslint-disable-next-line no-debugger
   debugger
-  const dataCallback2: DataCallback = { setDatas: setBEDatas, getData: getBEData }
+  const dataCallback2: DataCallback = { setData: setBEData, getData: getBEData }
   //Set the external storage used by the Pre process to IPFS (for example, encrypted data/files uploaded by users will be stored in this storage, and users can customize the storage).
   StorageManager.setDataCallback(dataCallback2)
-  console.log("StorageManager.dataCallback.setDatas.length: ", (StorageManager as any).dataCallback.setDatas.length);
+  console.log("StorageManager.dataCallback.setData.length: ", (StorageManager as any).dataCallback.setData.length);
   const cids2: string[] = await StorageManager.setData([new Uint8Array(buffer)], accountAlice)
   console.log(`cids2: ${cids2}`)
 

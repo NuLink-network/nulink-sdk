@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / getDataInfosByPolicyId
+[NuLink SDK - v0.5.17](../README.md) / [Modules](../modules.md) / getDataInfosByPolicyId
 
 # Function: getDataInfosByPolicyId
 
@@ -43,4 +43,4 @@ Gets the file/data information associated with the published policy (so the poli
 
 #### Defined in
 
-[core/pre/api/workflow.ts:2454](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/core/pre/api/workflow.ts#L2454)
+[core/pre/api/workflow.ts:2653](https://github.com/NuLink-network/nulink-sdk/blob/675c732/src/core/pre/api/workflow.ts#L2653)

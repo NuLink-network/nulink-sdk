@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / createAccount
+[NuLink SDK - v0.5.17](../README.md) / [Modules](../modules.md) / createAccount
 
 # Function: createAccount
 
@@ -18,4 +18,4 @@ Sends a request to create an account on the server.
 
 #### Defined in
 
-[core/pre/api/workflow.ts:147](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/core/pre/api/workflow.ts#L147)
+[core/pre/api/workflow.ts:150](https://github.com/NuLink-network/nulink-sdk/blob/675c732/src/core/pre/api/workflow.ts#L150)

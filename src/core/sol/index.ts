@@ -7,6 +7,7 @@ export enum NETWORK_LIST {
   ConfluxTestNet = "ConFlux Espace TestNet",
   PolygonTestNet = "Polygon Mumbai", //polygon testnet
   XChainTestNet = "OKX Chain TestNet",
+  ETHHoleSkyTestNet = "Holesky TestNet", //ETH testnet
 }
 
 /**

@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / getPolicysServerFee
+[NuLink SDK - v0.5.17](../README.md) / [Modules](../modules.md) / getPolicysServerFee
 
 # Function: getPolicysServerFee
 
@@ -27,4 +27,4 @@ UnauthorizedError get logined account failed, must be login account first
 
 #### Defined in
 
-[api/pre.ts:68](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/api/pre.ts#L68)
+[api/pre.ts:68](https://github.com/NuLink-network/nulink-sdk/blob/675c732/src/api/pre.ts#L68)

@@ -16,7 +16,7 @@ import {
 } from '../src/api/wallet'
 
 import { BigNumber, ethers } from 'ethers'
-import { DataCallback, getIPFSData, isBlank, setIPFSDatas, StorageManager } from '../src/core/utils'
+import { DataCallback, getIPFSData, isBlank, setIPFSData, StorageManager } from '../src/core/utils'
 import { nanoid } from 'nanoid'
 import Web3 from 'web3'
 import { type DataInfo } from '../src'
@@ -26,12 +26,12 @@ import sleep from 'await-sleep'
 
 export const run = async () => {
 
-  const dataCallback: DataCallback = { setDatas: setIPFSDatas, getData: getIPFSData }
+  const dataCallback: DataCallback = { setData: setIPFSData, getData: getIPFSData }
   //Set the external storage used by the Pre process to IPFS (for example, encrypted data/files uploaded by users will be stored in this storage, and users can customize the storage).
   StorageManager.setDataCallback(dataCallback)
   // // eslint-disable-next-line no-debugger
   // debugger
-  // const dataCallback2: DataCallback = { setDatas: setBEDatas, getData: getBEData }
+  // const dataCallback2: DataCallback = { setData: setBEData, getData: getBEData }
   // //Set the external storage used by the Pre process to IPFS (for example, encrypted data/files uploaded by users will be stored in this storage, and users can customize the storage).
   // StorageManager.setDataCallback(dataCallback2)
 
@@ -88,10 +88,10 @@ export const run = async () => {
   // eslint-disable-next-line no-debugger
   debugger;
   //2. Alice encrypt and update a data/file to the ipfs network
-  await pre.uploadDatasByCreatePolicy(accountAlice, pre.DataCategory.History, dataList)
+  await pre.uploadDataByCreatePolicy(accountAlice, pre.DataCategory.History, dataList)
 
   //3. We can get the data/file just uploaded
-  const resultList = (await pre.getUploadedDatas(accountAlice, undefined, 1, 1000)) as object
+  const resultList = (await pre.getUploadedData(accountAlice, undefined, 1, 1000)) as object
 
   /*
   {
@@ -136,7 +136,7 @@ export const run = async () => {
   await pre.createAccountIfNotExist(accountBob)
 
   //Bob finds the data/file Alice has just uploaded
-  const findDataResultList = (await pre.getOtherShareDatas(
+  const findDataResultList = (await pre.getOtherShareData(
     accountBob,
     undefined,
     false,
@@ -188,14 +188,14 @@ export const run = async () => {
 
   //Bob requests permission to use the data/file for 7 days
   try {
-    await pre.applyForDatasUsagePermission([applyDataId], accountBob, 7)
+    await pre.applyForDataUsagePermission([applyDataId], accountBob, 7)
   } catch (e) {
     console.log('bob apply data/file failed', e)
     assert(false)
   }
 
   //Alice receives Bob's data/file usage request
-  const dataNeedToApprovedResultList = await pre.getDatasPendingApprovalAsPublisher(accountAlice, 1, 1000)
+  const dataNeedToApprovedResultList = await pre.getDataPendingApprovalAsPublisher(accountAlice, 1, 1000)
   /*return data format: {
       list: [
         { apply_id, file_id:, proposer, proposer_id, file_owner:, file_owner_id:, policy_id, hrac, start_at:, end_at, created_at }
@@ -220,18 +220,18 @@ export const run = async () => {
   assert(needToApprovedDataInfo['file_owner_id'] === accountAlice.id)
 
   //Alice rejected the data/file usage request
-  await pre.refusalApplicationForUseDatas(accountAlice, needToApprovedDataInfo['apply_id'])
+  await pre.refusalApplicationForUseData(accountAlice, needToApprovedDataInfo['apply_id'])
 
   //Bob apply data/file for usage again. The application period is three days, less than the previous seven days
   try {
-    await pre.applyForDatasUsagePermission([applyDataId], accountBob, 3)
+    await pre.applyForDataUsagePermission([applyDataId], accountBob, 3)
   } catch (e) {
     console.log('bob reapply data/file failed', e)
     assert(false)
   }
 
   //Alice receives Bob's data/file usage request again
-  const dataNeedToApprovedResultList2 = await pre.getDatasPendingApprovalAsPublisher(accountAlice, 1, 1000)
+  const dataNeedToApprovedResultList2 = await pre.getDataPendingApprovalAsPublisher(accountAlice, 1, 1000)
   /*return data format: {
     list: [
       { apply_id, file_id:, proposer, proposer_id, file_owner:, file_owner_id:, policy_id, hrac, start_at:, end_at, days,  created_at }
@@ -260,7 +260,9 @@ export const run = async () => {
 
   console.log(`accountAlice address ${accountAlice.address}`)
 
-  //1. Alice calc server fee (wei): the nulink token tnlk/nlk
+  //1. Alice calc server fee (wei): 
+  //    For the main chain TBSC/BSC, the token is TNLK/NLK. 
+  //    For the side chains, they use the native currency of the respective chain (e.g., Mumbai uses TMATIC/MATIC, OKX X1 Chain uses TOKB/OKB).
   const startDate: Date = new Date()
   const startMs: number = Date.parse(startDate.toString())
   const endMs: number = startMs + (needToApprovedDataInfo2['days'] as number) * 24 * 60 * 60 * 1000
@@ -284,7 +286,7 @@ export const run = async () => {
 
   //Note: Please make sure that the account has sufficient tnlk and bsc testnet tokens before this, otherwise the approval will fail
   //Alice approves Bob's application for data/file usage. Whenever Alice approves a data/file request, an on-chain policy is created
-  await pre.approvalApplicationForUseDatas(
+  await pre.approvalApplicationForUseData(
     accountAlice,
     accountBob.id,
     needToApprovedDataInfo2['apply_id'],
@@ -301,7 +303,7 @@ export const run = async () => {
   await sleep(20000) //20 seconds
 
   //Alice, as the publisher of the data/file, obtains the list of data/files that she has successfully approved
-  const aliceApprovedDataList = await pre.getApprovedDatasAsPublisher(accountAlice, 1, 1000)
+  const aliceApprovedDataList = await pre.getApprovedDataAsPublisher(accountAlice, 1, 1000)
   /*return data format: {
   list: [
     { apply_id, file_id:, proposer, proposer_id, file_owner:, file_owner_id:, policy_id, hrac, start_at:, end_at, created_at }
@@ -328,7 +330,7 @@ export const run = async () => {
   console.log('data/file policy Id:', policyId)
 
   //Bob finds out that his application has been approved by Alice. Bob now has permission to view the contents of the data/file
-  const bobBeApprovedDataList = await pre.getApprovedDatasAsUser(accountBob, 1, 1000)
+  const bobBeApprovedDataList = await pre.getApprovedDataAsUser(accountBob, 1, 1000)
   /*return data format: {
   list: [
     { apply_id, file_id:, proposer, proposer_id, file_owner:, file_owner_id:, policy_id, hrac, start_at:, end_at, created_at }
@@ -390,7 +392,7 @@ export const run = async () => {
   ]
 
   //Data/Files uploaded by using published policies do not need approval. Bob can use the data/files directly, so there is no approval record
-  const dataIds = await pre.uploadDatasBySelectPolicy(accountAlice, pre.DataCategory.Philosophy, dataList2, policyId)
+  const dataIds = await pre.uploadDataBySelectPolicy(accountAlice, pre.DataCategory.Philosophy, dataList2, policyId)
 
   //Bob can directly download Alice's associated policy upload data/file without waiting for Alice's approval,
   //because the associated policy has already been created and does not need repeated approval. Note: This publish policy value is available for Bob
@@ -403,7 +405,7 @@ export const run = async () => {
 
   //you can get all status data/files for mine apply: The data/files I applied for
   //status 0: all status, include:  applying，approved, rejected
-  const data = (await pre.getDatasByStatus(undefined, accountBob.id, undefined, undefined, 0, 1, 1000)) as object
+  const data = (await pre.getDataByStatus(undefined, accountBob.id, undefined, undefined, 0, 1, 1000)) as object
   /*
     return data format: {
       list: [

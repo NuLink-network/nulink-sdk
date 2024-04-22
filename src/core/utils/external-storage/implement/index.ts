@@ -1,3 +1,3 @@
-export { setDatas as setGFDatas, getData as getGFData} from "./greenfield"
-export { setDatas as setIPFSDatas, getData as getIPFSData} from "./ipfs"
-export { setDatas as setBEDatas, getData as getBEData} from "./upload.backend"
+export { setMultiData as setGFData, getData as getGFData} from "./greenfield"
+export { setMultiData as setIPFSData, getData as getIPFSData} from "./ipfs"
+export { setMultiData as setBEData, getData as getBEData} from "./upload.backend"

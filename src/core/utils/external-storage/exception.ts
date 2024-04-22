@@ -1,9 +1,9 @@
 
 
-export class GetDatasCallbackError extends Error {
+export class GetDataCallbackError extends Error {
   constructor(message) {
     super(message); // (1)
-    this.name = "GetDatasCallbackError";
+    this.name = "GetDataCallbackError";
   }
 }
 

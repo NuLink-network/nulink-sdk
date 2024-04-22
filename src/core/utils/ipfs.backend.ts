@@ -11,9 +11,9 @@ import { MultiDataUploadError } from './exception'
 import { signUpdateServerDataMessage } from '../pre'
 import { decrypt as pwdDecrypt } from "./password.encryption";
 
-export const setDatas = async (
-  // account: Account,
-  userDatas:
+export const setData = async (
+  account: Account,
+  userData:
     | string[]
     | InstanceType<typeof String>[]
     | ArrayBufferView[]
@@ -47,9 +47,9 @@ export const setDatas = async (
       
 
       //unsigned data 
-      for (let index = 0; index < userDatas.length; index++) {
-        const userData = userDatas[index]
-        sendData.append('file', userData, `file${index + 1}`)
+      for (let index = 0; index < userData.length; index++) {
+        const _userData = userData[index]
+        sendData.append('file', _userData, `file${index + 1}`)
       }
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars

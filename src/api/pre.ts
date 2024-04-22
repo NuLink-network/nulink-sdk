@@ -425,7 +425,7 @@ export const checkDataApprovalStatusIsUnderReviewOrApproved = async (data: { app
  *            from: 'publisher.address'
  *          }
  */
-export const ApprovalUseDatas = async (data: {
+export const ApprovalUseData = async (data: {
   userAccountId: string;
   applyId: string;
   startSeconds: number;
@@ -452,7 +452,7 @@ export const ApprovalUseDatas = async (data: {
     const startDate: Date = new Date(Number(data['startSeconds']) * 1000) //  start_at is seconds, but Date needs milliseconds
     const endDate: Date = new Date(Number(data['endSeconds']) * 1000) //  end_at is seconds, but Date needs milliseconds
 
-    return await pre.approvalApplicationForUseDatas(
+    return await pre.approvalApplicationForUseData(
       publisher as Account,
       data['userAccountId'],
       data['applyId'],
@@ -478,7 +478,7 @@ export const ApprovalUseDatas = async (data: {
 
 
 /**
- * Approve the user's multi data/file usage request. The batch version of the ApprovalUseDatas function.
+ * Approve the user's multi data/file usage request. The batch version of the ApprovalUseData function.
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @category Data Publisher(Alice) Approval (Multi)
  * @param {Object} data - the Object of update data. Object be must be have the properties: "userAccountIds" and "applyIds", return null otherwise
@@ -500,7 +500,7 @@ export const ApprovalUseDatas = async (data: {
  *            from: 'publisher.address'
  *          }
  */
-export const ApprovalMultiUseDatas = async (data: {
+export const ApprovalMultiUseData = async (data: {
   userAccountIds: string[];
   applyIds: string[];
   startSecondsArray: number[];
@@ -531,7 +531,7 @@ export const ApprovalMultiUseDatas = async (data: {
       (endSeconds) => new Date(Number(endSeconds) * 1000)
     ); // end_at is seconds, but Date needs milliseconds
 
-    return await pre.approvalApplicationsForUseDatas(
+    return await pre.approvalApplicationsForUseData(
       publisher as Account,
       data['userAccountIds'],
       data['applyIds'],
@@ -583,7 +583,7 @@ export const ApprovalMultiUseDatas = async (data: {
               "total": total count
             }
  */
-export const getDatasForApprovedAsPublisher = async (data: { pageIndex?: number; pageSize?: number }) => {
+export const getDataForApprovedAsPublisher = async (data: { pageIndex?: number; pageSize?: number }) => {
   const account = await getWalletDefaultAccount()
 
   if (isBlank(account)) {
@@ -592,7 +592,7 @@ export const getDatasForApprovedAsPublisher = async (data: { pageIndex?: number;
     )
   }
 
-  return await pre.getApprovedDatasAsPublisher(
+  return await pre.getApprovedDataAsPublisher(
     account as Account,
     data && Object.prototype.hasOwnProperty.call(data, 'pageIndex') ? data['pageIndex'] : 1,
     data && Object.prototype.hasOwnProperty.call(data, 'pageSize') ? data['pageSize'] : 10
@@ -627,7 +627,7 @@ export const getDatasForApprovedAsPublisher = async (data: { pageIndex?: number;
               "total": total count
             }
  */
-export const getDatasForApprovedAsUser = async (data: { pageIndex?: number; pageSize?: number }) => {
+export const getDataForApprovedAsUser = async (data: { pageIndex?: number; pageSize?: number }) => {
   const account = await getWalletDefaultAccount()
 
   if (isBlank(account)) {
@@ -636,7 +636,7 @@ export const getDatasForApprovedAsUser = async (data: { pageIndex?: number; page
     )
   }
 
-  return await pre.getApprovedDatasAsUser(
+  return await pre.getApprovedDataAsUser(
     account as Account,
     data && Object.prototype.hasOwnProperty.call(data, 'pageIndex') ? data['pageIndex'] : 1,
     data && Object.prototype.hasOwnProperty.call(data, 'pageSize') ? data['pageSize'] : 10
@@ -671,7 +671,7 @@ export const getDatasForApprovedAsUser = async (data: { pageIndex?: number; page
               "total": total count
             }
  */
-export const getDatasForAllStatusAsPublisher = async (data: { pageIndex?: number; pageSize?: number }) => {
+export const getDataForAllStatusAsPublisher = async (data: { pageIndex?: number; pageSize?: number }) => {
   const account = await getWalletDefaultAccount()
 
   if (isBlank(account)) {
@@ -680,7 +680,7 @@ export const getDatasForAllStatusAsPublisher = async (data: { pageIndex?: number
     )
   }
 
-  return await pre.getDatasAllStatusAsPublisher(
+  return await pre.getDataAllStatusAsPublisher(
     account as Account,
     data && Object.prototype.hasOwnProperty.call(data, 'pageIndex') ? data['pageIndex'] : 1,
     data && Object.prototype.hasOwnProperty.call(data, 'pageSize') ? data['pageSize'] : 10
@@ -715,7 +715,7 @@ export const getDatasForAllStatusAsPublisher = async (data: { pageIndex?: number
               "total": total count
             }
  */
-export const getDatasApprovedForApplicantAsUser = async (data: { pageIndex?: number; pageSize?: number }) => {
+export const getDataApprovedForApplicantAsUser = async (data: { pageIndex?: number; pageSize?: number }) => {
   const account = await getWalletDefaultAccount()
 
   if (isBlank(account)) {
@@ -724,7 +724,7 @@ export const getDatasApprovedForApplicantAsUser = async (data: { pageIndex?: num
     )
   }
 
-  return await pre.getApprovedDatasAsUser(
+  return await pre.getApprovedDataAsUser(
     account as Account,
     data && Object.prototype.hasOwnProperty.call(data, 'pageIndex') ? data['pageIndex'] : 1,
     data && Object.prototype.hasOwnProperty.call(data, 'pageSize') ? data['pageSize'] : 10
@@ -760,7 +760,7 @@ export const getDatasApprovedForApplicantAsUser = async (data: { pageIndex?: num
               "total": total count
             }
  */
-export const getDatasByStatusForAllApplyAsPublisher = async (data: {
+export const getDataByStatusForAllApplyAsPublisher = async (data: {
   pageIndex?: number
   pageSize?: number
   status?: string | number
@@ -773,7 +773,7 @@ export const getDatasByStatusForAllApplyAsPublisher = async (data: {
     )
   }
 
-  return await pre.getDatasByApplyStatusAsPublisher(
+  return await pre.getDataByApplyStatusAsPublisher(
     account as Account,
     data && Object.prototype.hasOwnProperty.call(data, 'status') ? Number(data['status']) : 0,
     data && Object.prototype.hasOwnProperty.call(data, 'pageIndex') ? data['pageIndex'] : 1,
@@ -810,7 +810,7 @@ export const getDatasByStatusForAllApplyAsPublisher = async (data: {
               "total": total count
             }
  */
-export const getDatasByStatusForAllApplyAsUser = async (data: {
+export const getDataByStatusForAllApplyAsUser = async (data: {
   pageIndex?: number
   pageSize?: number
   status?: string | number
@@ -823,7 +823,7 @@ export const getDatasByStatusForAllApplyAsUser = async (data: {
     )
   }
 
-  return await pre.getDatasByApplyStatusAsUser(
+  return await pre.getDataByApplyStatusAsUser(
     account as Account,
     data && Object.prototype.hasOwnProperty.call(data, 'status') ? Number(data['status']) : 0,
     data && Object.prototype.hasOwnProperty.call(data, 'pageIndex') ? data['pageIndex'] : 1,
@@ -959,7 +959,7 @@ export const getDataContentAsPublisher = async (data: { dataId: string; dataLabe
               "total": total count
             }
  */
-export const getDatasInfoByStatus = async (data: {
+export const getDataInfoByStatus = async (data: {
   pageIndex?: number
   pageSize?: number
   status?: string | number
@@ -968,7 +968,7 @@ export const getDatasInfoByStatus = async (data: {
   fileOwnerId?: string
   applyId?: string
 }) => {
-  return await pre.getDatasByStatus(
+  return await pre.getDataByStatus(
     data && Object.prototype.hasOwnProperty.call(data, 'dataId') ? data['dataId'] : undefined,
     data && Object.prototype.hasOwnProperty.call(data, 'proposerId') ? data['proposerId'] : undefined,
     data && Object.prototype.hasOwnProperty.call(data, 'fileOwnerId') ? data['fileOwnerId'] : undefined,
@@ -1109,7 +1109,7 @@ export const getPolicyInfosAsUser = async (data: { pageIndex?: number; pageSize?
               "total": total count
             }
  */
-export const getDatasInfoOfPolicy = async (data: {
+export const getDataInfoOfPolicy = async (data: {
   pageIndex?: number
   pageSize?: number
   policyId: string
@@ -1169,7 +1169,7 @@ export const getDatasInfoOfPolicy = async (data: {
               "total": total count
             }
  */
-export const getAllDatasInfoOfPolicy = async (data: { pageIndex?: number; pageSize?: number; policyId: string }) => {
+export const getAllDataInfoOfPolicy = async (data: { pageIndex?: number; pageSize?: number; policyId: string }) => {
   if (data && Object.prototype.hasOwnProperty.call(data, 'policyId')) {
     return await pre.getDataInfosByPolicyId(
       data['policyId'],

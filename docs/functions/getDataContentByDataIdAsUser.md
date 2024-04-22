@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.7](../README.md) / [Modules](../modules.md) / getDataContentByDataIdAsUser
+[NuLink SDK - v0.5.17](../README.md) / [Modules](../modules.md) / getDataContentByDataIdAsUser
 
 # Function: getDataContentByDataIdAsUser
 
@@ -19,4 +19,4 @@ Get approved document content (downloadable). The file/data applicant retrieves 
 
 #### Defined in
 
-[core/pre/api/workflow.ts:2610](https://github.com/NuLink-network/nulink-sdk/blob/65ffe0d/src/core/pre/api/workflow.ts#L2610)
+[core/pre/api/workflow.ts:2809](https://github.com/NuLink-network/nulink-sdk/blob/675c732/src/core/pre/api/workflow.ts#L2809)

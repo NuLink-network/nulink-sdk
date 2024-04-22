@@ -43,12 +43,12 @@ export const getIPFSClient = async () => {
 
 /**
  * Bulk set data to ipfs
- * @param {string | InstanceType<typeof String> | ArrayBufferView | ArrayBuffer | Blob | AwaitIterable<Uint8Array> | ReadableStream<Uint8Array>} datas - upload data stream
+ * @param {string | InstanceType<typeof String> | ArrayBufferView | ArrayBuffer | Blob | AwaitIterable<Uint8Array> | ReadableStream<Uint8Array>} data - upload data stream
  * @returns {Promise<string>} - the list of the data/file key.
  */
 
-export const setDatas = async (
-  datas:
+export const setMultiData = async (
+  data:
     | string[]
     | InstanceType<typeof String>[]
     | ArrayBufferView[]
@@ -58,20 +58,20 @@ export const setDatas = async (
     | ReadableStream<Uint8Array>[]
 ): Promise<string []> => {
   const retList: any = []
-  for (let index = 0; index < datas.length; index++) {
-    const userData = datas[index]
+  for (let index = 0; index < data.length; index++) {
+    const userData = data[index]
     try {
       const key = await setData(userData);
       if(isBlank(key))
       {
-        throw new SetStorageDataError(`setDatas index: ${index} error: key is ${key}`)
+        throw new SetStorageDataError(`setData index: ${index} error: key is ${key}`)
       }
 
       retList.push(key)
     } catch (error) {
-      console.log(`setDatas index: ${index} error: ${error}`)
+      console.log(`setData index: ${index} error: ${error}`)
       //retList.push(null)
-      throw new SetStorageDataError(`setDatas index: ${index} error: ${error}`)
+      throw new SetStorageDataError(`setData index: ${index} error: ${error}`)
     }
   
   }
@@ -81,7 +81,7 @@ export const setDatas = async (
 /**
  * Set data to ipfs
  * @internal
- * @param {string | InstanceType<typeof String> | ArrayBufferView | ArrayBuffer | Blob | AwaitIterable<Uint8Array> | ReadableStream<Uint8Array>} userDatas - upload data stream
+ * @param {string | InstanceType<typeof String> | ArrayBufferView | ArrayBuffer | Blob | AwaitIterable<Uint8Array> | ReadableStream<Uint8Array>} data - upload data stream
  * @returns {Promise<string>} - the list of the data/file key.
  */
 const setData = async (

@@ -171,7 +171,16 @@ export class Strategy extends IJson {
     if (!util.isBlank(id)) {
       this.id = id
     } else {
-      this.id = nanoid()
+      //this.id = nanoid()
+      /** 
+       * When multiple browser tabs are opened simultaneously, the frontend is unable to lock them, 
+       * resulting in overlapping indexes during generation. 
+       * As a result, when two files are approved separately, one might not find the corresponding strategy. 
+       * To address this situation, we ensure that the policy IDs for strategies generated in simultaneously opened tabs are the same. 
+       * This, combined with backend restrictions on the same HRAC application, can resolve the problem.
+       */
+      //this.id = md5(`${accountAddressIndex}_${strategyAddressIndex}_${label}`, { encoding: 'string' });
+      this.id = keccak256(keyPairDict.pk).toString('hex');//Same as the Account
     }
 
     this.label = label
@@ -425,7 +434,16 @@ export class Account extends IJson {
   public async createStrategyByLabel(label: string): Promise<Strategy> {
     //label is composed of ID and incoming label common (in order to make label unique)
     const id: string = nanoid()
-    return await this.createStrategy(`${label}_${id}`, id)
+    
+    /** 
+     * When multiple browser tabs are opened simultaneously, the frontend is unable to lock them, 
+     * resulting in overlapping indexes during generation. 
+     * As a result, when two files are approved separately, one might not find the corresponding strategy. 
+     * To address this situation, we ensure that the policy IDs for strategies generated in simultaneously opened tabs are the same. 
+     * This, combined with backend restrictions on the same HRAC application, can resolve the problem.
+    */
+    return await this.createStrategy(`${label}`, '')
+    //return await this.createStrategy(`${label}_${id}`, id)
   }
 
   /**

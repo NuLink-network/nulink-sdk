@@ -231,7 +231,7 @@ export const indexdb = {
     * @method Modifying a piece of data (by value of the primary key) Returns the modified object
     * @param {Object}
     *   @property {string} tableName Indicate the table name
-    *   @property {String\|Number} value value of the primary key
+    *   @property {String|number} value value of the primary key
     *   @property {Function} handle handle function: Receives a reference to the data and modifies it
     * 
     * await getInstance().update<T>({
@@ -306,7 +306,7 @@ export const indexdb = {
    * @method delete data from the table (by value of the primary key)
    * @param {Object}
    *   @property {string} tableName Indicate the table name
-   *   @property {String\|Number} value value of the primary key
+   *   @property {String|number} value value of the primary key
    * */
   deleteByPrimaryKey: async <T>({
     tableName,

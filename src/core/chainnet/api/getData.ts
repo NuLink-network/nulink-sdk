@@ -66,8 +66,10 @@ export const getCurrentNetworkInitialConfiguration = async () => {
     service: netDetails.CENTRALIZED_SERVER_URL,
     porter: netDetails.PORTER_URL,
     contract_info: netDetails.CONTRACT_INFO as any,
-    token_symbol: netDetails.TOKEN_SYMBOL,
-    nlk_token_symbol: netDetails.NLK_TOKEN_SYMBOL,
+    tokenAddress: netDetails.TOKEN_ADDRESS,
+    tokenSymbol: netDetails.TOKEN_SYMBOL,
+    nlkTokenSymbol: netDetails.NLK_TOKEN_SYMBOL,
+    nlkTokenAddress: netDetails.NLK_TOKEN_ADDRESS,
   };
 
   return initialConfig;

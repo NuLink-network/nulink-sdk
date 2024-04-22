@@ -838,7 +838,7 @@ export const approveNLK = async (
   if(curNetwork !== NETWORK_LIST.Horus)
   {
     //not crosschain mainnet, no nlk token, no need approve nlk
-    if(!!estimateGas)
+    if(estimateGas)
     {
       return "0";
     }
@@ -864,13 +864,13 @@ export const approveNLK = async (
 
   if (serverFeeNlkInWei.gt(nlkBalanceWei)) {
     // Message.error(
-    //   `Insufficient balance ${nlkBalance} ${chainConfigInfo.nlk_token_symbol} for pay ${nlkInWei} ${chainConfigInfo.nlk_token_symbol}`,
+    //   `Insufficient balance ${nlkBalance} ${chainConfigInfo.nlkTokenSymbol} for pay ${nlkInWei} ${chainConfigInfo.nlkTokenSymbol}`,
     // );
     console.log(
-      `approveNLK - Insufficient balance ${nlkBalanceEthers} ${chainConfigInfo.nlk_token_symbol} to cover payment ${serverFeeNlkInEthers} ${chainConfigInfo.nlk_token_symbol}`
+      `approveNLK - Insufficient balance ${nlkBalanceEthers} ${chainConfigInfo.nlkTokenSymbol} to cover payment ${serverFeeNlkInEthers} ${chainConfigInfo.nlkTokenSymbol}`
     );
     throw new InsufficientBalanceError(
-      `approveNLK - Insufficient balance ${nlkBalanceEthers} ${chainConfigInfo.nlk_token_symbol} to cover payment ${serverFeeNlkInEthers} ${chainConfigInfo.nlk_token_symbol}`
+      `approveNLK - Insufficient balance ${nlkBalanceEthers} ${chainConfigInfo.nlkTokenSymbol} to cover payment ${serverFeeNlkInEthers} ${chainConfigInfo.nlkTokenSymbol}`
     );
   }
 
@@ -987,9 +987,9 @@ export const approveNLK = async (
     // Calculate if the balance is enough to cover the fee of approveNLK
     if (BigNumber.from(tokenBalanceWei).lt(gasFeeInWei)) {
       const tips = `Insufficient balance ${tokenBalanceEthers} ${
-        chainConfigInfo.token_symbol
+        chainConfigInfo.tokenSymbol
       } for approveNLK ${Web3.utils.fromWei(gasFeeInWei.toString(), "ether")} ${
-        chainConfigInfo.token_symbol
+        chainConfigInfo.tokenSymbol
       }`;
 
       // Message.error(tips);

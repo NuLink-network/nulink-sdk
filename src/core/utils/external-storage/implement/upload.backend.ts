@@ -47,11 +47,11 @@ export const getIPFSClient = async () => {
 /**
  * Set data to storage. The entry points for uploading data/files to various storage services
  * @param {Account} account - Account the current account object.
- * @param {string[] | InstanceType<typeof String>[] | ArrayBufferView[] | ArrayBuffer[] | Blob[] | AwaitIterable<Uint8Array>[] | ReadableStream<Uint8Array>[]} userDatas - upload data stream
+ * @param {string[] | InstanceType<typeof String>[] | ArrayBufferView[] | ArrayBuffer[] | Blob[] | AwaitIterable<Uint8Array>[] | ReadableStream<Uint8Array>[]} data - upload multi data streams
  * @returns {Promise<string[]>} - the list of the data/file key.
  */
-export const setDatas = async (
-  datas:
+export const setMultiData = async (
+  data:
     | string[]
     | InstanceType<typeof String>[]
     | ArrayBufferView[]
@@ -62,32 +62,32 @@ export const setDatas = async (
 
   account: Account
 ): Promise<string[]> => {
-  const blobDatas: Blob[] = []
-  for (let index = 0; index < datas.length; index++) {
-    const data = datas[index]
+  const blobData: Blob[] = []
+  for (let index = 0; index < data.length; index++) {
+    const _data = data[index]
 
-    if (!(data instanceof Blob)) {
-      blobDatas.push(
-        new Blob([data as any /*Uint8Array*/], {
+    if (!(_data instanceof Blob)) {
+      blobData.push(
+        new Blob([_data as any /*Uint8Array*/], {
           type: 'application/octet-stream'
         })
       )
     } else {
-      blobDatas.push(data as Blob /*Blob*/)
+      blobData.push(_data as Blob /*Blob*/)
     }
   }
 
-  return await _setDatas(blobDatas, account)
+  return await _setMultiData(blobData, account)
 }
 
 /**
- * setDatas: upload pre data function, internal use
+ * setData: upload pre data function, internal use
  * @internal
  * @param {Account} account - Account the current account object
- * @param {string[] | InstanceType<typeof String>[] | ArrayBufferView[] | ArrayBuffer[] | Blob[] | AwaitIterable<Uint8Array>[] | ReadableStream<Uint8Array>[]} datas - upload data stream
+ * @param {string[] | InstanceType<typeof String>[] | ArrayBufferView[] | ArrayBuffer[] | Blob[] | AwaitIterable<Uint8Array>[] | ReadableStream<Uint8Array>[]} data - upload data stream
  * @returns {Promise<string[]>} - the list of the data/file key.
  */
-const _setDatas = async (datas: Blob[], account: Account): Promise<string[]> => {
+const _setMultiData = async (data: Blob[], account: Account): Promise<string[]> => {
   //return cid string array
 
   let i = 0
@@ -111,15 +111,15 @@ const _setDatas = async (datas: Blob[], account: Account): Promise<string[]> => 
       sendData.append("signature", signature);
 
       //unsigned data
-      for (let index = 0; index < datas.length; index++) {
-        const userData = datas[index]
+      for (let index = 0; index < data.length; index++) {
+        const userData = data[index]
         sendData.append('file', userData, `file${index + 1}`)
       }
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const data = (await serverPostFormData('/file/batch-upload-file', sendData)) as object
+      const _data = (await serverPostFormData('/file/batch-upload-file', sendData)) as object
 
-      let dataList = data['list']
+      let dataList = _data['list']
 
       if (isBlank(dataList)) {
         return []
