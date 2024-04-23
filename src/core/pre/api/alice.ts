@@ -80,6 +80,7 @@ import { isBlank } from "../../utils/null";
 import sleep from "await-sleep";
 import { getTransactionNonceLock } from "../../utils/transaction";
 import { CrossChain } from "@bnb-chain/greenfield-chain-sdk/dist/esm/api/crosschain";
+import { type GasInfo } from "../types";
 
 // import assert from "assert-ts";
 
@@ -239,7 +240,7 @@ export class BlockchainPolicy {
   public async estimateCreatePolicyGas(
     publisher: Alice,
     gasPrice: BigNumber = BigNumber.from("0") //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
-  ): Promise<BigNumber> {
+  ): Promise<GasInfo> {
     //return gasFee =  estimatedGas(gasUsed or gasLimit) * gasPrice
     const startTimestamp = toEpoch(this.startDate);
     const endTimestamp = toEpoch(this.endDate);
@@ -248,7 +249,7 @@ export class BlockchainPolicy {
     const curNetwork: NETWORK_LIST = await getCurrentNetworkKey();
 
     let value: BigNumber = BigNumber.from("100"); //bsc testnet Contract error, value must be greater than 0
-    if (!([NETWORK_LIST.Horus, NETWORK_LIST.HorusMainNet].includes(curNetwork))) {
+    if (![NETWORK_LIST.Horus, NETWORK_LIST.HorusMainNet].includes(curNetwork)) {
       //The sidechain does not have an NLK. It is necessary to convert to the base currency (such as Matic). The value of the transfer needs to be calculated by calling getPolicysCost.
       value = await SubscriptionManagerAgent.getPolicyCost(
         publisher.web3Provider.provider,
@@ -285,17 +286,24 @@ export class BlockchainPolicy {
       } else {
         //If the gasPrice is manually set, the GAS_PRICE_FACTOR is not set
       }
-      const _gasPrice = gasPrice;
 
       const [GAS_LIMIT_FACTOR_LEFT, GAS_LIMIT_FACTOR_RIGHT] =
         DecimalToInteger(GAS_LIMIT_FACTOR);
 
       //estimatedGas * gasPrice * factor
-      const gasFeeInWei = gasUsedAmounts
-        .mul(_gasPrice)
+      const newGasUsedAmounts = gasUsedAmounts
         .mul(GAS_LIMIT_FACTOR_LEFT)
         .div(GAS_LIMIT_FACTOR_RIGHT);
-      return gasFeeInWei;
+
+      const gasFeeInWei = newGasUsedAmounts.mul(gasPrice);
+
+      const gasInfo: GasInfo = {
+        gasPrice: gasPrice,
+        gasLimit: newGasUsedAmounts,
+        gasFee: gasFeeInWei,
+      };
+
+      return gasInfo;
     } catch (error: any) {
       const error_info: string = error?.message || error;
       if (
@@ -604,7 +612,7 @@ export class MultiBlockchainPolicy {
   public async estimateCreatePolicysGas(
     publisher: Alice,
     gasPrice: BigNumber = BigNumber.from("0") //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
-  ): Promise<BigNumber> {
+  ): Promise<GasInfo> {
     const startTimestamps = this.startDates.map((startDate) =>
       toEpoch(startDate)
     );
@@ -614,7 +622,7 @@ export class MultiBlockchainPolicy {
     const curNetwork: NETWORK_LIST = await getCurrentNetworkKey();
 
     let value: BigNumber = BigNumber.from("100"); //bsc testnet Contract error, value must be greater than 0
-    if (!([NETWORK_LIST.Horus, NETWORK_LIST.HorusMainNet].includes(curNetwork))) {
+    if (![NETWORK_LIST.Horus, NETWORK_LIST.HorusMainNet].includes(curNetwork)) {
       //The sidechain does not have an NLK. It is necessary to convert to the base currency (such as Matic). The value of the transfer needs to be calculated by calling getPolicysCost.
       value = await SubscriptionManagerAgent.getPolicysCost(
         publisher.web3Provider.provider,
@@ -651,17 +659,23 @@ export class MultiBlockchainPolicy {
       } else {
         //If the gasPrice is manually set, the GAS_PRICE_FACTOR is not set
       }
-      const _gasPrice = gasPrice;
 
       const [GAS_LIMIT_FACTOR_LEFT, GAS_LIMIT_FACTOR_RIGHT] =
         DecimalToInteger(GAS_LIMIT_FACTOR);
 
-      const gasInWei = gasUsedAmounts
-        .mul(_gasPrice)
+      const newGasUsedAmounts = gasUsedAmounts
         .mul(GAS_LIMIT_FACTOR_LEFT)
         .div(GAS_LIMIT_FACTOR_RIGHT);
 
-      return gasInWei;
+      const gasFeeInWei = newGasUsedAmounts.mul(gasPrice);
+
+      const gasInfo: GasInfo = {
+        gasPrice: gasPrice,
+        gasLimit: newGasUsedAmounts,
+        gasFee: gasFeeInWei,
+      };
+
+      return gasInfo;
     } catch (error: any) {
       const error_info: string = error?.message || error;
       if (
@@ -814,38 +828,70 @@ export const getBalance = async (
 export const estimateApproveNLKGas = async (
   account: Account,
   nlkInWei: BigNumber,
-  serverFee: BigNumber // wei
-): Promise<number> => {
+  serverFee: BigNumber, // wei
+  gasPrice: BigNumber = BigNumber.from("0") //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
+): Promise<GasInfo> => {
   //approveNLKEstimateGas
-  const gasFee: string = await approveNLK(account, nlkInWei, serverFee, true);
-  return Number(gasFee);
+  const gasInfo = await approveNLK(
+    account,
+    nlkInWei,
+    serverFee,
+    true,
+    gasPrice
+  );
+  return gasInfo as GasInfo;
 };
 
+/**
+ *
+ * @param account
+ * @param approveNlkInWei
+ * @param serverFeeNlkInWei
+ * @param estimateGas
+ * @param gasPrice
+ * @returns when estimateGas is true, return GasInfo. else return transaction Hash
+ */
 export const approveNLK = async (
   account: Account,
   approveNlkInWei: BigNumber,
   serverFeeNlkInWei: BigNumber, //nlk
-  estimateGas = false
-): Promise<string> => {
+  estimateGas = false,
+  gasPrice: BigNumber = BigNumber.from("0") //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
+): Promise<string | GasInfo> => {
   // Allow my nlk to be deducted from the subscriptManager contract
 
+  const web3: Web3 = await getWeb3();
   // const account = web3.eth.accounts.privateKeyToAccount('0x2cc983ef0f52c5e430b780e53da10ee2bb5cbb5be922a63016fc39d4d52ce962');
   //web3.eth.accounts.wallet.add(account);
 
-  
+  const [GAS_PRICE_FACTOR_LEFT, GAS_PRICE_FACTOR_RIGHT] =
+    DecimalToInteger(GAS_PRICE_FACTOR);
+
+  if (gasPrice.lte(BigNumber.from("0"))) {
+    // the gasPrice is obtained in real time
+    gasPrice = BigNumber.from(await web3.eth.getGasPrice());
+    gasPrice = gasPrice.mul(GAS_PRICE_FACTOR_LEFT).div(GAS_PRICE_FACTOR_RIGHT);
+  } else {
+    //If the gasPrice is manually set, the GAS_PRICE_FACTOR is not set
+  }
+
   const curNetwork: NETWORK_LIST = await getCurrentNetworkKey();
 
-  if(curNetwork !== NETWORK_LIST.Horus)
-  {
+  if (![NETWORK_LIST.Horus, NETWORK_LIST.HorusMainNet].includes(curNetwork)) {
+    //if (curNetwork !== NETWORK_LIST.Horus) {
     //not crosschain mainnet, no nlk token, no need approve nlk
-    if(estimateGas)
-    {
-      return "0";
+    if (estimateGas) {
+      const gasInfo: GasInfo = {
+        gasPrice: gasPrice,
+        gasLimit: BigNumber.from("0"),
+        gasFee: BigNumber.from("0"),
+      };
+      return gasInfo;
     }
     return "";
   }
 
-  const nlkBalanceEthers = await account.getNLKBalance() as string;
+  const nlkBalanceEthers = (await account.getNLKBalance()) as string;
 
   const nlkBalanceWei = BigNumber.from(Web3.utils.toWei(nlkBalanceEthers));
 
@@ -874,7 +920,6 @@ export const approveNLK = async (
     );
   }
 
-  const web3: Web3 = await getWeb3();
   const nuLinkTokenContractInfo: any =
     contractList[curNetwork][CONTRACT_NAME.nuLinkToken];
   const subScriptionManagerContractInfo: any =
@@ -928,12 +973,6 @@ export const approveNLK = async (
   try {
     const txCount = await web3.eth.getTransactionCount(aliceAddress);
 
-    const [GAS_PRICE_FACTOR_LEFT, GAS_PRICE_FACTOR_RIGHT] =
-      DecimalToInteger(GAS_PRICE_FACTOR);
-
-    const gasPrice = BigNumber.from(await web3.eth.getGasPrice())
-      .mul(GAS_PRICE_FACTOR_LEFT)
-      .div(GAS_PRICE_FACTOR_RIGHT);
     const gasPriceHex = web3.utils.toHex(gasPrice.toString());
 
     const rawTx = {
@@ -952,7 +991,7 @@ export const approveNLK = async (
     // tx.sign(/* Buffer.from("1aefdd79679b4e8fe2d55375d976a79b9a0082d23fff8e2768befe6aceb8d3646", 'hex') */ account.encryptedKeyPair.privateKeyBuffer()); //Buffer.from(aliceEthAccount.privateKey, 'hex')
 
     // const serializedTx = tx.serialize().toString("hex");
-    
+
     //don't add this
     // if (!!estimateGas) {
     //   //fix error: invalid argument 0: json: cannot unmarshal non-string into Go struct field TransactionArgs.chainId of type *hexutil.Big
@@ -969,15 +1008,20 @@ export const approveNLK = async (
       DecimalToInteger(GAS_LIMIT_FACTOR);
 
     //estimatedGas * gasPrice * factor
-    const gasFeeInWei = BigNumber.from(gasUsed)
-      .mul(BigNumber.from(gasPrice))
+    const gasLimit = BigNumber.from(gasUsed)
       .mul(GAS_LIMIT_FACTOR_LEFT)
       .div(GAS_LIMIT_FACTOR_RIGHT);
+    const gasFeeInWei = gasLimit.mul(BigNumber.from(gasPrice));
 
     console.log(`approveNLK estimate GasFee is ${gasFeeInWei} wei`);
     // eslint-disable-next-line no-extra-boolean-cast
     if (!!estimateGas) {
-      return gasFeeInWei.toString();
+      const gasInfo: GasInfo = {
+        gasPrice: gasPrice,
+        gasLimit: gasLimit,
+        gasFee: gasFeeInWei,
+      };
+      return gasInfo;
     }
 
     const tokenBalanceEthers = (await account.balance()) as string; //tbnb
@@ -1000,12 +1044,7 @@ export const approveNLK = async (
     // https://ethereum.stackexchange.com/questions/87606/ethereumjs-tx-returned-error-invalid-sender
 
     //estimatedGas * factor
-    rawTx["gasLimit"] = web3.utils.toHex(
-      BigNumber.from(gasUsed)
-        .mul(GAS_LIMIT_FACTOR_LEFT)
-        .div(GAS_LIMIT_FACTOR_RIGHT)
-        .toString()
-    ); // '0x2710'  The amount of gas
+    rawTx["gasLimit"] = web3.utils.toHex(gasLimit.toString()); // '0x2710'  The amount of gas
 
     const signedTx = await web3.eth.accounts.signTransaction(
       rawTx as any,

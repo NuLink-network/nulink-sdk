@@ -18,6 +18,7 @@ import {
   sendRawTransaction,
   sendRawTransactionGas,
 } from "../core/pre/api/transaction";
+import { GasInfo } from '../core/pre'
 
 export type { BigNumber } from 'ethers'
 
@@ -117,7 +118,7 @@ export const getPolicyServerFee = async (startSeconds: number, endSeconds: numbe
  * @param {number} endSeconds - End time of data/file usage application in seconds
  * @param {BigNumber} serverFee - server fees by call function of `getPolicyServerFee`
  * @param {BigNumber} gasPrice - the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
- * @returns {Promise<String>} - the amount of bnb/tbnb in wei
+ * @returns {Promise<GasInfo>} - the GasInfo of bnb/tbnb in wei
  */
 export const getPolicyGasFee = async (
   userAccountId: string,
@@ -128,7 +129,7 @@ export const getPolicyGasFee = async (
   endSeconds: number, //policy usage start
   serverFee: BigNumber, // nlk fee in wei
   gasPrice: BigNumber = BigNumber.from("0") //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
-): Promise<string> => {
+): Promise<GasInfo> => {
   try {
     const account = await getWalletDefaultAccount()
     if (isBlank(account)) {
@@ -142,7 +143,7 @@ export const getPolicyGasFee = async (
     const startDate: Date = new Date(Number(startSeconds) * 1000) //  start_at is seconds, but Date needs milliseconds
     const endDate: Date = new Date(Number(endSeconds) * 1000) //  end_at is seconds, but Date needs milliseconds
 
-    const gasWei = await gasFee(
+    const gasInfo: GasInfo = await gasFee(
       account as Account,
       userAccountId,
       applyId,
@@ -153,8 +154,8 @@ export const getPolicyGasFee = async (
       serverFee,
       gasPrice
     );
-    // const gasValue = Web3.utils.fromWei(gasWei.toString(), "ether");
-    return gasWei.toString()
+    // const gasValue = Web3.utils.fromWei(gasInfo.gasFee.toString(), "ether");
+    return gasInfo;
   } catch (error: any) {
     const error_info: string = error?.message || error
 
@@ -182,7 +183,8 @@ export const getPolicyGasFee = async (
  * @param {number[]} startSeconds - Start time of data/file usage application in UTC seconds
  * @param {number[]} endSeconds - End time of data/file usage application in UTC seconds
  * @param {BigNumber} serverFee - server fees by call function of `getPolicysServerFee`
- * @returns {Promise<String>} - the amount of bnb/tbnb in wei
+ * @param {BigNumber} gasPrice - the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
+ * @returns {Promise<String>} - the GasInfo of bnb/tbnb in wei
  */
 export const getPolicysGasFee = async (
   userAccountIds: string[],
@@ -193,7 +195,7 @@ export const getPolicysGasFee = async (
   endSeconds: number[], //policy usage start
   serverFee: BigNumber, // nlk fee in wei
   gasPrice: BigNumber = BigNumber.from("0") //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
-): Promise<string> => {
+): Promise<GasInfo> => {
   try {
     const account = await getWalletDefaultAccount()
     if (isBlank(account)) {
@@ -224,7 +226,7 @@ export const getPolicysGasFee = async (
       );
     }
 
-    const gasWei = await getBatchCreatePolicyGasFee(
+    const gasInfo: GasInfo = await getBatchCreatePolicyGasFee(
       account as Account,
       userAccountIds,
       applyIds,
@@ -235,8 +237,8 @@ export const getPolicysGasFee = async (
       serverFee,
       gasPrice
     );
-    // const gasValue = Web3.utils.fromWei(gasWei.toString(), "ether");
-    return gasWei.toString()
+    // const gasValue = Web3.utils.fromWei(gasInfo.gasFee.toString(), "ether");
+    return gasInfo;
   } catch (error: any) {
     const error_info: string = error?.message || error
 
@@ -1249,7 +1251,7 @@ export const sendCustomTransaction = async (
  * @param {string} value - (Optional) The value of the transaction in wei.
  * @param {string} gasPrice - (Optional) The gas price set by this transaction, if empty, it will use web3.eth.getGasPrice().
  * @param {Account} account - (Optional) The current account information. If the parameter is not passed, the function will call `getWalletDefaultAccount` to retrieve the current account.
- * @returns {Promise<number | null>} - Returns the gasFee or null if estimate gas failed .
+ * @returns {Promise<BigNumber | null>} - Returns the gasFee or null if estimate gas failed .
  */
 export const estimateCustomTransactionGas = async (
   toAddress: string,
@@ -1257,7 +1259,7 @@ export const estimateCustomTransactionGas = async (
   value?: string, //wei
   gasPrice?: string, //wei
   account?: Account,
-): Promise<number | null> => {
+): Promise<BigNumber | null> => {
   try {
     const _account = account || await getWalletDefaultAccount();
     if (isBlank(_account)) {

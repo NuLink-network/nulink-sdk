@@ -1,3 +1,5 @@
+import { BigNumber } from "ethers";
+
 //format
 export enum DataType {
   Text, //Includes text files/data, ebook files/data, compressed files/data
@@ -63,4 +65,10 @@ export type DataInfo = {
     label: string; //data label
     dataArrayBuffer: ArrayBuffer, //The binary representation of the contents of files/data By invoke 'FileReader.ReadAsArrayBuffer(file)' callback return the value: e.target.result
     category?: DataCategory | string;
+  };
+
+  export type GasInfo = {
+    gasPrice: BigNumber; //in wei
+    gasLimit: BigNumber;
+    gasFee: BigNumber; //gas fee in wei
   };

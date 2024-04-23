@@ -1,7 +1,7 @@
 import { Account, Strategy } from "../../hdwallet/api/account";
 import { TransactionReceipt } from "web3-core";
 // import { message as Message } from "antd";
-import { InsufficientBalanceError, TransactionError } from "../../utils/exception";
+import { GetTransactionReceiptError, InsufficientBalanceError, TransactionError } from "../../utils/exception";
 import { GAS_LIMIT_FACTOR, GAS_PRICE_FACTOR } from "../../chainnet/config";
 import { DecimalToInteger } from "../../utils/math";
 import Erc20TokenABI from "../../sol/abi/Erc20.json";
@@ -23,7 +23,7 @@ import { BigNumber } from "ethers";
   * @param {string} rawTxData - The call data of the transaction, can be empty for simple value transfers.
   * @param {string} value - The value of the transaction in wei.
   * @param {string} gasPrice - The gas price set by this transaction, if empty, it will use web3.eth.getGasPrice().
- * @returns {Promise<number | null>} - Returns the gasFee or null if estimate gas failed.
+ * @returns {Promise<BigNumber | null>} - Returns the gasFee or null if estimate gas failed.
 */
 export const sendRawTransactionGas = async (
     account: Account,
@@ -31,7 +31,7 @@ export const sendRawTransactionGas = async (
     rawTxData?: string,
     value?: string, //wei
     gasPrice?: string //wei
-): Promise<number | null> => {
+): Promise<BigNumber | null> => {
   //approveNLKEstimateGas
   const gasFee: string | null = await sendRawTransaction(
     account,
@@ -44,7 +44,7 @@ export const sendRawTransactionGas = async (
   if (isBlank(gasFee)) {
     return null;
   }
-  return Number(gasFee);
+  return BigNumber.from(gasFee);
 };
 
 
@@ -104,6 +104,9 @@ export const sendRawTransaction = async (
   try {
     const txCount = await web3.eth.getTransactionCount(_fromAddress);
 
+    console.log("sendRawTransaction from address: ", _fromAddress);
+    console.log("sendRawTransaction transaction nonce: ", txCount);
+
     const [GAS_PRICE_FACTOR_LEFT, GAS_PRICE_FACTOR_RIGHT] =
         DecimalToInteger(GAS_PRICE_FACTOR);
 
@@ -123,6 +126,8 @@ export const sendRawTransaction = async (
         gasPrice: gasPriceHex, //'0x09184e72a000',
         value: isBlank(value) ? "0x0" : value, //wei
     };
+
+    console.log("sendRawTransaction value: ", value);
 
     // const networkId = await web3.eth.net.getId();
 
@@ -234,16 +239,57 @@ export const sendRawTransaction = async (
     console.log(`sendRawTransaction txHash: ${txReceipt.transactionHash}`);
 
     // eslint-disable-next-line no-extra-boolean-cast
-    if (!!txReceipt.transactionHash) {
-        let receipt: any = null;
+    if (!!txReceipt && !!txReceipt.transactionHash) {
+      let receipt: any = null;
 
-        do {
-        receipt = await web3.eth.getTransactionReceipt(
-            txReceipt.transactionHash
+      let retryTimes = 1000;
+      do {
+        try {
+          receipt = await web3.eth.getTransactionReceipt(txReceipt.transactionHash);
+          //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
+        } catch (error) {
+          console.log(
+            `getTransactionReceipt approve txHash: ${txReceipt.transactionHash} retrying, error: `,
+            error
+          );
+        }
+  
+        if (isBlank(receipt)) {
+          if (retryTimes % 3 == 0) {
+            //showMsg(
+              console.log(
+              "Transaction is being confirmed on the blockchain. Please wait patiently",
+              //"info"
+            );
+          }
+          await sleep(3000);
+        }
+        retryTimes--;
+      } while (isBlank(receipt) && retryTimes > 0);
+
+      receipt = receipt as TransactionReceipt;
+
+      //const transaction = await web3.eth.getTransaction(enMultiPolicy.txHash);
+      //  //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
+      if (null == txReceipt || !txReceipt.status) {
+        const transaction = await web3.eth.getTransaction(txReceipt.transactionHash);
+        //console.log("transaction.input:", transaction.input);
+        console.log("transaction:", transaction);
+        console.log(
+          `Failed to wait for transaction to be confirmed on the blockchain: transaction Hash is ${txReceipt.transactionHash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
         );
-        //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
-        await sleep(1000);
-        } while (isBlank(receipt));
+        throw new GetTransactionReceiptError(
+          `getTransactionReceipt error: Failed to wait for transaction to be confirmed on the blockchain: transaction Hash is ${txReceipt.transactionHash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
+        );
+      }
+    }
+    else {
+      console.log(
+        `sendRawTransaction failed, Please refresh page first and try again!`
+      );
+      throw new TransactionError(
+        `sendRawTransaction failed, Please refresh page first and try again!`
+      );
     }
 
     //return txReceipt.transactionHash;

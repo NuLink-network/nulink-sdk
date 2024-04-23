@@ -33,7 +33,7 @@ import { PublicKey, SecretKey as NucypherTsSecretKey, CrossChainHRAC } from '@nu
 
 import { encryptMessage } from './enrico'
 import { isBlank } from '../../utils/null'
-import { DataCategory, DataInfo, DataType } from '../types'
+import { DataCategory, DataInfo, DataType, GasInfo } from '../types'
 //import { message as Message } from "antd";
 import assert from 'assert-ts'
 import { getCurrentNetworkKey, getSettingsData } from '../../chainnet'
@@ -53,8 +53,8 @@ import {
   estimateApproveNLKGas
 } from './alice'
 
-import { BigNumber } from 'ethers'
-import { ethers } from 'ethers'
+import { BigNumber, utils } from 'ethers'
+import { ethers } from "ethers";
 // import { SubscriptionManagerAgent } from '@nulink_network/nulink-ts-crosschain/build/main/src/agents/subscription-manager'
 import { SubscriptionManagerAgent } from '@nulink_network/nulink-ts-crosschain'
 
@@ -78,6 +78,7 @@ import {
   DecryptError,
   GetTransactionReceiptError,
   TransactionError,
+  ApplyNotExist,
 } from '../../utils/exception'
 import { getWeb3 } from '../../hdwallet/api'
 import { getRandomElementsFromArray } from '../../../core/utils'
@@ -1454,7 +1455,7 @@ export const estimatePolicyGas = async (
   serverFee: BigNumber, //nlk in wei
   gasPrice: BigNumber = BigNumber.from('0'), //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
   porterUri?: string
-): Promise<BigNumber> => {
+): Promise<GasInfo> => {
   // calcPolicyEstimateGasFee
   const beingApprovedOrApproved: boolean = await checkDataApprovalStatusIsApprovedOrApproving(applyId)
 
@@ -1492,23 +1493,43 @@ export const estimatePolicyGas = async (
 
   console.log('before estimateApproveNLKGas approveNLK')
 
-  const approveGasInWei: number = await estimateApproveNLKGas(publisher, BigNumber.from(approveNLKwei), serverFee)
+  const approveGasInfo: GasInfo = await estimateApproveNLKGas(
+    publisher,
+    BigNumber.from(approveNLKwei),
+    serverFee,
+    gasPrice
+  );
 
   console.log('before policy estimateApproveNLKGas')
 
   //Note that it takes time to evaluate gas, and since the transfer nlk function is called, it must be approved first
-  const txHash: string = await approveNLK(publisher, BigNumber.from(approveNLKwei), serverFee, false)
+  const txHash: string = (await approveNLK(
+    publisher,
+    BigNumber.from(approveNLKwei),
+    serverFee,
+    false,
+    gasPrice
+  )) as string;
 
   console.log('after policy approveNLK txHash:', txHash)
 
   console.log('before policy estimateCreatePolicyGas ')
 
-  const gasInWei: BigNumber = await resultInfo.blockchainPolicy.estimateCreatePolicyGas(resultInfo.alice, gasPrice)
+  const gasInfo: GasInfo =
+    await resultInfo.blockchainPolicy.estimateCreatePolicyGas(
+      resultInfo.alice,
+      gasPrice
+    );
+  const gasInWei: BigNumber = gasInfo.gasFee;
+  console.log("after policy estimateCreatePolicyGas wei:", gasInWei.toString());
 
-  console.log('after policy estimateCreatePolicyGas wei:', gasInWei.toString())
+  if (!isBlank(approveGasInfo)) {
+    gasInfo.gasFee = gasInWei.add(approveGasInfo.gasFee);
+    gasInfo.gasLimit = gasInfo.gasLimit.add(approveGasInfo.gasLimit);
+  }
 
-  return gasInWei.add(approveGasInWei)
-}
+  return gasInfo;
+};
 
 /**
  *
@@ -1537,7 +1558,7 @@ export const estimatePolicysGas = async (
   serverFee: BigNumber, //nlk in wei
   gasPrice: BigNumber = BigNumber.from('0'), //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
   porterUri?: string
-): Promise<BigNumber> => {
+): Promise<GasInfo> => {
   // calcPolicyEstimateGasFee
   const approvingAndApprovedApplyIds: string[] = await checkMultiDataApprovalStatusIsApprovedOrApproving(applyIds)
 
@@ -1582,7 +1603,7 @@ export const estimatePolicysGas = async (
   // );
 
   console.log('before estimateApproveNLKGas')
-  const approveGasInWei: number = await estimateApproveNLKGas(
+  const approveGasInfo: GasInfo = await estimateApproveNLKGas(
     publisher,
     BigNumber.from('10000000000000000000000000'),
     serverFee
@@ -1590,20 +1611,32 @@ export const estimatePolicysGas = async (
 
   console.log('before multi policy approveNLK')
   //Note that it takes time to evaluate gas, and since the transfer nlk function is called, it must be approved first
-  const txHash: string = await approveNLK(publisher, BigNumber.from('10000000000000000000000000'), serverFee, false)
-  console.log('after multi policy approveNLK txHash:', txHash)
+  const txHash: string = (await approveNLK(
+    publisher,
+    BigNumber.from("10000000000000000000000000"),
+    serverFee,
+    false
+  )) as string;
+
+  console.log("after multi policy approveNLK txHash:", txHash);
 
   console.log('before multi policy estimateCreatePolicyGas ')
 
-  const gasInWei: BigNumber = await resultInfo.deDuplicationInfo.multiBlockchainPolicy.estimateCreatePolicysGas(
-    resultInfo.alice,
-    gasPrice
-  )
+  const gasInfo: GasInfo =
+    await resultInfo.deDuplicationInfo.multiBlockchainPolicy.estimateCreatePolicysGas(
+      resultInfo.alice,
+      gasPrice
+    );
+  const gasInWei: BigNumber = gasInfo.gasFee;
 
-  console.log('after multi policy estimatePolicyGas wei:', gasInWei.toString())
+  console.log("after multi policy estimatePolicyGas wei:", gasInWei.toString());
+  if (!isBlank(approveGasInfo)) {
+    gasInfo.gasFee = gasInWei.add(approveGasInfo.gasFee);
+    gasInfo.gasLimit = gasInfo.gasLimit.add(approveGasInfo.gasLimit);
+  }
 
-  return gasInWei.add(approveGasInWei)
-}
+  return gasInfo;
+};
 
 /**
  * @internal
@@ -1945,7 +1978,7 @@ const getBlockchainPolicys = async (
       shares
     );
 
-    const pulisherUserPolicyId = `${userInfo["encrypted_pk"]}_${policy_label_id}`;
+    const pulisherUserPolicyId = `${userInfo["encrypted_pk"]}_${policy_label_id}`; //label string include strategy id
 
     if (pulisherUserPolicyIds.has(pulisherUserPolicyId)) {
       //Without deduplication, only record the indices of data in policyData that correspond to the same HRAC.
@@ -2167,7 +2200,7 @@ export const approvalApplicationForUseData = async (
     BigNumber.from('10000000000000000000000000'),
     costServerFeeWei,
     false
-  )
+  ) as string;
 
   // eslint-disable-next-line no-extra-boolean-cast
   console.log(
@@ -2178,32 +2211,40 @@ export const approvalApplicationForUseData = async (
 
   const curNetwork: NETWORK_LIST = await getCurrentNetworkKey()
 
-  if (curNetwork === NETWORK_LIST.Horus) {
+  if ([NETWORK_LIST.Horus, NETWORK_LIST.HorusMainNet].includes(curNetwork)) {
     //only mainnet can get nlk balance. if not crosschain mainnet, no nlk token, no need get nlk balance
 
     //wei can use  BigNumber.from(), ether can use ethers.utils.parseEther(), because the BigNumber.from("1.2"), the number can't not be decimals (x.x)
     //await publisher.getNLKBalance() return ethers
     //Check whether the account balance is less than the policy creation cost
-    const nlkEther = await publisher.getNLKBalance();
-    const nlkBalanceWei: BigNumber = ethers.utils.parseEther((nlkEther) as string);
-    const costServerEther = Web3.utils.fromWei(costServerFeeWei.toString(), 'ether')
+    const nlkBalanceEthers: BigNumber = ethers.utils.parseEther(
+      (await publisher.getNLKBalance()) as string
+    );
+    const costServerGasEther = Web3.utils.fromWei(
+      costServerFeeWei.toString(),
+      "ether"
+    );
 
-    console.log(`the account balance is: ${nlkBalanceWei.toString()} ether nlk`)
-    console.log(`the create policy server fee is: ${costServerEther.toString()} ether nlk`)
+    console.log(
+      `the account balance is: ${nlkBalanceEthers.toString()} ether nlk`
+    );
+    console.log(
+      `the create policy server fee is: ${costServerGasEther.toString()} ether nlk`
+    );
 
     //Don't forget the mint fee (service charge), so use the method lte, not le
-    if (nlkBalanceWei.lt(costServerFeeWei)) {
+    if (nlkBalanceEthers.lt(costServerFeeWei)) {
       // Message.error(
-      //   `The account ${publisher.address} balance of ${nlkEther} ether in [token] ${chainConfigInfo.nlkTokenSymbol} is insufficient to publish policy with a value of ${costServerEther} ether`,
+      //   `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlkTokenSymbol} is insufficient to publish policy with a value of ${costServerGasEther} ether`,
       // );
       console.log(
-        `The account ${publisher.address} balance of ${nlkEther} ether in [token] ${chainConfigInfo.nlkTokenSymbol} is insufficient to publish policy with a value of ${costServerEther} ether`
-      )
+        `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlkTokenSymbol} is insufficient to publish policy with a value of ${costServerGasEther} ether`
+      );
       throw new InsufficientBalanceError(
-        `The account ${publisher.address} balance of ${nlkEther} ether in [token] ${chainConfigInfo.nlkTokenSymbol} is insufficient to publish policy with a value of ${costServerEther} ether`
-      )
+        `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlkTokenSymbol} is insufficient to publish policy with a value of ${costServerGasEther} ether`
+      );
     }
-  } //end of if (curNetwork === NETWORK_LIST.Horus)
+  } //end of if ([NETWORK_LIST.Horus, NETWORK_LIST.HorusMainNet].includes(curNetwork))
 
   // "@nucypher_network/nucypher-ts": "^0.7.0",  must be this version
   console.log('before policy enact')
@@ -2234,6 +2275,8 @@ export const approvalApplicationForUseData = async (
       _gasPrice
     )
   } catch (error) {
+    console.log("call enact failed error: ", error);
+    console.log("retrying enact");
     enPolicy = await resultInfo.blockchainPolicy.enact(
       resultInfo.ursulas,
       waitReceipt,
@@ -2398,7 +2441,7 @@ export const approvalApplicationsForUseData = async (
 
   const curNetwork: NETWORK_LIST = await getCurrentNetworkKey()
 
-  if (curNetwork === NETWORK_LIST.Horus) {
+  if ([NETWORK_LIST.Horus, NETWORK_LIST.HorusMainNet].includes(curNetwork)) {
     //only mainnet can get nlk balance. if not crosschain mainnet, no nlk token, no need get nlk balance
 
     //enPolicy service fee gas wei
@@ -2413,8 +2456,9 @@ export const approvalApplicationsForUseData = async (
       publisher,
       BigNumber.from('10000000000000000000000000'),
       costServerFeeWei,
-      false
-    )
+      false,
+      gasPrice
+    ) as string;
 
     // eslint-disable-next-line no-extra-boolean-cast
     console.log(
@@ -2426,25 +2470,33 @@ export const approvalApplicationsForUseData = async (
     //wei can use  BigNumber.from(), ether can use ethers.utils.parseEther(), because the BigNumber.from("1.2"), the number can't not be decimals (x.x)
     //await publisher.getNLKBalance() return ethers
     //Check whether the account balance is less than the policy creation cost
-    const nlkBalanceEthers: BigNumber = ethers.utils.parseEther((await publisher.getNLKBalance()) as string)
-    const costServerEther = Web3.utils.fromWei(costServerFeeWei.toString(), 'ether')
+    const nlkEther = await publisher.getNLKBalance();
+    const nlkBalanceWei: BigNumber = ethers.utils.parseEther(
+      nlkEther as string
+    );
+    const costServerEther = Web3.utils.fromWei(
+      costServerFeeWei.toString(),
+      "ether"
+    );
 
-    console.log(`the account balance is: ${nlkBalanceEthers.toString()} ether nlk`)
-    console.log(`the create policy server fee is: ${costServerEther.toString()} ether nlk`)
+    console.log(`the account balance is: ${nlkEther} ether nlk`);
+    console.log(
+      `the create policy server fee is: ${costServerEther.toString()} ether nlk`
+    );
 
     //Don't forget the mint fee (service charge), so use the method lte, not le
-    if (nlkBalanceEthers.lt(costServerFeeWei)) {
+    if (nlkBalanceWei.lt(costServerFeeWei)) {
       // Message.error(
-      //   `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlkTokenSymbol} is insufficient to publish policy with a value of ${costServerEther} ether`,
+      //   `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlkTokenSymbol} is insufficient to publish policy with a value of ${costServerGasEther} ether`,
       // );
       console.log(
-        `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlkTokenSymbol} is insufficient to publish policy with a value of ${costServerEther} ether`
-      )
+        `The account ${publisher.address} balance of ${nlkEther} ether in [token] ${chainConfigInfo.nlkTokenSymbol} is insufficient to publish policy with a value of ${costServerEther} ether`
+      );
       throw new InsufficientBalanceError(
-        `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlkTokenSymbol} is insufficient to publish policy with a value of ${costServerEther} ether`
-      )
+        `The account ${publisher.address} balance of ${nlkEther} ether in [token] ${chainConfigInfo.nlkTokenSymbol} is insufficient to publish policy with a value of ${costServerEther} ether`
+      );
     }
-  } //end of if (curNetwork === NETWORK_LIST.Horus)
+  } //end of if ([NETWORK_LIST.Horus, NETWORK_LIST.HorusMainNet].includes(curNetwork))
 
   // "@nucypher_network/nucypher-ts": "^0.7.0",  must be this version
   console.log('before multi policy enact')
@@ -2465,7 +2517,22 @@ export const approvalApplicationsForUseData = async (
 
   const _gasPrice = gasPrice
 
-  const gasLimit: BigNumber = gasFeeInWei.gt(BigNumber.from('0')) ? gasFeeInWei.div(_gasPrice) : BigNumber.from('0')
+  let gasLimit: BigNumber = gasFeeInWei.gt(BigNumber.from("0"))
+    ? gasFeeInWei.div(_gasPrice)
+    : BigNumber.from("0");
+
+  if (
+    !gasLimit.lte(BigNumber.from("0")) &&
+    gasFeeInWei.gt(gasLimit.mul(_gasPrice))
+  ) {
+    //There may be rounding issues in English, indicating no exact division and resulting in a remainder
+
+    gasLimit = gasLimit.add(1); //.mul(2) //increase by two times
+  }
+
+  console.log("current set gasPrice: ", _gasPrice, utils.formatUnits(_gasPrice));
+  console.log("current set gasLimit: ", gasLimit, utils.formatUnits(gasLimit));
+  
   //MultiPreEnactedPolicy
   //let enMultiPolicy: MultiEnactedPolicy;
   // try {
@@ -2476,6 +2543,8 @@ export const approvalApplicationsForUseData = async (
   //     _gasPrice
   //   )
   // } catch (error) {
+  //   console.log("call enact failed error: ", error);
+  //   console.log("retrying enact");
   //   enMultiPolicy = await resultInfo.deDuplicationInfo.multiBlockchainPolicy.enact(
   //     resultInfo.deDuplicationInfo.ursulasArray,
   //     waitReceipt,
@@ -2487,8 +2556,10 @@ export const approvalApplicationsForUseData = async (
   const enMultiPolicy = await resultInfo.deDuplicationInfo.multiBlockchainPolicy.enact(
     resultInfo.deDuplicationInfo.ursulasArray,
     waitReceipt,
-    BigNumber.from("0"),//gasLimit,
-    BigNumber.from("0"),//_gasPrice
+      gasLimit,
+      gasPrice,
+      //BigNumber.from("0"), //gasLimit
+      //BigNumber.from("0") //gasPrice
   )
 
 
@@ -2498,35 +2569,54 @@ export const approvalApplicationsForUseData = async (
     console.log(`enMultiPolicy txHash: ${enMultiPolicy.txHash}`);
     let receipt: any = null;
 
-    let retryTimes = 80;
+    let retryTimes = 130;
     do {
       try {
         receipt = await web3.eth.getTransactionReceipt(enMultiPolicy.txHash);
       //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
       } catch (error) {
-        console.log("getTransactionReceipt createPolicy txHash retrying, error: ", error);
+        console.log(
+          `getTransactionReceipt createPolicy txHash: ${enMultiPolicy.txHash} retrying ..., current error: `,
+          error
+        );
       }
 
-      if(isBlank(receipt)){
-        await sleep(1000);
+      if (isBlank(receipt)) {
+        if (retryTimes % 3 == 0) {
+          // Message.info(
+          console.log(
+            "Transaction is being confirmed on the blockchain. Please wait patiently",
+            "info"
+          );
+        }
+
+        await sleep(3000);
       }
       retryTimes--;
     } while (isBlank(receipt) && retryTimes > 0);
 
     const txReceipt = receipt as TransactionReceipt;
 
+    //const transaction = await web3.eth.getTransaction(enMultiPolicy.txHash);
     //  //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
     if (null == txReceipt || !txReceipt.status) {
       const transaction = await web3.eth.getTransaction(enMultiPolicy.txHash);
       //console.log("transaction.input:", transaction.input);
       console.log("transaction:", transaction);
-
+      console.log(
+        `Failed to wait for transaction to be confirmed on the blockchain: transaction Hash is ${enMultiPolicy.txHash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
+      );
       throw new GetTransactionReceiptError(
-        `getTransactionReceipt error: transaction Hash is ${enMultiPolicy.txHash}, Please set a larger gaslimit or try approve again!`
+        `getTransactionReceipt error: Failed to wait for transaction to be confirmed on the blockchain: transaction Hash is ${enMultiPolicy.txHash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
       );
     }
   } else {
-    throw new TransactionError(`send transaction Approve failed!`);
+    console.log(
+      `send transaction Approve failed, Please refresh page first and try again!`
+    );
+    throw new TransactionError(
+      `send transaction Approve failed, Please refresh page first and try again!`
+    );
   }
   // // Persist side-channel
   // const aliceVerifyingKey: PublicKey = alice.verifyingKey;
@@ -2538,6 +2628,11 @@ export const approvalApplicationsForUseData = async (
 
   const encryptedTreasureMapIPFSs: string[] = []
 
+  const applyInfoList = await getMultiApplyDetails(applyIds);
+  if (isBlank(applyInfoList)) {
+    throw new ApplyNotExist(`one of the apply: ${applyIds} does not exist`);
+  }
+
   //3. upload multiple encrypt files to IPFS
   const cids: string[] = await StorageManager.setData(encryptedTreasureMapBytesArray, publisher)
   encryptedTreasureMapIPFSs.push(...cids)
@@ -2548,7 +2643,7 @@ export const approvalApplicationsForUseData = async (
 
   for (let index = 0; index < crossChainHracs.length; index++) {
     const crossChainHrac: CrossChainHRAC = crossChainHracs[index]
-
+    //Note: Since all applyIds may have duplicates, and applyIds should correspond one-to-one with policies, pass all duplicate policy information to the backend (deduplicating based on HRAC on the backend).
     policy_list.push({
       hrac: hexlify(crossChainHrac.toBytes() /* Uint8Array[]*/), //fromBytesByEncoding(crossChainHrac.toBytes(), 'binary'),
       gas: costServerFeeWei.toString(),
@@ -3007,7 +3102,7 @@ export const getMultiApplyDetails = async (applyIds: string[]): Promise<object[]
 */
 export const getDataDetails = async (dataId: string, dataUserAccountId: string) => {
   //https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E6%96%87%E4%BB%B6%E8%AF%A6%E6%83%85
-  //status: 0 => not applied (Initial state), 1=> Application in progress, 2 =>approved, 3=> rejected
+  //status: 0 => not applied (Initial state), 1=> Application in progress, 2 =>approved, 3=> rejected, 4=> under review
 
   const sendData = {
     file_id: dataId,

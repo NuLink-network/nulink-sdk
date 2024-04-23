@@ -1,4 +1,4 @@
-import { NuLinkHDWallet, Account, Strategy, AccountManager } from "../src";
+import { NuLinkHDWallet, Account, Strategy, AccountManager, BigNumber } from "../src";
 
 import assert from "assert-ts";
 import { createWallet, loadWallet } from "../src/api/wallet";
@@ -25,7 +25,7 @@ export const run = async () => {
   const rawTxData = undefined;
   const value = (1e17).toString(); //wei
   const gasPrice = undefined;
-  const gasinWei: number | null = await pre.estimateCustomTransactionGas(
+  const gasinWei: BigNumber | null = await pre.estimateCustomTransactionGas(
     toAddress,
     rawTxData,
     value,
