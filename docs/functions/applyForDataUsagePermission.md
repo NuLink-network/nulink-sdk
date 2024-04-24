@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.17](../README.md) / [Modules](../modules.md) / applyForDataUsagePermission
+[NuLink SDK - v0.5.20](../README.md) / [Modules](../modules.md) / applyForDataUsagePermission
 
 # Function: applyForDataUsagePermission
 
@@ -20,4 +20,4 @@ Applies for file/data usage permission for the specified files/data, This accoun
 
 #### Defined in
 
-[core/pre/api/workflow.ts:718](https://github.com/NuLink-network/nulink-sdk/blob/675c732/src/core/pre/api/workflow.ts#L718)
+[core/pre/api/workflow.ts:719](https://github.com/NuLink-network/nulink-sdk/blob/e6138bf/src/core/pre/api/workflow.ts#L719)

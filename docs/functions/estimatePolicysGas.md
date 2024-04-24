@@ -1,8 +1,8 @@
-[NuLink SDK - v0.5.17](../README.md) / [Modules](../modules.md) / estimatePolicysGas
+[NuLink SDK - v0.5.20](../README.md) / [Modules](../modules.md) / estimatePolicysGas
 
 # Function: estimatePolicysGas
 
-▸ **estimatePolicysGas**(`publisher`, `userAccountIds`, `applyIds`, `ursulaShares`, `ursulaThresholds`, `startDates`, `endDates`, `serverFee`, `gasPrice?`, `porterUri?`): `Promise`<`BigNumber`\>
+▸ **estimatePolicysGas**(`publisher`, `userAccountIds`, `applyIds`, `ursulaShares`, `ursulaThresholds`, `startDates`, `endDates`, `serverFee`, `gasPrice?`, `porterUri?`): `Promise`<[`GasInfo`](../types/GasInfo.md)\>
 
 estimate the gas fee for batch (sharing files/data) creating policies.
 
@@ -23,10 +23,10 @@ estimate the gas fee for batch (sharing files/data) creating policies.
 
 #### Returns
 
-`Promise`<`BigNumber`\>
+`Promise`<[`GasInfo`](../types/GasInfo.md)\>
 
 - the amount of bnb/tbnb in wei
 
 #### Defined in
 
-[core/pre/api/workflow.ts:1529](https://github.com/NuLink-network/nulink-sdk/blob/675c732/src/core/pre/api/workflow.ts#L1529)
+[core/pre/api/workflow.ts:1550](https://github.com/NuLink-network/nulink-sdk/blob/e6138bf/src/core/pre/api/workflow.ts#L1550)

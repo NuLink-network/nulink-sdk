@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.17](../README.md) / [Modules](../modules.md) / getUnapprovedDataAsUser
+[NuLink SDK - v0.5.20](../README.md) / [Modules](../modules.md) / getUnapprovedDataAsUser
 
 # Function: getUnapprovedDataAsUser
 
@@ -22,4 +22,4 @@ Gets a list of files/data with the "approved failed" status, which cannot be use
 
 #### Defined in
 
-[core/pre/api/workflow.ts:1071](https://github.com/NuLink-network/nulink-sdk/blob/675c732/src/core/pre/api/workflow.ts#L1071)
+[core/pre/api/workflow.ts:1072](https://github.com/NuLink-network/nulink-sdk/blob/e6138bf/src/core/pre/api/workflow.ts#L1072)

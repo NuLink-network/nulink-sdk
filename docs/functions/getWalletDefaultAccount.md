@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.17](../README.md) / [Modules](../modules.md) / getWalletDefaultAccount
+[NuLink SDK - v0.5.20](../README.md) / [Modules](../modules.md) / getWalletDefaultAccount
 
 # Function: getWalletDefaultAccount
 
@@ -24,4 +24,4 @@ PasswordDecryptError
 
 #### Defined in
 
-[api/wallet.ts:247](https://github.com/NuLink-network/nulink-sdk/blob/675c732/src/api/wallet.ts#L247)
+[api/wallet.ts:247](https://github.com/NuLink-network/nulink-sdk/blob/e6138bf/src/api/wallet.ts#L247)

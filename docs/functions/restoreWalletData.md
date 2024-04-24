@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.17](../README.md) / [Modules](../modules.md) / restoreWalletData
+[NuLink SDK - v0.5.20](../README.md) / [Modules](../modules.md) / restoreWalletData
 
 # Function: restoreWalletData
 
@@ -25,4 +25,4 @@ UserDataCorruptedError, UserDataVersionLowError
 
 #### Defined in
 
-[api/wallet.ts:118](https://github.com/NuLink-network/nulink-sdk/blob/675c732/src/api/wallet.ts#L118)
+[api/wallet.ts:118](https://github.com/NuLink-network/nulink-sdk/blob/e6138bf/src/api/wallet.ts#L118)

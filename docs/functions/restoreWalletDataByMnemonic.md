@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.17](../README.md) / [Modules](../modules.md) / restoreWalletDataByMnemonic
+[NuLink SDK - v0.5.20](../README.md) / [Modules](../modules.md) / restoreWalletDataByMnemonic
 
 # Function: restoreWalletDataByMnemonic
 
@@ -21,4 +21,4 @@ Restores an account by the strategies of the account stored in the backend datab
 
 #### Defined in
 
-[api/wallet.ts:98](https://github.com/NuLink-network/nulink-sdk/blob/675c732/src/api/wallet.ts#L98)
+[api/wallet.ts:98](https://github.com/NuLink-network/nulink-sdk/blob/e6138bf/src/api/wallet.ts#L98)

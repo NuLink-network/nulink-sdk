@@ -1,6 +1,6 @@
-[NuLink SDK - v0.5.17](README.md) / Modules
+[NuLink SDK - v0.5.20](README.md) / Modules
 
-# NuLink SDK - v0.5.17
+# NuLink SDK - v0.5.20
 
 ## Table of contents
 
@@ -19,6 +19,7 @@
 ### Type Aliases
 
 - [DataInfo](types/DataInfo.md)
+- [GasInfo](types/GasInfo.md)
 
 ### Data Apply Details Functions
 

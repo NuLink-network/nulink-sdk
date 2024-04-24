@@ -180,6 +180,7 @@ import {
   getMnemonic,
   getDefaultAccountPrivateKey,
   logoutWallet,
+  GasInfo
 } from "@nulink_network/nulink-sdk";
 
 import assert from "assert-ts";
@@ -430,7 +431,7 @@ const serverValue = Web3.utils.fromWei(serverFeeNLKInWei.toString(), "ether");
 console.log("server nlk fee  ether is:", serverValue);
 
 //2. Alice calc gas fee (wei): the chain of bsc test token
-const gasFeeWei = await getPolicyGasFee(
+const gasInfo: GasInfo = await getPolicyGasFee(
   _accountBob.id,
   needToApprovedDataInfo2["apply_id"],
   2,
@@ -459,7 +460,7 @@ await approvalApplicationForUseData(
   endDate,
   "", //remark
   "", //porterUri
-  BigNumber.from(gasFeeWei)
+  gasInfo.gasFee
 );
 ```
 

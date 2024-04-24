@@ -1,8 +1,8 @@
-[NuLink SDK - v0.5.17](../README.md) / [Modules](../modules.md) / estimateCustomTransactionGas
+[NuLink SDK - v0.5.20](../README.md) / [Modules](../modules.md) / estimateCustomTransactionGas
 
 # Function: estimateCustomTransactionGas
 
-▸ **estimateCustomTransactionGas**(`toAddress`, `rawTxData?`, `value?`, `gasPrice?`, `account?`): `Promise`<``null`` \| `number`\>
+▸ **estimateCustomTransactionGas**(`toAddress`, `rawTxData?`, `value?`, `gasPrice?`, `account?`): `Promise`<``null`` \| `BigNumber`\>
 
 send the raw transaction
 
@@ -26,10 +26,10 @@ estimateCustomTransactionGas failed exception
 
 #### Returns
 
-`Promise`<``null`` \| `number`\>
+`Promise`<``null`` \| `BigNumber`\>
 
 - Returns the gasFee or null if estimate gas failed .
 
 #### Defined in
 
-[api/pre.ts:1254](https://github.com/NuLink-network/nulink-sdk/blob/675c732/src/api/pre.ts#L1254)
+[api/pre.ts:1256](https://github.com/NuLink-network/nulink-sdk/blob/e6138bf/src/api/pre.ts#L1256)

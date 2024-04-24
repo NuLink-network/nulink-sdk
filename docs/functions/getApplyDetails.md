@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.17](../README.md) / [Modules](../modules.md) / getApplyDetails
+[NuLink SDK - v0.5.20](../README.md) / [Modules](../modules.md) / getApplyDetails
 
 # Function: getApplyDetails
 
@@ -28,4 +28,4 @@ Gets the details of an application record.
 
 #### Defined in
 
-[core/pre/api/workflow.ts:2905](https://github.com/NuLink-network/nulink-sdk/blob/675c732/src/core/pre/api/workflow.ts#L2905)
+[core/pre/api/workflow.ts:3000](https://github.com/NuLink-network/nulink-sdk/blob/e6138bf/src/core/pre/api/workflow.ts#L3000)

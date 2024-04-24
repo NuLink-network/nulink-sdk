@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.17](../README.md) / [Modules](../modules.md) / deleteUploadedData
+[NuLink SDK - v0.5.20](../README.md) / [Modules](../modules.md) / deleteUploadedData
 
 # Function: deleteUploadedData
 
@@ -19,4 +19,4 @@ Deletes the specified files/data uploaded by the account from the server, This a
 
 #### Defined in
 
-[core/pre/api/workflow.ts:611](https://github.com/NuLink-network/nulink-sdk/blob/675c732/src/core/pre/api/workflow.ts#L611)
+[core/pre/api/workflow.ts:612](https://github.com/NuLink-network/nulink-sdk/blob/e6138bf/src/core/pre/api/workflow.ts#L612)

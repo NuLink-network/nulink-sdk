@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.17](../README.md) / [Modules](../modules.md) / refusalApplicationForUseData
+[NuLink SDK - v0.5.20](../README.md) / [Modules](../modules.md) / refusalApplicationForUseData
 
 # Function: refusalApplicationForUseData
 
@@ -20,4 +20,4 @@ Rejects the application for the use of files/data. This account acts as the publ
 
 #### Defined in
 
-[core/pre/api/workflow.ts:2581](https://github.com/NuLink-network/nulink-sdk/blob/675c732/src/core/pre/api/workflow.ts#L2581)
+[core/pre/api/workflow.ts:2676](https://github.com/NuLink-network/nulink-sdk/blob/e6138bf/src/core/pre/api/workflow.ts#L2676)

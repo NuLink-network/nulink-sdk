@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.17](../README.md) / [Modules](../modules.md) / checkMultiDataApprovalStatusIsApprovedOrApproving
+[NuLink SDK - v0.5.20](../README.md) / [Modules](../modules.md) / checkMultiDataApprovalStatusIsApprovedOrApproving
 
 # Function: checkMultiDataApprovalStatusIsApprovedOrApproving
 
@@ -20,4 +20,4 @@ Promise<string[]> -- return a list of applyIds that are not in the "pending appr
 
 #### Defined in
 
-[core/pre/api/workflow.ts:2057](https://github.com/NuLink-network/nulink-sdk/blob/675c732/src/core/pre/api/workflow.ts#L2057)
+[core/pre/api/workflow.ts:2090](https://github.com/NuLink-network/nulink-sdk/blob/e6138bf/src/core/pre/api/workflow.ts#L2090)

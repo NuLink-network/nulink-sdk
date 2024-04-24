@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.17](../README.md) / [Modules](../modules.md) / getPolicyTokenCost
+[NuLink SDK - v0.5.20](../README.md) / [Modules](../modules.md) / getPolicyTokenCost
 
 # Function: getPolicyTokenCost
 
@@ -23,4 +23,4 @@ calcurate publish policy server fee (nlk/tnlk): By calling calcPolicyCost
 
 #### Defined in
 
-[core/pre/api/workflow.ts:1320](https://github.com/NuLink-network/nulink-sdk/blob/675c732/src/core/pre/api/workflow.ts#L1320)
+[core/pre/api/workflow.ts:1321](https://github.com/NuLink-network/nulink-sdk/blob/e6138bf/src/core/pre/api/workflow.ts#L1321)

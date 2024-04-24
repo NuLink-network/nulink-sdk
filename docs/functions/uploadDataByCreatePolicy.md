@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.17](../README.md) / [Modules](../modules.md) / uploadDataByCreatePolicy
+[NuLink SDK - v0.5.20](../README.md) / [Modules](../modules.md) / uploadDataByCreatePolicy
 
 # Function: uploadDataByCreatePolicy
 
@@ -22,4 +22,4 @@ Uploads files/data to the server by creating a new local policy and uploading th
 
 #### Defined in
 
-[core/pre/api/workflow.ts:316](https://github.com/NuLink-network/nulink-sdk/blob/675c732/src/core/pre/api/workflow.ts#L316)
+[core/pre/api/workflow.ts:317](https://github.com/NuLink-network/nulink-sdk/blob/e6138bf/src/core/pre/api/workflow.ts#L317)

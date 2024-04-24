@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.17](../README.md) / [Modules](../modules.md) / getDataByStatus
+[NuLink SDK - v0.5.20](../README.md) / [Modules](../modules.md) / getDataByStatus
 
 # Function: getDataByStatus
 
@@ -44,4 +44,4 @@ get files/data info by status This account acts as the user (Bob) or publisher (
 
 #### Defined in
 
-[core/pre/api/workflow.ts:1106](https://github.com/NuLink-network/nulink-sdk/blob/675c732/src/core/pre/api/workflow.ts#L1106)
+[core/pre/api/workflow.ts:1107](https://github.com/NuLink-network/nulink-sdk/blob/e6138bf/src/core/pre/api/workflow.ts#L1107)

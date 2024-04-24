@@ -1,7 +1,7 @@
 // First define a concept:
 //  Alice: as the publisher of the data/file (data/file uploader).
 //  Bob: as the user of the data/file (data/file requester)
-import { NuLinkHDWallet, Account, Strategy, AccountManager } from '../src'
+import { NuLinkHDWallet, Account, Strategy, AccountManager, GasInfo } from '../src'
 
 import assert from 'assert-ts'
 import {
@@ -294,7 +294,7 @@ export const run = async () => {
   console.log('server nlk fee  ether is:', serverValue)
 
   //2. Alice calc gas fee (wei): the chain of bsc test token
-  const gasFeeWei = await getPolicysGasFee(
+  const gasInfo: GasInfo = await getPolicysGasFee(
     accountBobIds,
     applyIds,
     ursulaShares,
@@ -318,7 +318,7 @@ export const run = async () => {
     endDates,
     '', //remark
     '', //porterUri
-    BigNumber.from(gasFeeWei)
+    gasInfo.gasFee
   )
 
   // eslint-disable-next-line no-debugger

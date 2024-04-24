@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.17](../README.md) / [Modules](../modules.md) / getDataPendingApprovalAsPublisher
+[NuLink SDK - v0.5.20](../README.md) / [Modules](../modules.md) / getDataPendingApprovalAsPublisher
 
 # Function: getDataPendingApprovalAsPublisher
 
@@ -41,4 +41,4 @@ Gets a list of files/data pending approval (applying but not yet approved). This
 
 #### Defined in
 
-[core/pre/api/workflow.ts:875](https://github.com/NuLink-network/nulink-sdk/blob/675c732/src/core/pre/api/workflow.ts#L875)
+[core/pre/api/workflow.ts:876](https://github.com/NuLink-network/nulink-sdk/blob/e6138bf/src/core/pre/api/workflow.ts#L876)

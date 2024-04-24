@@ -1,8 +1,8 @@
-[NuLink SDK - v0.5.17](../README.md) / [Modules](../modules.md) / getPolicyGasFee
+[NuLink SDK - v0.5.20](../README.md) / [Modules](../modules.md) / getPolicyGasFee
 
 # Function: getPolicyGasFee
 
-▸ **getPolicyGasFee**(`userAccountId`, `applyId`, `ursulaShares`, `ursulaThreshold`, `startSeconds`, `endSeconds`, `serverFee`, `gasPrice?`): `Promise`<`string`\>
+▸ **getPolicyGasFee**(`userAccountId`, `applyId`, `ursulaShares`, `ursulaThreshold`, `startSeconds`, `endSeconds`, `serverFee`, `gasPrice?`): `Promise`<[`GasInfo`](../types/GasInfo.md)\>
 
 estimate service gas fees for sharing data/files
 Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
@@ -30,10 +30,10 @@ PolicyHasBeenActivedOnChain Policy has been actived(created) on chain (policy is
 
 #### Returns
 
-`Promise`<`string`\>
+`Promise`<[`GasInfo`](../types/GasInfo.md)\>
 
-- the amount of bnb/tbnb in wei
+- the GasInfo of bnb/tbnb in wei
 
 #### Defined in
 
-[api/pre.ts:122](https://github.com/NuLink-network/nulink-sdk/blob/675c732/src/api/pre.ts#L122)
+[api/pre.ts:123](https://github.com/NuLink-network/nulink-sdk/blob/e6138bf/src/api/pre.ts#L123)

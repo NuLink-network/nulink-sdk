@@ -1,7 +1,7 @@
 // First define a concept:
 //  Alice: as the publisher of the data/file (data/file uploader).
 //  Bob: as the user of the data/file (data/file requester)
-import { NuLinkHDWallet, Account, Strategy, AccountManager } from '../src'
+import { NuLinkHDWallet, Account, Strategy, AccountManager, GasInfo } from '../src'
 
 import assert from 'assert-ts'
 import {
@@ -274,7 +274,7 @@ export const run = async () => {
   console.log('server nlk fee  ether is:', serverValue)
 
   //2. Alice calc gas fee (wei): the chain of bsc test token
-  const gasFeeWei = await getPolicyGasFee(
+  const gasInfo: GasInfo = await getPolicyGasFee(
     accountBob.id,
     needToApprovedDataInfo2['apply_id'],
     2,
@@ -296,7 +296,7 @@ export const run = async () => {
     endDate,
     '', //remark
     '', //porterUri
-    BigNumber.from(gasFeeWei)
+    gasInfo.gasFee
   )
 
   //You need to wait for a while for the on-chain transaction to be confirmed and for the backend to listen for the "approve" event.

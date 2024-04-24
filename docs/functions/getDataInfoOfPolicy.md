@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.17](../README.md) / [Modules](../modules.md) / getDataInfoOfPolicy
+[NuLink SDK - v0.5.20](../README.md) / [Modules](../modules.md) / getDataInfoOfPolicy
 
 # Function: getDataInfoOfPolicy
 
@@ -52,4 +52,4 @@ ParameterError The input parameter must have the "policyId" field
 
 #### Defined in
 
-[api/pre.ts:1112](https://github.com/NuLink-network/nulink-sdk/blob/675c732/src/api/pre.ts#L1112)
+[api/pre.ts:1114](https://github.com/NuLink-network/nulink-sdk/blob/e6138bf/src/api/pre.ts#L1114)
