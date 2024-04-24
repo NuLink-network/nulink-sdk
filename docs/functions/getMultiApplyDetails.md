@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.20](../README.md) / [Modules](../modules.md) / getMultiApplyDetails
+[NuLink SDK - v0.5.22](../README.md) / [Modules](../modules.md) / getMultiApplyDetails
 
 # Function: getMultiApplyDetails
 
@@ -28,4 +28,4 @@ Gets the details of multiple application records.
 
 #### Defined in
 
-[core/pre/api/workflow.ts:3035](https://github.com/NuLink-network/nulink-sdk/blob/e6138bf/src/core/pre/api/workflow.ts#L3035)
+[core/pre/api/workflow.ts:3039](https://github.com/NuLink-network/nulink-sdk/blob/d9e8f81/src/core/pre/api/workflow.ts#L3039)

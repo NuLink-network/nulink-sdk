@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.20](../README.md) / [Modules](../modules.md) / DataType
+[NuLink SDK - v0.5.22](../README.md) / [Modules](../modules.md) / DataType
 
 # Enumeration: DataType
 
@@ -22,7 +22,7 @@
 
 #### Defined in
 
-[core/pre/types/index.ts:5](https://github.com/NuLink-network/nulink-sdk/blob/e6138bf/src/core/pre/types/index.ts#L5)
+[core/pre/types/index.ts:5](https://github.com/NuLink-network/nulink-sdk/blob/d9e8f81/src/core/pre/types/index.ts#L5)
 
 ___
 
@@ -32,7 +32,7 @@ ___
 
 #### Defined in
 
-[core/pre/types/index.ts:6](https://github.com/NuLink-network/nulink-sdk/blob/e6138bf/src/core/pre/types/index.ts#L6)
+[core/pre/types/index.ts:6](https://github.com/NuLink-network/nulink-sdk/blob/d9e8f81/src/core/pre/types/index.ts#L6)
 
 ___
 
@@ -42,7 +42,7 @@ ___
 
 #### Defined in
 
-[core/pre/types/index.ts:7](https://github.com/NuLink-network/nulink-sdk/blob/e6138bf/src/core/pre/types/index.ts#L7)
+[core/pre/types/index.ts:7](https://github.com/NuLink-network/nulink-sdk/blob/d9e8f81/src/core/pre/types/index.ts#L7)
 
 ___
 
@@ -52,7 +52,7 @@ ___
 
 #### Defined in
 
-[core/pre/types/index.ts:8](https://github.com/NuLink-network/nulink-sdk/blob/e6138bf/src/core/pre/types/index.ts#L8)
+[core/pre/types/index.ts:8](https://github.com/NuLink-network/nulink-sdk/blob/d9e8f81/src/core/pre/types/index.ts#L8)
 
 ___
 
@@ -62,7 +62,7 @@ ___
 
 #### Defined in
 
-[core/pre/types/index.ts:9](https://github.com/NuLink-network/nulink-sdk/blob/e6138bf/src/core/pre/types/index.ts#L9)
+[core/pre/types/index.ts:9](https://github.com/NuLink-network/nulink-sdk/blob/d9e8f81/src/core/pre/types/index.ts#L9)
 
 ___
 
@@ -72,7 +72,7 @@ ___
 
 #### Defined in
 
-[core/pre/types/index.ts:10](https://github.com/NuLink-network/nulink-sdk/blob/e6138bf/src/core/pre/types/index.ts#L10)
+[core/pre/types/index.ts:10](https://github.com/NuLink-network/nulink-sdk/blob/d9e8f81/src/core/pre/types/index.ts#L10)
 
 ___
 
@@ -82,4 +82,4 @@ ___
 
 #### Defined in
 
-[core/pre/types/index.ts:11](https://github.com/NuLink-network/nulink-sdk/blob/e6138bf/src/core/pre/types/index.ts#L11)
+[core/pre/types/index.ts:11](https://github.com/NuLink-network/nulink-sdk/blob/d9e8f81/src/core/pre/types/index.ts#L11)

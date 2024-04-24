@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.20](../README.md) / [Modules](../modules.md) / getPolicysGasFee
+[NuLink SDK - v0.5.22](../README.md) / [Modules](../modules.md) / getPolicysGasFee
 
 # Function: getPolicysGasFee
 
@@ -36,4 +36,4 @@ PolicyHasBeenActivedOnChain Policy has been actived(created) on chain (policy is
 
 #### Defined in
 
-[api/pre.ts:189](https://github.com/NuLink-network/nulink-sdk/blob/e6138bf/src/api/pre.ts#L189)
+[api/pre.ts:189](https://github.com/NuLink-network/nulink-sdk/blob/d9e8f81/src/api/pre.ts#L189)

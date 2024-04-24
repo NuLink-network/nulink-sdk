@@ -10,7 +10,7 @@ import { GAS_LIMIT_FACTOR, GAS_PRICE_FACTOR } from '../../chainnet/config'
 import { DecimalToInteger } from '../../utils/math'
 import { hexlify, arrayify } from 'ethers/lib/utils'
 //import { arrayify } from '@ethersproject/bytes'
-import { TransactionReceipt } from "web3-core";
+import { TransactionReceipt } from 'web3-core'
 
 // notice: bacause the MessageKit use the SecretKey import from nucypher-ts, so you  must be use the nucypher-ts's SecretKey PublicKey , not use the nucypher-core's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -54,7 +54,7 @@ import {
 } from './alice'
 
 import { BigNumber, utils } from 'ethers'
-import { ethers } from "ethers";
+import { ethers } from 'ethers'
 // import { SubscriptionManagerAgent } from '@nulink_network/nulink-ts-crosschain/build/main/src/agents/subscription-manager'
 import { SubscriptionManagerAgent } from '@nulink_network/nulink-ts-crosschain'
 
@@ -78,7 +78,7 @@ import {
   DecryptError,
   GetTransactionReceiptError,
   TransactionError,
-  ApplyNotExist,
+  ApplyNotExist
 } from '../../utils/exception'
 import { getWeb3 } from '../../hdwallet/api'
 import { getRandomElementsFromArray } from '../../../core/utils'
@@ -123,11 +123,11 @@ export const createAccountIfNotExist = async (account: Account) => {
 }
 
 /**
-* Determines whether an account exists on the server.
-* @category Wallet Account
-* @param {Account} account - the current logined account object
-* @returns {Promise<boolean>} - Returns true if the account exists on the server, otherwise returns false.
-*/
+ * Determines whether an account exists on the server.
+ * @category Wallet Account
+ * @param {Account} account - the current logined account object
+ * @returns {Promise<boolean>} - Returns true if the account exists on the server, otherwise returns false.
+ */
 export const IsExistAccount = async (account: Account): Promise<boolean> => {
   const sendData = {
     // name: account.name,
@@ -317,7 +317,7 @@ export const updateAccountInfo = async (account: Account, updateData: Record<str
 export const uploadDataByCreatePolicy = async (
   account: Account,
   category: DataCategory | string, //data category, according to the design: only one category is allowed to be uploaded in batches, and different categories need to be uploaded separately
-  dataInfoList: DataInfo[]  //data information list //just allow upload one file
+  dataInfoList: DataInfo[] //data information list //just allow upload one file
 ): Promise<Strategy> => {
   console.log('uploadDataByCreatePolicy account', account)
 
@@ -1063,7 +1063,7 @@ export const getApprovedDataAsUser = async (account: Account, pageIndex = 1, pag
 
 /**
  * Gets a list of files/data with the "approved failed" status, which cannot be used by the user (Bob) using this account.
- * @category Data User(Bob) Approval Details 
+ * @category Data User(Bob) Approval Details
  * @param {Account} account - The current account information.
  * @param {number} pageIndex - The index of the page to retrieve. Default is 1.
  * @param {number} pageSize - The number of files/data to retrieve per page. Default is 10.
@@ -1498,7 +1498,7 @@ export const estimatePolicyGas = async (
     BigNumber.from(approveNLKwei),
     serverFee,
     gasPrice
-  );
+  )
 
   console.log('before policy estimateApproveNLKGas')
 
@@ -1509,27 +1509,23 @@ export const estimatePolicyGas = async (
     serverFee,
     false,
     gasPrice
-  )) as string;
+  )) as string
 
   console.log('after policy approveNLK txHash:', txHash)
 
   console.log('before policy estimateCreatePolicyGas ')
 
-  const gasInfo: GasInfo =
-    await resultInfo.blockchainPolicy.estimateCreatePolicyGas(
-      resultInfo.alice,
-      gasPrice
-    );
-  const gasInWei: BigNumber = gasInfo.gasFee;
-  console.log("after policy estimateCreatePolicyGas wei:", gasInWei.toString());
+  const gasInfo: GasInfo = await resultInfo.blockchainPolicy.estimateCreatePolicyGas(resultInfo.alice, gasPrice)
+  const gasInWei: BigNumber = gasInfo.gasFee
+  console.log('after policy estimateCreatePolicyGas wei:', gasInWei.toString())
 
   if (!isBlank(approveGasInfo)) {
-    gasInfo.gasFee = gasInWei.add(approveGasInfo.gasFee);
-    gasInfo.gasLimit = gasInfo.gasLimit.add(approveGasInfo.gasLimit);
+    gasInfo.gasFee = gasInWei.add(approveGasInfo.gasFee)
+    gasInfo.gasLimit = gasInfo.gasLimit.add(approveGasInfo.gasLimit)
   }
 
-  return gasInfo;
-};
+  return gasInfo
+}
 
 /**
  *
@@ -1574,7 +1570,7 @@ export const estimatePolicysGas = async (
    *    alice: Alice
    *    ursulasArray: Array<Ursula[]>
    *    publisherAccount: Account,
-   * 
+   *
    *     deDuplicationInfo: {
    *     multiBlockchainPolicy: MultiBlockchainPolicy;
    *     strategys: Strategy[];
@@ -1613,30 +1609,29 @@ export const estimatePolicysGas = async (
   //Note that it takes time to evaluate gas, and since the transfer nlk function is called, it must be approved first
   const txHash: string = (await approveNLK(
     publisher,
-    BigNumber.from("10000000000000000000000000"),
+    BigNumber.from('10000000000000000000000000'),
     serverFee,
     false
-  )) as string;
+  )) as string
 
-  console.log("after multi policy approveNLK txHash:", txHash);
+  console.log('after multi policy approveNLK txHash:', txHash)
 
   console.log('before multi policy estimateCreatePolicyGas ')
 
-  const gasInfo: GasInfo =
-    await resultInfo.deDuplicationInfo.multiBlockchainPolicy.estimateCreatePolicysGas(
-      resultInfo.alice,
-      gasPrice
-    );
-  const gasInWei: BigNumber = gasInfo.gasFee;
+  const gasInfo: GasInfo = await resultInfo.deDuplicationInfo.multiBlockchainPolicy.estimateCreatePolicysGas(
+    resultInfo.alice,
+    gasPrice
+  )
+  const gasInWei: BigNumber = gasInfo.gasFee
 
-  console.log("after multi policy estimatePolicyGas wei:", gasInWei.toString());
+  console.log('after multi policy estimatePolicyGas wei:', gasInWei.toString())
   if (!isBlank(approveGasInfo)) {
-    gasInfo.gasFee = gasInWei.add(approveGasInfo.gasFee);
-    gasInfo.gasLimit = gasInfo.gasLimit.add(approveGasInfo.gasLimit);
+    gasInfo.gasFee = gasInWei.add(approveGasInfo.gasFee)
+    gasInfo.gasLimit = gasInfo.gasLimit.add(approveGasInfo.gasLimit)
   }
 
-  return gasInfo;
-};
+  return gasInfo
+}
 
 /**
  * @internal
@@ -1776,7 +1771,9 @@ const getBlockchainPolicy = async (
   if (!strategy || isBlank(strategy)) {
     //` get account strategy failed, label_id ${policyData["policy_label_id"]},\n When you Restore Account, You must Import account Vault data!!!`
     throw new Error(
-      `The user's data version is outdated and cannot be imported. Please export the latest data to prevent data loss! id: ${policyData["policy_label_id"] as string}`
+      `The user's data version is outdated and cannot be imported. Please export the latest data to prevent data loss! id: ${
+        policyData['policy_label_id'] as string
+      }`
     )
   }
 
@@ -1819,11 +1816,11 @@ const getBlockchainPolicys = async (
   ursulasArray: Array<Ursula[]>
   publisherAccount: Account
   deDuplicationInfo: {
-    multiBlockchainPolicy: MultiBlockchainPolicy;
-    strategys: Strategy[];
-    policyParameters: MultiBlockchainPolicyParameters;
-    ursulasArray: Array<Ursula[]>;
-  };
+    multiBlockchainPolicy: MultiBlockchainPolicy
+    strategys: Strategy[]
+    policyParameters: MultiBlockchainPolicyParameters
+    ursulasArray: Array<Ursula[]>
+  }
 }> => {
   //https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E6%89%B9%E5%87%86%E6%96%87%E4%BB%B6%E4%BD%BF%E7%94%A8%E7%94%B3%E8%AF%B7
   //return {}
@@ -1912,25 +1909,25 @@ const getBlockchainPolicys = async (
 
   //Filter out identical (local) policy information corresponding to HRAC (Hierarchical Role-Based Access Control) on the chain. Identical HRAC refers to the same file publisher, the same file consumer, and the same local policy.
   //alice only one, so filter hrac by: `${bob_pk}_${policy_id}`
-  const pulisherUserPolicyIds: Set<string> = new Set();
+  const pulisherUserPolicyIds: Set<string> = new Set()
 
-  const bobs: RemoteBob[] = [];
-  const labels: string[] = [];
-  const strategys: Strategy[] = [];
-  const ursulasArray: Array<Ursula[]> = [];
-  const retUrsulaShares: number[] = []; //n   m of n => 3 of 5
-  const retThresholds: number[] = []; // m
-  const retStartDates: Date[] = [];
-  const retEndDates: Date[] = [];
+  const bobs: RemoteBob[] = []
+  const labels: string[] = []
+  const strategys: Strategy[] = []
+  const ursulasArray: Array<Ursula[]> = []
+  const retUrsulaShares: number[] = [] //n   m of n => 3 of 5
+  const retThresholds: number[] = [] // m
+  const retStartDates: Date[] = []
+  const retEndDates: Date[] = []
 
-  const deDuplicationBobs: RemoteBob[] = [];
-  const deDuplicationLabels: string[] = [];
-  const deDuplicationStrategys: Strategy[] = [];
-  const deDuplicationUrsulasArray: Array<Ursula[]> = [];
-  const deDuplicationRetUrsulaShares: number[] = []; //n   m of n => 3 of 5
-  const deDuplicationRetThresholds: number[] = []; // m
-  const deDuplicationRetStartDates: Date[] = [];
-  const deDuplicationRetEndDates: Date[] = [];
+  const deDuplicationBobs: RemoteBob[] = []
+  const deDuplicationLabels: string[] = []
+  const deDuplicationStrategys: Strategy[] = []
+  const deDuplicationUrsulasArray: Array<Ursula[]> = []
+  const deDuplicationRetUrsulaShares: number[] = [] //n   m of n => 3 of 5
+  const deDuplicationRetThresholds: number[] = [] // m
+  const deDuplicationRetStartDates: Date[] = []
+  const deDuplicationRetEndDates: Date[] = []
 
   //2. create policy to block chain
   // const config = await getSettingsData();
@@ -1945,26 +1942,24 @@ const getBlockchainPolicys = async (
     // const endMs: number = startMs + (policyData["days"] as number) * 24 * 60 * 60 * 1000;
     // const endDate: Date = new Date(endMs); //  start_at is seconds, but Date needs milliseconds
 
-    const policy_label_id = _policyData["policy_label_id"] as string;
-    const strategy: Strategy | undefined =
-      publisher.getAccountStrategyByStategyId(policy_label_id);
+    const policy_label_id = _policyData['policy_label_id'] as string
+    const strategy: Strategy | undefined = publisher.getAccountStrategyByStategyId(policy_label_id)
 
-    console.log("policy_label_id: ", policy_label_id);
+    console.log('policy_label_id: ', policy_label_id)
     // console.log("ApprovalUseFiles strategy", strategy);
     // assert(strategy !== undefined);
     if (!strategy || isBlank(strategy)) {
       //` get account strategy failed, label_id ${policy_label_id},\n When you Restore Account, You must Import account Vault data!!!`
       throw new Error(
-        `The user's data version is outdated and cannot be imported. Please export the latest data to prevent data loss! id: ${_policyData["policy_label_id"] as string}`
+        `The user's data version is outdated and cannot be imported. Please export the latest data to prevent data loss! id: ${
+          _policyData['policy_label_id'] as string
+        }`
       )
     }
 
     // Note Bob, Enrico's Encrypted PK SK is the same as Verify PK SK.  Alice verify PK can use encrypted PK.
 
-    const bob: RemoteBob = makeRemoteBob(
-      userInfo["encrypted_pk"],
-      userInfo["encrypted_pk"]
-    ); //userInfo["verify_pk"]);
+    const bob: RemoteBob = makeRemoteBob(userInfo['encrypted_pk'], userInfo['encrypted_pk']) //userInfo["verify_pk"]);
 
     // console.log("Bob encrypted_pk: ", userInfo["encrypted_pk"]);
     // console.log("Bob verify_pk: ", userInfo["verify_pk"]);
@@ -1972,13 +1967,10 @@ const getBlockchainPolicys = async (
     // console.log("the account address is:", publisher.address);
     // console.log("the account key is:", pwdDecrypt(publisher.encryptedKeyPair._privateKey, true));
 
-    const shares = ursulaShares[index];
-    const sharesUrsulas: Ursula[] = getRandomElementsFromArray(
-      ursulas ?? [],
-      shares
-    );
+    const shares = ursulaShares[index]
+    const sharesUrsulas: Ursula[] = getRandomElementsFromArray(ursulas ?? [], shares)
 
-    const pulisherUserPolicyId = `${userInfo["encrypted_pk"]}_${policy_label_id}`; //label string include strategy id
+    const pulisherUserPolicyId = `${userInfo['encrypted_pk']}_${policy_label_id}` //label string include strategy id
 
     if (pulisherUserPolicyIds.has(pulisherUserPolicyId)) {
       //Without deduplication, only record the indices of data in policyData that correspond to the same HRAC.
@@ -1986,26 +1978,26 @@ const getBlockchainPolicys = async (
       //continue;
     } else {
       //Deduplicate identical HRAC values, only add if they do not already exist.
-      deDuplicationStrategys.push(strategy);
-      deDuplicationBobs.push(bob);
-      deDuplicationLabels.push(label);
-      deDuplicationUrsulasArray.push(sharesUrsulas);
-      deDuplicationRetUrsulaShares.push(shares);
-      deDuplicationRetThresholds.push(ursulaThresholds[index]);
-      deDuplicationRetStartDates.push(startDates[index]);
-      deDuplicationRetEndDates.push(endDates[index]);
+      deDuplicationStrategys.push(strategy)
+      deDuplicationBobs.push(bob)
+      deDuplicationLabels.push(label)
+      deDuplicationUrsulasArray.push(sharesUrsulas)
+      deDuplicationRetUrsulaShares.push(shares)
+      deDuplicationRetThresholds.push(ursulaThresholds[index])
+      deDuplicationRetStartDates.push(startDates[index])
+      deDuplicationRetEndDates.push(endDates[index])
 
-      pulisherUserPolicyIds.add(pulisherUserPolicyId);
+      pulisherUserPolicyIds.add(pulisherUserPolicyId)
     }
 
-    strategys.push(strategy);
-    bobs.push(bob);
-    labels.push(label);
-    ursulasArray.push(sharesUrsulas);
-    retUrsulaShares.push(shares);
-    retThresholds.push(ursulaThresholds[index]);
-    retStartDates.push(startDates[index]);
-    retEndDates.push(endDates[index]);
+    strategys.push(strategy)
+    bobs.push(bob)
+    labels.push(label)
+    ursulasArray.push(sharesUrsulas)
+    retUrsulaShares.push(shares)
+    retThresholds.push(ursulaThresholds[index])
+    retStartDates.push(startDates[index])
+    retEndDates.push(endDates[index])
   }
 
   //const multiBlockchainPolicyParameters: MultiBlockchainPolicyParameters = {
@@ -2024,25 +2016,23 @@ const getBlockchainPolicys = async (
   //  strategys
   //);
 
-  const deDuplicationMultiBlockchainPolicyParameters: MultiBlockchainPolicyParameters =
-    {
-      bobs: deDuplicationBobs,
-      labels: deDuplicationLabels,
-      thresholds: deDuplicationRetThresholds,
-      shares: deDuplicationRetUrsulaShares,
-      startDates: deDuplicationRetStartDates,
-      endDates: deDuplicationRetEndDates,
-    };
+  const deDuplicationMultiBlockchainPolicyParameters: MultiBlockchainPolicyParameters = {
+    bobs: deDuplicationBobs,
+    labels: deDuplicationLabels,
+    thresholds: deDuplicationRetThresholds,
+    shares: deDuplicationRetUrsulaShares,
+    startDates: deDuplicationRetStartDates,
+    endDates: deDuplicationRetEndDates
+  }
 
-  console.log(`getBlockchainPolicys before createMultiChainPolicy`);
-  const deDuplicationPolicy: MultiBlockchainPolicy =
-    await createMultiChainPolicy(
-      alice,
-      deDuplicationMultiBlockchainPolicyParameters,
-      deDuplicationStrategys
-    );
+  console.log(`getBlockchainPolicys before createMultiChainPolicy`)
+  const deDuplicationPolicy: MultiBlockchainPolicy = await createMultiChainPolicy(
+    alice,
+    deDuplicationMultiBlockchainPolicyParameters,
+    deDuplicationStrategys
+  )
 
-  console.log(`getBlockchainPolicys after createMultiChainPolicy`);
+  console.log(`getBlockchainPolicys after createMultiChainPolicy`)
   // "@nucypher_network/nucypher-ts": "^0.7.0",  must be this version
 
   return {
@@ -2056,10 +2046,10 @@ const getBlockchainPolicys = async (
       multiBlockchainPolicy: deDuplicationPolicy,
       strategys: deDuplicationStrategys,
       policyParameters: deDuplicationMultiBlockchainPolicyParameters,
-      ursulasArray: deDuplicationUrsulasArray,
-    },
-  };
-};
+      ursulasArray: deDuplicationUrsulasArray
+    }
+  }
+}
 
 /**
  * Check if the application status is "under review" or "approved"
@@ -2155,6 +2145,13 @@ export const approvalApplicationForUseData = async (
     throw new PolicyHasBeenActivedOnChain('Policy is currently active')
   }
 
+  const applyInfo = await getApplyDetails(applyId);
+  if (isBlank(applyInfo)) {
+    throw new ApplyNotExist(`apply does not exist ${applyId}`);
+  }
+  const applyFileName = (applyInfo as any)["file_name"];
+  const proposer_id = (applyInfo as any)["proposer_id"];
+
   const resultInfo = await getBlockchainPolicy(
     publisher,
     userAccountId,
@@ -2195,12 +2192,12 @@ export const approvalApplicationForUseData = async (
     resultInfo.policyParameters.shares
   )
 
-  const txHashOrEmpty: string = await approveNLK(
+  const txHashOrEmpty: string = (await approveNLK(
     publisher,
     BigNumber.from('10000000000000000000000000'),
     costServerFeeWei,
     false
-  ) as string;
+  )) as string
 
   // eslint-disable-next-line no-extra-boolean-cast
   console.log(
@@ -2217,20 +2214,11 @@ export const approvalApplicationForUseData = async (
     //wei can use  BigNumber.from(), ether can use ethers.utils.parseEther(), because the BigNumber.from("1.2"), the number can't not be decimals (x.x)
     //await publisher.getNLKBalance() return ethers
     //Check whether the account balance is less than the policy creation cost
-    const nlkBalanceEthers: BigNumber = ethers.utils.parseEther(
-      (await publisher.getNLKBalance()) as string
-    );
-    const costServerGasEther = Web3.utils.fromWei(
-      costServerFeeWei.toString(),
-      "ether"
-    );
+    const nlkBalanceEthers: BigNumber = ethers.utils.parseEther((await publisher.getNLKBalance()) as string)
+    const costServerGasEther = Web3.utils.fromWei(costServerFeeWei.toString(), 'ether')
 
-    console.log(
-      `the account balance is: ${nlkBalanceEthers.toString()} ether nlk`
-    );
-    console.log(
-      `the create policy server fee is: ${costServerGasEther.toString()} ether nlk`
-    );
+    console.log(`the account balance is: ${nlkBalanceEthers.toString()} ether nlk`)
+    console.log(`the create policy server fee is: ${costServerGasEther.toString()} ether nlk`)
 
     //Don't forget the mint fee (service charge), so use the method lte, not le
     if (nlkBalanceEthers.lt(costServerFeeWei)) {
@@ -2239,10 +2227,10 @@ export const approvalApplicationForUseData = async (
       // );
       console.log(
         `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlkTokenSymbol} is insufficient to publish policy with a value of ${costServerGasEther} ether`
-      );
+      )
       throw new InsufficientBalanceError(
         `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlkTokenSymbol} is insufficient to publish policy with a value of ${costServerGasEther} ether`
-      );
+      )
     }
   } //end of if ([NETWORK_LIST.Horus, NETWORK_LIST.HorusMainNet].includes(curNetwork))
 
@@ -2264,79 +2252,51 @@ export const approvalApplicationForUseData = async (
 
   const _gasPrice = gasPrice
 
-  const gasLimit: BigNumber = gasFeeInWei.gt(BigNumber.from('0')) ? gasFeeInWei.div(_gasPrice) : BigNumber.from('0')
-  let enPolicy: EnactedPolicy;
-  try 
-  {
-    enPolicy = await resultInfo.blockchainPolicy.enact(
-      resultInfo.ursulas,
-      waitReceipt,
-      gasLimit,
-      _gasPrice
-    )
-  } catch (error) {
-    console.log("call enact failed error: ", error);
-    console.log("retrying enact");
-    enPolicy = await resultInfo.blockchainPolicy.enact(
-      resultInfo.ursulas,
-      waitReceipt,
-      BigNumber.from('0'),//gasLimit,
-      BigNumber.from('0')//_gasPrice
-    )
+  let gasLimit: BigNumber = gasFeeInWei.gt(BigNumber.from('0')) ? gasFeeInWei.div(_gasPrice) : BigNumber.from('0')
+
+  if (
+    !gasLimit.lte(BigNumber.from("0")) &&
+    gasFeeInWei.gt(gasLimit.mul(_gasPrice))
+  ) {
+    //There may be rounding issues in English, indicating no exact division and resulting in a remainder
+
+    gasLimit = gasLimit.add(1); //.mul(2) //increase by two times
   }
+
+  console.log(
+    "current set gasPrice: ",
+    _gasPrice,
+    utils.formatUnits(_gasPrice)
+  );
+  console.log("current set gasLimit: ", gasLimit, utils.formatUnits(gasLimit));
+
+  const enPolicy: EnactedPolicy = await resultInfo.blockchainPolicy.enact(resultInfo.ursulas, waitReceipt, gasLimit, _gasPrice)
+  
 
   console.log('after policy enact')
 
-  if (enPolicy && !isBlank(enPolicy.txHash)) {
-    console.log(`enPolicy txHash: ${enPolicy.txHash}`);
-    let receipt: any = null;
-
-    let retryTimes = 100;
-    do {
-      try {
-        receipt = await web3.eth.getTransactionReceipt(enPolicy.txHash);
-        //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
-      } catch (error) {
-        console.log(
-          `getTransactionReceipt createPolicy txHash: ${enPolicy.txHash} retrying, error: `,
-          error
-        );
-      }
-
-      if (isBlank(receipt)) {
-        await sleep(3000);
-      }
-      retryTimes--;
-    } while (isBlank(receipt) && retryTimes > 0);
-
-    const txReceipt = receipt as TransactionReceipt;
-
-    //const transaction = await web3.eth.getTransaction(enPolicy.txHash);
-    //  //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
-    if (null == txReceipt || !txReceipt.status) {
-      const transaction = await web3.eth.getTransaction(enPolicy.txHash);
-      //console.log("transaction.input:", transaction.input);
-      console.log("transaction:", transaction);
-
-      throw new GetTransactionReceiptError(
-        `getTransactionReceipt error: transaction Hash is ${enPolicy.txHash}, Please set a larger gaslimit or try approve again!`
-      );
-    }
-  } else {
-    throw new TransactionError(`send transaction Approve failed!`);
+  if (isBlank(enPolicy) || isBlank(enPolicy.txHash)) {
+    console.log(
+      `send transaction Approve failed, Please refresh page first and try again!`
+    );
+    throw new TransactionError(
+      `send transaction Approve failed, Please refresh page first and try again!`
+    );
   }
 
-  // // Persist side-channel
+    console.log(`enPolicy txHash: ${enPolicy.txHash}`)
+
+// // Persist side-channel
   // const aliceVerifyingKey: PublicKey = alice.verifyingKey;
   // const policyEncryptingKey: PublicKey = enPolicy.policyKey;
 
   const encryptedTreasureMap: EncryptedTreasureMap = enPolicy.encryptedTreasureMap
   const encryptedTreasureMapBytes: Uint8Array = encryptedTreasureMap.toBytes()
 
-  //3. upload encrypt files/data to IPFS
+  //2. upload encrypt files/data to IPFS
   const encryptedTreasureMapIPFS: string = await StorageManager.setData([encryptedTreasureMapBytes], publisher)[0]
 
-  //4. call center server to save policy info
+  //3. call center server to save policy info
   const crossChainHrac: CrossChainHRAC = enPolicy.id
 
   const hracBytes = crossChainHrac.toBytes()
@@ -2354,8 +2314,57 @@ export const approvalApplicationForUseData = async (
     }
   }
   sendData['signature'] = await signUpdateServerDataMessage(publisher, sendData)
+
+  //Previously, the under view state background thought that it must be chained, now it can't be: The under view may be unsuccessful or successful.
+  // This status needs to be determined by the backend, because while waiting for the transaction to be connected,
+  // the user may get impatient and close the page, so the /apply/batch-approve interface will never be called.
+  //If the link is successfully connected after this transaction, the status of the page will not change,
+  //and the button still displays Review request, which can still be approved again, and the Policy is active
+
+  console.log("before send the notification: apply/batch-approve");
+
   //V1->V2: The background approve logic changes to: store tx_hash to a table , and then execute approve operator after listening for an on-chain event
   const data = await serverPost('/apply/approve', sendData)
+
+  console.log("sended the notification: apply/batch-approve");
+
+    let receipt: any = null
+
+    let retryTimes = 100
+    do {
+      try {
+        receipt = await web3.eth.getTransactionReceipt(enPolicy.txHash)
+        //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
+      } catch (error) {
+        console.log(`getTransactionReceipt createPolicy txHash: ${enPolicy.txHash} retrying, error: `, error)
+      }
+
+      if (isBlank(receipt)) {
+        if (retryTimes % 3 == 0) {
+          //Message.info(
+          console.log(
+            "Transaction is being confirmed on the blockchain. Please wait patiently"
+          );
+        }
+        await sleep(3000)
+      }
+      retryTimes--
+    } while (isBlank(receipt) && retryTimes > 0)
+
+    const txReceipt = receipt as TransactionReceipt
+
+    //const transaction = await web3.eth.getTransaction(enPolicy.txHash);
+    //  //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
+    if (null == txReceipt || !txReceipt.status) {
+      const transaction = await web3.eth.getTransaction(enPolicy.txHash)
+      //console.log("transaction.input:", transaction.input);
+      console.log('transaction:', transaction)
+
+      throw new GetTransactionReceiptError(
+        `getTransactionReceipt error: transaction Hash is ${enPolicy.txHash}, Please set a larger gaslimit or try approve again!`
+      )
+    }
+  
   return Object.assign({ txHash: enPolicy.txHash, from: publisher.address }, data || { info: 'succeed' })
 }
 
@@ -2405,6 +2414,11 @@ export const approvalApplicationsForUseData = async (
     throw new PolicyHasBeenActivedOnChain(`Policys ${approvingAndApprovedApplyIds} is currently active`)
   }
 
+  const applyInfoList = await getMultiApplyDetails(applyIds)
+  if (isBlank(applyInfoList)) {
+    throw new ApplyNotExist(`one of the apply: ${applyIds} does not exist`)
+  }
+
   const resultInfo = await getBlockchainPolicys(
     publisher,
     userAccountIds,
@@ -2450,15 +2464,15 @@ export const approvalApplicationsForUseData = async (
       resultInfo.deDuplicationInfo.policyParameters.startDates,
       resultInfo.deDuplicationInfo.policyParameters.endDates,
       resultInfo.deDuplicationInfo.policyParameters.shares
-    );
+    )
 
-    const txHashOrEmpty: string = await approveNLK(
+    const txHashOrEmpty: string = (await approveNLK(
       publisher,
       BigNumber.from('10000000000000000000000000'),
       costServerFeeWei,
       false,
       gasPrice
-    ) as string;
+    )) as string
 
     // eslint-disable-next-line no-extra-boolean-cast
     console.log(
@@ -2470,19 +2484,12 @@ export const approvalApplicationsForUseData = async (
     //wei can use  BigNumber.from(), ether can use ethers.utils.parseEther(), because the BigNumber.from("1.2"), the number can't not be decimals (x.x)
     //await publisher.getNLKBalance() return ethers
     //Check whether the account balance is less than the policy creation cost
-    const nlkEther = await publisher.getNLKBalance();
-    const nlkBalanceWei: BigNumber = ethers.utils.parseEther(
-      nlkEther as string
-    );
-    const costServerEther = Web3.utils.fromWei(
-      costServerFeeWei.toString(),
-      "ether"
-    );
+    const nlkEther = await publisher.getNLKBalance()
+    const nlkBalanceWei: BigNumber = ethers.utils.parseEther(nlkEther as string)
+    const costServerEther = Web3.utils.fromWei(costServerFeeWei.toString(), 'ether')
 
-    console.log(`the account balance is: ${nlkEther} ether nlk`);
-    console.log(
-      `the create policy server fee is: ${costServerEther.toString()} ether nlk`
-    );
+    console.log(`the account balance is: ${nlkEther} ether nlk`)
+    console.log(`the create policy server fee is: ${costServerEther.toString()} ether nlk`)
 
     //Don't forget the mint fee (service charge), so use the method lte, not le
     if (nlkBalanceWei.lt(costServerFeeWei)) {
@@ -2491,10 +2498,10 @@ export const approvalApplicationsForUseData = async (
       // );
       console.log(
         `The account ${publisher.address} balance of ${nlkEther} ether in [token] ${chainConfigInfo.nlkTokenSymbol} is insufficient to publish policy with a value of ${costServerEther} ether`
-      );
+      )
       throw new InsufficientBalanceError(
         `The account ${publisher.address} balance of ${nlkEther} ether in [token] ${chainConfigInfo.nlkTokenSymbol} is insufficient to publish policy with a value of ${costServerEther} ether`
-      );
+      )
     }
   } //end of if ([NETWORK_LIST.Horus, NETWORK_LIST.HorusMainNet].includes(curNetwork))
 
@@ -2517,22 +2524,17 @@ export const approvalApplicationsForUseData = async (
 
   const _gasPrice = gasPrice
 
-  let gasLimit: BigNumber = gasFeeInWei.gt(BigNumber.from("0"))
-    ? gasFeeInWei.div(_gasPrice)
-    : BigNumber.from("0");
+  let gasLimit: BigNumber = gasFeeInWei.gt(BigNumber.from('0')) ? gasFeeInWei.div(_gasPrice) : BigNumber.from('0')
 
-  if (
-    !gasLimit.lte(BigNumber.from("0")) &&
-    gasFeeInWei.gt(gasLimit.mul(_gasPrice))
-  ) {
+  if (!gasLimit.lte(BigNumber.from('0')) && gasFeeInWei.gt(gasLimit.mul(_gasPrice))) {
     //There may be rounding issues in English, indicating no exact division and resulting in a remainder
 
-    gasLimit = gasLimit.add(1); //.mul(2) //increase by two times
+    gasLimit = gasLimit.add(1) //.mul(2) //increase by two times
   }
 
-  console.log("current set gasPrice: ", _gasPrice, utils.formatUnits(_gasPrice));
-  console.log("current set gasLimit: ", gasLimit, utils.formatUnits(gasLimit));
-  
+  console.log('current set gasPrice: ', _gasPrice, utils.formatUnits(_gasPrice))
+  console.log('current set gasLimit: ', gasLimit, utils.formatUnits(gasLimit))
+
   //MultiPreEnactedPolicy
   //let enMultiPolicy: MultiEnactedPolicy;
   // try {
@@ -2556,69 +2558,22 @@ export const approvalApplicationsForUseData = async (
   const enMultiPolicy = await resultInfo.deDuplicationInfo.multiBlockchainPolicy.enact(
     resultInfo.deDuplicationInfo.ursulasArray,
     waitReceipt,
-      gasLimit,
-      gasPrice,
-      //BigNumber.from("0"), //gasLimit
-      //BigNumber.from("0") //gasPrice
+    gasLimit,
+    gasPrice
+    //BigNumber.from("0"), //gasLimit
+    //BigNumber.from("0") //gasPrice
   )
-
 
   console.log('after mulit policy enact')
 
-  if (enMultiPolicy && !isBlank(enMultiPolicy.txHash)) {
-    console.log(`enMultiPolicy txHash: ${enMultiPolicy.txHash}`);
-    let receipt: any = null;
-
-    let retryTimes = 130;
-    do {
-      try {
-        receipt = await web3.eth.getTransactionReceipt(enMultiPolicy.txHash);
-      //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
-      } catch (error) {
-        console.log(
-          `getTransactionReceipt createPolicy txHash: ${enMultiPolicy.txHash} retrying ..., current error: `,
-          error
-        );
-      }
-
-      if (isBlank(receipt)) {
-        if (retryTimes % 3 == 0) {
-          // Message.info(
-          console.log(
-            "Transaction is being confirmed on the blockchain. Please wait patiently",
-            "info"
-          );
-        }
-
-        await sleep(3000);
-      }
-      retryTimes--;
-    } while (isBlank(receipt) && retryTimes > 0);
-
-    const txReceipt = receipt as TransactionReceipt;
-
-    //const transaction = await web3.eth.getTransaction(enMultiPolicy.txHash);
-    //  //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
-    if (null == txReceipt || !txReceipt.status) {
-      const transaction = await web3.eth.getTransaction(enMultiPolicy.txHash);
-      //console.log("transaction.input:", transaction.input);
-      console.log("transaction:", transaction);
-      console.log(
-        `Failed to wait for transaction to be confirmed on the blockchain: transaction Hash is ${enMultiPolicy.txHash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
-      );
-      throw new GetTransactionReceiptError(
-        `getTransactionReceipt error: Failed to wait for transaction to be confirmed on the blockchain: transaction Hash is ${enMultiPolicy.txHash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
-      );
-    }
-  } else {
-    console.log(
-      `send transaction Approve failed, Please refresh page first and try again!`
-    );
-    throw new TransactionError(
-      `send transaction Approve failed, Please refresh page first and try again!`
-    );
+  if (isBlank(enMultiPolicy) || isBlank(enMultiPolicy.txHash)) {
+    console.log(`send transaction Approve failed, Please refresh page first and try again!`)
+    throw new TransactionError(`send transaction Approve failed, Please refresh page first and try again!`)
   }
-  // // Persist side-channel
+
+  console.log(`enMultiPolicy txHash: ${enMultiPolicy.txHash}`)
+
+   // // Persist side-channel
   // const aliceVerifyingKey: PublicKey = alice.verifyingKey;
   // const policyEncryptingKey: PublicKey = enPolicy.policyKey;
 
@@ -2628,16 +2583,11 @@ export const approvalApplicationsForUseData = async (
 
   const encryptedTreasureMapIPFSs: string[] = []
 
-  const applyInfoList = await getMultiApplyDetails(applyIds);
-  if (isBlank(applyInfoList)) {
-    throw new ApplyNotExist(`one of the apply: ${applyIds} does not exist`);
-  }
-
-  //3. upload multiple encrypt files to IPFS
+  //2. upload multiple encrypt files to IPFS
   const cids: string[] = await StorageManager.setData(encryptedTreasureMapBytesArray, publisher)
   encryptedTreasureMapIPFSs.push(...cids)
 
-  //4. call center server to save policy info
+  //3. call center server to save policy info
   const policy_list: object[] = []
   const crossChainHracs: CrossChainHRAC[] = enMultiPolicy.ids
 
@@ -2660,8 +2610,62 @@ export const approvalApplicationsForUseData = async (
     policy_list: policy_list
   }
   sendData['signature'] = await signUpdateServerDataMessage(publisher, sendData)
+
+  //Note: Notified the backend service: Send the transaction hash to the backend.
+  //Previously, the under view state background thought that it must be chained, now it can't be: The under view may be unsuccessful or successful.
+  // This status needs to be determined by the backend, because while waiting for the transaction to be connected,
+  // the user may get impatient and close the page, so the /apply/batch-approve interface will never be called.
+  //If the link is successfully connected after this transaction, the status of the page will not change,
+  //and the button still displays Review request, which can still be approved again, and the Policy is active
+
+  console.log("before send the notification: apply/batch-approve");
+
   //V1->V2: The background approve logic changes to: store tx_hash to a table , and then execute approve operator after listening for an on-chain event
   const data = await serverPost('/apply/batch-approve', sendData)
+
+  console.log("sended the notification: apply/batch-approve");
+
+  let receipt: any = null
+
+  let retryTimes = 130
+  do {
+    try {
+      receipt = await web3.eth.getTransactionReceipt(enMultiPolicy.txHash)
+      //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
+    } catch (error) {
+      console.log(
+        `getTransactionReceipt createPolicy txHash: ${enMultiPolicy.txHash} retrying ..., current error: `,
+        error
+      )
+    }
+
+    if (isBlank(receipt)) {
+      if (retryTimes % 3 == 0) {
+        // Message.info(
+        console.log('Transaction is being confirmed on the blockchain. Please wait patiently', 'info')
+      }
+
+      await sleep(3000)
+    }
+    retryTimes--
+  } while (isBlank(receipt) && retryTimes > 0)
+
+  const txReceipt = receipt as TransactionReceipt
+
+  //const transaction = await web3.eth.getTransaction(enMultiPolicy.txHash);
+  //  //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
+  if (null == txReceipt || !txReceipt.status) {
+    const transaction = await web3.eth.getTransaction(enMultiPolicy.txHash)
+    //console.log("transaction.input:", transaction.input);
+    console.log('transaction:', transaction)
+    console.log(
+      `Failed to wait for transaction to be confirmed on the blockchain: transaction Hash is ${enMultiPolicy.txHash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
+    )
+    throw new GetTransactionReceiptError(
+      `getTransactionReceipt error: Failed to wait for transaction to be confirmed on the blockchain: transaction Hash is ${enMultiPolicy.txHash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
+    )
+  }
+
   return Object.assign({ txHash: enMultiPolicy.txHash, from: publisher.address }, data || { info: 'succeed' })
 }
 
