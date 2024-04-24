@@ -6,12 +6,12 @@ import { NETWORK_LIST } from "../../sol";
 /**
  * @internal
  */
-export const CHAIN_NETWORK_LABEL = "chain_network";
+export const CHAIN_NETWORK_LABEL = "chain_network_sdk";
 
 /**
  * @internal
  */
-export const CHAIN_NETWORK_CONFIG = "chain_network_config";
+export const CHAIN_NETWORK_CONFIG = "chain_network_config_sdk";
 
 /**
  * get current setting data
