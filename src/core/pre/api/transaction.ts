@@ -239,13 +239,15 @@ export const sendRawTransaction = async (
     console.log(`sendRawTransaction txHash: ${txReceipt.transactionHash}`);
 
     // eslint-disable-next-line no-extra-boolean-cast
-    if (!!txReceipt && !!txReceipt.transactionHash) {
+    if (!isBlank(txReceipt) && !isBlank(txReceipt.transactionHash)) {
       let receipt: any = null;
 
       let retryTimes = 1000;
       do {
         try {
-          receipt = await web3.eth.getTransactionReceipt(txReceipt.transactionHash);
+          receipt = await web3.eth.getTransactionReceipt(
+            txReceipt.transactionHash
+          );
           //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
         } catch (error) {
           console.log(
@@ -269,35 +271,46 @@ export const sendRawTransaction = async (
 
       receipt = receipt as TransactionReceipt;
 
-      //const transaction = await web3.eth.getTransaction(enMultiPolicy.txHash);
-      //  //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
-      if (null == txReceipt || !txReceipt.status) {
-        const transaction = await web3.eth.getTransaction(txReceipt.transactionHash);
+      if (isBlank(receipt)) {
+        const transaction = await web3.eth.getTransaction(
+          txReceipt.transactionHash
+        );
         //console.log("transaction.input:", transaction.input);
         console.log("transaction:", transaction);
+
         console.log(
-          `Failed to wait for transaction to be confirmed on the blockchain: transaction Hash is ${txReceipt.transactionHash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
+          `sendRawTransaction=> getTransactionReceipt error: Failed to wait for transaction to be confirmed on the blockchain: transaction Hash is ${txReceipt.transactionHash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
         );
+
         throw new GetTransactionReceiptError(
-          `getTransactionReceipt error: Failed to wait for transaction to be confirmed on the blockchain: transaction Hash is ${txReceipt.transactionHash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
+          `sendRawTransaction=> getTransactionReceipt error: Failed to wait for transaction to be confirmed on the blockchain: transaction Hash is ${txReceipt.transactionHash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
         );
+      } else {
+        if (!receipt.status) {
+          console.log(
+            `sendRawTransaction Failed: transaction Hash is ${txReceipt.transactionHash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
+          );
+          throw new TransactionError(
+            `sendRawTransaction Failed: transaction Hash is ${txReceipt.transactionHash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
+          );
+        }
       }
+
+      //return txReceipt.transactionHash;
     }
-    else {
+    else{
       console.log(
-        `sendRawTransaction failed, Please refresh page first and try again!`
+        `sendRawTransaction Failed =>  transaction Hash is ${txReceipt.transactionHash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
       );
       throw new TransactionError(
-        `sendRawTransaction failed, Please refresh page first and try again!`
+        `sendRawTransaction Failed => transaction Hash is ${txReceipt.transactionHash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
       );
-    }
-
-    //return txReceipt.transactionHash;
+    }//end of if (!isBlank(txReceipt) && !isBlank(txReceipt.transactionHash))
   } finally {
     transactionNonceLock.release();
   }
 
-  if (txReceipt) {
+  if (!isBlank(txReceipt)) {
     if (!isBlank(txReceipt.transactionHash)) {
       return txReceipt.transactionHash;
     } else {

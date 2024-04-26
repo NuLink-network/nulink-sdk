@@ -78,7 +78,8 @@ import {
   DecryptError,
   GetTransactionReceiptError,
   TransactionError,
-  ApplyNotExist
+  ApplyNotExist,
+  PolicyApproving
 } from '../../utils/exception'
 import { getWeb3 } from '../../hdwallet/api'
 import { getRandomElementsFromArray } from '../../../core/utils'
@@ -196,7 +197,23 @@ export const getAccountInfo = async (accountId: string) => {
   const data = await serverPost('/account/get', sendData)
 
   return data
-}
+};
+/**
+ * @internal
+ */
+export const checkAccountInfo = async (accountId: string) => {
+  //https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E8%8E%B7%E5%8F%96%E7%94%A8%E6%88%B7%E4%BF%A1%E6%81%AF
+
+  const sendData = {
+    account_id: accountId,
+  };
+  try {
+    const data = await getAccountInfo(accountId);
+    return data;
+  } catch (e) {
+    console.log(e);
+  }
+};
 
 /**
  * get account infos by multiple account ids
@@ -1457,11 +1474,20 @@ export const estimatePolicyGas = async (
   porterUri?: string
 ): Promise<GasInfo> => {
   // calcPolicyEstimateGasFee
-  const beingApprovedOrApproved: boolean = await checkDataApprovalStatusIsApprovedOrApproving(applyId)
+  //2: approved , 4: approving(Under review) , <0: not approved and approving(Under review),  return null otherwise
+  const approveStatus: number = await checkDataApprovalStatusIsApprovedOrApproving(applyId)
 
-  if (beingApprovedOrApproved) {
-    throw new PolicyHasBeenActivedOnChain('Policy is currently active')
+  if (approveStatus === 2) {
+    //throw new PolicyHasBeenActivedOnChain("Policy is currently active");
+    throw new PolicyHasBeenActivedOnChain(
+      "Policy is approved, no need apply again"
+    );
+  } else if (approveStatus == 4) {
+    throw new PolicyApproving(
+      "Policy is under review, please wait for the review to complete"
+    );
   }
+
 
   const resultInfo = await getBlockchainPolicy(
     publisher,
@@ -1556,10 +1582,19 @@ export const estimatePolicysGas = async (
   porterUri?: string
 ): Promise<GasInfo> => {
   // calcPolicyEstimateGasFee
-  const approvingAndApprovedApplyIds: string[] = await checkMultiDataApprovalStatusIsApprovedOrApproving(applyIds)
+  // {"approvedApplyIds": [], "underViewApplyIds": []}
+  const { approvedApplyIds, underViewApplyIds }: any = await checkMultiDataApprovalStatusIsApprovedOrApproving(applyIds)
 
-  if (approvingAndApprovedApplyIds.length > 0) {
-    throw new PolicyHasBeenActivedOnChain(`Policys ${approvingAndApprovedApplyIds} is currently active`)
+  if (approvedApplyIds.length > 0) {
+    throw new PolicyHasBeenActivedOnChain(
+      `Policys ${approvedApplyIds} are approved, no need apply again`
+    );
+  }
+
+  if (underViewApplyIds.length > 0) {
+    throw new PolicyApproving(
+      `Policys ${underViewApplyIds} are under review, please wait for the review to complete`
+    );
   }
 
   /**
@@ -2056,30 +2091,34 @@ const getBlockchainPolicys = async (
  * @category Data Publisher(Alice) Data Details
  * @category Data User(Bob) Data Details
  * @param {string} applyId - string | number
- * @returns  Promise<boolean>
+ * @returns  Promise<number> - return 2: approved , 4: approving(Under review) , <0: not approved and approving(Under review)
  */
-export const checkDataApprovalStatusIsApprovedOrApproving = async (applyId: string | number): Promise<boolean> => {
+export const checkDataApprovalStatusIsApprovedOrApproving = async (applyId: string | number): Promise<number> => {
   //Query whether the approval status is being approved or approving
   const data = (await getApplyDetails(applyId as string)) as any
 
   if (data && [2, 4].includes(data?.status)) {
-    //2: approved , 4: approving
-    return true
+    //2: approved , 4: approving(Under review)
+    return data?.status;
   }
 
-  return false
-}
+  return -1;
+};
 
 /**
  * Check whether the status of multiple applications is "under review" or "approved".
  * @category Data Publisher(Alice) Data Details
  * @category Data User(Bob) Data Details
  * @param {string[]} applyIds - string[]| number[]
- * @returns  Promise<string[]> -- return a list of applyIds that are not in the "pending approval" and "approved" statuses.
+ * @returns  Promise<object> - return two lists of applyIds, one list of applyIds that are in the "approving(Under review)" statuses, and the other list of applyIds that are in the "approved" statuses.
+ *                  {
+ *                   approvedApplyIds: [],
+ *                   underViewApplyIds: [],
+ *                  }
  */
 export const checkMultiDataApprovalStatusIsApprovedOrApproving = async (
   applyIds: string[] | number[]
-): Promise<string[]> => {
+): Promise<object> => {
   //Query whether the approval status is being approved or approving
   const multiPolicyData = await getMultiApplyDetails(applyIds as string[])
 
@@ -2087,17 +2126,25 @@ export const checkMultiDataApprovalStatusIsApprovedOrApproving = async (
     throw new Error(`Failed to retrieve policyData information from the database for apply ID: ${applyIds}`)
   }
 
-  const approveApplyIds: string[] = []
+  const approvedApplyIds: string[] = []
+  const underViewApplyIds: string[] = []
+
   for (let index = 0; index < multiPolicyData.length; index++) {
     const policyData = multiPolicyData[index] as object
     if (multiPolicyData && [2, 4].includes((policyData as any)?.status)) {
-      //2: approved , 4: approving
-      approveApplyIds.push(applyIds[index] as string)
+      //2: approved , 4: approving(Under review)
+      approvedApplyIds.push(applyIds[index] as string);
+    } else if (multiPolicyData && [4].includes((policyData as any)?.status)) {
+      //2: approved , 4: approving(Under review)
+      underViewApplyIds.push(applyIds[index] as string);
     }
   }
 
-  return approveApplyIds
-}
+  return {
+    approvedApplyIds: approvedApplyIds,
+    underViewApplyIds: underViewApplyIds,
+  };
+};
 
 /**
  * Approval of application for use of Files/Data, This account acts as Publisher (Alice) grant
@@ -2139,10 +2186,18 @@ export const approvalApplicationForUseData = async (
   // console.log("the account address is:", publisher.address);
   // console.log("the account key is:", pwdDecrypt(publisher.encryptedKeyPair._privateKey, true));
 
-  const beingApprovedOrApproved: boolean = await checkDataApprovalStatusIsApprovedOrApproving(applyId)
+  //2: approved , 4: approving(Under review) , <0: not approved and approving(Under review),  return null otherwise
+  const approveStatus: number = await checkDataApprovalStatusIsApprovedOrApproving(applyId)
 
-  if (beingApprovedOrApproved) {
-    throw new PolicyHasBeenActivedOnChain('Policy is currently active')
+  if (approveStatus === 2) {
+    //throw new PolicyHasBeenActivedOnChain("Policy is currently active");
+    throw new PolicyHasBeenActivedOnChain(
+      "Policy is approved, no need apply again"
+    );
+  } else if (approveStatus == 4) {
+    throw new PolicyApproving(
+      "Policy is under review, please wait for the review to complete"
+    );
   }
 
   const applyInfo = await getApplyDetails(applyId);
@@ -2330,14 +2385,16 @@ export const approvalApplicationForUseData = async (
 
     let receipt: any = null
 
-    let retryTimes = 100
-    do {
-      try {
-        receipt = await web3.eth.getTransactionReceipt(enPolicy.txHash)
-        //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
-      } catch (error) {
-        console.log(`getTransactionReceipt createPolicy txHash: ${enPolicy.txHash} retrying, error: `, error)
-      }
+  let retryTimes = 130;
+  do {
+    try {
+      receipt = await web3.eth.getTransactionReceipt(enPolicy.txHash);
+      //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
+    } catch (error) {
+      console.error(
+        `getTransactionReceipt createPolicy txHash: ${enPolicy.txHash} retrying, error: `
+      );
+    }
 
       if (isBlank(receipt)) {
         if (retryTimes % 3 == 0) {
@@ -2353,20 +2410,49 @@ export const approvalApplicationForUseData = async (
 
     const txReceipt = receipt as TransactionReceipt
 
-    //const transaction = await web3.eth.getTransaction(enPolicy.txHash);
-    //  //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
-    if (null == txReceipt || !txReceipt.status) {
-      const transaction = await web3.eth.getTransaction(enPolicy.txHash)
-      //console.log("transaction.input:", transaction.input);
-      console.log('transaction:', transaction)
+  if (isBlank(txReceipt)) {
+    const transaction = await web3.eth.getTransaction(enPolicy.txHash);
+    //console.log("transaction.input:", transaction.input);
+    console.log("transaction:", transaction);
 
-      throw new GetTransactionReceiptError(
-        `getTransactionReceipt error: transaction Hash is ${enPolicy.txHash}, Please set a larger gaslimit or try approve again!`
-      )
+    console.log(
+      `getTransactionReceipt error: transaction Hash is ${enPolicy.txHash}, transaction receipt is null. The current status is "Underview". Please be patient and wait for the backend to confirm the transaction (it should be completed within approximately one hour)!`
+    );
+
+    throw new GetTransactionReceiptError(
+      `getTransactionReceipt error: transaction Hash is ${enPolicy.txHash}, transaction receipt is null. The current status is "Underview". Please be patient and wait for the backend to confirm the transaction (it should be completed within approximately one hour)!`
+    );
+  } else {
+    //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
+    if (!txReceipt.status) {
+      //The transaction failed. Users can manually re-approve it. We need to notify the backend API to reset the status.
+      const _sendData: any = {
+        account_id: publisher.id,
+        policy_tx_hash: enPolicy.txHash,
+      };
+      _sendData["signature"] = await signUpdateServerDataMessage(
+        publisher,
+        _sendData
+      );
+
+      const data = await serverPost("/apply/reset", sendData);
+
+      console.log("called apply reset, now Users can manually re-approve it");
+
+      console.log(
+        `Approve apply Failed: transaction Hash is ${enPolicy.txHash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
+      );
+      throw new TransactionError(
+        `Approve apply Failed: transaction Hash is ${enPolicy.txHash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
+      );
     }
-  
-  return Object.assign({ txHash: enPolicy.txHash, from: publisher.address }, data || { info: 'succeed' })
-}
+  }
+
+  return Object.assign(
+    { txHash: enPolicy.txHash, from: publisher.address },
+    data || { info: "succeed" }
+  );
+};
 
 /**
  * Approval of applications for use of Files/Data, This account acts as Publisher (Alice) grant. The batch version of the function refusalApplicationForUseData.
@@ -2408,10 +2494,19 @@ export const approvalApplicationsForUseData = async (
   // console.log("the account address is:", publisher.address);
   // console.log("the account key is:", pwdDecrypt(publisher.encryptedKeyPair._privateKey, true));
 
-  const approvingAndApprovedApplyIds: string[] = await checkMultiDataApprovalStatusIsApprovedOrApproving(applyIds)
+  // {"approvedApplyIds": [], "underViewApplyIds": []}
+  const { approvedApplyIds, underViewApplyIds }: any = await checkMultiDataApprovalStatusIsApprovedOrApproving(applyIds)
 
-  if (approvingAndApprovedApplyIds.length > 0) {
-    throw new PolicyHasBeenActivedOnChain(`Policys ${approvingAndApprovedApplyIds} is currently active`)
+  if (approvedApplyIds.length > 0) {
+    throw new PolicyHasBeenActivedOnChain(
+      `Policys ${approvedApplyIds} are approved, no need apply again`
+    );
+  }
+
+  if (underViewApplyIds.length > 0) {
+    throw new PolicyApproving(
+      `Policys ${underViewApplyIds} are under review, please wait for the review to complete`
+    );
   }
 
   const applyInfoList = await getMultiApplyDetails(applyIds)
@@ -2654,20 +2749,48 @@ export const approvalApplicationsForUseData = async (
 
   //const transaction = await web3.eth.getTransaction(enMultiPolicy.txHash);
   //  //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
-  if (null == txReceipt || !txReceipt.status) {
-    const transaction = await web3.eth.getTransaction(enMultiPolicy.txHash)
+  if (isBlank(txReceipt)) {
+    const transaction = await web3.eth.getTransaction(enMultiPolicy.txHash);
     //console.log("transaction.input:", transaction.input);
     console.log('transaction:', transaction)
     console.log(
-      `Failed to wait for transaction to be confirmed on the blockchain: transaction Hash is ${enMultiPolicy.txHash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
-    )
+      `getTransactionReceipt error: transaction Hash is ${enMultiPolicy.txHash}, transaction receipt is null. The current status is "Underview". Please be patient and wait for the backend to confirm the transaction (it should be completed within approximately one hour)!`
+    );
+
     throw new GetTransactionReceiptError(
-      `getTransactionReceipt error: Failed to wait for transaction to be confirmed on the blockchain: transaction Hash is ${enMultiPolicy.txHash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
-    )
+      `getTransactionReceipt error: transaction Hash is ${enMultiPolicy.txHash}, transaction receipt is null. The current status is "Underview". Please be patient and wait for the backend to confirm the transaction (it should be completed within approximately one hour)!`
+    );
+  } else {
+    //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
+    if (!txReceipt.status) {
+      //The transaction failed. Users can manually re-approve it. We need to notify the backend API to reset the status.
+      const _sendData: any = {
+        account_id: publisher.id,
+        policy_tx_hash: enMultiPolicy.txHash,
+      };
+      _sendData["signature"] = await signUpdateServerDataMessage(
+        publisher,
+        _sendData
+      );
+
+      const data = await serverPost("/apply/reset", sendData);
+
+      console.log("called apply reset, now Users can manually re-approve it");
+
+      console.log(
+        `Approve apply Failed: transaction Hash is ${enMultiPolicy.txHash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
+      );
+      throw new TransactionError(
+        `Approve apply Failed: transaction Hash is ${enMultiPolicy.txHash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
+      );
+    }
   }
 
-  return Object.assign({ txHash: enMultiPolicy.txHash, from: publisher.address }, data || { info: 'succeed' })
-}
+  return Object.assign(
+    { txHash: enMultiPolicy.txHash, from: publisher.address },
+    data || { info: "succeed" }
+  );
+};
 
 /**
  * Rejects the application for the use of files/data. This account acts as the publisher (Alice).

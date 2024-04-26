@@ -110,6 +110,7 @@ export const getPolicyServerFee = async (startSeconds: number, endSeconds: numbe
  * @category Data Publisher(Alice) Approval 
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @throws {@link PolicyHasBeenActivedOnChain} Policy has been actived(created) on chain (policy is currently active)
+ * @throws {@link PolicyApproving} Policy are under review, please wait for the review to complete
  * @param {string} userAccountId - the account Id of the data/file applicant (Bob)
  * @param {string} applyId - The application ID returned to the user by the interface when applying to use a specific data/file
  * @param {number} ursulaShares - Number of service shares
@@ -176,6 +177,7 @@ export const getPolicyGasFee = async (
  * @category Data Publisher(Alice) Approval (Multi)
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @throws {@link PolicyHasBeenActivedOnChain} Policy has been actived(created) on chain (policy is currently active)
+ * @throws {@link PolicyApproving} Policy are under review, please wait for the review to complete
  * @param {string[]} userAccountIds - the account Id of the data/file applicant (Bob)
  * @param {string[]} applyIds - The application ID returned to the user by the interface when applying to use a specific data/file
  * @param {number[]} ursulaShares - Number of service shares
@@ -394,8 +396,7 @@ export const updateUserInfo = async (data: {
  * @category Data User(Bob) Data Details
  * @param {Object} data - Object be must be have the property of "applyId",  return null otherwise
  * @param {string} data.applyId - The ID of the data/file application.
- * @returns  {Promise<boolean> || null}  param data Object be must be have the property of "applyId",  return null otherwise.
- *           Return true if the status is "under review" or "approved", false otherwise
+ * @returns  {Promise<number> || null} - return 2: approved , 4: approving(Under review) , <0: not approved and approving(Under review),  return null otherwise.
  */
 export const checkDataApprovalStatusIsUnderReviewOrApproved = async (data: { applyId: string }) => {
   if (Object.prototype.hasOwnProperty.call(data, 'applyId')) {

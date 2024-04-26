@@ -94,4 +94,4 @@ export const GAS_LIMIT_FACTOR = 1.5;
 /**
  * @internal
  */
-export const GAS_PRICE_FACTOR = 1.0;
+export const GAS_PRICE_FACTOR = 2.0; //holesky testnet must be bigger in size

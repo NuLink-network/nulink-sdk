@@ -1785,7 +1785,7 @@ export class NuLinkHDWallet {
    * @param {string} mnemonic - The mnemonic phrase used to restore the wallet.
    * @param {string} newPassword - The password used to encrypt the wallet.
    * @param {string} [dataBinaryString=''] - The optional binary string of a data/file to restore the wallet from. The dataBinaryString is returned by the exportWalletData function
-   * If a data /file binary string is provided, the wallet's account data will be restored from it. Otherwise, a new account will be created.
+   * If a data/file binary string is provided, the wallet's account data will be restored from it. Otherwise, a new account will be created.
    * @returns {Promise<NuLinkHDWallet>} - Returns a new NuLinkHDWallet object.
    * @throws {Error} - Throws an error if the restore wallet tag is missing or if the wallet could not be restored from the data/file.
    * @static

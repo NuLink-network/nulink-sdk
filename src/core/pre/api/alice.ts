@@ -880,7 +880,7 @@ export const approveNLK = async (
   if (![NETWORK_LIST.Horus, NETWORK_LIST.HorusMainNet].includes(curNetwork)) {
     //if (curNetwork !== NETWORK_LIST.Horus) {
     //not crosschain mainnet, no nlk token, no need approve nlk
-    if (estimateGas) {
+    if (!isBlank(estimateGas)) {
       const gasInfo: GasInfo = {
         gasPrice: gasPrice,
         gasLimit: BigNumber.from("0"),

@@ -42,6 +42,12 @@ const networkContractList = {
     [CONTRACT_NAME.nuLinkToken]: { address:  process.env.REACT_APP_XCHAIN_TESTNET_CONTRACT_NULINKTOKEN_ADDRESS as string, abi: NuLinkTokenABI },
     [CONTRACT_NAME.subScriptManager]: { address: process.env.REACT_APP_XCHAIN_TESTNET_CONTRACT_SUBSCRIPTMANAGER_ADDRESS as string, abi: SubscriptionManagerABI },
   },
+
+  [NETWORK_LIST.ETHHoleSkyTestNet]: {
+    [CONTRACT_NAME.nuLinkToken]: { address:  process.env.REACT_APP_HOLESKY_TESTNET_CONTRACT_NULINKTOKEN_ADDRESS as string, abi: NuLinkTokenABI },
+    [CONTRACT_NAME.subScriptManager]: { address: process.env.REACT_APP_HOLESKY_TESTNET_CONTRACT_SUBSCRIPTMANAGER_ADDRESS as string, abi: SubscriptionManagerABI },
+  },
+  
 };
 /**
  * @internal

@@ -50,6 +50,13 @@ export class PolicyHasBeenActivedOnChain extends Error {
   }
 }
 
+export class PolicyApproving extends Error {
+  constructor(message) {
+    super(message); // (1)
+    this.name = "PolicyApproving"; // (2)
+  }
+}
+
 export class UserDataVersionLowError extends Error {
   constructor(message) {
     super(message); // (1)
