@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.22](../README.md) / [Modules](../modules.md) / getUploadedData
+[NuLink SDK - v0.5.23](../README.md) / [Modules](../modules.md) / getUploadedData
 
 # Function: getUploadedData
 
@@ -38,4 +38,4 @@ Gets a list of files/data uploaded by the specified account from the server. Thi
 
 #### Defined in
 
-[core/pre/api/workflow.ts:556](https://github.com/NuLink-network/nulink-sdk/blob/d9e8f81/src/core/pre/api/workflow.ts#L556)
+[core/pre/api/workflow.ts:573](https://github.com/NuLink-network/nulink-sdk/blob/1365126/src/core/pre/api/workflow.ts#L573)

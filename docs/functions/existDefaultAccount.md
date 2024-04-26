@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.22](../README.md) / [Modules](../modules.md) / existDefaultAccount
+[NuLink SDK - v0.5.23](../README.md) / [Modules](../modules.md) / existDefaultAccount
 
 # Function: existDefaultAccount
 
@@ -14,4 +14,4 @@ Determines whether there is a default account in local storage.
 
 #### Defined in
 
-[api/wallet.ts:225](https://github.com/NuLink-network/nulink-sdk/blob/d9e8f81/src/api/wallet.ts#L225)
+[api/wallet.ts:225](https://github.com/NuLink-network/nulink-sdk/blob/1365126/src/api/wallet.ts#L225)

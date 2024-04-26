@@ -1,8 +1,8 @@
-[NuLink SDK - v0.5.22](../README.md) / [Modules](../modules.md) / checkDataApprovalStatusIsApprovedOrApproving
+[NuLink SDK - v0.5.23](../README.md) / [Modules](../modules.md) / checkDataApprovalStatusIsApprovedOrApproving
 
 # Function: checkDataApprovalStatusIsApprovedOrApproving
 
-▸ **checkDataApprovalStatusIsApprovedOrApproving**(`applyId`): `Promise`<`boolean`\>
+▸ **checkDataApprovalStatusIsApprovedOrApproving**(`applyId`): `Promise`<`number`\>
 
 Check if the application status is "under review" or "approved"
 
@@ -14,10 +14,10 @@ Check if the application status is "under review" or "approved"
 
 #### Returns
 
-`Promise`<`boolean`\>
+`Promise`<`number`\>
 
-Promise<boolean>
+Promise<number> - return 2: approved , 4: approving(Under review) , <0: not approved and approving(Under review)
 
 #### Defined in
 
-[core/pre/api/workflow.ts:2061](https://github.com/NuLink-network/nulink-sdk/blob/d9e8f81/src/core/pre/api/workflow.ts#L2061)
+[core/pre/api/workflow.ts:2096](https://github.com/NuLink-network/nulink-sdk/blob/1365126/src/core/pre/api/workflow.ts#L2096)

@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.22](../README.md) / [Modules](../modules.md) / getDataApprovedForApplicantAsUser
+[NuLink SDK - v0.5.23](../README.md) / [Modules](../modules.md) / getDataApprovedForApplicantAsUser
 
 # Function: getDataApprovedForApplicantAsUser
 
@@ -45,4 +45,4 @@ UnauthorizedError get logined account failed, must be login account first
 
 #### Defined in
 
-[api/pre.ts:720](https://github.com/NuLink-network/nulink-sdk/blob/d9e8f81/src/api/pre.ts#L720)
+[api/pre.ts:721](https://github.com/NuLink-network/nulink-sdk/blob/1365126/src/api/pre.ts#L721)

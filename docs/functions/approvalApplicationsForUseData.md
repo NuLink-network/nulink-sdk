@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.22](../README.md) / [Modules](../modules.md) / approvalApplicationsForUseData
+[NuLink SDK - v0.5.23](../README.md) / [Modules](../modules.md) / approvalApplicationsForUseData
 
 # Function: approvalApplicationsForUseData
 
@@ -34,4 +34,4 @@ Please unlock account with your password first by call getWalletDefaultAccount(u
 
 #### Defined in
 
-[core/pre/api/workflow.ts:2391](https://github.com/NuLink-network/nulink-sdk/blob/d9e8f81/src/core/pre/api/workflow.ts#L2391)
+[core/pre/api/workflow.ts:2477](https://github.com/NuLink-network/nulink-sdk/blob/1365126/src/core/pre/api/workflow.ts#L2477)
