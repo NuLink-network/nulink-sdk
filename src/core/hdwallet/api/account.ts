@@ -433,7 +433,7 @@ export class Account extends IJson {
    */
   public async createStrategyByLabel(label: string): Promise<Strategy> {
     //label is composed of ID and incoming label common (in order to make label unique)
-    const id: string = nanoid()
+    //const id: string = nanoid()
     
     /** 
      * When multiple browser tabs are opened simultaneously, the frontend is unable to lock them, 

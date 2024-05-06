@@ -2131,7 +2131,7 @@ export const checkMultiDataApprovalStatusIsApprovedOrApproving = async (
 
   for (let index = 0; index < multiPolicyData.length; index++) {
     const policyData = multiPolicyData[index] as object
-    if (multiPolicyData && [2, 4].includes((policyData as any)?.status)) {
+    if (multiPolicyData && [2].includes((policyData as any)?.status)) {
       //2: approved , 4: approving(Under review)
       approvedApplyIds.push(applyIds[index] as string);
     } else if (multiPolicyData && [4].includes((policyData as any)?.status)) {
@@ -3121,7 +3121,7 @@ export const getDataContentByDataIdAsPublisher = async (userAccount: Account, da
  *                policy_label: "The label of the policy",
  *                policy_label_id: "The ID of the policy label",
  *                days: "days",
- *                status: "apply status: 1 - In progress, 2 - Approved, 3 - Rejected, 4 - Under review, 5 - Expired"
+ *                status: "apply status: 1 - In progress, 2 - Approved, 3 - Rejected, 4 - Under review, 5 - Expired, 6 - Approve Failed"
  *              }
  */
 export const getApplyDetails = async (applyId: string) => {

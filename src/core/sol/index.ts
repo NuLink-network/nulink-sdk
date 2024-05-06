@@ -6,7 +6,7 @@ export enum NETWORK_LIST {
   HorusMainNet = "Horus MainNet",
   ConfluxTestNet = "ConFlux Espace TestNet",
   PolygonTestNet = "Polygon Mumbai", //polygon testnet
-  XChainTestNet = "OKX Chain TestNet",
+  XChainTestNet = "X-Layer TestNet",
   ETHHoleSkyTestNet = "Holesky TestNet", //ETH testnet
 }
 
