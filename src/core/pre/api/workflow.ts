@@ -435,12 +435,23 @@ export const uploadDataByCreatePolicy = async (
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const data = await serverPost('/file/create-policy-and-upload', sendData)
-  } catch (error) {
+  } catch (error: any) {
     // Message.error("upload file failed!");
     console.error('upload data failed!: ', error)
 
-    // clear this failed strategy info
-    await account.deleteStrategy(strategy.addressIndex)
+    if (error?.data?.code != 4011) {
+      //Error code 4011(error?.data?.msg is policy label already exists) does not require deleting the policy.
+
+      // clear this failed strategy info
+      await account.deleteStrategy(strategy.addressIndex)
+    }
+    else{
+      //4011
+      if (!isBlank(error?.data?.msg)){
+        error.data.msg = error.data.msg + " " + "Please refresh the file upload page and upload again";
+      }
+    }
+
     throw error
   }
 
