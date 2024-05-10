@@ -10,7 +10,7 @@ import {
   RemoteBob,
   CrossChainHRAC
 } from "@nulink_network/nulink-ts-crosschain";
-
+import { hexlify, arrayify } from "ethers/lib/utils";
 //reference: https://github.com/nucypher/nucypher-ts-demo/blob/main/src/characters.ts
 // notice: bacause the Alice import from nucypher-ts, so you  must be use the nucypher-ts's SecretKey PublicKey , not use the nucypher-core's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
 import {
@@ -232,7 +232,8 @@ export class BlockchainPolicy {
       bobVerifyingKey,
       toBytes(this.label)
     );
-    
+    console.log("hrac label:", this.label);
+
     this.hrac = new CrossChainHRAC(hrac, chainId);
 
   }
@@ -631,6 +632,8 @@ export class MultiBlockchainPolicy {
         endTimestamps
       );
     }
+
+    console.log("estimateCreatePolicysGas => hracs: ", this.hracs.map((hrac) => hexlify(hrac.toBytes())));
 
     try {
       const gasUsedAmounts =
@@ -1089,7 +1092,7 @@ export const approveNLK = async (
           txReceipt.transactionHash
         );
         //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
-        await sleep(1000);
+        await sleep(2000);
       } while (isBlank(receipt));
       
     }
@@ -1100,9 +1103,9 @@ export const approveNLK = async (
   }
 };
 
-axios.defaults.timeout = 60000; //default `0` (Never timeout)
+axios.defaults.timeout = 100000; //default `0` (Never timeout)
 axiosRetry(axios, {
-  retries: 3,
+  retries: 5,
   retryDelay: (retryCount) => {
     return /* retryCount * */ 1000;
   },

@@ -70,7 +70,7 @@ const excludeList = [
 // Configure common request headers
 // axios.defaults.baseURL = 'https://127.0.0.1:3000/api'
 // Configure timeout
-axios.defaults.timeout = 60000; //default `0` (Never timeout)
+axios.defaults.timeout = 100000; //default `0` (Never timeout)
 // Configure common request headers
 // axios.defaults.headers.common['Authorization'] = AUTH_TOKEN;
 // Configure the Content-Type of the public post

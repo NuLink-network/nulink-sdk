@@ -1735,7 +1735,9 @@ const getBlockchainPolicy = async (
   //2. create policy to block chain
   // const config = await getSettingsData();
   // const porter = new Porter(porterUri);
-  const label = policyData['policy_label']
+  const policy_label_id = policyData["policy_label_id"] as string;
+  //note: important
+  const label = policy_label_id; //policyData["policy_label"]; //for hrac, so can't use the label, show use the policy_label_id
   const threshold = ursulaThreshold //THRESHOLD
   const shares = ursulaShares // SHARES
 
@@ -1770,8 +1772,9 @@ const getBlockchainPolicy = async (
     }
   } */
 
+    const retryCount = 5;
     let i = 0
-    while (i < 3) {
+    while (i < retryCount) {
       try {
         ursulas = await getUrsulas(porterUri, shares)
         break
@@ -1780,7 +1783,7 @@ const getBlockchainPolicy = async (
         i++
 
         console.error('getUrsulas: ', error)
-        if (i >= 3) {
+        if (i >= retryCount) {
           console.error('Failed to retrieve Ursula information due to network issues; please try again', error)
           throw new getUrsulaError('Failed to retrieve Ursula information due to network issues; please try again')
         }
@@ -1914,8 +1917,9 @@ const getBlockchainPolicys = async (
     }
   } */
 
+    const retryCount = 5;
     let i = 0
-    while (i < 3) {
+    while (i < retryCount) {
       try {
         ursulas = await getUrsulas(porterUri, maxShares)
         break
@@ -1924,7 +1928,7 @@ const getBlockchainPolicys = async (
         i++
 
         console.error('getUrsulas: ', error)
-        if (i >= 3) {
+        if (i >= retryCount) {
           console.error('Failed to retrieve Ursula information due to network issues; please try again', error)
           throw new getUrsulaError('Failed to retrieve Ursula information due to network issues; please try again')
         }
@@ -1955,7 +1959,7 @@ const getBlockchainPolicys = async (
 
   //Filter out identical (local) policy information corresponding to HRAC (Hierarchical Role-Based Access Control) on the chain. Identical HRAC refers to the same file publisher, the same file consumer, and the same local policy.
   //alice only one, so filter hrac by: `${bob_pk}_${policy_id}`
-  const pulisherUserPolicyIds: Set<string> = new Set()
+  const publisherUserPolicyIds: Set<string> = new Set()
 
   const bobs: RemoteBob[] = []
   const labels: string[] = []
@@ -1980,7 +1984,6 @@ const getBlockchainPolicys = async (
   // const porter = new Porter(porterUri);
   for (let index = 0; index < multiPolicyData.length; index++) {
     const _policyData = multiPolicyData[index]
-    const label = _policyData['policy_label']
 
     const userInfo = userInfos[index]
     // const startDate: Date = new Date();
@@ -1989,17 +1992,18 @@ const getBlockchainPolicys = async (
     // const endDate: Date = new Date(endMs); //  start_at is seconds, but Date needs milliseconds
 
     const policy_label_id = _policyData['policy_label_id'] as string
+    //note: important
+    const label = policy_label_id; //_policyData["policy_label"]; //for hrac, so can't use the label, show use the policy_label_id
     const strategy: Strategy | undefined = publisher.getAccountStrategyByStategyId(policy_label_id)
 
     console.log('policy_label_id: ', policy_label_id)
+    console.log("policy address index: ", strategy?.addressIndex);
     // console.log("ApprovalUseFiles strategy", strategy);
     // assert(strategy !== undefined);
     if (!strategy || isBlank(strategy)) {
       //` get account strategy failed, label_id ${policy_label_id},\n When you Restore Account, You must Import account Vault data!!!`
       throw new Error(
-        `The user's data version is outdated and cannot be imported. Please export the latest data to prevent data loss! id: ${
-          _policyData['policy_label_id'] as string
-        }`
+        `The user's data version is outdated and cannot be imported. Please export the latest data to prevent data loss! id: ${policy_label_id}`
       )
     }
 
@@ -2018,7 +2022,7 @@ const getBlockchainPolicys = async (
 
     const pulisherUserPolicyId = `${userInfo['encrypted_pk']}_${policy_label_id}` //label string include strategy id
 
-    if (pulisherUserPolicyIds.has(pulisherUserPolicyId)) {
+    if (publisherUserPolicyIds.has(pulisherUserPolicyId)) {
       //Without deduplication, only record the indices of data in policyData that correspond to the same HRAC.
       ////Deduplicate based on identical HRAC
       //continue;
@@ -2033,7 +2037,7 @@ const getBlockchainPolicys = async (
       deDuplicationRetStartDates.push(startDates[index])
       deDuplicationRetEndDates.push(endDates[index])
 
-      pulisherUserPolicyIds.add(pulisherUserPolicyId)
+      publisherUserPolicyIds.add(pulisherUserPolicyId)
     }
 
     strategys.push(strategy)
