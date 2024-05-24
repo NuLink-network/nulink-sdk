@@ -2635,10 +2635,10 @@
     read-package-json-fast "^3.0.0"
     which "^3.0.0"
 
-"@nulink_network/nulink-ts-app-test@0.0.4":
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/@nulink_network/nulink-ts-app-test/-/nulink-ts-app-test-0.0.4.tgz#607e68df6454bc4b536b8cfc9eebbbc566cda911"
-  integrity sha512-14lTafsFtn9moGxpmuErUZZSswdHHbB7wByq6ZwlWThhwGqJ6wGwrDCf+thkoEAXgfW5SSAj8VZ3Ym6oEV9quQ==
+"@nulink_network/nulink-ts-app-test@^0.0.5":
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/@nulink_network/nulink-ts-app-test/-/nulink-ts-app-test-0.0.5.tgz#b662f3217800620cabf06f174b5bcc3b734b1ec6"
+  integrity sha512-kcmaoPIB0R2Xfo+5W13ukacm7XMFBupopK1Xys0S+6IrqXV3J9LfkTuDnxcexsh+oDHp55vyfIdMeicdzGmXUw==
   dependencies:
     axios "^0.21.1"
     ethers "5.7.1"
