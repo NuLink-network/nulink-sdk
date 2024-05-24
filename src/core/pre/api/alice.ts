@@ -1,6 +1,6 @@
-//  Alice: as the publisher of the data/file (data/file uploader). 
+//  Alice: as the publisher of the data/file (data/file uploader).
 
-import { privateKeyBuffer } from "../../hdwallet/api/common";
+import { privateKeyBuffer } from '../../hdwallet/api/common'
 import {
   Alice,
   BlockchainPolicyParameters,
@@ -9,80 +9,80 @@ import {
   MultiEnactedPolicy,
   RemoteBob,
   CrossChainHRAC
-} from "@nulink_network/nulink-ts-crosschain";
-import { hexlify, arrayify } from "ethers/lib/utils";
+} from '@nulink_network/nulink-ts-app-test'
+import { hexlify, arrayify } from 'ethers/lib/utils'
 //reference: https://github.com/nucypher/nucypher-ts-demo/blob/main/src/characters.ts
 // notice: bacause the Alice import from nucypher-ts, so you  must be use the nucypher-ts's SecretKey PublicKey , not use the nucypher-core's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
 import {
   PublicKey as NucypherTsPublicKey,
   SecretKey as NucypherTsSecretKey,
-  Signer as NucypherTsSigner,
-} from "@nulink_network/nulink-ts-crosschain";
+  Signer as NucypherTsSigner
+} from '@nulink_network/nulink-ts-app-test'
 
+// nucypher-core must be 0.2.0
 // notice: bacause the generateKFrags import from nucypher-core, so you  must be use the nucypher-core's SecretKey PublicKey , not use the nucypher-ts's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
-import * as NucypherCore from "@nucypher/nucypher-core";
+// import * as NucypherCore from "@nucypher/nucypher-core";
+import * as NucypherCore from '../../nucypher-core-wasm-bin'
 
-import {
-  EncryptedTreasureMap,
-  HRAC,
-  TreasureMap,
-  TreasureMapBuilder,
-} from "@nucypher/nucypher-core";
-import { Web3Provider } from "@ethersproject/providers";
-import { Account, Strategy } from "../../hdwallet/api/account";
-import {
-  generateKFrags,
-  Signer as NucypherCoreSigner,
-  VerifiedKeyFrag,
-} from "@nucypher/nucypher-core";
-import { getPorterUrl } from "./porter";
-import { getWeb3Provider } from "../../chainnet/api/web3Provider";
-import {
-  GetUrsulasResponse,
-  Ursula,
-} from "@nulink_network/nulink-ts-crosschain/build/main/src/characters/porter";
-import { PreEnactedPolicy } from "@nulink_network/nulink-ts-crosschain/build/main/src/policies/policy";
-import { MultiPreEnactedPolicy } from "@nulink_network/nulink-ts-crosschain/build/main/src/policies/multi.policy";
+// nucypher-core must be 0.2.0
+// import {
+//   EncryptedTreasureMap,
+//   HRAC,
+//   TreasureMap,
+//   TreasureMapBuilder,
+// } from "@nucypher/nucypher-core";
+import { Web3Provider } from '@ethersproject/providers'
+import { Account, Strategy } from '../../hdwallet/api/account'
 
-import { RevocationKit } from "@nulink_network/nulink-ts-crosschain/build/main/src/kits/revocation";
-import { getWeb3, toCanonicalAddress } from "../../hdwallet/api";
-import {
-  toBytes,
-  zip,
-  toEpoch,
-} from "@nulink_network/nulink-ts-crosschain/build/main/src/utils";
-import { SubscriptionManagerAgent } from "@nulink_network/nulink-ts-crosschain/build/main/src/agents/subscription-manager";
-import Web3 from "web3";
-import { getCurrentNetworkKey, getSettingsData } from "../../chainnet";
-import { BigNumber } from "ethers";
-import { ChecksumAddress } from "@nulink_network/nulink-ts-crosschain/build/main/src/types";
-import qs from "qs";
-import axiosRetry from "axios-retry";
-import axios, { AxiosRequestConfig } from "axios";
-import { decrypt as pwdDecrypt } from "../../utils/password.encryption";
-import { getContractInst } from "../../sol/contract";
-import { Contract, ContractOptions } from "web3-eth-contract";
-import { contractList, CONTRACT_NAME, NETWORK_LIST } from "../../sol";
-import { Transaction as Tx } from "@ethereumjs/tx";
+// nucypher-core must be 0.2.0
+// import {
+//   generateKFrags,
+//   Signer as NucypherCoreSigner,
+//   VerifiedKeyFrag,
+// } from "@nucypher/nucypher-core";
+
+import { generateKFrags, Signer as NucypherCoreSigner, VerifiedKeyFrag, EncryptedTreasureMap, HRAC, TreasureMap, TreasureMapBuilder} from '../../nucypher-core-wasm-bin'
+
+
+import { getPorterUrl } from './porter'
+import { getWeb3Provider } from '../../chainnet/api/web3Provider'
+import { GetUrsulasResponse, Ursula } from '@nulink_network/nulink-ts-app-test/build/main/src/characters/porter'
+import { PreEnactedPolicy } from '@nulink_network/nulink-ts-app-test/build/main/src/policies/policy'
+import { MultiPreEnactedPolicy } from '@nulink_network/nulink-ts-app-test/build/main/src/policies/multi.policy'
+
+import { RevocationKit } from '@nulink_network/nulink-ts-app-test/build/main/src/kits/revocation'
+import { getWeb3, toCanonicalAddress } from '../../hdwallet/api'
+import { toBytes, zip, toEpoch } from '@nulink_network/nulink-ts-app-test/build/main/src/utils'
+import { SubscriptionManagerAgent } from '@nulink_network/nulink-ts-app-test/build/main/src/agents/subscription-manager'
+import Web3 from 'web3'
+import { getCurrentNetworkKey, getSettingsData } from '../../chainnet'
+import { BigNumber } from 'ethers'
+import { ChecksumAddress } from '@nulink_network/nulink-ts-app-test/build/main/src/types'
+import qs from 'qs'
+import axiosRetry from 'axios-retry'
+import axios, { AxiosRequestConfig } from 'axios'
+import { decrypt as pwdDecrypt } from '../../utils/password.encryption'
+import { getContractInst } from '../../sol/contract'
+import { Contract, ContractOptions } from 'web3-eth-contract'
+import { contractList, CONTRACT_NAME, NETWORK_LIST } from '../../sol'
+import { Transaction as Tx } from '@ethereumjs/tx'
 // import {  Common, Chain} from '@ethereumjs/common'
-import Common from "ethereumjs-common";
+import Common from 'ethereumjs-common'
 //https://github.com/ethereumjs/ethereumjs-common
-import { TransactionReceipt } from "web3-core";
-import {
-  InsufficientBalanceError,
-  PolicyHasBeenActivedOnChain,
-} from "../../utils/exception";
-import { GAS_LIMIT_FACTOR, GAS_PRICE_FACTOR } from "../../chainnet/config";
-import { DecimalToInteger } from "../../utils/math";
-import Erc20TokenABI from "../../sol/abi/Erc20.json";
-import AwaitLock from "await-lock";
-import { isBlank } from "../../utils/null";
-import sleep from "await-sleep";
-import { getTransactionNonceLock } from "../../utils/transaction";
-import { CrossChain } from "@bnb-chain/greenfield-chain-sdk/dist/esm/api/crosschain";
-import { type GasInfo } from "../types";
+import { TransactionReceipt } from 'web3-core'
+import { InsufficientBalanceError, PolicyHasBeenActivedOnChain } from '../../utils/exception'
+import { GAS_LIMIT_FACTOR, GAS_PRICE_FACTOR } from '../../chainnet/config'
+import { DecimalToInteger } from '../../utils/math'
+import Erc20TokenABI from '../../sol/abi/Erc20.json'
+import AwaitLock from 'await-lock'
+import { isBlank } from '../../utils/null'
+import sleep from 'await-sleep'
+import { getTransactionNonceLock } from '../../utils/transaction'
+// import { CrossChain } from "@bnb-chain/greenfield-chain-sdk/dist/esm/api/crosschain";
+import { type GasInfo } from '../types'
 
 // import assert from "assert-ts";
+
 
 
 //Adapter code for nucypher-ts  Note Bob, Enrico's Encrypted PK SK is the same as Verify PK SK.  Alice verify PK can use encrypted PK.  In Nucypher-TS, Alice encryption key uses the public and private key pair generated by label, which is the policy public key for us.
@@ -91,19 +91,14 @@ export const makeAlice = async (
   porterUri?: string,
   provider?: Web3Provider
 ): Promise<Alice> => {
-  const privateKeyString = pwdDecrypt(
-    account.encryptedKeyPair._privateKey,
-    true
-  );
+  const privateKeyString = pwdDecrypt(account.encryptedKeyPair._privateKey, true)
 
   // notice: bacause the Alice import from nucypher-ts, so you  must be use the nucypher-ts's SecretKey PublicKey , not use the nucypher-core's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
-  const secretKey: NucypherTsSecretKey = NucypherTsSecretKey.fromBytes(
-    privateKeyBuffer(privateKeyString)
-  );
+  const secretKey: NucypherTsSecretKey = NucypherTsSecretKey.fromBytes(privateKeyBuffer(privateKeyString))
 
-  provider = (provider || (await getWeb3Provider(account as any))) as Web3Provider;
+  provider = (provider || (await getWeb3Provider(account as any))) as Web3Provider
 
-  porterUri = (porterUri || (await getPorterUrl())) as string;
+  porterUri = (porterUri || (await getPorterUrl())) as string
 
   // globalThis.Alice = Alice;
   // globalThis.SecretKey = NucypherTsSecretKey;
@@ -113,8 +108,8 @@ export const makeAlice = async (
   // globalThis.porterUri = porterUri;
 
   // notice: bacause the Alice import from nucypher-ts, so you  must be use the nucypher-ts's SecretKey PublicKey , not use the nucypher-core's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
-  return Alice.fromSecretKey({ porterUri }, secretKey, provider);
-};
+  return Alice.fromSecretKey({ porterUri }, secretKey, provider)
+}
 
 // "@nucypher/nucypher-ts": "^0.7.0",  must be this version
 
@@ -124,18 +119,10 @@ export const createChainPolicy = async (
   rawParameters: BlockchainPolicyParameters,
   strategy: Strategy
 ): Promise<BlockchainPolicy> => {
-  const { bob, label, threshold, shares, startDate, endDate } =
-    await validatePolicyParameters(alice, rawParameters);
-  const { delegatingKey, verifiedKFrags } = aliceGenerateKFrags(
-    alice,
-    bob,
-    strategy,
-    threshold,
-    shares
-  );
+  const { bob, label, threshold, shares, startDate, endDate } = await validatePolicyParameters(alice, rawParameters)
+  const { delegatingKey, verifiedKFrags } = aliceGenerateKFrags(alice, bob, strategy, threshold, shares)
 
-
-  const { chainId } = await alice.web3Provider.provider.getNetwork();
+  const { chainId } = await alice.web3Provider.provider.getNetwork()
 
   return new BlockchainPolicy(
     alice,
@@ -147,48 +134,40 @@ export const createChainPolicy = async (
     shares,
     startDate,
     endDate,
-    chainId,
-  );
-};
+    chainId
+  )
+}
 
 //Create multiple on-chain policys
 export const createMultiChainPolicy = async (
   alice: Alice,
   rawParameters: MultiBlockchainPolicyParameters,
-  strategys: Strategy []
+  strategys: Strategy[]
 ): Promise<MultiBlockchainPolicy> => {
-  const multiBlockchainPolicyParameters  =
-  await validateMultiPolicyParameters(alice, rawParameters);
+  const multiBlockchainPolicyParameters = await validateMultiPolicyParameters(alice, rawParameters)
 
-  const delegatingKeys: NucypherTsPublicKey [] = [];
-  const verifiedKFragsArray: Array<VerifiedKeyFrag[]> = [];
+  const delegatingKeys: NucypherTsPublicKey[] = []
+  const verifiedKFragsArray: Array<VerifiedKeyFrag[]> = []
   for (let index = 0; index < multiBlockchainPolicyParameters.bobs.length; index++) {
-    const bob = multiBlockchainPolicyParameters.bobs[index];
-    const threshold = multiBlockchainPolicyParameters.thresholds[index];
-    const shares = multiBlockchainPolicyParameters.shares[index];
-    const strategy = strategys[index];
+    const bob = multiBlockchainPolicyParameters.bobs[index]
+    const threshold = multiBlockchainPolicyParameters.thresholds[index]
+    const shares = multiBlockchainPolicyParameters.shares[index]
+    const strategy = strategys[index]
     //delegatingKey: policy public key
-    const { delegatingKey, verifiedKFrags } = aliceGenerateKFrags(
-      alice,
-      bob,
-      strategy,
-      threshold,
-      shares
-    );
+    const { delegatingKey, verifiedKFrags } = aliceGenerateKFrags(alice, bob, strategy, threshold, shares)
 
-    delegatingKeys.push(delegatingKey);
-    verifiedKFragsArray.push(verifiedKFrags);
+    delegatingKeys.push(delegatingKey)
+    verifiedKFragsArray.push(verifiedKFrags)
   }
 
+  const bobs = multiBlockchainPolicyParameters.bobs
+  const labels = multiBlockchainPolicyParameters.labels
+  const thresholds = multiBlockchainPolicyParameters.thresholds
+  const shares = multiBlockchainPolicyParameters.shares
+  const startDates = multiBlockchainPolicyParameters.startDates
+  const endDates = multiBlockchainPolicyParameters.endDates
 
-  const bobs = multiBlockchainPolicyParameters.bobs;
-  const labels = multiBlockchainPolicyParameters.labels;
-  const thresholds = multiBlockchainPolicyParameters.thresholds;
-  const shares = multiBlockchainPolicyParameters.shares;
-  const startDates = multiBlockchainPolicyParameters.startDates;
-  const endDates = multiBlockchainPolicyParameters.endDates;
-  
-  const { chainId } = await alice.web3Provider.provider.getNetwork();
+  const { chainId } = await alice.web3Provider.provider.getNetwork()
 
   return new MultiBlockchainPolicy(
     alice,
@@ -200,12 +179,12 @@ export const createMultiChainPolicy = async (
     shares,
     startDates,
     endDates,
-    chainId,
-  );
-};
+    chainId
+  )
+}
 
 export class BlockchainPolicy {
-  public readonly hrac: CrossChainHRAC;
+  public readonly hrac: CrossChainHRAC
 
   constructor(
     private readonly publisher: Alice,
@@ -217,39 +196,30 @@ export class BlockchainPolicy {
     private readonly shares: number,
     private readonly startDate: Date,
     private readonly endDate: Date,
-    private readonly chainId: number,
+    private readonly chainId: number
   ) {
     //reference: https://github.com/nucypher/nucypher-ts-demo/blob/main/src/characters.ts
     // notice: bacause the HRAC import from nucypher-core, so you  must be use the nucypher-core's SecretKey PublicKey , not use the nucypher-ts's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
-    const publisherVerifyingKey = NucypherCore.PublicKey.fromBytes(
-      this.publisher.verifyingKey.toBytes()
-    );
-    const bobVerifyingKey = NucypherCore.PublicKey.fromBytes(
-      this.bob.verifyingKey.toBytes()
-    );
-    const hrac = new HRAC(
-      publisherVerifyingKey,
-      bobVerifyingKey,
-      toBytes(this.label)
-    );
-    console.log("hrac label:", this.label);
+    const publisherVerifyingKey = NucypherCore.PublicKey.fromBytes(this.publisher.verifyingKey.toBytes())
+    const bobVerifyingKey = NucypherCore.PublicKey.fromBytes(this.bob.verifyingKey.toBytes())
+    const hrac = new HRAC(publisherVerifyingKey, bobVerifyingKey, toBytes(this.label))
+    console.log('hrac label:', this.label)
 
-    this.hrac = new CrossChainHRAC(hrac, chainId);
-
+    this.hrac = new CrossChainHRAC(hrac, chainId)
   }
 
   public async estimateCreatePolicyGas(
     publisher: Alice,
-    gasPrice: BigNumber = BigNumber.from("0") //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
+    gasPrice: BigNumber = BigNumber.from('0') //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
   ): Promise<GasInfo> {
     //return gasFee =  estimatedGas(gasUsed or gasLimit) * gasPrice
-    const startTimestamp = toEpoch(this.startDate);
-    const endTimestamp = toEpoch(this.endDate);
-    const ownerAddress = await publisher.web3Provider.getAddress();
+    const startTimestamp = toEpoch(this.startDate)
+    const endTimestamp = toEpoch(this.endDate)
+    const ownerAddress = await publisher.web3Provider.getAddress()
 
-    const curNetwork: NETWORK_LIST = await getCurrentNetworkKey();
+    const curNetwork: NETWORK_LIST = await getCurrentNetworkKey()
 
-    let value: BigNumber = BigNumber.from("100"); //bsc testnet Contract error, value must be greater than 0
+    let value: BigNumber = BigNumber.from('100') //bsc testnet Contract error, value must be greater than 0
     if (![NETWORK_LIST.Horus, NETWORK_LIST.HorusMainNet].includes(curNetwork)) {
       //The sidechain does not have an NLK. It is necessary to convert to the base currency (such as Matic). The value of the transfer needs to be calculated by calling getPolicysCost.
       value = await SubscriptionManagerAgent.getPolicyCost(
@@ -257,64 +227,54 @@ export class BlockchainPolicy {
         this.shares,
         startTimestamp,
         endTimestamp
-      );
+      )
     }
 
     try {
-      const gasUsedAmounts =
-        await SubscriptionManagerAgent.estimateGasByCreatePolicy(
-          publisher.web3Provider,
-          value,
-          this.hrac.toBytes(),
-          this.shares,
-          startTimestamp,
-          endTimestamp,
-          ownerAddress
-        );
+      const gasUsedAmounts = await SubscriptionManagerAgent.estimateGasByCreatePolicy(
+        publisher.web3Provider,
+        value,
+        this.hrac.toBytes(),
+        this.shares,
+        startTimestamp,
+        endTimestamp,
+        ownerAddress
+      )
 
-      const web3: Web3 = await getWeb3();
+      const web3: Web3 = await getWeb3()
 
-      const [GAS_PRICE_FACTOR_LEFT, GAS_PRICE_FACTOR_RIGHT] =
-        DecimalToInteger(GAS_PRICE_FACTOR);
+      const [GAS_PRICE_FACTOR_LEFT, GAS_PRICE_FACTOR_RIGHT] = DecimalToInteger(GAS_PRICE_FACTOR)
 
       //estimatedGas * gasPrice * factor
-      if (gasPrice.lte(BigNumber.from("0"))) {
+      if (gasPrice.lte(BigNumber.from('0'))) {
         // the gasPrice is obtained in real time
-        gasPrice = BigNumber.from(await web3.eth.getGasPrice());
-        gasPrice = gasPrice
-          .mul(GAS_PRICE_FACTOR_LEFT)
-          .div(GAS_PRICE_FACTOR_RIGHT);
+        gasPrice = BigNumber.from(await web3.eth.getGasPrice())
+        gasPrice = gasPrice.mul(GAS_PRICE_FACTOR_LEFT).div(GAS_PRICE_FACTOR_RIGHT)
       } else {
         //If the gasPrice is manually set, the GAS_PRICE_FACTOR is not set
       }
 
-      const [GAS_LIMIT_FACTOR_LEFT, GAS_LIMIT_FACTOR_RIGHT] =
-        DecimalToInteger(GAS_LIMIT_FACTOR);
+      const [GAS_LIMIT_FACTOR_LEFT, GAS_LIMIT_FACTOR_RIGHT] = DecimalToInteger(GAS_LIMIT_FACTOR)
 
       //estimatedGas * gasPrice * factor
-      const newGasUsedAmounts = gasUsedAmounts
-        .mul(GAS_LIMIT_FACTOR_LEFT)
-        .div(GAS_LIMIT_FACTOR_RIGHT);
+      const newGasUsedAmounts = gasUsedAmounts.mul(GAS_LIMIT_FACTOR_LEFT).div(GAS_LIMIT_FACTOR_RIGHT)
 
-      const gasFeeInWei = newGasUsedAmounts.mul(gasPrice);
+      const gasFeeInWei = newGasUsedAmounts.mul(gasPrice)
 
       const gasInfo: GasInfo = {
         gasPrice: gasPrice,
         gasLimit: newGasUsedAmounts,
-        gasFee: gasFeeInWei,
-      };
+        gasFee: gasFeeInWei
+      }
 
-      return gasInfo;
+      return gasInfo
     } catch (error: any) {
-      const error_info: string = error?.message || error;
-      if (
-        typeof error_info === "string" &&
-        error_info?.toLowerCase()?.includes("policy is currently active")
-      ) {
+      const error_info: string = error?.message || error
+      if (typeof error_info === 'string' && error_info?.toLowerCase()?.includes('policy is currently active')) {
         //The policy has been created successfully, and there is no need to created again
-        throw new PolicyHasBeenActivedOnChain("Policy is currently active");
+        throw new PolicyHasBeenActivedOnChain('Policy is currently active')
       } else {
-        throw error;
+        throw error
       }
     }
   }
@@ -322,44 +282,29 @@ export class BlockchainPolicy {
   public async enact(
     ursulas: Ursula[],
     waitReceipt = true,
-    gasUsedAmount?: BigNumber, 
+    gasUsedAmount?: BigNumber,
     gasPrice?: BigNumber
   ): Promise<EnactedPolicy> {
-    const preEnacted = await this.generatePreEnactedPolicy(ursulas);
-    return await preEnacted.enact(
-      this.publisher,
-      waitReceipt,
-      gasUsedAmount,
-      gasPrice
-    );
+    const preEnacted = await this.generatePreEnactedPolicy(ursulas)
+    return await preEnacted.enact(this.publisher, waitReceipt, gasUsedAmount, gasPrice)
   }
 
-  public async generatePreEnactedPolicy(
-    ursulas: Ursula[]
-  ): Promise<PreEnactedPolicy> {
-    const treasureMap = this.makeTreasureMap(ursulas, this.verifiedKFrags);
-    const encryptedTreasureMap = this.encryptTreasureMap(treasureMap);
+  public async generatePreEnactedPolicy(ursulas: Ursula[]): Promise<PreEnactedPolicy> {
+    const treasureMap = this.makeTreasureMap(ursulas, this.verifiedKFrags)
+    const encryptedTreasureMap = this.encryptTreasureMap(treasureMap)
 
     //reference: https://github.com/nucypher/nucypher-ts-demo/blob/main/src/characters.ts
     // notice: bacause the RevocationKit use the nucypher-core's Signer, so you  must be use the nucypher-core's Signer , not use the nucypher-ts's Signer (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
 
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    const nucypherSecretKey: NucypherCore.SecretKey =
-      NucypherCore.SecretKey.fromBytes(
-        (
-          (this.publisher as any).keyring.secretKey as NucypherTsSecretKey
-        ).toSecretBytes()
-      );
-    const nucypherCoreSigner: NucypherCore.Signer = new NucypherCore.Signer(
-      nucypherSecretKey
-    );
+    const nucypherSecretKey: NucypherCore.SecretKey = NucypherCore.SecretKey.fromBytes(
+      ((this.publisher as any).keyring.secretKey as NucypherTsSecretKey).toSecretBytes()
+    )
+    const nucypherCoreSigner: NucypherCore.Signer = new NucypherCore.Signer(nucypherSecretKey)
 
-    const revocationKit = new RevocationKit(
-      treasureMap,
-      /* this.publisher.signer */ nucypherCoreSigner
-    );
+    const revocationKit = new RevocationKit(treasureMap, /* this.publisher.signer */ nucypherCoreSigner)
 
-    const { chainId } = await this.publisher.web3Provider.provider.getNetwork();
+    const { chainId } = await this.publisher.web3Provider.provider.getNetwork()
 
     return new PreEnactedPolicy(
       this.hrac,
@@ -370,81 +315,55 @@ export class BlockchainPolicy {
       this.publisher.verifyingKey.toBytes(),
       this.shares,
       this.startDate,
-      this.endDate,
-    );
+      this.endDate
+    )
   }
 
-  private makeTreasureMap(
-    ursulas: Ursula[],
-    verifiedKFrags: VerifiedKeyFrag[]
-  ): TreasureMap {
+  private makeTreasureMap(ursulas: Ursula[], verifiedKFrags: VerifiedKeyFrag[]): TreasureMap {
     // reference: https://github.com/nucypher/nucypher-ts-demo/blob/main/src/characters.ts
     // notice: bacause the TreasureMapBuilder import from nucypher-core, so you  must be use the nucypher-core's SecretKey PublicKey , not use the nucypher-ts's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
-    const nucypherCoreDelegatingKey = NucypherCore.PublicKey.fromBytes(
-      this.delegatingKey.toBytes()
-    );
+    const nucypherCoreDelegatingKey = NucypherCore.PublicKey.fromBytes(this.delegatingKey.toBytes())
 
     // notice: bacause the TreasureMapBuilder import from nucypher-core, so you  must be use the nucypher-core's SecretKey PublicKey , not use the nucypher-ts's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
     // so we must be the signer type of NucypherCore.Signer
 
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    const nucypherSecretKey: NucypherCore.SecretKey =
-      NucypherCore.SecretKey.fromBytes(
-        (
-          (this.publisher as any).keyring.secretKey as NucypherTsSecretKey
-        ).toSecretBytes()
-      );
-    const nucypherCoreSigner: NucypherCore.Signer = new NucypherCore.Signer(
-      nucypherSecretKey
-    );
+    const nucypherSecretKey: NucypherCore.SecretKey = NucypherCore.SecretKey.fromBytes(
+      ((this.publisher as any).keyring.secretKey as NucypherTsSecretKey).toSecretBytes()
+    )
+    const nucypherCoreSigner: NucypherCore.Signer = new NucypherCore.Signer(nucypherSecretKey)
 
     const builder = new TreasureMapBuilder(
       /* this.publisher.signer */ nucypherCoreSigner,
       this.hrac.hrac,
       nucypherCoreDelegatingKey,
       this.threshold
-    );
+    )
     zip(ursulas, verifiedKFrags).forEach(([ursula, kFrag]) => {
-      const ursulaAddress = toCanonicalAddress(ursula.checksumAddress);
+      const ursulaAddress = toCanonicalAddress(ursula.checksumAddress)
       //reference: https://github.com/nucypher/nucypher-ts-demo/blob/main/src/characters.ts
       // notice: bacause the build(TreasureMapBuilder) import from nucypher-core, so you  must be use the nucypher-core's SecretKey PublicKey , not use the nucypher-ts's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
-      const ursulaEncryptingKey = NucypherCore.PublicKey.fromBytes(
-        ursula.encryptingKey.toBytes()
-      );
-      builder.addKfrag(
-        ursulaAddress,
-        /* ursula.encryptingKey */ ursulaEncryptingKey,
-        kFrag
-      );
-    });
-    return builder.build();
+      const ursulaEncryptingKey = NucypherCore.PublicKey.fromBytes(ursula.encryptingKey.toBytes())
+      builder.addKfrag(ursulaAddress, /* ursula.encryptingKey */ ursulaEncryptingKey, kFrag)
+    })
+    return builder.build()
   }
 
   private encryptTreasureMap(treasureMap: TreasureMap): EncryptedTreasureMap {
     //reference: https://github.com/nucypher/nucypher-ts-demo/blob/main/src/characters.ts
     // notice: bacause the TreasureMapBuilder import from nucypher-core, so you  must be use the nucypher-core's SecretKey PublicKey , not use the nucypher-ts's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
-    const nucypherCoreBobDelegatingKey = NucypherCore.PublicKey.fromBytes(
-      this.bob.decryptingKey.toBytes()
-    );
+    const nucypherCoreBobDelegatingKey = NucypherCore.PublicKey.fromBytes(this.bob.decryptingKey.toBytes())
 
     // notice: bacause the TreasureMapBuilder import from nucypher-core, so you  must be use the nucypher-core's SecretKey PublicKey , not use the nucypher-ts's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
     // so we must be the signer type of NucypherCore.Signer
 
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    const nucypherSecretKey: NucypherCore.SecretKey =
-      NucypherCore.SecretKey.fromBytes(
-        (
-          (this.publisher as any).keyring.secretKey as NucypherTsSecretKey
-        ).toSecretBytes()
-      );
-    const nucypherCoreSigner: NucypherCore.Signer = new NucypherCore.Signer(
-      nucypherSecretKey
-    );
+    const nucypherSecretKey: NucypherCore.SecretKey = NucypherCore.SecretKey.fromBytes(
+      ((this.publisher as any).keyring.secretKey as NucypherTsSecretKey).toSecretBytes()
+    )
+    const nucypherCoreSigner: NucypherCore.Signer = new NucypherCore.Signer(nucypherSecretKey)
 
-    return treasureMap.encrypt(
-      nucypherCoreSigner,
-      nucypherCoreBobDelegatingKey
-    );
+    return treasureMap.encrypt(nucypherCoreSigner, nucypherCoreBobDelegatingKey)
   }
 }
 
@@ -455,65 +374,50 @@ const aliceGenerateKFrags = (
   threshold: number,
   shares: number
 ): {
-  delegatingKey: NucypherCore.PublicKey;
-  verifiedKFrags: VerifiedKeyFrag[];
+  delegatingKey: NucypherCore.PublicKey
+  verifiedKFrags: VerifiedKeyFrag[]
 } => {
   // notice: bacause the generateKFrags import from nucypher-core, so you  must be use the nucypher-core's SecretKey PublicKey , not use the nucypher-ts's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
   // so we must be the signer type of NucypherCore.Signer
 
   // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-  const nucypherSecretKey: NucypherCore.SecretKey =
-    NucypherCore.SecretKey.fromBytes(
-      ((alice as any).keyring.secretKey as NucypherTsSecretKey).toSecretBytes()
-    );
-  const nucypherCoreSigner: NucypherCore.Signer = new NucypherCore.Signer(
-    nucypherSecretKey
-  );
+  const nucypherSecretKey: NucypherCore.SecretKey = NucypherCore.SecretKey.fromBytes(
+    ((alice as any).keyring.secretKey as NucypherTsSecretKey).toSecretBytes()
+  )
+  const nucypherCoreSigner: NucypherCore.Signer = new NucypherCore.Signer(nucypherSecretKey)
 
   // notice: bacause the generateKFrags import from nucypher-core, so you  must be use the nucypher-core's SecretKey PublicKey , not use the nucypher-ts's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
   // so we must be use the signer type of NucypherCore.Signer
-  return keyringGenerateKFrags(
-    bob.decryptingKey,
-    /* alice.signer */ nucypherCoreSigner,
-    strategy,
-    threshold,
-    shares
-  );
-};
+  return keyringGenerateKFrags(bob.decryptingKey, /* alice.signer */ nucypherCoreSigner, strategy, threshold, shares)
+}
 
 const validatePolicyParameters = async (
   alice: Alice,
   rawParams: BlockchainPolicyParameters
 ): Promise<BlockchainPolicyParameters> => {
-  const startDate = rawParams.startDate ?? new Date();
-  const { endDate, threshold, shares } = rawParams;
+  const startDate = rawParams.startDate ?? new Date()
+  const { endDate, threshold, shares } = rawParams
   // Validate raw parameters
   if (threshold > shares) {
-    throw new Error(
-      `Threshold must not exceed the number of shares: ${threshold} > ${shares}`
-    );
+    throw new Error(`Threshold must not exceed the number of shares: ${threshold} > ${shares}`)
   }
 
   if (endDate < new Date(Date.now())) {
-    throw new Error(`The end date must be set to a future date: ${endDate}).`);
+    throw new Error(`The end date must be set to a future date: ${endDate}).`)
   }
 
   if (startDate > endDate) {
-    throw new Error(
-      `Start date must occur before the end date: ${startDate} > ${endDate}).`
-    );
+    throw new Error(`Start date must occur before the end date: ${startDate} > ${endDate}).`)
   }
 
-  const blockNumber = await alice.web3Provider.provider.getBlockNumber();
-  const block = await alice.web3Provider.provider.getBlock(blockNumber);
-  const blockTime = new Date(block.timestamp * 1000);
+  const blockNumber = await alice.web3Provider.provider.getBlockNumber()
+  const block = await alice.web3Provider.provider.getBlock(blockNumber)
+  const blockTime = new Date(block.timestamp * 1000)
   if (endDate < blockTime) {
-    throw new Error(
-      `The end date must be set to a future date, ${endDate} is earlier than block time ${blockTime}).`
-    );
+    throw new Error(`The end date must be set to a future date, ${endDate} is earlier than block time ${blockTime}).`)
   }
-  return { ...rawParams, startDate };
-};
+  return { ...rawParams, startDate }
+}
 
 const keyringGenerateKFrags = (
   receivingKey: NucypherTsPublicKey,
@@ -522,27 +426,23 @@ const keyringGenerateKFrags = (
   threshold: number,
   shares: number
 ): {
-  delegatingKey: NucypherTsPublicKey;
-  verifiedKFrags: VerifiedKeyFrag[];
+  delegatingKey: NucypherTsPublicKey
+  verifiedKFrags: VerifiedKeyFrag[]
 } => {
   //const delegatingSecretKey = this.getSecretKeyFromLabel(label);
 
-  const skBuffer = privateKeyBuffer(
-    pwdDecrypt(strategy.strategyKeyPair._privateKey, true)
-  );
+  const skBuffer = privateKeyBuffer(pwdDecrypt(strategy.strategyKeyPair._privateKey, true))
 
   //reference: https://github.com/nucypher/nucypher-ts-demo/blob/main/src/characters.ts
   // notice: bacause the generateKFrags import from nucypher-core, so you  must be use the nucypher-core's SecretKey PublicKey , not use the nucypher-ts's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
 
   // const delegatingSecretKey: NucypherTsSecretKey = NucypherTsSecretKey.fromBytes(skBuffer);
-  const delegatingSecretKey: NucypherCore.SecretKey =
-    NucypherCore.SecretKey.fromBytes(skBuffer);
-  const delegatingKey: NucypherCore.PublicKey = delegatingSecretKey.publicKey();
+  const delegatingSecretKey: NucypherCore.SecretKey = NucypherCore.SecretKey.fromBytes(skBuffer)
+  const delegatingKey: NucypherCore.PublicKey = delegatingSecretKey.publicKey()
 
   // notice: bacause the generateKFrags import from nucypher-core, so you  must be use the nucypher-core's SecretKey PublicKey , not use the nucypher-ts's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
   // so we must be convert the receivingKey(NucypherTsPublicKey) to the NucypherCore.PublicKey
-  const NucypherCoreReceivingKey: NucypherCore.PublicKey =
-    NucypherCore.PublicKey.fromBytes(receivingKey.toBytes());
+  const NucypherCoreReceivingKey: NucypherCore.PublicKey = NucypherCore.PublicKey.fromBytes(receivingKey.toBytes())
 
   // notice: bacause the generateKFrags import from nucypher-core, so you  must be use the nucypher-core's SecretKey PublicKey , not use the nucypher-ts's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
   // so we must be use the signer type of NucypherCore.Signer
@@ -555,43 +455,37 @@ const keyringGenerateKFrags = (
     shares,
     false,
     false
-  );
-  console.log("keyringGenerateKFrags after generateKFrags");
+  )
+  console.log('keyringGenerateKFrags after generateKFrags')
   return {
     delegatingKey,
-    verifiedKFrags,
-  };
-};
+    verifiedKFrags
+  }
+}
 
 export class MultiBlockchainPolicy {
-  public readonly hracs: CrossChainHRAC [];
+  public readonly hracs: CrossChainHRAC[]
 
   constructor(
     private readonly publisher: Alice,
-    private readonly labels: string [],
-    private bobs: RemoteBob [],
+    private readonly labels: string[],
+    private bobs: RemoteBob[],
     private verifiedKFragsArray: Array<VerifiedKeyFrag[]>, //multi `kfrags`    const arrayPush: Array<number[]> = [[1,2], [2, 3, 4]];
-    private delegatingKeys: NucypherTsPublicKey [], //policy public key
-    private readonly thresholds: number [],
-    private readonly shares: number [],
-    private readonly startDates: Date [],
-    private readonly endDates: Date [],
-    private readonly chainId: number,
+    private delegatingKeys: NucypherTsPublicKey[], //policy public key
+    private readonly thresholds: number[],
+    private readonly shares: number[],
+    private readonly startDates: Date[],
+    private readonly endDates: Date[],
+    private readonly chainId: number
   ) {
-
-    this.hracs = [];
+    this.hracs = []
     for (let index = 0; index < labels.length; index++) {
-      const label = labels[index];
-      const bob = this.bobs[index];
-      const hrac = new HRAC(
-        this.publisher.verifyingKey,
-        bob.verifyingKey,
-        toBytes(label)
-      );
-      
-      this.hracs.push(new CrossChainHRAC(hrac, chainId));
-    }
+      const label = labels[index]
+      const bob = this.bobs[index]
+      const hrac = new HRAC(this.publisher.verifyingKey, bob.verifyingKey, toBytes(label))
 
+      this.hracs.push(new CrossChainHRAC(hrac, chainId))
+    }
   }
 
   public async enact(
@@ -600,29 +494,21 @@ export class MultiBlockchainPolicy {
     gasUsedAmount?: BigNumber,
     gasPrice?: BigNumber
   ): Promise<MultiEnactedPolicy> {
-    const preEnacted: MultiPreEnactedPolicy =
-      await this.generatePreEnactedPolicy(ursulasArray);
-    return await preEnacted.enact(
-      this.publisher,
-      waitReceipt,
-      gasUsedAmount,
-      gasPrice
-    );
+    const preEnacted: MultiPreEnactedPolicy = await this.generatePreEnactedPolicy(ursulasArray)
+    return await preEnacted.enact(this.publisher, waitReceipt, gasUsedAmount, gasPrice)
   }
 
   public async estimateCreatePolicysGas(
     publisher: Alice,
-    gasPrice: BigNumber = BigNumber.from("0") //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
+    gasPrice: BigNumber = BigNumber.from('0') //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
   ): Promise<GasInfo> {
-    const startTimestamps = this.startDates.map((startDate) =>
-      toEpoch(startDate)
-    );
-    const endTimestamps = this.endDates.map((endDate) => toEpoch(endDate));
-    const ownerAddress = await publisher.web3Provider.getAddress();
+    const startTimestamps = this.startDates.map((startDate) => toEpoch(startDate))
+    const endTimestamps = this.endDates.map((endDate) => toEpoch(endDate))
+    const ownerAddress = await publisher.web3Provider.getAddress()
 
-    const curNetwork: NETWORK_LIST = await getCurrentNetworkKey();
+    const curNetwork: NETWORK_LIST = await getCurrentNetworkKey()
 
-    let value: BigNumber = BigNumber.from("100"); //bsc testnet Contract error, value must be greater than 0
+    let value: BigNumber = BigNumber.from('100') //bsc testnet Contract error, value must be greater than 0
     if (![NETWORK_LIST.Horus, NETWORK_LIST.HorusMainNet].includes(curNetwork)) {
       //The sidechain does not have an NLK. It is necessary to convert to the base currency (such as Matic). The value of the transfer needs to be calculated by calling getPolicysCost.
       value = await SubscriptionManagerAgent.getPolicysCost(
@@ -630,85 +516,77 @@ export class MultiBlockchainPolicy {
         this.shares,
         startTimestamps,
         endTimestamps
-      );
+      )
     }
 
-    console.log("estimateCreatePolicysGas => hracs: ", this.hracs.map((hrac) => hexlify(hrac.toBytes())));
+    console.log(
+      'estimateCreatePolicysGas => hracs: ',
+      this.hracs.map((hrac) => hexlify(hrac.toBytes()))
+    )
 
     try {
-      const gasUsedAmounts =
-        await SubscriptionManagerAgent.estimateGasByCreatePolicys(
-          publisher.web3Provider,
-          value,
-          this.hracs.map((hrac) => hrac.toBytes()),
-          this.shares,
-          startTimestamps,
-          endTimestamps,
-          ownerAddress
-        );
+      const gasUsedAmounts = await SubscriptionManagerAgent.estimateGasByCreatePolicys(
+        publisher.web3Provider,
+        value,
+        this.hracs.map((hrac) => hrac.toBytes()),
+        this.shares,
+        startTimestamps,
+        endTimestamps,
+        ownerAddress
+      )
 
-      const web3: Web3 = await getWeb3();
+      const web3: Web3 = await getWeb3()
 
-      const [GAS_PRICE_FACTOR_LEFT, GAS_PRICE_FACTOR_RIGHT] =
-        DecimalToInteger(GAS_PRICE_FACTOR);
+      const [GAS_PRICE_FACTOR_LEFT, GAS_PRICE_FACTOR_RIGHT] = DecimalToInteger(GAS_PRICE_FACTOR)
 
       //estimatedGas * gasPrice * factor
-      if (gasPrice.lte(BigNumber.from("0"))) {
+      if (gasPrice.lte(BigNumber.from('0'))) {
         // the gasPrice is obtained in real time
-        gasPrice = BigNumber.from(await web3.eth.getGasPrice());
-        gasPrice = gasPrice
-          .mul(GAS_PRICE_FACTOR_LEFT)
-          .div(GAS_PRICE_FACTOR_RIGHT);
+        gasPrice = BigNumber.from(await web3.eth.getGasPrice())
+        gasPrice = gasPrice.mul(GAS_PRICE_FACTOR_LEFT).div(GAS_PRICE_FACTOR_RIGHT)
       } else {
         //If the gasPrice is manually set, the GAS_PRICE_FACTOR is not set
       }
 
-      const [GAS_LIMIT_FACTOR_LEFT, GAS_LIMIT_FACTOR_RIGHT] =
-        DecimalToInteger(GAS_LIMIT_FACTOR);
+      const [GAS_LIMIT_FACTOR_LEFT, GAS_LIMIT_FACTOR_RIGHT] = DecimalToInteger(GAS_LIMIT_FACTOR)
 
-      const newGasUsedAmounts = gasUsedAmounts
-        .mul(GAS_LIMIT_FACTOR_LEFT)
-        .div(GAS_LIMIT_FACTOR_RIGHT);
+      const newGasUsedAmounts = gasUsedAmounts.mul(GAS_LIMIT_FACTOR_LEFT).div(GAS_LIMIT_FACTOR_RIGHT)
 
-      const gasFeeInWei = newGasUsedAmounts.mul(gasPrice);
+      const gasFeeInWei = newGasUsedAmounts.mul(gasPrice)
 
       const gasInfo: GasInfo = {
         gasPrice: gasPrice,
         gasLimit: newGasUsedAmounts,
-        gasFee: gasFeeInWei,
-      };
+        gasFee: gasFeeInWei
+      }
 
-      return gasInfo;
+      return gasInfo
     } catch (error: any) {
-      const error_info: string = error?.message || error;
-      if (
-        typeof error_info === "string" &&
-        error_info?.toLowerCase()?.includes("policy is currently active")
-      ) {
+      const error_info: string = error?.message || error
+      if (typeof error_info === 'string' && error_info?.toLowerCase()?.includes('policy is currently active')) {
         //The policy has been created successfully, and there is no need to created again
-        throw new PolicyHasBeenActivedOnChain("Policy is currently active");
+        throw new PolicyHasBeenActivedOnChain('Policy is currently active')
       } else {
-        throw error;
+        throw error
       }
     }
   }
 
   public async generatePreEnactedPolicy(
-    ursulasArray: Array<Ursula[]>, // multi `Ursula[]`,  The order must correspond to the order of the labels array.
+    ursulasArray: Array<Ursula[]> // multi `Ursula[]`,  The order must correspond to the order of the labels array.
   ): Promise<MultiPreEnactedPolicy> {
-
-    const encryptedTreasureMaps: EncryptedTreasureMap [] = [];
-    const revocationKits: RevocationKit [] = [];
+    const encryptedTreasureMaps: EncryptedTreasureMap[] = []
+    const revocationKits: RevocationKit[] = []
     for (let index = 0; index < this.bobs.length; index++) {
-      const ursulas = ursulasArray[index];
-      const treasureMap = this.makeTreasureMap(ursulas, this.verifiedKFragsArray[index], index);
-      const encryptedTreasureMap = this.encryptTreasureMap(treasureMap,index);
-      const revocationKit = new RevocationKit(treasureMap, this.publisher.signer);
-      encryptedTreasureMaps.push(encryptedTreasureMap);
-      revocationKits.push(revocationKit);
+      const ursulas = ursulasArray[index]
+      const treasureMap = this.makeTreasureMap(ursulas, this.verifiedKFragsArray[index], index)
+      const encryptedTreasureMap = this.encryptTreasureMap(treasureMap, index)
+      const revocationKit = new RevocationKit(treasureMap, this.publisher.signer)
+      encryptedTreasureMaps.push(encryptedTreasureMap)
+      revocationKits.push(revocationKit)
     }
 
-    const { chainId } = await this.publisher.web3Provider.provider.getNetwork();
+    const { chainId } = await this.publisher.web3Provider.provider.getNetwork()
 
     return new MultiPreEnactedPolicy(
       this.hracs,
@@ -719,48 +597,36 @@ export class MultiBlockchainPolicy {
       this.publisher.verifyingKey.toBytes(),
       this.shares,
       this.startDates,
-      this.endDates,
-    );
+      this.endDates
+    )
   }
 
-  private makeTreasureMap(
-    ursulas: Ursula[],
-    verifiedKFrags: VerifiedKeyFrag[],
-    index: number
-  ): TreasureMap {
+  private makeTreasureMap(ursulas: Ursula[], verifiedKFrags: VerifiedKeyFrag[], index: number): TreasureMap {
     const builder = new TreasureMapBuilder(
       this.publisher.signer,
       this.hracs[index].hrac,
       this.delegatingKeys[index],
       this.thresholds[index]
-    );
+    )
     zip(ursulas, verifiedKFrags).forEach(([ursula, kFrag]) => {
-      const ursulaAddress = toCanonicalAddress(ursula.checksumAddress);
-      builder.addKfrag(ursulaAddress, ursula.encryptingKey, kFrag);
-    });
-    return builder.build();
+      const ursulaAddress = toCanonicalAddress(ursula.checksumAddress)
+      builder.addKfrag(ursulaAddress, ursula.encryptingKey, kFrag)
+    })
+    return builder.build()
   }
 
-  private encryptTreasureMap(
-    treasureMap: TreasureMap,
-    index: number
-  ): EncryptedTreasureMap {
-    return treasureMap.encrypt(
-      this.publisher.signer,
-      this.bobs[index].decryptingKey
-    );
+  private encryptTreasureMap(treasureMap: TreasureMap, index: number): EncryptedTreasureMap {
+    return treasureMap.encrypt(this.publisher.signer, this.bobs[index].decryptingKey)
   }
 }
-
 
 const validateMultiPolicyParameters = async (
   alice: Alice,
   rawParams: MultiBlockchainPolicyParameters
 ): Promise<MultiBlockchainPolicyParameters> => {
-
-  const blockNumber = await alice.web3Provider.provider.getBlockNumber();
-  const block = await alice.web3Provider.provider.getBlock(blockNumber);
-  const blockTime = new Date(block.timestamp * 1000);
+  const blockNumber = await alice.web3Provider.provider.getBlockNumber()
+  const block = await alice.web3Provider.provider.getBlock(blockNumber)
+  const blockTime = new Date(block.timestamp * 1000)
 
   const multiBlockchainPolicyParameters: MultiBlockchainPolicyParameters = {
     bobs: rawParams.bobs,
@@ -768,82 +634,65 @@ const validateMultiPolicyParameters = async (
     thresholds: rawParams.thresholds,
     shares: rawParams.shares,
     startDates: rawParams.startDates,
-    endDates: rawParams.endDates,
-  };  
+    endDates: rawParams.endDates
+  }
 
   for (let index = 0; index < rawParams.startDates.length; index++) {
-
-    const startDate = rawParams.startDates[index] ?? new Date();
-    const endDate = rawParams.endDates[index];
-    const threshold = rawParams.thresholds[index];
-    const shares = rawParams.shares[index];
+    const startDate = rawParams.startDates[index] ?? new Date()
+    const endDate = rawParams.endDates[index]
+    const threshold = rawParams.thresholds[index]
+    const shares = rawParams.shares[index]
 
     // Validate raw parameters
     if (threshold > shares) {
-      throw new Error(
-        `Threshold must not exceed the number of shares: ${threshold} > ${shares}`
-      );
+      throw new Error(`Threshold must not exceed the number of shares: ${threshold} > ${shares}`)
     }
 
     if (endDate < new Date(Date.now())) {
-      throw new Error(`The end date must be set to a future date: ${endDate}).`);
+      throw new Error(`The end date must be set to a future date: ${endDate}).`)
     }
 
     if (startDate > endDate) {
-      throw new Error(
-        `Start date must occur before the end date: ${startDate} > ${endDate}).`
-      );
+      throw new Error(`Start date must occur before the end date: ${startDate} > ${endDate}).`)
     }
 
-    
     if (endDate < blockTime) {
-      throw new Error(
-        `The end date must be set to a future date, ${endDate} is earlier than block time ${blockTime}).`
-      );
+      throw new Error(`The end date must be set to a future date, ${endDate} is earlier than block time ${blockTime}).`)
     }
-    multiBlockchainPolicyParameters.startDates[index] = startDate;
+    multiBlockchainPolicyParameters.startDates[index] = startDate
   }
 
-  return multiBlockchainPolicyParameters;
-};
+  return multiBlockchainPolicyParameters
+}
 
-
-export const getBalance = async (
-  accountAddress: string
-): Promise<BigNumber> => {
+export const getBalance = async (accountAddress: string): Promise<BigNumber> => {
   // Get account balance from Ethereum  42 bits account address
 
   // let account = web3.eth.accounts.privateKeyToAccount('0x2cc983ef0f52c5e430b780e53da10ee2bb5cbb5be922a63016fc39d4d52ce962');
   //web3.eth.accounts.wallet.add(account);
 
-  const data = await getSettingsData();
-  const web3 = new Web3(data.web3RpcUrl);
+  const data = await getSettingsData()
+  const web3 = new Web3(data.web3RpcUrl)
 
   const address = Web3.utils.toChecksumAddress(
     accountAddress //"0xDCf049D1a3770f17a64E622D88BFb67c67Ee0e01"
-  );
+  )
 
   //wei can use  BigNumber.from(), ether can use ethers.utils.parseEther(), because the BigNumber.from("1.2"), the number can't not be decimals (x.x)
-  const balanceWei: string = await web3.eth.getBalance(address);
-  return BigNumber.from(balanceWei);
-};
+  const balanceWei: string = await web3.eth.getBalance(address)
+  return BigNumber.from(balanceWei)
+}
 
 export const estimateApproveNLKGas = async (
   account: Account,
   nlkInWei: BigNumber,
   serverFee: BigNumber, // wei
-  gasPrice: BigNumber = BigNumber.from("0") //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
+  gasPrice: BigNumber = BigNumber.from('0') //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
 ): Promise<GasInfo> => {
   //approveNLKEstimateGas
-  const gasInfo = await approveNLK(
-    account,
-    nlkInWei,
-    serverFee,
-    true,
-    gasPrice
-  );
-  return gasInfo as GasInfo;
-};
+  const gasInfo = await approveNLK(account, nlkInWei, serverFee, true, gasPrice)
+  return gasInfo as GasInfo
+}
 
 /**
  *
@@ -859,26 +708,25 @@ export const approveNLK = async (
   approveNlkInWei: BigNumber,
   serverFeeNlkInWei: BigNumber, //nlk
   estimateGas = false,
-  gasPrice: BigNumber = BigNumber.from("0") //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
+  gasPrice: BigNumber = BigNumber.from('0') //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
 ): Promise<string | GasInfo> => {
   // Allow my nlk to be deducted from the subscriptManager contract
 
-  const web3: Web3 = await getWeb3();
+  const web3: Web3 = await getWeb3()
   // const account = web3.eth.accounts.privateKeyToAccount('0x2cc983ef0f52c5e430b780e53da10ee2bb5cbb5be922a63016fc39d4d52ce962');
   //web3.eth.accounts.wallet.add(account);
 
-  const [GAS_PRICE_FACTOR_LEFT, GAS_PRICE_FACTOR_RIGHT] =
-    DecimalToInteger(GAS_PRICE_FACTOR);
+  const [GAS_PRICE_FACTOR_LEFT, GAS_PRICE_FACTOR_RIGHT] = DecimalToInteger(GAS_PRICE_FACTOR)
 
-  if (gasPrice.lte(BigNumber.from("0"))) {
+  if (gasPrice.lte(BigNumber.from('0'))) {
     // the gasPrice is obtained in real time
-    gasPrice = BigNumber.from(await web3.eth.getGasPrice());
-    gasPrice = gasPrice.mul(GAS_PRICE_FACTOR_LEFT).div(GAS_PRICE_FACTOR_RIGHT);
+    gasPrice = BigNumber.from(await web3.eth.getGasPrice())
+    gasPrice = gasPrice.mul(GAS_PRICE_FACTOR_LEFT).div(GAS_PRICE_FACTOR_RIGHT)
   } else {
     //If the gasPrice is manually set, the GAS_PRICE_FACTOR is not set
   }
 
-  const curNetwork: NETWORK_LIST = await getCurrentNetworkKey();
+  const curNetwork: NETWORK_LIST = await getCurrentNetworkKey()
 
   if (![NETWORK_LIST.Horus, NETWORK_LIST.HorusMainNet].includes(curNetwork)) {
     //if (curNetwork !== NETWORK_LIST.Horus) {
@@ -886,30 +734,27 @@ export const approveNLK = async (
     if (!isBlank(estimateGas)) {
       const gasInfo: GasInfo = {
         gasPrice: gasPrice,
-        gasLimit: BigNumber.from("0"),
-        gasFee: BigNumber.from("0"),
-      };
-      return gasInfo;
+        gasLimit: BigNumber.from('0'),
+        gasFee: BigNumber.from('0')
+      }
+      return gasInfo
     }
-    return "";
+    return ''
   }
 
-  const nlkBalanceEthers = (await account.getNLKBalance()) as string;
+  const nlkBalanceEthers = (await account.getNLKBalance()) as string
 
-  const nlkBalanceWei = BigNumber.from(Web3.utils.toWei(nlkBalanceEthers));
+  const nlkBalanceWei = BigNumber.from(Web3.utils.toWei(nlkBalanceEthers))
 
-  console.log("nlkBalanceWei is ", nlkBalanceWei.toString());
-  console.log("serverFeeInWei is ", serverFeeNlkInWei.toString());
+  console.log('nlkBalanceWei is ', nlkBalanceWei.toString())
+  console.log('serverFeeInWei is ', serverFeeNlkInWei.toString())
 
-  const serverFeeNlkInEthers = Web3.utils.fromWei(
-    serverFeeNlkInWei.toString(),
-    "ether"
-  );
+  const serverFeeNlkInEthers = Web3.utils.fromWei(serverFeeNlkInWei.toString(), 'ether')
 
-  console.log("nlkBalanceEthers is ", nlkBalanceEthers);
-  console.log("nlkEthers is ", serverFeeNlkInEthers);
+  console.log('nlkBalanceEthers is ', nlkBalanceEthers)
+  console.log('nlkEthers is ', serverFeeNlkInEthers)
 
-  const chainConfigInfo = await getSettingsData();
+  const chainConfigInfo = await getSettingsData()
 
   if (serverFeeNlkInWei.gt(nlkBalanceWei)) {
     // Message.error(
@@ -917,66 +762,50 @@ export const approveNLK = async (
     // );
     console.log(
       `approveNLK - Insufficient balance ${nlkBalanceEthers} ${chainConfigInfo.nlkTokenSymbol} to cover payment ${serverFeeNlkInEthers} ${chainConfigInfo.nlkTokenSymbol}`
-    );
+    )
     throw new InsufficientBalanceError(
       `approveNLK - Insufficient balance ${nlkBalanceEthers} ${chainConfigInfo.nlkTokenSymbol} to cover payment ${serverFeeNlkInEthers} ${chainConfigInfo.nlkTokenSymbol}`
-    );
+    )
   }
 
-  const nuLinkTokenContractInfo: any =
-    contractList[curNetwork][CONTRACT_NAME.nuLinkToken];
-  const subScriptionManagerContractInfo: any =
-    contractList[curNetwork][CONTRACT_NAME.subScriptManager];
+  const nuLinkTokenContractInfo: any = contractList[curNetwork][CONTRACT_NAME.nuLinkToken]
+  const subScriptionManagerContractInfo: any = contractList[curNetwork][CONTRACT_NAME.subScriptManager]
 
-  const nuLinkTokenContract: Contract = await getContractInst(
-    CONTRACT_NAME.nuLinkToken
-  );
+  const nuLinkTokenContract: Contract = await getContractInst(CONTRACT_NAME.nuLinkToken)
 
   const aliceAddress = Web3.utils.toChecksumAddress(
     account.address //"0xDCf049D1a3770f17a64E622D88BFb67c67Ee0e01"
-  );
+  )
 
-  const subScriptionManagerAddress = Web3.utils.toChecksumAddress(
-    subScriptionManagerContractInfo.address
-  );
-  const nuLinkTokenAddress = Web3.utils.toChecksumAddress(
-    nuLinkTokenContractInfo.address
-  );
+  const subScriptionManagerAddress = Web3.utils.toChecksumAddress(subScriptionManagerContractInfo.address)
+  const nuLinkTokenAddress = Web3.utils.toChecksumAddress(nuLinkTokenContractInfo.address)
 
   //owner, spender,
   const allowanceWei: string = await nuLinkTokenContract.methods
     .allowance(aliceAddress, subScriptionManagerAddress)
-    .call();
+    .call()
 
   if (BigNumber.from(allowanceWei).gte(approveNlkInWei)) {
-    console.log(
-      `allowance is ${allowanceWei}, to approve is ${approveNlkInWei}`
-    );
-    return "";
+    console.log(`allowance is ${allowanceWei}, to approve is ${approveNlkInWei}`)
+    return ''
   }
 
   //privateKeyString startwith 0x and total length is 66( include the length of 0x)
-  const privateKeyStringHex = pwdDecrypt(
-    account.encryptedKeyPair._privateKey,
-    true
-  );
-  const privateKeyString = privateKeyStringHex.substring(2, 66);
+  const privateKeyStringHex = pwdDecrypt(account.encryptedKeyPair._privateKey, true)
+  const privateKeyString = privateKeyStringHex.substring(2, 66)
   // console.log(privateKeyString);
 
   const _encodedABI = nuLinkTokenContract.methods
-    .approve(
-      subScriptionManagerAddress,
-      web3.utils.toBN(approveNlkInWei.toHexString())
-    )
-    .encodeABI();
+    .approve(subScriptionManagerAddress, web3.utils.toBN(approveNlkInWei.toHexString()))
+    .encodeABI()
 
-  const transactionNonceLock: AwaitLock = await getTransactionNonceLock(aliceAddress);
-  await transactionNonceLock.acquireAsync();
+  const transactionNonceLock: AwaitLock = await getTransactionNonceLock(aliceAddress)
+  await transactionNonceLock.acquireAsync()
 
   try {
-    const txCount = await web3.eth.getTransactionCount(aliceAddress);
+    const txCount = await web3.eth.getTransactionCount(aliceAddress)
 
-    const gasPriceHex = web3.utils.toHex(gasPrice.toString());
+    const gasPriceHex = web3.utils.toHex(gasPrice.toString())
 
     const rawTx = {
       nonce: web3.utils.toHex(txCount),
@@ -984,8 +813,8 @@ export const approveNLK = async (
       to: nuLinkTokenAddress,
       data: _encodedABI,
       gasPrice: gasPriceHex, //'0x09184e72a000',
-      value: "0x0",
-    };
+      value: '0x0'
+    }
 
     // const networkId = await web3.eth.net.getId();
 
@@ -1004,58 +833,50 @@ export const approveNLK = async (
     // }
 
     // gasUsed => estimateGas return gasUsed is the gasLimit (How many gas were used,that is the amount of gas), not the gasFee (gasLimit * gasPrice)
-    const gasUsed: number = await web3.eth.estimateGas(rawTx as any);
-    console.log(`approveNLK estimateGas Used is ${gasUsed} wei`);
+    const gasUsed: number = await web3.eth.estimateGas(rawTx as any)
+    console.log(`approveNLK estimateGas Used is ${gasUsed} wei`)
 
-    const [GAS_LIMIT_FACTOR_LEFT, GAS_LIMIT_FACTOR_RIGHT] =
-      DecimalToInteger(GAS_LIMIT_FACTOR);
+    const [GAS_LIMIT_FACTOR_LEFT, GAS_LIMIT_FACTOR_RIGHT] = DecimalToInteger(GAS_LIMIT_FACTOR)
 
     //estimatedGas * gasPrice * factor
-    const gasLimit = BigNumber.from(gasUsed)
-      .mul(GAS_LIMIT_FACTOR_LEFT)
-      .div(GAS_LIMIT_FACTOR_RIGHT);
-    const gasFeeInWei = gasLimit.mul(BigNumber.from(gasPrice));
+    const gasLimit = BigNumber.from(gasUsed).mul(GAS_LIMIT_FACTOR_LEFT).div(GAS_LIMIT_FACTOR_RIGHT)
+    const gasFeeInWei = gasLimit.mul(BigNumber.from(gasPrice))
 
-    console.log(`approveNLK estimate GasFee is ${gasFeeInWei} wei`);
+    console.log(`approveNLK estimate GasFee is ${gasFeeInWei} wei`)
     // eslint-disable-next-line no-extra-boolean-cast
     if (!!estimateGas) {
       const gasInfo: GasInfo = {
         gasPrice: gasPrice,
         gasLimit: gasLimit,
-        gasFee: gasFeeInWei,
-      };
-      return gasInfo;
+        gasFee: gasFeeInWei
+      }
+      return gasInfo
     }
 
-    const tokenBalanceEthers = (await account.balance()) as string; //tbnb
-    const tokenBalanceWei = Web3.utils.toWei(tokenBalanceEthers);
+    const tokenBalanceEthers = (await account.balance()) as string //tbnb
+    const tokenBalanceWei = Web3.utils.toWei(tokenBalanceEthers)
 
     // tokenBalanceWei must be great than gasUsed(gasLimit) * gitPrice
     // Calculate if the balance is enough to cover the fee of approveNLK
     if (BigNumber.from(tokenBalanceWei).lt(gasFeeInWei)) {
       const tips = `Insufficient balance ${tokenBalanceEthers} ${
         chainConfigInfo.tokenSymbol
-      } for approveNLK ${Web3.utils.fromWei(gasFeeInWei.toString(), "ether")} ${
-        chainConfigInfo.tokenSymbol
-      }`;
+      } for approveNLK ${Web3.utils.fromWei(gasFeeInWei.toString(), 'ether')} ${chainConfigInfo.tokenSymbol}`
 
       // Message.error(tips);
-      console.error(tips);
-      throw new InsufficientBalanceError(tips);
+      console.error(tips)
+      throw new InsufficientBalanceError(tips)
     }
 
     // https://ethereum.stackexchange.com/questions/87606/ethereumjs-tx-returned-error-invalid-sender
 
     //estimatedGas * factor
-    rawTx["gasLimit"] = web3.utils.toHex(gasLimit.toString()); // '0x2710'  The amount of gas
+    rawTx['gasLimit'] = web3.utils.toHex(gasLimit.toString()) // '0x2710'  The amount of gas
 
-    const signedTx = await web3.eth.accounts.signTransaction(
-      rawTx as any,
-      privateKeyString
-    ); // privateKeyString is the length of 64
+    const signedTx = await web3.eth.accounts.signTransaction(rawTx as any, privateKeyString) // privateKeyString is the length of 64
     const txReceipt: TransactionReceipt = await web3.eth.sendSignedTransaction(
       signedTx.rawTransaction as string /* "0x" + serializedTx */
-    );
+    )
     /*
     {
       raw: '0xf86c808504a817c800825208943535353535353535353535353535353535353535880de0b6b3a76400008025a04f4c17305743700648bc4f6cd3038ec6f6af0df73e31757007b7f59df7bee88da07e1941b264348e80c78c4027afc65a87b0a5e43e86742b8ca0823584c6788fd0',
@@ -1073,41 +894,36 @@ export const approveNLK = async (
       }
     */
 
-    console.log("txReceipt:", txReceipt);
+    console.log('txReceipt:', txReceipt)
 
     //wait txReceipt
     console.log(
       // eslint-disable-next-line no-extra-boolean-cast
-      !!txReceipt.transactionHash
-        ? `In approveNLK: no need approve`
-        : `txHash: ${txReceipt.transactionHash}`
-    );
-    
+      !!txReceipt.transactionHash ? `In approveNLK: no need approve` : `txHash: ${txReceipt.transactionHash}`
+    )
+
     // eslint-disable-next-line no-extra-boolean-cast
     if (!!txReceipt.transactionHash) {
-      let receipt: any = null;
-      
+      let receipt: any = null
+
       do {
-        receipt = await web3.eth.getTransactionReceipt(
-          txReceipt.transactionHash
-        );
+        receipt = await web3.eth.getTransactionReceipt(txReceipt.transactionHash)
         //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
-        await sleep(2000);
-      } while (isBlank(receipt));
-      
+        await sleep(2000)
+      } while (isBlank(receipt))
     }
 
-    return txReceipt.transactionHash;
+    return txReceipt.transactionHash
   } finally {
-    transactionNonceLock.release();
+    transactionNonceLock.release()
   }
-};
+}
 
-axios.defaults.timeout = 100000; //default `0` (Never timeout)
+axios.defaults.timeout = 100000 //default `0` (Never timeout)
 axiosRetry(axios, {
   retries: 5,
   retryDelay: (retryCount) => {
-    return /* retryCount * */ 1000;
+    return /* retryCount * */ 1000
   },
   retryCondition: (error) => {
     // if retry condition is not specified, by default idempotent requests are retried
@@ -1118,12 +934,12 @@ axiosRetry(axios, {
     // }
     // return false;
     try {
-      return [502, 503, 504].includes(error?.response?.status as number);
+      return [502, 503, 504].includes(error?.response?.status as number)
     } catch (e) {
-      return false;
+      return false
     }
-  },
-});
+  }
+})
 
 export const getUrsulas = async (
   porterUri: string,
@@ -1134,13 +950,13 @@ export const getUrsulas = async (
   const params = {
     quantity,
     exclude_ursulas: excludeUrsulas,
-    include_ursulas: includeUrsulas,
-  };
+    include_ursulas: includeUrsulas
+  }
   const resp = await axios.get(`${porterUri}/get_ursulas`, {
     params,
     paramsSerializer: (params) => {
-      return qs.stringify(params, { arrayFormat: "comma" });
-    },
-  });
-  return resp;
-};
+      return qs.stringify(params, { arrayFormat: 'comma' })
+    }
+  })
+  return resp
+}
