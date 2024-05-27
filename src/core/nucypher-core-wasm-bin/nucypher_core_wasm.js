@@ -1,5 +1,5 @@
 import { TextDecoder } from '@polkadot/x-textdecoder';
-import nucypherCoreWasm from './nucypher_core_wasm.json';
+import nucypherCoreWasm from './nucypher_core_bytes';
 import { Buffer } from 'buffer'
 
 let imports = {};
