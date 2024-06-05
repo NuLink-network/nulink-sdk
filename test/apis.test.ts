@@ -188,7 +188,7 @@ export const run = async () => {
 
   //Bob requests permission to use the data/file for 7 days
   try {
-    await pre.applyForDataUsagePermission([applyDataId], accountBob, 7)
+    await pre.applyForDataUsagePermission(applyDataId, accountBob, 7)
   } catch (e) {
     console.log('bob apply data/file failed', e)
     assert(false)
@@ -224,7 +224,7 @@ export const run = async () => {
 
   //Bob apply data/file for usage again. The application period is three days, less than the previous seven days
   try {
-    await pre.applyForDataUsagePermission([applyDataId], accountBob, 3)
+    await pre.applyForDataUsagePermission(applyDataId, accountBob, 3)
   } catch (e) {
     console.log('bob reapply data/file failed', e)
     assert(false)

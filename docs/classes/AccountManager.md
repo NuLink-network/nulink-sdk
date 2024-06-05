@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.23](../README.md) / [Modules](../modules.md) / AccountManager
+[NuLink SDK - v0.5.27](../README.md) / [Modules](../modules.md) / AccountManager
 
 # Class: AccountManager
 
@@ -57,7 +57,7 @@ IJson.constructor
 
 #### Defined in
 
-[core/hdwallet/api/account.ts:1013](https://github.com/NuLink-network/nulink-sdk/blob/1365126/src/core/hdwallet/api/account.ts#L1013)
+[core/hdwallet/api/account.ts:1013](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/core/hdwallet/api/account.ts#L1013)
 
 ## Methods
 
@@ -81,7 +81,7 @@ AccountManager
 
 #### Defined in
 
-[core/hdwallet/api/account.ts:1381](https://github.com/NuLink-network/nulink-sdk/blob/1365126/src/core/hdwallet/api/account.ts#L1381)
+[core/hdwallet/api/account.ts:1381](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/core/hdwallet/api/account.ts#L1381)
 
 ___
 
@@ -116,7 +116,7 @@ IJson.load
 
 #### Defined in
 
-[core/hdwallet/api/account.ts:1425](https://github.com/NuLink-network/nulink-sdk/blob/1365126/src/core/hdwallet/api/account.ts#L1425)
+[core/hdwallet/api/account.ts:1425](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/core/hdwallet/api/account.ts#L1425)
 
 ___
 
@@ -140,7 +140,7 @@ AccountManager
 
 #### Defined in
 
-[core/hdwallet/api/account.ts:1463](https://github.com/NuLink-network/nulink-sdk/blob/1365126/src/core/hdwallet/api/account.ts#L1463)
+[core/hdwallet/api/account.ts:1463](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/core/hdwallet/api/account.ts#L1463)
 
 ___
 
@@ -162,7 +162,7 @@ AccountManager
 
 #### Defined in
 
-[core/hdwallet/api/account.ts:1047](https://github.com/NuLink-network/nulink-sdk/blob/1365126/src/core/hdwallet/api/account.ts#L1047)
+[core/hdwallet/api/account.ts:1047](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/core/hdwallet/api/account.ts#L1047)
 
 ___
 
@@ -184,7 +184,7 @@ AccountManager
 
 #### Defined in
 
-[core/hdwallet/api/account.ts:1056](https://github.com/NuLink-network/nulink-sdk/blob/1365126/src/core/hdwallet/api/account.ts#L1056)
+[core/hdwallet/api/account.ts:1056](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/core/hdwallet/api/account.ts#L1056)
 
 ___
 
@@ -206,7 +206,7 @@ AccountManager
 
 #### Defined in
 
-[core/hdwallet/api/account.ts:1067](https://github.com/NuLink-network/nulink-sdk/blob/1365126/src/core/hdwallet/api/account.ts#L1067)
+[core/hdwallet/api/account.ts:1067](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/core/hdwallet/api/account.ts#L1067)
 
 ___
 
@@ -235,7 +235,7 @@ AccountManager
 
 #### Defined in
 
-[core/hdwallet/api/account.ts:1125](https://github.com/NuLink-network/nulink-sdk/blob/1365126/src/core/hdwallet/api/account.ts#L1125)
+[core/hdwallet/api/account.ts:1125](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/core/hdwallet/api/account.ts#L1125)
 
 ___
 
@@ -263,7 +263,7 @@ AccountManager
 
 #### Defined in
 
-[core/hdwallet/api/account.ts:1169](https://github.com/NuLink-network/nulink-sdk/blob/1365126/src/core/hdwallet/api/account.ts#L1169)
+[core/hdwallet/api/account.ts:1169](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/core/hdwallet/api/account.ts#L1169)
 
 ___
 
@@ -291,7 +291,7 @@ AccountManager
 
 #### Defined in
 
-[core/hdwallet/api/account.ts:1308](https://github.com/NuLink-network/nulink-sdk/blob/1365126/src/core/hdwallet/api/account.ts#L1308)
+[core/hdwallet/api/account.ts:1308](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/core/hdwallet/api/account.ts#L1308)
 
 ___
 
@@ -319,7 +319,7 @@ AccountManager
 
 #### Defined in
 
-[core/hdwallet/api/account.ts:1318](https://github.com/NuLink-network/nulink-sdk/blob/1365126/src/core/hdwallet/api/account.ts#L1318)
+[core/hdwallet/api/account.ts:1318](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/core/hdwallet/api/account.ts#L1318)
 
 ___
 
@@ -342,7 +342,7 @@ AccountManager
 
 #### Defined in
 
-[core/hdwallet/api/account.ts:1336](https://github.com/NuLink-network/nulink-sdk/blob/1365126/src/core/hdwallet/api/account.ts#L1336)
+[core/hdwallet/api/account.ts:1336](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/core/hdwallet/api/account.ts#L1336)
 
 ___
 
@@ -364,7 +364,7 @@ AccountManager
 
 #### Defined in
 
-[core/hdwallet/api/account.ts:1346](https://github.com/NuLink-network/nulink-sdk/blob/1365126/src/core/hdwallet/api/account.ts#L1346)
+[core/hdwallet/api/account.ts:1346](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/core/hdwallet/api/account.ts#L1346)
 
 ___
 
@@ -386,7 +386,7 @@ AccountManager
 
 #### Defined in
 
-[core/hdwallet/api/account.ts:1363](https://github.com/NuLink-network/nulink-sdk/blob/1365126/src/core/hdwallet/api/account.ts#L1363)
+[core/hdwallet/api/account.ts:1363](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/core/hdwallet/api/account.ts#L1363)
 
 ___
 
@@ -412,7 +412,7 @@ IJson.dump
 
 #### Defined in
 
-[core/hdwallet/api/account.ts:1401](https://github.com/NuLink-network/nulink-sdk/blob/1365126/src/core/hdwallet/api/account.ts#L1401)
+[core/hdwallet/api/account.ts:1401](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/core/hdwallet/api/account.ts#L1401)
 
 ___
 
@@ -432,7 +432,7 @@ AccountManager
 
 #### Defined in
 
-[core/hdwallet/api/account.ts:1551](https://github.com/NuLink-network/nulink-sdk/blob/1365126/src/core/hdwallet/api/account.ts#L1551)
+[core/hdwallet/api/account.ts:1551](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/core/hdwallet/api/account.ts#L1551)
 
 ___
 
@@ -454,4 +454,4 @@ AccountManager
 
 #### Defined in
 
-[core/hdwallet/api/account.ts:1561](https://github.com/NuLink-network/nulink-sdk/blob/1365126/src/core/hdwallet/api/account.ts#L1561)
+[core/hdwallet/api/account.ts:1561](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/core/hdwallet/api/account.ts#L1561)

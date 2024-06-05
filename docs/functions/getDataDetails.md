@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.23](../README.md) / [Modules](../modules.md) / getDataDetails
+[NuLink SDK - v0.5.27](../README.md) / [Modules](../modules.md) / getDataDetails
 
 # Function: getDataDetails
 
@@ -45,4 +45,4 @@ Retrieves the details of a file/data (include apply file/data info, file/data in
 
 #### Defined in
 
-[core/pre/api/workflow.ts:3230](https://github.com/NuLink-network/nulink-sdk/blob/1365126/src/core/pre/api/workflow.ts#L3230)
+[core/pre/api/workflow.ts:3289](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/core/pre/api/workflow.ts#L3289)

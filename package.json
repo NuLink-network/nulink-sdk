@@ -1,6 +1,6 @@
 {
   "name": "@nulink_network/nulink-sdk",
-  "version": "0.5.26",
+  "version": "0.5.27",
   "private": false,
   "dependencies": {
     "@bnb-chain/greenfield-chain-sdk": "^0.2.2",
@@ -9,7 +9,7 @@
     "@ethersproject/providers": "^5.7.2",
     "@ethersproject/wallet": "^5.7.0",
     "@nucypher/nucypher-core": "0.2.0",
-    "@nulink_network/nulink-ts-crosschain": "^0.6.0",
+    "@nulink_network/nulink-ts-crosschain": "^0.6.2",
     "@nulink_network/ts-indexdb": "^0.0.5",
     "@offirmo/globalthis-ponyfill": "^4.0.0",
     "@types/humps": "^2.0.2",
@@ -77,7 +77,7 @@
   },
   "main": "build/main/src/index.js",
   "typings": "build/main/src/index.d.ts",
-  "module": "build/module/src/index.js",
+  "//module": "build/module/src/index.js",
   "scripts": {
     "uml": "tsviz-cli src/ -svg diagram.svg",
     "typedoc": "node node_modules/typedoc/bin/typedoc",
@@ -85,14 +85,14 @@
     "//postbuild:module": "&& tsc-alias -p tsconfig.module.json",
     "build": "run-p build:*",
     "build:main": "rimraf build && tsc -p tsconfig.json",
-    "build:module": "rimraf build && tsc -p tsconfig.module.json",
+    "//build:module": "rimraf build && tsc -p tsconfig.module.json",
     "//build specify a configuration file": " other command && tsc --build tsconfig.dev.json",
     "////build": "cross-env GENERATE_SOURCEMAP=true  && tsc --build tsconfig.dev.json && rimraf build && webpack --stats-error-details --env RUN_ENV=dev --mode development --progress",
     "//build": "cross-env GENERATE_SOURCEMAP=true && rimraf build && webpack --stats-error-details --env RUN_ENV=dev  --mode development --progress",
     "//build:prod": "cross-env GENERATE_SOURCEMAP=false && rimraf build && yarn run build:main && webpack --stats-error-details --env RUN_ENV=prod --mode production --progress",
     "//build:dev": "cross-env GENERATE_SOURCEMAP=true && rimraf build && yarn run build:main && webpack --stats-error-details --env RUN_ENV=dev --mode development --progress",
     "npm-publish": "npm publish --access=public",
-    "//npm-unpublish": "npm unpublish @nulink_network/nulink-sdk@0.5.6 --force",
+    "//npm-unpublish": "npm unpublish @nulink_network/nulink-sdk@0.5.26 --force",
     "commit": "git-cz",
     "commitizen:initial": "commitizen init cz-conventional-changelog --save --save-exact",
     "prepare": "husky install"

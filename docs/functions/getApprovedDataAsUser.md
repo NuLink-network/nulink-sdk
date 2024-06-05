@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.23](../README.md) / [Modules](../modules.md) / getApprovedDataAsUser
+[NuLink SDK - v0.5.27](../README.md) / [Modules](../modules.md) / getApprovedDataAsUser
 
 # Function: getApprovedDataAsUser
 
@@ -40,4 +40,4 @@ The file/data applicant retrieves a list of files/data that have been approved f
 
 #### Defined in
 
-[core/pre/api/workflow.ts:1077](https://github.com/NuLink-network/nulink-sdk/blob/1365126/src/core/pre/api/workflow.ts#L1077)
+[core/pre/api/workflow.ts:1132](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/core/pre/api/workflow.ts#L1132)

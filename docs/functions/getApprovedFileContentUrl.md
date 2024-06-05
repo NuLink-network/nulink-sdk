@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.23](../README.md) / [Modules](../modules.md) / getApprovedFileContentUrl
+[NuLink SDK - v0.5.27](../README.md) / [Modules](../modules.md) / getApprovedFileContentUrl
 
 # Function: getApprovedFileContentUrl
 
@@ -31,4 +31,4 @@ ParameterError The input parameter must have the "dataId" field
 
 #### Defined in
 
-[api/pre.ts:848](https://github.com/NuLink-network/nulink-sdk/blob/1365126/src/api/pre.ts#L848)
+[api/pre.ts:848](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/api/pre.ts#L848)

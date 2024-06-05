@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.23](../README.md) / [Modules](../modules.md) / getPublishedPolicyInfos
+[NuLink SDK - v0.5.27](../README.md) / [Modules](../modules.md) / getPublishedPolicyInfos
 
 # Function: getPublishedPolicyInfos
 
@@ -48,4 +48,4 @@ UnauthorizedError get logined account failed, must be login account first
 
 #### Defined in
 
-[api/pre.ts:1016](https://github.com/NuLink-network/nulink-sdk/blob/1365126/src/api/pre.ts#L1016)
+[api/pre.ts:1016](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/api/pre.ts#L1016)

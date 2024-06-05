@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.23](../README.md) / [Modules](../modules.md) / getApprovedDataAsPublisher
+[NuLink SDK - v0.5.27](../README.md) / [Modules](../modules.md) / getApprovedDataAsPublisher
 
 # Function: getApprovedDataAsPublisher
 
@@ -40,4 +40,4 @@ get the Approved success status files/data for others to use. This account acts 
 
 #### Defined in
 
-[core/pre/api/workflow.ts:923](https://github.com/NuLink-network/nulink-sdk/blob/1365126/src/core/pre/api/workflow.ts#L923)
+[core/pre/api/workflow.ts:978](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/core/pre/api/workflow.ts#L978)

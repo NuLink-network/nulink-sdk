@@ -333,7 +333,7 @@ assert(parseInt(dataDetails["status"]) === 0); //Is not to apply for
 ```javascript
 //Bob requests permission to use the data for 7 days
 try {
-  await applyForDataUsagePermission([applyDataId], _accountBob, 7);
+  await applyForDataUsagePermission(applyDataId, _accountBob, 7);
 } catch (e) {
   console.log("bob apply data failed", e);
   assert(false);
@@ -378,7 +378,7 @@ await refusalApplicationForUseData(accountAlice, needToApprovedDataInfo["apply_i
 ```javascript
 //Bob apply file for usage again. The application period is three days, less than the previous seven days
 try {
-  await applyForDataUsagePermission([applyDataId], _accountBob, 3);
+  await applyForDataUsagePermission(applyDataId, _accountBob, 3);
 } catch (e) {
   console.log("bob reapply file failed", e);
   assert(false);

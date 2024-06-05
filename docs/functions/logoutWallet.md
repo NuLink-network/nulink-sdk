@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.23](../README.md) / [Modules](../modules.md) / logoutWallet
+[NuLink SDK - v0.5.27](../README.md) / [Modules](../modules.md) / logoutWallet
 
 # Function: logoutWallet
 
@@ -12,4 +12,4 @@ Logs out the user by clearing the local storage.
 
 #### Defined in
 
-[api/wallet.ts:234](https://github.com/NuLink-network/nulink-sdk/blob/1365126/src/api/wallet.ts#L234)
+[api/wallet.ts:234](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/api/wallet.ts#L234)

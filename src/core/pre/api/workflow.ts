@@ -737,14 +737,14 @@ return data format: {
 }
 
 /**
- * Applies for file/data usage permission for the specified files/data, This account acts as the user(Bob).
+ * Applies for files/data usage permission for the specified files/data, This account acts as the user(Bob).
  * @category Data User(Bob) Request Data
  * @param {string[]} dataIds - An array of file IDs to apply for usage permission.
  * @param {Account} account - The account that applies for the permission.
  * @param {number} usageDays - (Optional) The validity period of the application, in days. Default is 7.
  * @returns {Promise<void>}
  */
-export const applyForDataUsagePermission = async (dataIds: string[], account: Account, usageDays = 7) => {
+export const applyForDataUsagesPermission = async (dataIds: string[], account: Account, usageDays = 7) => {
   // https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E7%94%B3%E8%AF%B7%E6%96%87%E4%BB%B6%E4%BD%BF%E7%94%A8
   //TODO:  Consider returning the apply record ID
 
@@ -754,6 +754,50 @@ export const applyForDataUsagePermission = async (dataIds: string[], account: Ac
 
   const sendData: any = {
     file_ids: dataIds,
+    proposer_id: account.id,
+    account_id: account.id, //new for backend signature
+    days: usageDays
+  }
+  /*   console.log(
+    `usageDays: ${usageDays}, startMs: ${startMs}, endMs: ${endMs}, endMs-startMs:${
+      (endMs - startMs) / (1000.0 * 60 * 60 * 24)
+    }`,
+  ); */
+
+  // console.log("apply data user account", account);
+  // console.log("apply data file_ids", dataIds);
+
+  const settingsData = await getSettingsData()
+  sendData['chain_id'] = settingsData.chainId
+
+  sendData['signature'] = await signUpdateServerDataMessage(account, sendData)
+
+  const data = await serverPost('/apply/files', sendData)
+
+  return data
+}
+
+
+/**
+ * Apply for single file/data usage permission for the specified file/data, This account acts as the user(Bob).
+ * Note: Different from applying for the interface with multiple files (apply/files): 
+ *          If the policy corresponding to the document has already been applied for, it will return code: 4109, msg: "current file does not need to apply"
+ * @category Data User(Bob) Request Data
+ * @param {string} dataId - A file ID to apply for usage permission.
+ * @param {Account} account - The account that applies for the permission.
+ * @param {number} usageDays - (Optional) The validity period of the application, in days. Default is 7.
+ * @returns {Promise<void>}
+ */
+export const applyForDataUsagePermission = async (dataId: string, account: Account, usageDays = 7) => {
+  // https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E7%94%B3%E8%AF%B7%E6%96%87%E4%BB%B6%E4%BD%BF%E7%94%A8
+  //TODO:  Consider returning the apply record ID
+
+  if (usageDays <= 0) {
+    throw Error("The application file/data's validity period must be greater than 0 days")
+  }
+
+  const sendData: any = {
+    file_id: dataId,
     proposer_id: account.id,
     account_id: account.id, //new for backend signature
     days: usageDays

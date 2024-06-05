@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.23](../README.md) / [Modules](../modules.md) / getOtherShareData
+[NuLink SDK - v0.5.27](../README.md) / [Modules](../modules.md) / getOtherShareData
 
 # Function: getOtherShareData
 
@@ -43,4 +43,4 @@ Gets a list of files/data shared by others (files uploaded by the current accoun
 
 #### Defined in
 
-[core/pre/api/workflow.ts:679](https://github.com/NuLink-network/nulink-sdk/blob/1365126/src/core/pre/api/workflow.ts#L679)
+[core/pre/api/workflow.ts:690](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/core/pre/api/workflow.ts#L690)

@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.23](../README.md) / [Modules](../modules.md) / uploadDataBySelectPolicy
+[NuLink SDK - v0.5.27](../README.md) / [Modules](../modules.md) / uploadDataBySelectPolicy
 
 # Function: uploadDataBySelectPolicy
 
@@ -23,4 +23,4 @@ Uploads files/data to the server by selecting an existing policy and uploading t
 
 #### Defined in
 
-[core/pre/api/workflow.ts:459](https://github.com/NuLink-network/nulink-sdk/blob/1365126/src/core/pre/api/workflow.ts#L459)
+[core/pre/api/workflow.ts:470](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/core/pre/api/workflow.ts#L470)
