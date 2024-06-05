@@ -1,6 +1,6 @@
-[NuLink SDK - v0.5.23](README.md) / Modules
+[NuLink SDK - v0.0.9](README.md) / Modules
 
-# NuLink SDK - v0.5.23
+# NuLink SDK - v0.0.9
 
 ## Table of contents
 
@@ -126,6 +126,7 @@
 
 ### Data User(Bob) Request Data Functions
 
+- [applyForDataUsagesPermission](functions/applyForDataUsagesPermission.md)
 - [applyForDataUsagePermission](functions/applyForDataUsagePermission.md)
 - [revokePermissionApplicationOfData](functions/revokePermissionApplicationOfData.md)
 

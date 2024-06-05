@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.23](../README.md) / [Modules](../modules.md) / estimateCustomTransactionGas
+[NuLink SDK - v0.0.9](../README.md) / [Modules](../modules.md) / estimateCustomTransactionGas
 
 # Function: estimateCustomTransactionGas
 
@@ -32,4 +32,4 @@ estimateCustomTransactionGas failed exception
 
 #### Defined in
 
-[api/pre.ts:1257](https://github.com/NuLink-network/nulink-sdk/blob/1365126/src/api/pre.ts#L1257)
+[api/pre.ts:1257](https://github.com/NuLink-network/nulink-sdk/blob/66c291e/src/api/pre.ts#L1257)

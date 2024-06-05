@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.23](../README.md) / [Modules](../modules.md) / getApplyDetails
+[NuLink SDK - v0.0.9](../README.md) / [Modules](../modules.md) / getApplyDetails
 
 # Function: getApplyDetails
 
@@ -23,9 +23,9 @@ Gets the details of an application record.
                policy_label: "The label of the policy",
                policy_label_id: "The ID of the policy label",
                days: "days",
-               status: "apply status: 1 - In progress, 2 - Approved, 3 - Rejected, 4 - Under review, 5 - Expired"
+               status: "apply status: 1 - In progress, 2 - Approved, 3 - Rejected, 4 - Under review, 5 - Expired, 6 - Approve Failed"
              }
 
 #### Defined in
 
-[core/pre/api/workflow.ts:3127](https://github.com/NuLink-network/nulink-sdk/blob/1365126/src/core/pre/api/workflow.ts#L3127)
+[core/pre/api/workflow.ts:3189](https://github.com/NuLink-network/nulink-sdk/blob/66c291e/src/core/pre/api/workflow.ts#L3189)
