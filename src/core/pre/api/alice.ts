@@ -482,7 +482,15 @@ export class MultiBlockchainPolicy {
     for (let index = 0; index < labels.length; index++) {
       const label = labels[index]
       const bob = this.bobs[index]
-      const hrac = new HRAC(this.publisher.verifyingKey, bob.verifyingKey, toBytes(label))
+
+      const publisherVerifyingKey = NucypherTsPublicKey.fromBytes(
+        this.publisher.verifyingKey.toBytes()
+      );
+      const bobVerifyingKey = NucypherTsPublicKey.fromBytes(
+        bob.verifyingKey.toBytes()
+      );
+
+      const hrac = new HRAC(publisherVerifyingKey, bobVerifyingKey, toBytes(label))
 
       this.hracs.push(new CrossChainHRAC(hrac, chainId))
     }
