@@ -583,9 +583,17 @@ export class MultiBlockchainPolicy {
     for (let index = 0; index < labels.length; index++) {
       const label = labels[index];
       const bob = this.bobs[index];
+
+      const publisherVerifyingKey = NucypherCore.PublicKey.fromBytes(
+        this.publisher.verifyingKey.toBytes()
+      );
+      const bobVerifyingKey = NucypherCore.PublicKey.fromBytes(
+        bob.verifyingKey.toBytes()
+      );
+
       const hrac = new HRAC(
-        this.publisher.verifyingKey,
-        bob.verifyingKey,
+        publisherVerifyingKey,
+        bobVerifyingKey,
         toBytes(label)
       );
       
