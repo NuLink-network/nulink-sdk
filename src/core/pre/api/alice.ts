@@ -711,7 +711,16 @@ export class MultiBlockchainPolicy {
       const ursulas = ursulasArray[index];
       const treasureMap = this.makeTreasureMap(ursulas, this.verifiedKFragsArray[index], index);
       const encryptedTreasureMap = this.encryptTreasureMap(treasureMap,index);
-      const revocationKit = new RevocationKit(treasureMap, this.publisher.signer);
+      //reference: https://github.com/nucypher/nucypher-ts-demo/blob/main/src/characters.ts
+      // notice: bacause the RevocationKit use the nucypher-core's Signer, so you  must be use the nucypher-core's Signer , not use the nucypher-ts's Signer (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      const nucypherSecretKey: NucypherCore.SecretKey = NucypherCore.SecretKey.fromBytes(
+        ((this.publisher as any).keyring.secretKey as NucypherTsSecretKey).toSecretBytes()
+      )
+      const nucypherCoreSigner: NucypherCore.Signer = new NucypherCore.Signer(nucypherSecretKey)
+
+      const revocationKit = new RevocationKit(treasureMap, /* this.publisher.signer */ nucypherCoreSigner)
       encryptedTreasureMaps.push(encryptedTreasureMap);
       revocationKits.push(revocationKit);
     }
@@ -736,15 +745,31 @@ export class MultiBlockchainPolicy {
     verifiedKFrags: VerifiedKeyFrag[],
     index: number
   ): TreasureMap {
+ // reference: https://github.com/nucypher/nucypher-ts-demo/blob/main/src/characters.ts
+    // notice: bacause the TreasureMapBuilder import from nucypher-core, so you  must be use the nucypher-core's SecretKey PublicKey , not use the nucypher-ts's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
+    const nucypherCoreDelegatingKey = NucypherCore.PublicKey.fromBytes(this.delegatingKeys[index].toBytes())
+
+    // notice: bacause the TreasureMapBuilder import from nucypher-core, so you  must be use the nucypher-core's SecretKey PublicKey , not use the nucypher-ts's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
+    // so we must be the signer type of NucypherCore.Signer
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    const nucypherSecretKey: NucypherCore.SecretKey = NucypherCore.SecretKey.fromBytes(
+      ((this.publisher as any).keyring.secretKey as NucypherTsSecretKey).toSecretBytes()
+    )
+    const nucypherCoreSigner: NucypherCore.Signer = new NucypherCore.Signer(nucypherSecretKey)
+    
     const builder = new TreasureMapBuilder(
-      this.publisher.signer,
+     nucypherCoreSigner,
       this.hracs[index].hrac,
-      this.delegatingKeys[index],
+      nucypherCoreDelegatingKey,
       this.thresholds[index]
     );
     zip(ursulas, verifiedKFrags).forEach(([ursula, kFrag]) => {
       const ursulaAddress = toCanonicalAddress(ursula.checksumAddress);
-      builder.addKfrag(ursulaAddress, ursula.encryptingKey, kFrag);
+      //reference: https://github.com/nucypher/nucypher-ts-demo/blob/main/src/characters.ts
+      // notice: bacause the build(TreasureMapBuilder) import from nucypher-core, so you  must be use the nucypher-core's SecretKey PublicKey , not use the nucypher-ts's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
+      const ursulaEncryptingKey = NucypherCore.PublicKey.fromBytes(ursula.encryptingKey.toBytes())
+      builder.addKfrag(ursulaAddress, /* ursula.encryptingKey */ ursulaEncryptingKey, kFrag)
     });
     return builder.build();
   }
@@ -753,10 +778,21 @@ export class MultiBlockchainPolicy {
     treasureMap: TreasureMap,
     index: number
   ): EncryptedTreasureMap {
-    return treasureMap.encrypt(
-      this.publisher.signer,
-      this.bobs[index].decryptingKey
-    );
+    //reference: https://github.com/nucypher/nucypher-ts-demo/blob/main/src/characters.ts
+    // notice: bacause the TreasureMapBuilder import from nucypher-core, so you  must be use the nucypher-core's SecretKey PublicKey , not use the nucypher-ts's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
+    const nucypherCoreBobDelegatingKey = NucypherCore.PublicKey.fromBytes(this.bobs[index].decryptingKey.toBytes())
+
+    // notice: bacause the TreasureMapBuilder import from nucypher-core, so you  must be use the nucypher-core's SecretKey PublicKey , not use the nucypher-ts's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
+    // so we must be the signer type of NucypherCore.Signer
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    const nucypherSecretKey: NucypherCore.SecretKey = NucypherCore.SecretKey.fromBytes(
+      ((this.publisher as any).keyring.secretKey as NucypherTsSecretKey).toSecretBytes()
+    )
+    const nucypherCoreSigner: NucypherCore.Signer = new NucypherCore.Signer(nucypherSecretKey)
+
+    return treasureMap.encrypt( nucypherCoreSigner, nucypherCoreBobDelegatingKey);
+
   }
 }
 
