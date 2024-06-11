@@ -70,6 +70,9 @@
 
         console.assert(!NUSDK.isBlank(accountAlice), 'get default account Failed: accountAlice');
 
+        const mnemonic = await nuLinkHDWallet.getMnemonic(password);
+
+
         console.log('【账户对象】:', nuLinkHDWallet);
         console.log('【助记词】:', mnemonic);
         console.log('【Account Alice】:', accountAlice);
@@ -87,7 +90,7 @@
         
         debugger;
 
-        const mnemonic = await nuLinkHDWallet.getMnemonic(password);
+  
 
         // Note: We only support one account currently.
 
@@ -102,23 +105,23 @@
         //1.Alice upload file
         const fileList/*: DataInfo[]*/ = [
             {
-            label: `history-${nanoid()}.pdf`,
+            label: `history-${NUSDK.nanoid()}.pdf`,
             dataArrayBuffer: historyContent.buffer,
             },
             {
-            label: `history1-${nanoid()}.pdf`,
+            label: `history1-${NUSDK.nanoid()}.pdf`,
             dataArrayBuffer: historyContent.buffer,
             },
             {
-            label: `history2-${nanoid()}.pdf`,
+            label: `history2-${NUSDK.nanoid()}.pdf`,
             dataArrayBuffer: historyContent.buffer,
             },
             {
-            label: `history3-${nanoid()}.pdf`,
+            label: `history3-${NUSDK.nanoid()}.pdf`,
             dataArrayBuffer: historyContent.buffer,
             },
             {
-            label: `history4-${nanoid()}.pdf`,
+            label: `history4-${NUSDK.nanoid()}.pdf`,
             dataArrayBuffer: historyContent.buffer,
             },
         ];
@@ -458,7 +461,7 @@
                 _accountBob,
                 bobBeApprovedfilesInfo["file_id"]
             );
-            const fileContent/*: string */= Buffer.from(arrayBuffer).toString();
+            const fileContent/*: string */= NUSDK.Buffer.from(arrayBuffer).toString();
             console.log("fileContent: ", fileContent);
             console.log("plainText: ", plainText);
             console.assert(fileContent === plainText, "fileContent !== plainText");
