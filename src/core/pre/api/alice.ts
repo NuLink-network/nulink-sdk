@@ -9,7 +9,7 @@ import {
   MultiEnactedPolicy,
   RemoteBob,
   CrossChainHRAC
-} from '@nulink_network/nulink-ts-app-test'
+} from '@nulink_network/nulink-ts-app'
 import { hexlify, arrayify } from 'ethers/lib/utils'
 //reference: https://github.com/nucypher/nucypher-ts-demo/blob/main/src/characters.ts
 // notice: bacause the Alice import from nucypher-ts, so you  must be use the nucypher-ts's SecretKey PublicKey , not use the nucypher-core's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
@@ -17,7 +17,7 @@ import {
   PublicKey as NucypherTsPublicKey,
   SecretKey as NucypherTsSecretKey,
   Signer as NucypherTsSigner
-} from '@nulink_network/nulink-ts-app-test'
+} from '@nulink_network/nulink-ts-app'
 
 // nucypher-core must be 0.2.0
 // notice: bacause the generateKFrags import from nucypher-core, so you  must be use the nucypher-core's SecretKey PublicKey , not use the nucypher-ts's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
@@ -46,18 +46,18 @@ import { generateKFrags, Signer as NucypherCoreSigner, VerifiedKeyFrag, Encrypte
 
 import { getPorterUrl } from './porter'
 import { getWeb3Provider } from '../../chainnet/api/web3Provider'
-import { GetUrsulasResponse, Ursula } from '@nulink_network/nulink-ts-app-test/build/main/src/characters/porter'
-import { PreEnactedPolicy } from '@nulink_network/nulink-ts-app-test/build/main/src/policies/policy'
-import { MultiPreEnactedPolicy } from '@nulink_network/nulink-ts-app-test/build/main/src/policies/multi.policy'
+import { GetUrsulasResponse, Ursula } from '@nulink_network/nulink-ts-app/build/main/src/characters/porter'
+import { PreEnactedPolicy } from '@nulink_network/nulink-ts-app/build/main/src/policies/policy'
+import { MultiPreEnactedPolicy } from '@nulink_network/nulink-ts-app/build/main/src/policies/multi.policy'
 
-import { RevocationKit } from '@nulink_network/nulink-ts-app-test/build/main/src/kits/revocation'
+import { RevocationKit } from '@nulink_network/nulink-ts-app/build/main/src/kits/revocation'
 import { getWeb3, toCanonicalAddress } from '../../hdwallet/api'
-import { toBytes, zip, toEpoch } from '@nulink_network/nulink-ts-app-test/build/main/src/utils'
-import { SubscriptionManagerAgent } from '@nulink_network/nulink-ts-app-test/build/main/src/agents/subscription-manager'
+import { toBytes, zip, toEpoch } from '@nulink_network/nulink-ts-app/build/main/src/utils'
+import { SubscriptionManagerAgent } from '@nulink_network/nulink-ts-app/build/main/src/agents/subscription-manager'
 import Web3 from 'web3'
 import { getCurrentNetworkKey, getSettingsData } from '../../chainnet'
 import { BigNumber } from 'ethers'
-import { ChecksumAddress } from '@nulink_network/nulink-ts-app-test/build/main/src/types'
+import { ChecksumAddress } from '@nulink_network/nulink-ts-app/build/main/src/types'
 import qs from 'qs'
 import axiosRetry from 'axios-retry'
 import axios, { AxiosRequestConfig } from 'axios'

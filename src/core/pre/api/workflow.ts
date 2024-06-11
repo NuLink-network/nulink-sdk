@@ -22,7 +22,7 @@ import {
   MultiEnactedPolicy,
   MessageKit,
   RemoteBob
-} from '@nulink_network/nulink-ts-app-test'
+} from '@nulink_network/nulink-ts-app'
 
 // nucypher-core must be 0.2.0
 // import { EncryptedTreasureMap, HRAC } from '@nucypher/nucypher-core'
@@ -31,7 +31,7 @@ import { EncryptedTreasureMap, HRAC } from '../../nucypher-core-wasm-bin'
 //reference: https://github.com/nucypher/nucypher-ts-demo/blob/main/src/characters.ts
 // notice: bacause the encryptedMessage.decrypt( get by MessageKit) use the SecretKey import from nucypher-ts, so you  must be use the nucypher-ts's SecretKey PublicKey , not use the nucypher-core's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { PublicKey, SecretKey as NucypherTsSecretKey, CrossChainHRAC } from '@nulink_network/nulink-ts-app-test'
+import { PublicKey, SecretKey as NucypherTsSecretKey, CrossChainHRAC } from '@nulink_network/nulink-ts-app'
 
 import { encryptMessage } from './enrico'
 import { isBlank } from '../../utils/null'
@@ -42,7 +42,7 @@ import { getCurrentNetworkKey, getSettingsData } from '../../chainnet'
 import { serverGet, serverPost } from '../../servernet'
 import { nanoid } from 'nanoid'
 import { Bob, makeBob, makeRemoteBob } from './bob'
-import { Porter, Ursula } from '@nulink_network/nulink-ts-app-test/build/main/src/characters/porter'
+import { Porter, Ursula } from '@nulink_network/nulink-ts-app/build/main/src/characters/porter'
 import {
   BlockchainPolicy,
   MultiBlockchainPolicy,
@@ -57,8 +57,8 @@ import {
 
 import { BigNumber, utils } from 'ethers'
 import { ethers } from 'ethers'
-// import { SubscriptionManagerAgent } from '@nulink_network/nulink-ts-app-test/build/main/src/agents/subscription-manager'
-import { SubscriptionManagerAgent } from '@nulink_network/nulink-ts-app-test'
+// import { SubscriptionManagerAgent } from '@nulink_network/nulink-ts-app/build/main/src/agents/subscription-manager'
+import { SubscriptionManagerAgent } from '@nulink_network/nulink-ts-app'
 
 import { toEpoch } from '../../utils/format'
 import { compressPublicKeyBuffer, compressPublicKeyBuffer2, privateKeyBuffer } from '../../hdwallet/api/common'
@@ -1850,7 +1850,7 @@ const getBlockchainPolicy = async (
     ursulas = humps.camelizeKeys(ursulas)
 
     // length 66 public string to PublicKey Object
-    //now @nulink_network/nulink-ts-app-test@0.7.0 must be the version 0.7.0
+    //now @nulink_network/nulink-ts-app@0.7.0 must be the version 0.7.0
     for (const ursula of ursulas) {
       ursula.encryptingKey = PublicKey.fromBytes(compressPublicKeyBuffer2(ursula.encryptingKey))
     }
@@ -1995,7 +1995,7 @@ const getBlockchainPolicys = async (
     ursulas = humps.camelizeKeys(ursulas)
 
     // length 66 public string to PublicKey Object
-    //now @nulink_network/nulink-ts-app-test@0.7.0 must be the version 0.7.0
+    //now @nulink_network/nulink-ts-app@0.7.0 must be the version 0.7.0
     for (const ursula of ursulas) {
       ursula.encryptingKey = PublicKey.fromBytes(compressPublicKeyBuffer2(ursula.encryptingKey))
     }

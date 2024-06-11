@@ -7,7 +7,7 @@
     "@ethereumjs/tx": "^4.0.2",
     "@ethersproject/providers": "^5.7.2",
     "@ethersproject/wallet": "^5.7.0",
-    "@nulink_network/nulink-ts-app-test": "^0.0.20",
+    "@nulink_network/nulink-ts-app": "^0.0.1",
     "@offirmo/globalthis-ponyfill": "^4.0.0",
     "@polkadot/x-textdecoder": "^12.6.2",
     "@types/humps": "^2.0.2",
