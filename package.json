@@ -85,6 +85,7 @@
     "/build": "run-p build:*",
     "copy-js": "rimraf test/js-demo/nulink-sdk.js && ncp build/nulink-sdk.js test/js-demo/nulink-sdk.js",
     "build": "rimraf build && webpack && npm run copy-nucypher-core-wasm-bin && rimraf build/main && npm run copy-js",
+    "build:mauro": "rimraf build && REACT_APP_CENTRALIZED_SERVER_URL=http://test.org webpack",
     "//build:main": "rimraf build && tsc -p tsconfig.json",
     "//build:module": "rimraf build && tsc -p tsconfig.module.json",
     "//build specify a configuration file": " other command && tsc --build tsconfig.dev.json",

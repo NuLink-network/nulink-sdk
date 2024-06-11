@@ -1,6 +1,6 @@
 const path = require('path');
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
-const { experiments } = require('webpack');
+const { experiments, DefinePlugin } = require('webpack');
 
 module.exports = {
   entry: './src/index.ts', // 入口文件
@@ -52,7 +52,10 @@ module.exports = {
     ],
   },
   plugins: [
-    new NodePolyfillPlugin()
+    new NodePolyfillPlugin(),
+    new DefinePlugin({
+      'process.env.REACT_APP_CENTRALIZED_SERVER_URL': JSON.stringify(process.env.REACT_APP_CENTRALIZED_SERVER_URL)
+    })
   ],
   mode: 'production', // 设置模式为生产模式
 };
