@@ -8,8 +8,10 @@ import { networkDetails } from "../../chainnet";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import FormData from 'form-data';
 
-const username = process.env.REACT_APP_SERVER_USERNAME;
-const password = process.env.REACT_APP_SERVER_PASSWORD;
+const username = 'nulink';
+const password = 'privacyshareisgood';
+// const username = process.env.REACT_APP_SERVER_USERNAME;
+// const password = process.env.REACT_APP_SERVER_PASSWORD;
 
 export const getServerUrl = async () => {
   //return server url endsWith without "/"
