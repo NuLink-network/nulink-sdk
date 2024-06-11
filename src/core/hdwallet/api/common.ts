@@ -11,6 +11,9 @@ import {
   encrypt as pwdEncrypt,
 } from "../../utils/password.encryption";
 
+
+export { Buffer } from "buffer"; 
+
 /**
  * @internal
  */
