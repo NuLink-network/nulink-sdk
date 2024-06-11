@@ -7,3 +7,5 @@
 export * from './web3';
 export * from "./cryptography"
 export * from "./account"
+export { Buffer } from "buffer";
+export { BigNumber } from "ethers";
