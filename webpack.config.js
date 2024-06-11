@@ -8,7 +8,7 @@ module.exports = {
     filename: 'nulink-sdk.js', // 输出文件名
     publicPath: './',
     // publicPath: path.resolve(__dirname, 'dist'),
-    path: path.resolve(__dirname, 'dist'), // 输出目录
+    path: path.resolve(__dirname, 'build'), // 输出目录
     library: 'NUSDK', // 库名称
     libraryTarget: 'umd', // 打包格式
     globalObject: 'this', // 兼容node和浏览器运行
