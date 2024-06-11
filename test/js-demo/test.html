@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <button id="create">Create Wallet</button>
+</body>
+
+</html>
+<script src="./nulink-sdk.js"></script>
+
+<script>
+    console.log('【---NUSDK.setBEData----】', NUSDK.setBEData)
+
+    const password = '1'
+    let nuWallet;
+
+    const _create = async () => {
+        try {
+            return await NUSDK.createWallet(password)
+        } catch (error) {
+            console.error('【Create Wallet Error】', error)
+            return null
+        }
+    }
+
+    const test = async () => {
+        try {
+            nuWallet = await NUSDK.loadWallet(password)
+        } catch (error) {
+            nuWallet = await _create()
+        }
+
+        const mnemonic = await nuWallet.getMnemonic(password);
+
+        const accountAlice = (await NUSDK.getWalletDefaultAccount(
+            password
+        ));
+
+        console.log('【账户对象】:', nuWallet);
+        console.log('【助记词】:', mnemonic);
+        console.log('【Account Alice】:', accountAlice);
+        console.log('【Get Account Manager】', nuWallet.getAccountManager());
+        console.log("accountAlice address", accountAlice.address);
+        console.log("accountAlice addressIndex", accountAlice.addressIndex);
+        console.log("accountAlice publicKey", accountAlice.encryptedKeyPair._publicKey);
+        console.log("accountAlice privateKey", NUSDK.decrypt(accountAlice.encryptedKeyPair._privateKey, true));
+    }
+
+    document.querySelector('#create').addEventListener('click', test)
+</script>

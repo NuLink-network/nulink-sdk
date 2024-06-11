@@ -5,7 +5,7 @@ const { experiments } = require('webpack');
 module.exports = {
   entry: './src/index.ts', // 入口文件
   output: {
-    filename: 'my-sdk.js', // 输出文件名
+    filename: 'nulink-sdk.js', // 输出文件名
     publicPath: './',
     // publicPath: path.resolve(__dirname, 'dist'),
     path: path.resolve(__dirname, 'dist'), // 输出目录
