@@ -20,7 +20,7 @@ export const getIPFSClient = async () => {
   if (isBlank(client)) {
     // const { getSettingsData } = await import('../../../chainnet')
     // const config = await /* getConfigData */ getSettingsData()
-    const ipfsAddress = process.env.REACT_APP_IPFS_NODE_URL as string || "";
+    const ipfsAddress = "/ip4/8.219.11.39/tcp/5001"; //process.env.REACT_APP_IPFS_NODE_URL as string || "";
     const bInfura: boolean = ipfsAddress.indexOf('infura') >= 0
     
     let options: any = { url: ipfsAddress }
