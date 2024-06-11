@@ -2487,10 +2487,10 @@
     proc-log "^4.0.0"
     which "^4.0.0"
 
-"@nulink_network/nulink-ts-app-test@^0.0.20":
-  version "0.0.20"
-  resolved "https://registry.yarnpkg.com/@nulink_network/nulink-ts-app-test/-/nulink-ts-app-test-0.0.20.tgz#94f06e2cb75a828fbbf31cb55a50e0bd93fc2442"
-  integrity sha512-taFPIMKDCIaXVx22DIfCcviSh2/4u3ijYAlZnPXjo5oDVEfo2brXXoVE/ytQBn2YhyPOmxWM4WBjl0cnKZjeUg==
+"@nulink_network/nulink-ts-app@^0.0.1":
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/@nulink_network/nulink-ts-app/-/nulink-ts-app-0.0.1.tgz#62002474441fc233eb683958183f7c7d90adfc71"
+  integrity sha512-CKP/PCa0Mu3bnV/YivcP1zTUUfhGofwmOgGUVzNoPXY5DGc5qama+uqdoK4rJqFbIn9glsjavjQyUUpbKn1+8g==
   dependencies:
     "@polkadot/x-textdecoder" "^12.6.2"
     axios "^0.21.1"
