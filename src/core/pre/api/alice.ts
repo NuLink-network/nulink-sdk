@@ -79,7 +79,6 @@ import AwaitLock from "await-lock";
 import { isBlank } from "../../utils/null";
 import sleep from "await-sleep";
 import { getTransactionNonceLock } from "../../utils/transaction";
-import { CrossChain } from "@bnb-chain/greenfield-chain-sdk/dist/esm/api/crosschain";
 import { type GasInfo } from "../types";
 
 // import assert from "assert-ts";

@@ -4,25 +4,12 @@
 Therefore, the interactive page is put into components, the exposed message or interface distribution is put into api / route, which is exported by this file (index.ts), and api is the basic packaging interface.
 Only exposed messages are exported here, and functions that are directly called cannot be exported, otherwise the front end can be called at will.
 */
+  
+import { androidStore } from "./androidstorage";
 
-import { localStore } from "./localstorage";
-import { indexdbStore } from "./indexdbstorage";
-import { diskStore } from "./diskstorage";
-import { sessionStore } from "./sessionstorage";
-
-export { indexdbStore } from "./indexdbstorage";
-export { localStore } from "./localstorage";
-export { diskStore } from "./diskstorage";
-export { sessionStore } from "./sessionstorage";
-
-const bDiskStore = process.env.REACT_APP_STORAGE === "disk";
-const blocalStore = process.env.REACT_APP_STORAGE === "localstorage";
+export { androidStore } from "./androidstorage";
 
 /**
  * @internal
  */
-export const store = bDiskStore
-  ? diskStore
-  : blocalStore
-  ? localStore
-  : indexdbStore;
+export const store = androidStore;
