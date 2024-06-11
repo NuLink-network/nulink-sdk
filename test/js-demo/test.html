@@ -56,11 +56,11 @@
         console.assert(!NUSDK.isBlank(nuLinkHDWallet), 'nuLinkHDWallet create or load failed');
 
           //also, We can verify whether the user's password is correct
-        let correct = (await verifyPassword(password));
+        let correct = (await NUSDK.verifyPassword(password));
         
         console.assert(correct, 'password is error');
 
-        let hasAnAccountInLocal = await existDefaultAccount();
+        let hasAnAccountInLocal = await NUSDK.existDefaultAccount();
 
         console.assert(correct, 'default account is not exist');
         
@@ -70,10 +70,10 @@
 
         console.assert(!NUSDK.isBlank(accountAlice), 'get default account Failed: accountAlice');
 
-        console.log('【账户对象】:', nuWallet);
+        console.log('【账户对象】:', nuLinkHDWallet);
         console.log('【助记词】:', mnemonic);
         console.log('【Account Alice】:', accountAlice);
-        console.log('【Get Account Manager】', nuWallet.getAccountManager());
+        console.log('【Get Account Manager】', nuLinkHDWallet.getAccountManager());
         console.log("accountAlice address", accountAlice.address);
         console.log("accountAlice addressIndex", accountAlice.addressIndex);
         console.log("accountAlice publicKey", accountAlice.encryptedKeyPair._publicKey);
@@ -87,7 +87,7 @@
         
         debugger;
 
-        const mnemonic = await nuWallet.getMnemonic(password);
+        const mnemonic = await nuLinkHDWallet.getMnemonic(password);
 
         // Note: We only support one account currently.
 
@@ -343,7 +343,7 @@
             ursulaThresholds,
             startMss.map((startMs) => startMs / 1000),
             endMss.map((endMs) => endMs / 1000),
-            BigNumber.from(serverFeeNLKInWei)
+            NUSDK.BigNumber.from(serverFeeNLKInWei)
         );
 
         const aliceApprovedfilesListLast = await NUSDK.getApprovedDataAsPublisher(
@@ -494,7 +494,7 @@
             accountBob,
             fileIds[0]
         );
-        const fileContent2/*: string*/ = Buffer.from(arrayBuffer2).toString();
+        const fileContent2/*: string*/ = NUSDK.Buffer.from(arrayBuffer2).toString();
         console.log("fileContent2: ", fileContent2);
         console.log("plainText2: ", plainText2);
         console.assert(fileContent2 === plainText2, "fileContent2 !== plainText2");
@@ -520,7 +520,7 @@
             }
         */
 
-       console.assert(data && !isBlank(data) && data["total"] > 0, "data is blank or total is 0");
+        console.assert(data && !NUSDK.isBlank(data) && data["total"] > 0, "data is blank or total is 0");
 
 
     }
