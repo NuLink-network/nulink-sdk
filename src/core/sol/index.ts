@@ -26,9 +26,13 @@ const networkContractList = {
   //   [CONTRACT_NAME.subScriptManager]: { address: process.env.REACT_APP_BSC_TESTNET_CONTRACT_SUBSCRIPTMANAGER_ADDRESS as string, abi: SubscriptionManagerABI },
   // },
   [NETWORK_LIST.Horus]: {
-    [CONTRACT_NAME.nuLinkToken]: { address:  "0x79725FC1badFd5f744c0d293d528197EaA88fdE5", /*process.env.REACT_APP_BSC_TESTNET_CONTRACT_NULINKTOKEN_ADDRESS as string,*/ abi: NuLinkTokenABI },
-    [CONTRACT_NAME.subScriptManager]: { address: "0xa24DE231995c29Bd2A5c0f307e48E62F75250531", /*process.env.REACT_APP_BSC_TESTNET_CONTRACT_SUBSCRIPTMANAGER_ADDRESS as string,*/ abi: SubscriptionManagerABI },
+    [CONTRACT_NAME.nuLinkToken]: { address:  process.env.REACT_APP_BSC_TESTNET_CONTRACT_NULINKTOKEN_ADDRESS as string, abi: NuLinkTokenABI },
+    [CONTRACT_NAME.subScriptManager]: { address: process.env.REACT_APP_BSC_TESTNET_CONTRACT_SUBSCRIPTMANAGER_ADDRESS as string, abi: SubscriptionManagerABI },
   },
+  // [NETWORK_LIST.Horus]: {
+  //   [CONTRACT_NAME.nuLinkToken]: { address:  "0x79725FC1badFd5f744c0d293d528197EaA88fdE5", /*process.env.REACT_APP_BSC_TESTNET_CONTRACT_NULINKTOKEN_ADDRESS as string,*/ abi: NuLinkTokenABI },
+  //   [CONTRACT_NAME.subScriptManager]: { address: "0xa24DE231995c29Bd2A5c0f307e48E62F75250531", /*process.env.REACT_APP_BSC_TESTNET_CONTRACT_SUBSCRIPTMANAGER_ADDRESS as string,*/ abi: SubscriptionManagerABI },
+  // },
   [NETWORK_LIST.ConfluxTestNet]: {
     [CONTRACT_NAME.nuLinkToken]: { address:  process.env.REACT_APP_CONFLUX_ESPACE_TESTNET_CONTRACT_NULINKTOKEN_ADDRESS as string, abi: NuLinkTokenABI },
     [CONTRACT_NAME.subScriptManager]: { address: process.env.REACT_APP_CONFLUX_ESPACE_TESTNET_CONTRACT_SUBSCRIPTMANAGER_ADDRESS as string, abi: SubscriptionManagerABI },
