@@ -1,30 +1,7 @@
-# Configuration Modifications
 
-files：
-src/core/servernet/api/axios.ts   11/12行
-
-  配置后台用户名密码： 
-  const username = '';
-  const password = '';
-
-src/core/chainnet/config/index.ts    14/16行
-
-配置相关后台服务：
-    CENTRALIZED_SERVER_URL
-    PORTER_URL
+# TODO: 待验证 nulink-ts工程需要重新打包  因为不能用 process.env, 所以nulink-ts库也要修改
 
 
-src\core\sol 
-[NETWORK_LIST.Horus]: {
-[CONTRACT_NAME.nuLinkToken]: { address:  process.env.REACT_APP_BSC_TESTNET_CONTRACT_NULINKTOKEN_ADDRESS as string, abi: NuLinkTokenABI },
-[CONTRACT_NAME.subScriptManager]: { address: process.env.REACT_APP_BSC_TESTNET_CONTRACT_SUBSCRIPTMANAGER_ADDRESS as string, abi: SubscriptionManagerABI },
-}
-
-
-# nulink-ts工程需要重新打包  因为不能用 process.env, 所以nulink-ts库也要修改
-
-
-REACT_APP_BSC_TESTNET_CONTRACT_SUBSCRIPTMANAGER_ADDRESS 替换为常量合约地址
 
 
 # 1.已经做的工作
