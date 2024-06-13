@@ -83,14 +83,14 @@
         console.log("accountAlice privateKey", NUSDK.decrypt(accountAlice.encryptedKeyPair._privateKey, true));
 
 
-        console.log("请注意： --------------------- 运行这段代码需要账户上有至少0.1个TBNB, 至少 2000个TNLK, 合约当前用的V9版本-----------------")
-        console.log("请注意： --------------------- 运行这段代码需要账户上有至少0.1个TBNB, 至少 2000个TNLK, 合约当前用的V9版本 -----------------")
-        console.log("请注意： --------------------- 运行这段代码需要账户上有至少0.1个TBNB, 至少 2000个TNLK, 合约当前用的V9版本 -----------------")
+        console.log("请注意： --------------------- 运行这段代码需要账户上有至少0.1个TBNB, 至少 200个TNLK, 合约当前用的V9版本, 由于测试anroid环境代码对应的存储使用的是内存，所以每次刷新页面账户会变化，需要重新转币和TNLK-----------------")
+        console.log("请注意： --------------------- 运行这段代码需要账户上有至少0.1个TBNB, 至少 200个TNLK, 合约当前用的V9版本, 由于测试anroid环境代码对应的存储使用的是内存，所以每次刷新页面账户会变化，需要重新转币和TNLK -----------------")
+        console.log("请注意： --------------------- 运行这段代码需要账户上有至少0.1个TBNB, 至少 200个TNLK, 合约当前用的V9版本, 由于测试anroid环境代码对应的存储使用的是内存，所以每次刷新页面账户会变化，需要重新转币和TNLK -----------------")
         console.log("请注意： --------------------- 账户地址： ", accountAlice.address)
         
         debugger;
 
-  
+
 
         // Note: We only support one account currently.
 
@@ -371,7 +371,7 @@
         );
 
         // eslint-disable-next-line no-debugger
-        debugger;
+        // debugger;
 
         //You need to wait for a while for the on-chain transaction to be confirmed and for the backend to listen for the "approve" event.
         await sleep(20000); //20 seconds
@@ -399,7 +399,7 @@
         );
 
         // eslint-disable-next-line no-debugger
-        debugger;
+        // debugger;
 
         console.assert(aliceApprovedfilesList && aliceApprovedfilesList["total"] > 0, '!aliceApprovedfilesList || aliceApprovedfilesList["total"] == 0');
 
