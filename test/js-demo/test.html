@@ -47,12 +47,17 @@
         //Set the external storage used by the Pre process to IPFS (for example, encrypted files uploaded by users will be stored in this storage, and users can customize the storage).
         NUSDK.StorageManager.setDataCallback(dataCallback);
 
+        //nuLinkHDWallet = await NUSDK.restoreHDWallet(mnemonic, password);
         try {
-            nuLinkHDWallet = await NUSDK.loadWallet(password)
+           nuLinkHDWallet = await NUSDK.loadWallet(password)
         } catch (error) {
-            nuLinkHDWallet = await _create()
+           nuLinkHDWallet = await _create()
         }
 
+        mnemonic = await nuLinkHDWallet.getMnemonic(password);
+        console.log("--------------------- mnemonic: -------------------", mnemonic);
+
+        debugger;
         console.assert(!NUSDK.isBlank(nuLinkHDWallet), 'nuLinkHDWallet create or load failed');
 
           //also, We can verify whether the user's password is correct
