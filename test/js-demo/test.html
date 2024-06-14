@@ -8,21 +8,26 @@
 </head>
 
 <body>
-    <button id="create">Create Wallet</button>
+    <button id="create">第一步：创建钱包</button>
+    <button id="run_next">第二步：继续运行用例</button>
 </body>
 
 </html>
 <script src="./nulink-sdk.js"></script>
 
 <script>
-    console.log('【---NUSDK----】', NUSDK)
-    console.log('【---NUSDK.getPolicysGasFee----】', NUSDK.getPolicysGasFee)
-    console.log('【---NUSDK.Buffer----】', NUSDK.Buffer)
-    console.log('【---NUSDK.BigNumber----】', NUSDK.BigNumber)
-    //console.log('【---Web3----】', Web3)
+    // console.log('【---NUSDK----】', NUSDK)
+    // console.log('【---NUSDK.getPolicysGasFee----】', NUSDK.getPolicysGasFee)
+    // console.log('【---NUSDK.Buffer----】', NUSDK.Buffer)
+    // console.log('【---NUSDK.BigNumber----】', NUSDK.BigNumber)
+    // //console.log('【---Web3----】', Web3)
 
+
+    // ----------------------全局变量区 start ------------------------
     const password = '1'
     let nuLinkHDWallet;
+    let mnemonic;
+    let accountAlice;
 
     const sleep = async (ms) => {
         return new Promise(resolve => setTimeout(resolve, ms));
@@ -36,8 +41,9 @@
             return null
         }
     }
+   // ----------------------全局变量区 end ------------------------
 
-    const test = async () => {
+    const test1 = async () => {
 
         const dataCallback = {
         setData: NUSDK.setIPFSData,
@@ -54,10 +60,10 @@
            nuLinkHDWallet = await _create()
         }
 
-        mnemonic = await nuLinkHDWallet.getMnemonic(password);
-        console.log("--------------------- mnemonic: -------------------", mnemonic);
+        //  = await nuLinkHDWallet.getMnemonic(password);
+        // console.log("--------------------- mnemonic: -------------------", mnemonic);
 
-        debugger;
+        //debugger;
         console.assert(!NUSDK.isBlank(nuLinkHDWallet), 'nuLinkHDWallet create or load failed');
 
           //also, We can verify whether the user's password is correct
@@ -69,7 +75,7 @@
 
         console.assert(correct, 'default account is not exist');
         
-        const accountAlice = (await NUSDK.getWalletDefaultAccount(
+        accountAlice = (await NUSDK.getWalletDefaultAccount(
             password
         ));
 
@@ -93,9 +99,10 @@
         console.log("请注意： --------------------- 运行这段代码需要账户上有至少0.1个TBNB, 至少 200个TNLK, 合约当前用的V9版本, 由于测试anroid环境代码对应的存储使用的是内存，所以每次刷新页面账户会变化，需要重新转币和TNLK -----------------")
         console.log("请注意： --------------------- 账户地址： ", accountAlice.address)
         
-        debugger;
-
-
+        //debugger;
+    }
+    
+    const test2 = async () => {
 
         // Note: We only support one account currently.
 
@@ -534,5 +541,7 @@
 
     }
 
-    document.querySelector('#create').addEventListener('click', test)
+    document.querySelector('#create').addEventListener('click', test1)
+    document.querySelector('#run_next').addEventListener('click', test2)
+
 </script>
