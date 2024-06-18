@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.27](../README.md) / [Modules](../modules.md) / getDataForAllStatusAsPublisher
+[NuLink SDK - v0.5.31](../README.md) / [Modules](../modules.md) / getDataForAllStatusAsPublisher
 
 # Function: getDataForAllStatusAsPublisher
 
@@ -45,4 +45,4 @@ UnauthorizedError get logined account failed, must be login account first
 
 #### Defined in
 
-[api/pre.ts:677](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/api/pre.ts#L677)
+[api/pre.ts:677](https://github.com/NuLink-network/nulink-sdk/blob/b71aeb1/src/api/pre.ts#L677)

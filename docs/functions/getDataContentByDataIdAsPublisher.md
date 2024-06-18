@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.27](../README.md) / [Modules](../modules.md) / getDataContentByDataIdAsPublisher
+[NuLink SDK - v0.5.31](../README.md) / [Modules](../modules.md) / getDataContentByDataIdAsPublisher
 
 # Function: getDataContentByDataIdAsPublisher
 
@@ -19,4 +19,4 @@ The file/data publisher obtains the content of the file/data
 
 #### Defined in
 
-[core/pre/api/workflow.ts:3121](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/core/pre/api/workflow.ts#L3121)
+[core/pre/api/workflow.ts:3121](https://github.com/NuLink-network/nulink-sdk/blob/b71aeb1/src/core/pre/api/workflow.ts#L3121)

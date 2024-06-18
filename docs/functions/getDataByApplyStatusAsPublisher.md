@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.27](../README.md) / [Modules](../modules.md) / getDataByApplyStatusAsPublisher
+[NuLink SDK - v0.5.31](../README.md) / [Modules](../modules.md) / getDataByApplyStatusAsPublisher
 
 # Function: getDataByApplyStatusAsPublisher
 
@@ -41,4 +41,4 @@ Retrieve a list of files/data in a specified state that need to be approved for 
 
 #### Defined in
 
-[core/pre/api/workflow.ts:917](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/core/pre/api/workflow.ts#L917)
+[core/pre/api/workflow.ts:917](https://github.com/NuLink-network/nulink-sdk/blob/b71aeb1/src/core/pre/api/workflow.ts#L917)

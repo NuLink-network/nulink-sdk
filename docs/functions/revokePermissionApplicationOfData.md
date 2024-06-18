@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.27](../README.md) / [Modules](../modules.md) / revokePermissionApplicationOfData
+[NuLink SDK - v0.5.31](../README.md) / [Modules](../modules.md) / revokePermissionApplicationOfData
 
 # Function: revokePermissionApplicationOfData
 
@@ -23,4 +23,4 @@ The background service processing logic is such that if there are multiple permi
 
 #### Defined in
 
-[core/pre/api/workflow.ts:833](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/core/pre/api/workflow.ts#L833)
+[core/pre/api/workflow.ts:833](https://github.com/NuLink-network/nulink-sdk/blob/b71aeb1/src/core/pre/api/workflow.ts#L833)

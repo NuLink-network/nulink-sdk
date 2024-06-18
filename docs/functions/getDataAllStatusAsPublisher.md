@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.27](../README.md) / [Modules](../modules.md) / getDataAllStatusAsPublisher
+[NuLink SDK - v0.5.31](../README.md) / [Modules](../modules.md) / getDataAllStatusAsPublisher
 
 # Function: getDataAllStatusAsPublisher
 
@@ -40,4 +40,4 @@ The file/data publisher retrieves a list of files/data in all states.
 
 #### Defined in
 
-[core/pre/api/workflow.ts:877](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/core/pre/api/workflow.ts#L877)
+[core/pre/api/workflow.ts:877](https://github.com/NuLink-network/nulink-sdk/blob/b71aeb1/src/core/pre/api/workflow.ts#L877)

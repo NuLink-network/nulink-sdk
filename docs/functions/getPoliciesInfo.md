@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.27](../README.md) / [Modules](../modules.md) / getPoliciesInfo
+[NuLink SDK - v0.5.31](../README.md) / [Modules](../modules.md) / getPoliciesInfo
 
 # Function: getPoliciesInfo
 
@@ -46,4 +46,4 @@ Obtains a list of the information of the policies published on the blockchain.
 
 #### Defined in
 
-[core/pre/api/workflow.ts:1343](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/core/pre/api/workflow.ts#L1343)
+[core/pre/api/workflow.ts:1343](https://github.com/NuLink-network/nulink-sdk/blob/b71aeb1/src/core/pre/api/workflow.ts#L1343)

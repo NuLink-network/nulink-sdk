@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.27](../README.md) / [Modules](../modules.md) / exportWalletData
+[NuLink SDK - v0.5.31](../README.md) / [Modules](../modules.md) / exportWalletData
 
 # Function: exportWalletData
 
@@ -20,4 +20,4 @@ Exports the wallet data as a binary string.
 
 #### Defined in
 
-[api/wallet.ts:149](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/api/wallet.ts#L149)
+[api/wallet.ts:149](https://github.com/NuLink-network/nulink-sdk/blob/b71aeb1/src/api/wallet.ts#L149)

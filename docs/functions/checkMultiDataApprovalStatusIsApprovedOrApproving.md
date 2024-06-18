@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.27](../README.md) / [Modules](../modules.md) / checkMultiDataApprovalStatusIsApprovedOrApproving
+[NuLink SDK - v0.5.31](../README.md) / [Modules](../modules.md) / checkMultiDataApprovalStatusIsApprovedOrApproving
 
 # Function: checkMultiDataApprovalStatusIsApprovedOrApproving
 
@@ -24,4 +24,4 @@ Promise<object> - return two lists of applyIds, one list of applyIds that are in
 
 #### Defined in
 
-[core/pre/api/workflow.ts:2178](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/core/pre/api/workflow.ts#L2178)
+[core/pre/api/workflow.ts:2178](https://github.com/NuLink-network/nulink-sdk/blob/b71aeb1/src/core/pre/api/workflow.ts#L2178)

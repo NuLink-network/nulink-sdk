@@ -1,4 +1,4 @@
-[NuLink SDK - v0.5.27](../README.md) / [Modules](../modules.md) / estimatePolicysGas
+[NuLink SDK - v0.5.31](../README.md) / [Modules](../modules.md) / estimatePolicysGas
 
 # Function: estimatePolicysGas
 
@@ -29,4 +29,4 @@ estimate the gas fee for batch (sharing files/data) creating policies.
 
 #### Defined in
 
-[core/pre/api/workflow.ts:1627](https://github.com/NuLink-network/nulink-sdk/blob/caaf0a6/src/core/pre/api/workflow.ts#L1627)
+[core/pre/api/workflow.ts:1627](https://github.com/NuLink-network/nulink-sdk/blob/b71aeb1/src/core/pre/api/workflow.ts#L1627)
