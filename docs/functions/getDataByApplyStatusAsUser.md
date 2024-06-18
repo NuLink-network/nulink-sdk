@@ -1,4 +1,4 @@
-[NuLink SDK - v0.0.9](../README.md) / [Modules](../modules.md) / getDataByApplyStatusAsUser
+[NuLink SDK - v0.0.19](../README.md) / [Modules](../modules.md) / getDataByApplyStatusAsUser
 
 # Function: getDataByApplyStatusAsUser
 
@@ -41,4 +41,4 @@ The file/data applicant retrieves a list of files/data in a specified state that
 
 #### Defined in
 
-[core/pre/api/workflow.ts:1074](https://github.com/NuLink-network/nulink-sdk/blob/66c291e/src/core/pre/api/workflow.ts#L1074)
+[core/pre/api/workflow.ts:1074](https://github.com/NuLink-network/nulink-sdk/blob/3448e77/src/core/pre/api/workflow.ts#L1074)

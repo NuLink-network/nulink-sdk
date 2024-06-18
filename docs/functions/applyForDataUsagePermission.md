@@ -1,4 +1,4 @@
-[NuLink SDK - v0.0.9](../README.md) / [Modules](../modules.md) / applyForDataUsagePermission
+[NuLink SDK - v0.0.19](../README.md) / [Modules](../modules.md) / applyForDataUsagePermission
 
 # Function: applyForDataUsagePermission
 
@@ -22,4 +22,4 @@ Note: Different from applying for the interface with multiple files (apply/files
 
 #### Defined in
 
-[core/pre/api/workflow.ts:793](https://github.com/NuLink-network/nulink-sdk/blob/66c291e/src/core/pre/api/workflow.ts#L793)
+[core/pre/api/workflow.ts:793](https://github.com/NuLink-network/nulink-sdk/blob/3448e77/src/core/pre/api/workflow.ts#L793)

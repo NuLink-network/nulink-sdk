@@ -1,4 +1,4 @@
-[NuLink SDK - v0.0.9](../README.md) / [Modules](../modules.md) / checkDataApprovalStatusIsUnderReviewOrApproved
+[NuLink SDK - v0.0.19](../README.md) / [Modules](../modules.md) / checkDataApprovalStatusIsUnderReviewOrApproved
 
 # Function: checkDataApprovalStatusIsUnderReviewOrApproved
 
@@ -21,4 +21,4 @@ Check if the application status is "under review" or "approved"
 
 #### Defined in
 
-[api/pre.ts:401](https://github.com/NuLink-network/nulink-sdk/blob/66c291e/src/api/pre.ts#L401)
+[api/pre.ts:401](https://github.com/NuLink-network/nulink-sdk/blob/3448e77/src/api/pre.ts#L401)

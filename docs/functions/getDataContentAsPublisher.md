@@ -1,4 +1,4 @@
-[NuLink SDK - v0.0.9](../README.md) / [Modules](../modules.md) / getDataContentAsPublisher
+[NuLink SDK - v0.0.19](../README.md) / [Modules](../modules.md) / getDataContentAsPublisher
 
 # Function: getDataContentAsPublisher
 
@@ -31,4 +31,4 @@ ParameterError The input parameter must have the "dataId" field
 
 #### Defined in
 
-[api/pre.ts:909](https://github.com/NuLink-network/nulink-sdk/blob/66c291e/src/api/pre.ts#L909)
+[api/pre.ts:909](https://github.com/NuLink-network/nulink-sdk/blob/3448e77/src/api/pre.ts#L909)

@@ -10,13 +10,16 @@
 <body>
     <button id="create">第一步：创建钱包</button>
     <button id="run_next">第二步：继续运行用例</button>
+
+    <div id ="text" class="text-box">这是一段文本显示框</div>
 </body>
 
 </html>
 <script src="./nulink-sdk.js"></script>
 
 <script>
-    // console.log('【---NUSDK----】', NUSDK)
+    console.log('【---NUSDK----】', NUSDK)
+    document.getElementById('text').textContent = NUSDK;
     // console.log('【---NUSDK.getPolicysGasFee----】', NUSDK.getPolicysGasFee)
     // console.log('【---NUSDK.Buffer----】', NUSDK.Buffer)
     // console.log('【---NUSDK.BigNumber----】', NUSDK.BigNumber)
@@ -44,7 +47,7 @@
    // ----------------------全局变量区 end ------------------------
 
     const test1 = async () => {
-
+        
         const dataCallback = {
         setData: NUSDK.setIPFSData,
         getData: NUSDK.getIPFSData,
@@ -86,6 +89,7 @@
 
         console.log('【账户对象】:', nuLinkHDWallet);
         console.log('【助记词】:', mnemonic);
+        document.getElementById('text').textContent = mnemonic;
         console.log('【Account Alice】:', accountAlice);
         console.log('【Get Account Manager】', nuLinkHDWallet.getAccountManager());
         console.log("accountAlice address", accountAlice.address);

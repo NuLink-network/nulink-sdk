@@ -1,4 +1,4 @@
-[NuLink SDK - v0.0.9](../README.md) / [Modules](../modules.md) / getPolicyGasFee
+[NuLink SDK - v0.0.19](../README.md) / [Modules](../modules.md) / getPolicyGasFee
 
 # Function: getPolicyGasFee
 
@@ -40,4 +40,4 @@ PolicyApproving Policy are under review, please wait for the review to complete
 
 #### Defined in
 
-[api/pre.ts:124](https://github.com/NuLink-network/nulink-sdk/blob/66c291e/src/api/pre.ts#L124)
+[api/pre.ts:124](https://github.com/NuLink-network/nulink-sdk/blob/3448e77/src/api/pre.ts#L124)

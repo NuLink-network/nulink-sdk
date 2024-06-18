@@ -3,5 +3,5 @@
     "arrowParens": "always",
     "printWidth": 120,
     "trailingComma": "none",
-    "semi": false
+    "semi": true
   }

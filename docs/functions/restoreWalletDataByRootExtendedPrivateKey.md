@@ -1,4 +1,4 @@
-[NuLink SDK - v0.0.9](../README.md) / [Modules](../modules.md) / restoreWalletDataByRootExtendedPrivateKey
+[NuLink SDK - v0.0.19](../README.md) / [Modules](../modules.md) / restoreWalletDataByRootExtendedPrivateKey
 
 # Function: restoreWalletDataByRootExtendedPrivateKey
 
@@ -21,4 +21,4 @@ restore wallet by the strategys of account stored in the backend db.
 
 #### Defined in
 
-[api/wallet.ts:75](https://github.com/NuLink-network/nulink-sdk/blob/66c291e/src/api/wallet.ts#L75)
+[api/wallet.ts:75](https://github.com/NuLink-network/nulink-sdk/blob/3448e77/src/api/wallet.ts#L75)

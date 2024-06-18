@@ -1,6 +1,6 @@
-[NuLink SDK - v0.0.9](README.md) / Modules
+[NuLink SDK - v0.0.19](README.md) / Modules
 
-# NuLink SDK - v0.0.9
+# NuLink SDK - v0.0.19
 
 ## Table of contents
 

@@ -47,10 +47,17 @@ module.exports = {
           loader: 'babel-loader',
           options: {
             presets: ['@babel/preset-env'],
+            plugins: ['@babel/plugin-transform-runtime'],
+            // 这两个选项启用了自动分号插入
+            sourceMaps: 'inline',
+            compact: false
           },
         },
       },
     ],
+  },
+  optimization: {
+    minimize: false
   },
   plugins: [
     new NodePolyfillPlugin(),
@@ -66,5 +73,6 @@ module.exports = {
       defaults: false // 不使用 .env.defaults 文档
     })
   ],
-  mode: 'production', // 设置模式为生产模式
+  //mode:  'development' ,  //开发模式, 代码不最小化  
+  mode:  'production', // 设置模式为生产模式
 };

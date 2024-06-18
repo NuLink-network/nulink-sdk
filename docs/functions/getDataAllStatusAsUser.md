@@ -1,4 +1,4 @@
-[NuLink SDK - v0.0.9](../README.md) / [Modules](../modules.md) / getDataAllStatusAsUser
+[NuLink SDK - v0.0.19](../README.md) / [Modules](../modules.md) / getDataAllStatusAsUser
 
 # Function: getDataAllStatusAsUser
 
@@ -41,4 +41,4 @@ Gets a list of all files/data with any status as a user (Bob) using this account
 
 #### Defined in
 
-[core/pre/api/workflow.ts:1043](https://github.com/NuLink-network/nulink-sdk/blob/66c291e/src/core/pre/api/workflow.ts#L1043)
+[core/pre/api/workflow.ts:1043](https://github.com/NuLink-network/nulink-sdk/blob/3448e77/src/core/pre/api/workflow.ts#L1043)

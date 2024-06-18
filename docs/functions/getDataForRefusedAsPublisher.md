@@ -1,4 +1,4 @@
-[NuLink SDK - v0.0.9](../README.md) / [Modules](../modules.md) / getDataForRefusedAsPublisher
+[NuLink SDK - v0.0.19](../README.md) / [Modules](../modules.md) / getDataForRefusedAsPublisher
 
 # Function: getDataForRefusedAsPublisher
 
@@ -41,4 +41,4 @@ Gets a list of files/data with the "approved failed" status for others to use. T
 
 #### Defined in
 
-[core/pre/api/workflow.ts:1012](https://github.com/NuLink-network/nulink-sdk/blob/66c291e/src/core/pre/api/workflow.ts#L1012)
+[core/pre/api/workflow.ts:1012](https://github.com/NuLink-network/nulink-sdk/blob/3448e77/src/core/pre/api/workflow.ts#L1012)

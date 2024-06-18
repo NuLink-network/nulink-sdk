@@ -1,4 +1,4 @@
-[NuLink SDK - v0.0.9](../README.md) / [Modules](../modules.md) / loadWallet
+[NuLink SDK - v0.0.19](../README.md) / [Modules](../modules.md) / loadWallet
 
 # Function: loadWallet
 
@@ -24,4 +24,4 @@ PasswordDecryptError
 
 #### Defined in
 
-[api/wallet.ts:188](https://github.com/NuLink-network/nulink-sdk/blob/66c291e/src/api/wallet.ts#L188)
+[api/wallet.ts:188](https://github.com/NuLink-network/nulink-sdk/blob/3448e77/src/api/wallet.ts#L188)
