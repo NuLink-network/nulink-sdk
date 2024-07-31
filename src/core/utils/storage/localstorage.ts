@@ -16,7 +16,7 @@ export const localStore =  {
     try {
       localStorage.removeItem(key);
     } catch (error) {
-      console.info(`removeItem: ${key}`);
+      console.info(`removeItem: ${key} failed`);
     }
   },
 
