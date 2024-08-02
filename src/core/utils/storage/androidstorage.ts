@@ -28,7 +28,7 @@ class AndroidBridge {
       const messageData = {
         id: thisId,
         method,
-        data: JSON.stringify(data)
+        data: data
       };
 
       // console.log("before window.__JSHOST.postMessage ");
