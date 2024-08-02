@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+
+  <body>
+    <button id="test-storage">测试存储</button>
+
+    <div id="text" class="text-box">这是一段文本显示框</div>
+  </body>
+</html>
+<script src="./nulink-sdk.js"></script>
+
+<script>
+  console.log('【---NUSDK----】', NUSDK);
+  document.getElementById('text').textContent = NUSDK;
+  // console.log('【---NUSDK.getPolicysGasFee----】', NUSDK.getPolicysGasFee)
+  // console.log('【---NUSDK.Buffer----】', NUSDK.Buffer)
+  // console.log('【---NUSDK.BigNumber----】', NUSDK.BigNumber)
+  // //console.log('【---Web3----】', Web3)
+
+  // ----------------------全局变量区 start ------------------------
+  const password = '1';
+  let nuLinkHDWallet;
+  let mnemonic;
+  let accountAlice;
+
+  const sleep = async (ms) => {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  };
+
+  const _create = async () => {
+    try {
+      return await NUSDK.createWallet(password);
+    } catch (error) {
+      console.error('【Create Wallet Error】', error);
+      return null;
+    }
+  };
+  // ----------------------全局变量区 end ------------------------
+
+  const test1 = async () => {
+    
+    const name = await NUSDK.store.getItem("name")
+    console.log("getItem name: ", name);
+    await NUSDK.store.setItem("name", "lily")
+
+    await NUSDK.store.setItem("name5", "lily5")
+
+    await NUSDK.store.setItem("name6", "lily6")
+
+    await NUSDK.store.setItem("name7", "lily7")
+
+    await NUSDK.store.setItem("name8", "lily8")
+
+    await NUSDK.store.setItem("name9", "lily9")
+
+    await NUSDK.store.setItem("name10", "lily10")
+
+    await NUSDK.store.setItem("name11", "lily11")
+
+    const name1 = await NUSDK.store.getItem("name")
+    console.log("getItem name: ", name1);
+
+    await NUSDK.store.setItem("names", {"name2": "lucy", "name3": "lilei"})
+
+    console.log("setItem names finish");
+
+    const names = await NUSDK.store.getItem("names")
+    console.log("getItem names -----: ", names);
+
+
+    await NUSDK.store.setItem("name", "lilyNew")
+    console.log("setItem nameNew finish");
+
+    const nameNew = await NUSDK.store.getItem("name")
+    console.log("getItem nameNew: ", nameNew);
+
+    const name5 = await NUSDK.store.getItem("name5")
+    console.log("getItem name5: ", name5);
+
+    await NUSDK.store.removeItem("name5")
+
+    const name5Removed = await NUSDK.store.getItem("name5")
+    console.log("getItem removed name5: ", name5Removed);
+
+    await NUSDK.store.removeItems(["name6", "name7", "name8"])
+
+
+    console.log("getItem removed name6: ", await NUSDK.store.getItem("name6"));
+    console.log("getItem removed name7: ", await NUSDK.store.getItem("name7"));
+    console.log("getItem removed name8: ", await NUSDK.store.getItem("name8"));
+
+    console.log("getItem name9: ", await NUSDK.store.getItem("name9"));
+
+    console.log("before clear: getItem names -----: ", await NUSDK.store.getItem("names"));
+
+    await NUSDK.store.clear()
+
+    console.log("after clear:  getItem names -----: ", await NUSDK.store.getItem("names"));
+
+    console.log('finish');
+  };
+
+  document.querySelector('#test-storage').addEventListener('click', test1);
+</script>

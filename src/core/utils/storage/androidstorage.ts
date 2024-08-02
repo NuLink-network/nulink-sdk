@@ -37,16 +37,16 @@ class AndroidBridge {
       globalThis.__JSHOST.postMessage(JSON.stringify(messageData));
       
       //(window as any).__JSHOST.postMessage(JSON.stringify(messageData));
-      // console.log("after window.__JSHOST. postMessage: " + JSON.stringify(messageData));
+      console.log("after window.__JSHOST. postMessage: " + JSON.stringify(messageData));
 
       // Registering a one-time message handler
       const messageHandler = (id: string, receivedMethod: string, receivedData: any) => {
-        //console.log("postmessage message callback: " + receivedMethod + "method: " + method + " receive id: " + id + "  origin id: " + thisId + " receivedData: " + receivedData);
-        if (receivedMethod === method && id == thisId) {
+        console.log("postmessage message callback: " + receivedMethod + " method: " + method + " receive id: " + id + "  origin id: " + thisId + " receivedData: ", receivedData);
+        if (receivedMethod.toLowerCase() === method.toLowerCase() && id.toLowerCase() == thisId.toLowerCase()) {
           resolve(receivedData);
         }
         else{
-          console.log("Missing message callback: " + receivedMethod + "method: " + method + " receive id: " + id + "  origin id: " + thisId + " receivedData: " + receivedData);
+          console.log("Missing message callback: " + receivedMethod + " method: " + method + " receive id: " + id + "  origin id: " + thisId + " receivedData: ", receivedData);
         }
         
       };
@@ -60,7 +60,7 @@ class AndroidBridge {
     globalThis.__jMessage = (id: string, method: string, data: string) => {
     // (window as any).__jMessage = (id: string, method: string, data: string) => {
 
-      console.log("AAAAAAAAAAAAAAAAA __jMessage origin message: " + method + " data: " + data);
+      console.log("registerMessageHandler get __jMessage origin message: " + method + " data: " + data);
 
       let _data = {};
       try {
