@@ -2,6 +2,7 @@ import { getGlobalThis } from '@offirmo/globalthis-ponyfill';
 import SingletonService from 'singleton-service';
 // import { SnowflakeIdv1 } from "simple-flakeid"
 import { nanoid } from 'nanoid'; //https://cloud.tencent.com/developer/article/1743958
+import { isBlank } from '../null';
 
 const ANDROIDBRIDGE_INSTANCE_NAME = 'android_bridge';
 
@@ -14,8 +15,8 @@ class AndroidBridge {
   private constructor() {}
 
   public static getInstance(): AndroidBridge {
-    if (!SingletonService.get<AndroidBridge>(`${ANDROIDBRIDGE_INSTANCE_NAME}`)) {
-      SingletonService.set<AndroidBridge>(`${ANDROIDBRIDGE_INSTANCE_NAME}}`, new AndroidBridge(), true);
+    if (isBlank(SingletonService.get<AndroidBridge>(`${ANDROIDBRIDGE_INSTANCE_NAME}`))) {
+      SingletonService.set<AndroidBridge>(`${ANDROIDBRIDGE_INSTANCE_NAME}`, new AndroidBridge(), true);
     }
 
     return SingletonService.get<AndroidBridge>(`${ANDROIDBRIDGE_INSTANCE_NAME}`);
@@ -30,12 +31,17 @@ class AndroidBridge {
         data: JSON.stringify(data)
       };
 
+      // console.log("before window.__JSHOST.postMessage ");
       const globalThis = getGlobalThis();
 
       globalThis.__JSHOST.postMessage(JSON.stringify(messageData));
+      
+      //(window as any).__JSHOST.postMessage(JSON.stringify(messageData));
+      // console.log("after window.__JSHOST. postMessage: " + JSON.stringify(messageData));
 
       // Registering a one-time message handler
       const messageHandler = (id: string, receivedMethod: string, receivedData: any) => {
+        //console.log("postmessage message callback: " + receivedMethod + "method: " + method + " receive id: " + id + "  origin id: " + thisId + " receivedData: " + receivedData);
         if (receivedMethod === method && id == thisId) {
           resolve(receivedData);
         }
@@ -52,8 +58,9 @@ class AndroidBridge {
     const globalThis = getGlobalThis();
 
     globalThis.__jMessage = (id: string, method: string, data: string) => {
-      
-      console.log("__jMessage origin message: " + method + " data: " + data);
+    // (window as any).__jMessage = (id: string, method: string, data: string) => {
+
+      console.log("AAAAAAAAAAAAAAAAA __jMessage origin message: " + method + " data: " + data);
 
       let _data = {};
       try {
