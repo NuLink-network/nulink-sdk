@@ -41,7 +41,7 @@ class AndroidBridge {
 
       // Registering a one-time message handler
       const messageHandler = (id: string, receivedMethod: string, receivedData: any) => {
-        console.log("postmessage message callback: " + receivedMethod + " method: " + method + " receive id: " + id + "  origin id: " + thisId + " receivedData: ", receivedData);
+        //console.log("postmessage message callback: " + receivedMethod + " method: " + method + " receive id: " + id + "  origin id: " + thisId + " receivedData: ", receivedData);
         if (receivedMethod.toLowerCase() === method.toLowerCase() && id.toLowerCase() == thisId.toLowerCase()) {
           resolve(receivedData);
         }
