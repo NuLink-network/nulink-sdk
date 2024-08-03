@@ -84,6 +84,11 @@ export const androidStore = {
     } catch (error) {
       _value = value as string;
     }
+
+    //Note: The app parser does not support backslashes in strings, so it needs to be escaped
+
+    _value = "_inter_encode_" + encodeURIComponent(_value);
+
     const bridge = AndroidBridge.getInstance();
     await bridge.sendMessage("setItem", {"key": key, "value": _value});
 
@@ -94,10 +99,16 @@ export const androidStore = {
     const bridge = AndroidBridge.getInstance();
     const value = await bridge.sendMessage("getItem", {"key": key});
 
+    let _value = value;
+    if(value.startsWith("_inter_encode_"))
+    {
+      _value = decodeURIComponent(value.replace("_inter_encode_", ""));
+    }
+
     try {
-      return JSON.parse(value)
+      return JSON.parse(_value)
     } catch (error) {
-      return value as string;
+      return _value as string;
     }
   },
 
