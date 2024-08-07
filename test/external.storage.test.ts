@@ -1,5 +1,5 @@
 import assert from 'assert-ts'
-import { Account, NuLinkHDWallet, createWallet, existDefaultAccount, getWalletDefaultAccount, loadWallet, verifyPassword } from '../src'
+import { Account, NuLinkHDWallet, createWallet, existDefaultAccount, getWalletDefaultAccount, loadWallet, verifyPassword, initClientId } from '../src'
 import {
   isBlank,
   StorageManager,
@@ -11,6 +11,11 @@ import {
 } from '../src/core/utils'
 
 export const run = async () => {
+
+  //we need set Project ID: differentiate the sources of data from different applications. 
+  // which requires application to Nulink official.
+  await initClientId("xxxxxxx-xxxxx-xxxxxx");
+
   // Declaring and intializing the mnemonic and password variables.
   const password: string = '1'
 

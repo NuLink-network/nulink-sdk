@@ -102,6 +102,7 @@ import {
   DataCallback,
   setIPFSData,
   getIPFSData,
+  initClientId,
 } from '@nulink_network/nulink-sdk'
 ```
 
@@ -181,7 +182,9 @@ import {
   getMnemonic,
   getDefaultAccountPrivateKey,
   logoutWallet,
-  GasInfo
+  GasInfo,
+  setIPFSData,
+  getIPFSData,
 } from "@nulink_network/nulink-sdk";
 
 import assert from "assert-ts";
@@ -190,6 +193,14 @@ import { BigNumber, ethers } from "ethers";
 import { nanoid } from "nanoid";
 import Web3 from "web3";
 
+
+ const dataCallback: DataCallback = { setData: setIPFSData, getData: getIPFSData }
+ //Set the external storage used by the Pre process to IPFS (for example, encrypted data/files uploaded by users will be stored in this storage, and users can customize the storage).
+ StorageManager.setDataCallback(dataCallback)
+
+//Then you need set Project ID: differentiate the sources of data from different applications. 
+// which requires application to Nulink official.
+await initClientId("xxxxxxx-xxxxx-xxxxxx")
 
 // Declaring and intializing the mnemonic and password variables.
 const password: string = "1";
@@ -245,6 +256,7 @@ const dataList: DataInfo[] = [
     //label: A unique identifier for the file (similar to the file name) that is displayed to the user who needs to apply for the file
     label: `history-${nanoid()}.pdf`,
     dataArrayBuffer: historyContent.buffer,
+    mimetype: "application/pdf",
   },
 ];
 
@@ -596,6 +608,7 @@ const dataList2: DataInfo[] = [
   {
     label: `philosophy-${nanoid()}.pdf`,
     dataArrayBuffer: historyContent2.buffer,
+    mimetype: "application/pdf",
   },
 ];
 

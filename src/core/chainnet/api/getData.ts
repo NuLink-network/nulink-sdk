@@ -3,6 +3,12 @@ import { store as storage } from "../../utils/storage";
 import { defaultChainNetWork, networkDetails } from "../config";
 import { NETWORK_LIST } from "../../sol";
 
+
+/**
+ * @internal
+ */
+export const CLIENT_ID_LABEL = "CLIENT_ID";
+
 /**
  * @internal
  */
@@ -73,4 +79,24 @@ export const getCurrentNetworkInitialConfiguration = async () => {
   };
 
   return initialConfig;
+};
+
+/**
+  * Set Project ID, which requires application to Nulink official
+  * @param {string} clientId -  Project ID, differentiate the sources of data from different applications
+  * @returns {Promise<void>}
+*/
+export const setClientId = async (clientId: string) => {
+  await storage.setItem(CLIENT_ID_LABEL, clientId as string);
+};
+
+
+/**
+  * @internal
+  * get Project ID, which requires application to Nulink official
+  * @param {string} clientId -  Project ID, differentiate the sources of data from different applications
+  * @returns {Promise<void>}
+*/
+export const getClientId = async (): Promise<string>  => {
+  return await storage.getItem(CLIENT_ID_LABEL);
 };

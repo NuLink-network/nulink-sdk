@@ -52,6 +52,12 @@
     //Set the external storage used by the Pre process to IPFS (for example, encrypted files uploaded by users will be stored in this storage, and users can customize the storage).
     NUSDK.StorageManager.setDataCallback(dataCallback);
 
+    //we need set Project ID: differentiate the sources of data from different applications. 
+    // which requires application to Nulink official.
+    await initClientId("xxxxxxx-xxxxx-xxxxxx");
+
+    bExistAccount = await NUSDK.existDefaultAccount()
+    console.log("existDefaultAccount: ", bExistAccount);
     //nuLinkHDWallet = await NUSDK.restoreHDWallet(mnemonic, password);
     try {
       console.log('--------------------- before load wallet: -------------------');
@@ -122,23 +128,28 @@
     const fileList /*: DataInfo[]*/ = [
       {
         label: `history-${NUSDK.nanoid()}.pdf`,
-        dataArrayBuffer: historyContent.buffer
+        dataArrayBuffer: historyContent.buffer,
+        mimetype: "application/pdf",
       },
       {
         label: `history1-${NUSDK.nanoid()}.pdf`,
-        dataArrayBuffer: historyContent.buffer
+        dataArrayBuffer: historyContent.buffer,
+        mimetype: "application/pdf",
       },
       {
         label: `history2-${NUSDK.nanoid()}.pdf`,
-        dataArrayBuffer: historyContent.buffer
+        dataArrayBuffer: historyContent.buffer,
+        mimetype: "application/pdf",
       },
       {
         label: `history3-${NUSDK.nanoid()}.pdf`,
-        dataArrayBuffer: historyContent.buffer
+        dataArrayBuffer: historyContent.buffer,
+        mimetype: "application/pdf",
       },
       {
         label: `history4-${NUSDK.nanoid()}.pdf`,
-        dataArrayBuffer: historyContent.buffer
+        dataArrayBuffer: historyContent.buffer,
+        mimetype: "application/pdf",
       }
     ];
 
@@ -467,7 +478,8 @@
     const fileList2 /*: DataInfo[] */ = [
       {
         label: `philosophy-${NUSDK.nanoid()}.pdf`,
-        dataArrayBuffer: historyContent2.buffer
+        dataArrayBuffer: historyContent2.buffer,
+        mimetype: "application/pdf",
       }
     ];
 

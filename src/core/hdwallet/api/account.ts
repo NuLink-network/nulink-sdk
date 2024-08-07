@@ -469,6 +469,25 @@ export class Account extends IJson {
     return strategy
   }
 
+    /**
+   * Creates a new policy object with the specified label and ID, and adds it to the policy mapping. The policy object is used to encrypt data/files uploaded by the user.
+   * @internal
+   */
+    public async createStrategyWithLabelPrefixAndStrategyIndex(labelPrefix: string, id = ''): Promise<Strategy> {
+      //The default label should be the name of the incoming data/file. If it is repeated, add the policy id identifier (uuid)
+      const strategyAddressIndex = await this.generateStrategyAddressIndex()
+      console.log(`createStrategy strategyAddressIndex: ${strategyAddressIndex}`)
+      const strategy: Strategy = new Strategy(this.addressIndex, strategyAddressIndex, labelPrefix + "_" + strategyAddressIndex, id)
+      this.strategyMapping.set(strategyAddressIndex, strategy)
+      //Synchronize the hdWallet object
+      await this.updateHDWalletAccountStrategys()
+      //Because the strategy has no next-level data, the overall and decentralized storage are consistent
+      await strategy.save()
+      await this.saveAccountAllStrategyIndexInfo()
+      console.log('createStrategy finish')
+      return strategy
+    }
+
   /**
    * Deletes the policy object associated with the specified address index from the policy mapping.
    * attention please: If the policy is deleted, address_index can be reused, because if the key generation tree path is certain, the public and private keys must be the same.

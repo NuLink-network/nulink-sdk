@@ -28,7 +28,7 @@ import {
 import { nanoid } from 'nanoid'
 import Web3 from 'web3'
 import { type DataInfo } from '../src'
-import { restoreWalletDataByMnemonic, getPolicysGasFee } from '../src'
+import { restoreWalletDataByMnemonic, getPolicysGasFee, initClientId } from '../src'
 import * as pre from '../src/core/pre'
 import sleep from 'await-sleep'
 
@@ -42,6 +42,10 @@ export const run = async () => {
   // const dataCallback2: DataCallback = { setData: setBEData, getData: getBEData }
   // //Set the external storage used by the Pre process to IPFS (for example, encrypted data/files uploaded by users will be stored in this storage, and users can customize the storage).
   // StorageManager.setDataCallback(dataCallback2)
+
+  //we need set Project ID: differentiate the sources of data from different applications. 
+  // which requires application to Nulink official.
+  await initClientId("xxxxxxx-xxxxx-xxxxxx");
 
   // eslint-disable-next-line no-debugger
   debugger
@@ -91,23 +95,28 @@ export const run = async () => {
   const dataList: DataInfo[] = [
     {
       label: `history-${nanoid()}.pdf`,
-      dataArrayBuffer: historyContent.buffer
+      dataArrayBuffer: historyContent.buffer,
+      mimetype: "application/pdf",
     },
     {
       label: `history-${nanoid()}.pdf`,
-      dataArrayBuffer: historyContent.buffer
+      dataArrayBuffer: historyContent.buffer,
+      mimetype: "application/pdf",
     },
     {
       label: `history-${nanoid()}.pdf`,
-      dataArrayBuffer: historyContent.buffer
+      dataArrayBuffer: historyContent.buffer,
+      mimetype: "application/pdf",
     },
     {
       label: `history-${nanoid()}.pdf`,
-      dataArrayBuffer: historyContent.buffer
+      dataArrayBuffer: historyContent.buffer,
+      mimetype: "application/pdf",
     },
     {
       label: `history-${nanoid()}.pdf`,
-      dataArrayBuffer: historyContent.buffer
+      dataArrayBuffer: historyContent.buffer,
+      mimetype: "application/pdf",
     }
   ]
 
@@ -411,6 +420,7 @@ export const run = async () => {
   //   {
   //     label: `philosophy-${nanoid()}.pdf`,
   //     dataArrayBuffer: historyContent2.buffer,
+  //     mimetype: "application/pdf",
   //   },
   // ];
 

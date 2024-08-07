@@ -1,13 +1,12 @@
-import { getSettingsData } from "../../chainnet";
-import axios, { AxiosRequestConfig, InternalAxiosRequestConfig } from "axios";
+import { getSettingsData, getClientId } from '../../chainnet';
+import axios, { AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios';
 // import {store as storage} from "../../utils/storage";
-import queryString, { StringifiableRecord, UrlObject } from "query-string";
-import axiosRetry from "axios-retry";
-import { nanoid } from "nanoid";
-import { networkDetails } from "../../chainnet";
+import queryString, { StringifiableRecord, UrlObject } from 'query-string';
+import axiosRetry from 'axios-retry';
+import { nanoid } from 'nanoid';
+import { networkDetails } from '../../chainnet';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import FormData from 'form-data';
-
 
 const username = process.env.REACT_APP_SERVER_USERNAME;
 const password = process.env.REACT_APP_SERVER_PASSWORD;
@@ -16,9 +15,7 @@ export const getServerUrl = async () => {
   //return server url endsWith without "/"
   const config = await getSettingsData();
 
-  const serverUrl = config.service.endsWith("/")
-    ? config.service.slice(0, -1)
-    : config.service;
+  const serverUrl = config.service.endsWith('/') ? config.service.slice(0, -1) : config.service;
 
   // const token = Buffer.from(`${username}:${password}`, "utf8").toString(
   //   "base64",
@@ -45,28 +42,18 @@ export const getServerUrl = async () => {
   return serverUrl;
 }; */
 
-export const signatureRequest = async (
-  urlPath: string,
-  method: string,
-  data: object,
-  config?: AxiosRequestConfig
-) => {
+export const signatureRequest = async (urlPath: string, method: string, data: object, config?: AxiosRequestConfig) => {
   //Signing the request
   //solution: https://www.cnblogs.com/Sinte-Beuve/p/12093307.html
 
   //when we use the http basic auth verification, We no longer need signature verification
-  if (method.toLowerCase() === "post") {
-    data["signature"] = nanoid();
+  if (method.toLowerCase() === 'post') {
+    data['signature'] = nanoid();
   }
 };
 
 //exclude show error message list
-const excludeList = [
-  "file/create-policy-and-upload",
-  "file/upload",
-  "file/batch-upload",
-  "apply/detail",
-];
+const excludeList = ['file/create-policy-and-upload', 'file/upload', 'file/batch-upload', 'apply/detail'];
 
 // Configure common request headers
 // axios.defaults.baseURL = 'https://127.0.0.1:3000/api'
@@ -86,9 +73,7 @@ async function requestInterceptor(config: InternalAxiosRequestConfig) {
   //   // config.headers['Authorization'] = `Basic ${token}`;
   // }
 
-  const token = Buffer.from(`${username}:${password}`, "utf8").toString(
-    "base64"
-  );
+  const token = Buffer.from(`${username}:${password}`, 'utf8').toString('base64');
   config!.headers!.authorization = `Basic ${token}`;
 
   return config;
@@ -110,11 +95,7 @@ axios.interceptors.response.use(
       let hasUrl = 0;
       for (const value of Object.values(networkDetails)) {
         // console.log(value.CENTRALIZED_SERVER_URL as string);
-        if (
-          (response.config.url as string).indexOf(
-            value.CENTRALIZED_SERVER_URL as string
-          ) < 0
-        ) {
+        if ((response.config.url as string).indexOf(value.CENTRALIZED_SERVER_URL as string) < 0) {
           //If the request is not from CENTRALIZED_SERVER_URL, it is not processed
           hasUrl++;
         }
@@ -125,21 +106,15 @@ axios.interceptors.response.use(
         return response;
       }
     } catch (e) {
-      console.log("axios.interceptors.response error:", e);
+      console.log('axios.interceptors.response error:', e);
     }
 
     //The following is the logic for handling the CENTRALIZED_SERVER_URL
     const response_msg = response.data;
-    if (
-      response_msg &&
-      Object.prototype.hasOwnProperty.call(response_msg, "code") &&
-      response_msg.code !== 2000
-    ) {
+    if (response_msg && Object.prototype.hasOwnProperty.call(response_msg, 'code') && response_msg.code !== 2000) {
       //4000 Invalid Parameter
       //5000 Internal Server Error
-      const resmsg = Object.prototype.hasOwnProperty.call(response_msg, "msg")
-        ? response_msg.msg
-        : response_msg;
+      const resmsg = Object.prototype.hasOwnProperty.call(response_msg, 'msg') ? response_msg.msg : response_msg;
       console.error(resmsg);
 
       let showErrorMessage = true;
@@ -159,13 +134,13 @@ axios.interceptors.response.use(
       return Promise.reject(response);
     }
 
-    return response_msg && Object.prototype.hasOwnProperty.call(response_msg, "data")
+    return response_msg && Object.prototype.hasOwnProperty.call(response_msg, 'data')
       ? response_msg.data
       : response_msg;
   },
   (error) => {
     const message = error.response?.msg || error.msg;
-    console.error("axios: ", message);
+    console.error('axios: ', message);
     // Message.error(message);
     return Promise.reject(error);
   }
@@ -189,25 +164,21 @@ axiosRetry(axios, {
     } catch (e) {
       return false;
     }
-  },
+  }
 });
 
 //uploadDataInfo
-export const serverPostFormData = async (
-  urlPath: string,
-  data: FormData,
-  config?: object
-): Promise<unknown> => {
+export const serverPostFormData = async (urlPath: string, data: FormData, config?: object): Promise<unknown> => {
   const serverUrl = await getServerUrl();
 
   const baseConfig = {
     headers: {
       'Content-Type': 'multipart/form-data',
-      Accept: "application/json",
-    },
+      Accept: 'application/json'
+    }
   };
 
-  urlPath = urlPath.startsWith("/") ? urlPath : "/" + urlPath;
+  urlPath = urlPath.startsWith('/') ? urlPath : '/' + urlPath;
 
   //note: The same key will be overwritten
   config = Object.assign({}, baseConfig, config);
@@ -217,22 +188,23 @@ export const serverPostFormData = async (
   return await axios.post(`${serverUrl}${urlPath}`, data, config);
 };
 
-
-export const serverPost = async (
-  urlPath: string,
-  data: object,
-  config?: object
-): Promise<unknown> => {
+export const serverPost = async (urlPath: string, data: object, config?: object): Promise<unknown> => {
   const serverUrl = await getServerUrl();
 
   const baseConfig = {
     headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
+      'Content-Type': 'application/json',
+      Accept: 'application/json'
+    }
   };
 
-  urlPath = urlPath.startsWith("/") ? urlPath : "/" + urlPath;
+  const clientId = await getClientId();
+  //projectId
+  if (clientId) {
+    baseConfig.headers['NuClientId'] = clientId;
+  }
+
+  urlPath = urlPath.startsWith('/') ? urlPath : '/' + urlPath;
 
   //note: The same key will be overwritten
   config = Object.assign({}, baseConfig, config);
@@ -251,25 +223,25 @@ export const serverGet = async (
 
   const baseConfig = {
     headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
+      'Content-Type': 'application/json',
+      Accept: 'application/json'
+    }
   };
 
-  urlPath = urlPath.startsWith("/") ? urlPath : "/" + urlPath;
+  urlPath = urlPath.startsWith('/') ? urlPath : '/' + urlPath;
 
   //note: The same key will be overwritten
   config = Object.assign({}, baseConfig, config);
 
-  await signatureRequest(urlPath, "GET", data, config);
+  await signatureRequest(urlPath, 'GET', data, config);
 
   const order = Object.keys(data);
   const urlObject: UrlObject = {
     url: `${serverUrl}${urlPath}`,
-    query: data as StringifiableRecord,
+    query: data as StringifiableRecord
   };
   const url = queryString.stringifyUrl(urlObject, {
-    sort: (a, b) => order.indexOf(a) - order.indexOf(b),
+    sort: (a, b) => order.indexOf(a) - order.indexOf(b)
   });
   // const queryStr = queryString.stringify(data, {
   //   sort: (a, b) => order.indexOf(a) - order.indexOf(b)

@@ -62,9 +62,11 @@ export const  DataType2Suffix = {
 }
 
 export type DataInfo = {
-    label: string; //data label
+    label: string; //data label (name or unique string, e.g. uuid)
     dataArrayBuffer: ArrayBuffer, //The binary representation of the contents of files/data By invoke 'FileReader.ReadAsArrayBuffer(file)' callback return the value: e.target.result
-    category?: DataCategory | string;
+    category?: DataCategory | string; //logical categories, e.g. music, art, sports
+    mimetype?: string; //to convert binary data to a specific file type (e.g. image, video, text)
+    thumbnail?: string; //unique identifier for thumbnails, can be understood as a unique file name or url link, note that this is not the data itself, but an identifier that can be used to locate the corresponding stored content.
   };
 
   export type GasInfo = {
