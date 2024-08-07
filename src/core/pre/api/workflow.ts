@@ -471,8 +471,9 @@ export const publishDataForIndividualPaid = async (
     throw new Error('clientId is not set, need invoke the function initClientId frist');
   }
 
-  const label = 'pair_for_subscriber_visable_' + clientId; //'_' + strategyIndex; //nanoid();
-  const strategy: Strategy = await account.createStrategyWithLabelPrefixAndStrategyIndex(`${label}`, '');
+  //Note: In the createStrategyWithLabelPrefixAndStrategyIndex function, the label will also add the strategy's index to the base prefix, in order to increase the uniqueness.
+  const labelPrefix = 'pair_for_subscriber_visable_' + clientId; //'_' + strategyIndex; //nanoid();
+  const strategy: Strategy = await account.createStrategyWithLabelPrefixAndStrategyIndex(`${labelPrefix}`, '');
 
   const filesInfo = await uploadDataSpecifiedLocalPolicy(account, strategy, dataInfoList);
 
