@@ -7,7 +7,7 @@ import { signMessage } from '../../utils/sign.message';
 
 import { Account, Strategy, web3 } from '../../hdwallet/api/account';
 import { GAS_LIMIT_FACTOR, GAS_PRICE_FACTOR } from '../../chainnet/config';
-import { setClientId} from '../../chainnet/api/getData';
+import { getClientId, setClientId} from '../../chainnet/api/getData';
 import { DecimalToInteger } from '../../utils/math';
 import { hexlify, arrayify } from 'ethers/lib/utils';
 //import { arrayify } from '@ethersproject/bytes'
@@ -358,9 +358,15 @@ export const publishDataForFreeVisible = async (
   let strategy: Strategy | undefined = account.getStrategy(strategyIndex);
 
   if (isBlank(strategy)) {
+    const clientId = await getClientId();
+
+    if (isBlank(clientId)) {
+      throw new Error('clientId is not set, need invoke the function initClientId frist');
+    }
+
     /**
      * 1. Labels cannot use random nanoid, otherwise account recovery will be difficult if the account is lost.
-    * 2. Paid subscriptions can only be used within the same project, cross-project subscriptions require re-payment.
+     * 2. Paid subscriptions can only be used within the same project, cross-project subscriptions require re-payment.
      */
     const label = 'pair_for_subscriber_visable_' + clientId + '_' + strategyIndex ; //nanoid();
     strategy = await account.createStrategyByLabel(label);
@@ -407,9 +413,16 @@ export const publishDataForPaidSubscriberVisible = async (
   let strategy: Strategy | undefined = account.getStrategy(strategyIndex);
 
   if (isBlank(strategy)) {
+
+    const clientId = await getClientId();
+
+    if (isBlank(clientId)) {
+      throw new Error('clientId is not set, need invoke the function initClientId frist');
+    }
+
     /**
      * 1. Labels cannot use random nanoid, otherwise account recovery will be difficult if the account is lost.
-    * 2. Paid subscriptions can only be used within the same project, cross-project subscriptions require re-payment.
+     * 2. Paid subscriptions can only be used within the same project, cross-project subscriptions require re-payment.
      */
     const label = 'pair_for_subscriber_visable_' + clientId + '_' + strategyIndex ; //nanoid();
     strategy = await account.createStrategyByLabel(label);
@@ -452,6 +465,11 @@ export const publishDataForIndividualPaid = async (
 ): Promise<object> => {
   console.log('uploadDataByCreatePolicy account', account);
 
+  const clientId = await getClientId();
+
+  if (isBlank(clientId)) {
+    throw new Error('clientId is not set, need invoke the function initClientId frist');
+  }
 
   const label = 'pair_for_subscriber_visable_' + clientId; //'_' + strategyIndex; //nanoid();
   const strategy: Strategy = await account.createStrategyWithLabelPrefixAndStrategyIndex(`${label}`, '');
