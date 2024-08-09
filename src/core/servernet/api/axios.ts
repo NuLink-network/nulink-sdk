@@ -53,7 +53,7 @@ export const signatureRequest = async (urlPath: string, method: string, data: ob
 };
 
 //exclude show error message list
-const excludeList = ['file/create-policy-and-upload', 'file/upload', 'file/batch-upload', 'apply/detail'];
+const excludeList = ['file/create-policy-and-upload', 'file/upload', 'file/batch-upload', '/file/create-or-specified-policy-and-upload', 'apply/detail'];
 
 // Configure common request headers
 // axios.defaults.baseURL = 'https://127.0.0.1:3000/api'

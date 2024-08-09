@@ -7,7 +7,7 @@ import { signMessage } from '../../utils/sign.message';
 
 import { Account, Strategy, web3 } from '../../hdwallet/api/account';
 import { GAS_LIMIT_FACTOR, GAS_PRICE_FACTOR } from '../../chainnet/config';
-import { getClientId, setClientId} from '../../chainnet/api/getData';
+import { getClientId, setClientId } from '../../chainnet/api/getData';
 import { DecimalToInteger } from '../../utils/math';
 import { hexlify, arrayify } from 'ethers/lib/utils';
 //import { arrayify } from '@ethersproject/bytes'
@@ -88,7 +88,6 @@ import { getWeb3 } from '../../hdwallet/api';
 import { getRandomElementsFromArray } from '../../../core/utils';
 import { NETWORK_LIST } from '../../sol';
 import { getDataCategoryString } from './utils';
-
 
 /**
  * @internal
@@ -325,292 +324,6 @@ export const updateAccountInfo = async (account: Account, updateData: Record<str
   const data = await serverPost('/account/update', sendData);
 
   return data;
-};
-
-/**
- * Uploads files/data for free subscriber-only visible user 
- * @category Data Publisher(Alice) Upload Data
- * @param {Account} account - The account to use to create the policy and upload the files/data.
- * @param {DataInfo[]} dataInfoList - The list of files/data to upload. Each element of the array must be an object with properties 'label' and 'dataArrayBuffer'.
- * @returns {Promise<object []>} - Returns account, strategy id and files info
- * {    address: accountAddress,
- *      strategyId: strategyId,
- *      pk: accountPublicKey,
- *      filesInfo:
- *      [                                                    
- *       {      
- *         id: fileId,
- *         label: fileName,
- *         thumbnail: fileThumbnail,  //return only if the input parameters include the specified parameters
- *         mimtype: fileMimtype,   //return only if the input parameters include the specified parameters
- *       }
- *      ]
- * }
-
- */
-export const publishDataForFreeVisible = async (
-  account: Account,
-  dataInfoList: DataInfo[] //data information list //just allow upload one file
-): Promise<object> => {
-  console.log('uploadDataByCreatePolicy account', account);
-
-  const strategyIndex = 0;
-  let strategy: Strategy | undefined = account.getStrategy(strategyIndex);
-
-  if (isBlank(strategy)) {
-    const clientId = await getClientId();
-
-    if (isBlank(clientId)) {
-      throw new Error('clientId is not set, need invoke the function initClientId frist');
-    }
-
-    /**
-     * 1. Labels cannot use random nanoid, otherwise account recovery will be difficult if the account is lost.
-     * 2. Paid subscriptions can only be used within the same project, cross-project subscriptions require re-payment.
-     */
-    const label = 'pair_for_subscriber_visable_' + clientId + '_' + strategyIndex ; //nanoid();
-    strategy = await account.createStrategyByLabel(label);
-  }
-  strategy = strategy as Strategy;
-  const filesInfo = await uploadDataSpecifiedLocalPolicy(account, strategy, dataInfoList);
-
-  return {
-    address: account.address,
-    strategyId: strategy.id,
-    pk: account.encryptedKeyPair._publicKey,
-    filesInfo: filesInfo
-  };
-};
-
-/**
- * Uploads files/data for paid subscriber-only visible user
- * @category Data Publisher(Alice) Upload Data
- * @param {Account} account - The account to use to create the policy and upload the files/data.
- * @param {DataInfo[]} dataInfoList - The list of files/data to upload. Each element of the array must be an object with properties 'label' and 'dataArrayBuffer'.
- * @returns {Promise<object>} - Returns account, strategy id and files info
- * {    address: accountAddress,
- *      strategyId: strategyId,
- *      pk: accountPublicKey,
- *      filesInfo:
- *      [                                                    
- *       {      
- *         id: fileId,
- *         label: fileName,
- *         thumbnail: fileThumbnail,  //return only if the input parameters include the specified parameters
- *         mimtype: fileMimtype,   //return only if the input parameters include the specified parameters
- *       }
- *      ]
- * }
-
- */
-export const publishDataForPaidSubscriberVisible = async (
-  account: Account,
-  dataInfoList: DataInfo[] //data information list //just allow upload one file
-): Promise<object> => {
-  console.log('uploadDataByCreatePolicy account', account);
-
-  const strategyIndex = 1;
-  let strategy: Strategy | undefined = account.getStrategy(strategyIndex);
-
-  if (isBlank(strategy)) {
-
-    const clientId = await getClientId();
-
-    if (isBlank(clientId)) {
-      throw new Error('clientId is not set, need invoke the function initClientId frist');
-    }
-
-    /**
-     * 1. Labels cannot use random nanoid, otherwise account recovery will be difficult if the account is lost.
-     * 2. Paid subscriptions can only be used within the same project, cross-project subscriptions require re-payment.
-     */
-    const label = 'pair_for_subscriber_visable_' + clientId + '_' + strategyIndex ; //nanoid();
-    strategy = await account.createStrategyByLabel(label);
-  }
-  strategy = strategy as Strategy;
-  const filesInfo = await uploadDataSpecifiedLocalPolicy(account, strategy, dataInfoList);
-
-  return {
-    address: account.address,
-    strategyId: strategy.id,
-    pk: account.encryptedKeyPair._publicKey,
-    filesInfo: filesInfo
-  };
-};
-
-/** 
- * Uploads files/data that require individual paid subscription to view
- * @category Data Publisher(Alice) Upload Data
- * @param {Account} account - The account to use to create the policy and upload the files/data.
- * @param {DataInfo[]} dataInfoList - The list of files/data to upload. Each element of the array must be an object with properties 'label' and 'dataArrayBuffer'.
- * @returns {Promise<object>} - Returns account, strategy id and files info
- * {    address: accountAddress,
- *      strategyId: strategyId,
- *      pk: accountPublicKey,
- *      filesInfo:
- *      [                                                    
- *       {      
- *         id: fileId,
- *         label: fileName,
- *         thumbnail: fileThumbnail,  //return only if the input parameters include the specified parameters
- *         mimtype: fileMimtype,   //return only if the input parameters include the specified parameters
- *       }
- *      ]
- * }
-
- */
-export const publishDataForIndividualPaid = async (
-  account: Account,
-  dataInfoList: DataInfo[] //data information list //just allow upload one file
-): Promise<object> => {
-  console.log('uploadDataByCreatePolicy account', account);
-
-  const clientId = await getClientId();
-
-  if (isBlank(clientId)) {
-    throw new Error('clientId is not set, need invoke the function initClientId frist');
-  }
-
-  //Note: In the createStrategyWithLabelPrefixAndStrategyIndex function, the label will also add the strategy's index to the base prefix, in order to increase the uniqueness.
-  const labelPrefix = 'pair_for_subscriber_visable_' + clientId; //'_' + strategyIndex; //nanoid();
-  const strategy: Strategy = await account.createStrategyWithLabelPrefixAndStrategyIndex(`${labelPrefix}`, '');
-
-  const filesInfo = await uploadDataSpecifiedLocalPolicy(account, strategy, dataInfoList);
-
-  return {
-    address: account.address,
-    strategyId: strategy.id,
-    pk: account.encryptedKeyPair._publicKey,
-    filesInfo: filesInfo
-  };
-};
-
-/**
- * @internal
- * Uploads files/data to the server by exist local policy (note: policy may not yet be on-chain) and uploading the files/data encrypted with the policy's public key to IPFS.
- * @category Data Publisher(Alice) Upload Data
- * @param {Account} account - The account to use to create the policy and upload the files/data.
- * @param {DataInfo[]} dataInfoList - The list of files/data to upload. Each element of the array must be an object with properties 'label' and 'dataArrayBuffer'.
- * @returns {Promise<object []>} - Returns the fileInfo list:
- * [
- *  {
- *    id: fileId,
- *    label: fileName,
- *    thumbnail: fileThumbnail,  //return only if the input parameters include the specified parameters
- *    mimtype: fileMimtype,   //return only if the input parameters include the specified parameters
- *  }
- * ]
- */
-export const uploadDataSpecifiedLocalPolicy = async (
-  account: Account,
-  strategy: Strategy,
-  dataInfoList: DataInfo[] //data information list //just allow upload one file
-): Promise<object[]> => {
-  const dataContentList: ArrayBuffer[] = [];
-  for (const dataInfo of dataInfoList) {
-    dataContentList.push(dataInfo.dataArrayBuffer);
-  }
-  // console.log("uploadDataByCreatePolicy dataContentList", dataContentList);
-
-  const _encryptMessages: MessageKit[] = encryptMessage(strategy.strategyKeyPair._publicKey, dataContentList);
-  // console.log("uploadDataByCreatePolicy _encryptMessages", _encryptMessages);
-  const mockIPFSAddressList: string[] = [];
-
-  const data: Uint8Array[] = _encryptMessages.map((encryptMessage) => encryptMessage.toBytes() /*Uint8Array*/);
-  const cids: string[] = await StorageManager.setData(data, account);
-  mockIPFSAddressList.push(...cids);
-
-  const retDataInfoList: object[] = [];
-  // console.log("uploadDataByCreatePolicy mockIPFSAddressList", mockIPFSAddressList);
-  const dataInfos: object[] = [];
-  for (let index = 0; index < dataInfoList.length; index++) {
-    const dataInfo = dataInfoList[index];
-
-    const dataId = nanoid();
-
-    //The generation of thumbnail logic should be handled by a third-party DApp, rather than implemented in the pre-process. Therefore, it needs to be moved to the third-party DApp, and this part should be blocked
-    //generate and upload thumbnail files to IPFS
-    // eslint-disable-next-line prefer-const
-    let thumbnail = '';
-    // try {
-    //  const result = await getBlurThumbnail(
-    //    dataInfo.dataArrayBuffer,
-    //    dataInfo.label
-    //  );
-    //  if (isBlank(result)) {
-    //    thumbnail = "";
-    //  } else {
-    //    const { buffer: thumbnailBuffer, mimeType }: ThumbailResult =
-    //      result as ThumbailResult;
-    //    const cid: string = await StorageManager.setData([thumbnailBuffer.buffer], account)[0];
-    //    thumbnail = mimeType + "|" + cid;
-    //  }
-    // } catch (error) {
-    //  thumbnail = "";
-    //  console.error(
-    //    `generate or upload thumbail failed data label: ${dataInfo.label}, data id:${dataId}`,
-    //    error
-    //  );
-    // }
-
-    const _data = {
-      id: dataId,
-      name: dataInfo.label,
-      address: mockIPFSAddressList[index],
-      md5: md5(new Uint8Array(dataInfo.dataArrayBuffer), {
-        encoding: 'binary'
-      }),
-      suffix: dataSuffix(dataInfo.label),
-      category: dataInfo.category || 'unkown',
-      thumbnail: dataInfo.thumbnail || '', //thumbnail || '',
-      mimtype: dataInfo.mimetype || ''
-    };
-    dataInfos.push(_data);
-
-    retDataInfoList.push({
-      id: _data.id,
-      name: _data.name,
-      thumbnail: _data.thumbnail,
-      mimtype: _data.mimtype
-    });
-  }
-  // console.log("uploadDataByCreatePolicy dataInfos", dataInfos);
-  try {
-    const sendData: any = {
-      files: dataInfos,
-      account_id: account.id,
-      policy_label_id: strategy.id,
-      policy_label: strategy.label,
-      policy_label_index: String(strategy.addressIndex),
-      encrypted_pk: strategy.strategyKeyPair._publicKey
-    };
-
-    sendData['signature'] = await signUpdateServerDataMessage(account, sendData);
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const data = await serverPost('/file/create-or-specified-policy-and-upload', sendData);
-  } catch (error: any) {
-    // Message.error("upload file failed!");
-    console.error('upload data failed!: ', error);
-
-    if (error?.data?.code != 4011) {
-      //Error code 4011(error?.data?.msg is policy label already exists) does not require deleting the policy.
-
-      // clear this failed strategy info
-      await account.deleteStrategy(strategy.addressIndex);
-    } else {
-      //4011
-      if (!isBlank(error?.data?.msg)) {
-        error.data.msg = error.data.msg + ' ' + 'Please refresh the file upload page and upload again';
-      }
-    }
-
-    throw error;
-  }
-
-  // console.log("uploadDataByCreatePolicy after serverPost", data);
-
-  return retDataInfoList;
 };
 
 /**
@@ -1031,7 +744,7 @@ return data format: {
  * Applies for files/data usage permission for the specified files/data, This account acts as the user(Bob).
  * @category Data User(Bob) Request Data
  * @param {string[]} dataIds - An array of file IDs to apply for usage permission.
- * @param {Account} account - The account that applies for the permission.
+ * @param {Account} account - The account that applies for the permission（Bob）.
  * @param {number} usageDays - (Optional) The validity period of the application, in days. Default is 7.
  * @returns {Promise<void>}
  */
@@ -1074,7 +787,7 @@ export const applyForDataUsagesPermission = async (dataIds: string[], account: A
  *          If the policy corresponding to the document has already been applied for, it will return code: 4109, msg: "current file does not need to apply"
  * @category Data User(Bob) Request Data
  * @param {string} dataId - A file ID to apply for usage permission.
- * @param {Account} account - The account that applies for the permission.
+ * @param {Account} account - The account that applies for the permission（Bob）.
  * @param {number} usageDays - (Optional) The validity period of the application, in days. Default is 7.
  * @returns {Promise<void>}
  */
@@ -1722,6 +1435,7 @@ export const getPolicysTokenCost = async (
 };
 
 /**
+ * @internal
  * calcurate publish policy server fee (nlk/tnlk), you can get ether: Web3.utils.fromWei(costGasWei.toNumber().toString(), "ether" )
  * @category Data Publisher(Alice) Approval
  * @param {Account} alice - the current logined Account object as file/data publisher
@@ -1730,7 +1444,7 @@ export const getPolicysTokenCost = async (
  * @param {number} ursulaShares - Number of service shares
  * @returns {Promise<BigNumber>} - the amount of NLK/TNLK in wei
  */
-const calcPolicyCost = async (
+export const calcPolicyCost = async (
   alice: Alice,
   startDate: Date, //policy usage start date
   endDate: Date, //policy usage start date
@@ -1752,6 +1466,7 @@ const calcPolicyCost = async (
 };
 
 /**
+ * @internal
  * Calculating service fees (nlk/tnlk) for publishing multiple policys, you can get ether: Web3.utils.fromWei(costGasWei.toNumber().toString(), "ether" )
  * @category Data Publisher(Alice) Approval (Multi)
  * @param {Account} alice - the current logined Account object as file/data publisher
@@ -1760,7 +1475,7 @@ const calcPolicyCost = async (
  * @param {number[]} ursulaShares - Number of service shares
  * @returns {Promise<BigNumber>} - the amount of NLK/TNLK in wei
  */
-const calcPolicysCost = async (
+export const calcPolicysCost = async (
   alice: Alice,
   startDates: Date[], //policy usage start date
   endDates: Date[], //policy usage start date
@@ -1893,8 +1608,92 @@ export const estimatePolicyGas = async (
   return gasInfo;
 };
 
+
 /**
- *
+ * @internal
+ * estimate service gas fees for sharing data/files. The batch version of the getPolicyGasFee function.
+ * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
+ * @category Data Publisher(Alice) Approval (Multi)
+ * @throws {@link UnauthorizedError} get logined account failed, must be login account first
+ * @throws {@link PolicyHasBeenActivedOnChain} Policy has been actived(created) on chain (policy is currently active)
+ * @throws {@link PolicyApproving} Policy are under review, please wait for the review to complete
+ * @param {Account} publisher - Account the account object of the file/data publisher (Alice)
+ * @param {string[]} userAccountIds - the account Id of the data/file applicant (Bob)
+ * @param {string[]} applyIds - The application ID returned to the user by the interface when applying to use a specific data/file
+ * @param {number[]} ursulaShares - Number of service shares
+ * @param {number[]} ursulaThreshold - The data/file user can download the data/file after obtaining the specified number of service data shares
+ * @param {number[]} startSeconds - Start time of data/file usage application in UTC seconds
+ * @param {number[]} endSeconds - End time of data/file usage application in UTC seconds
+ * @param {BigNumber} serverFee - server fees by call function of `getPolicysServerFee`
+ * @param {BigNumber} gasPrice - the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
+ * @returns {Promise<String>} - the GasInfo of bnb/tbnb in wei
+ */
+export const estimatePolicysGasFee = async (
+  publisher: Account,
+  userAccountIds: string[],
+  applyIds: string[],
+  ursulaShares: number[],
+  ursulaThresholds: number[],
+  startSeconds: number[], //policy usage start
+  endSeconds: number[], //policy usage start
+  serverFee: BigNumber, // nlk fee in wei
+  gasPrice: BigNumber = BigNumber.from("0") //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
+): Promise<GasInfo> => {
+  try {
+
+    // console.log(account, applyId, ursulaShares, ursulaThreshold);
+    const startDates : Date [] = [];
+    const endDates : Date [] = [];
+    for (let index = 0; index < startSeconds.length; index++) {
+      const _startSeconds = startSeconds[index];
+      const _endSeconds = endSeconds[index];
+      const startDate: Date = new Date(_startSeconds * 1000) //  start_at is seconds, but Date needs milliseconds
+      const endDate: Date = new Date(_endSeconds * 1000) //  end_at is seconds, but Date needs milliseconds
+      startDates.push(startDate);
+      endDates.push(endDate);
+
+      console.log(
+        "getPolicysGasFee: ",
+        index,
+        _startSeconds,
+        _endSeconds,
+        ursulaShares[index]
+      );
+    }
+
+    const gasInfo: GasInfo = await _estimatePolicysGas(
+      publisher,
+      userAccountIds,
+      applyIds,
+      ursulaShares,
+      ursulaThresholds,
+      startDates,
+      endDates,
+      serverFee,
+      gasPrice
+    );
+    // const gasValue = Web3.utils.fromWei(gasInfo.gasFee.toString(), "ether");
+    return gasInfo;
+  } catch (error: any) {
+    const error_info: string = error?.message || error
+
+    if (
+      typeof error_info === "string" &&
+      error_info?.toLowerCase()?.includes("policy is currently active")
+    ) {
+      console.error(error_info, error);
+      //The policy has been created successfully, and there is no need to created again
+      throw new PolicyHasBeenActivedOnChain('Policy is currently active')
+    }
+
+    console.error(error_info, error)
+    // Message.error(`Failed to get gas fee!! reason: ${error_info}`);
+    throw error
+  }
+}
+
+/**
+ * @internal
  * estimate the gas fee for batch (sharing files/data) creating policies.
  * @category Data Publisher(Alice) Approval (Multi)
  * @param {Account} publisher - Account the account object of the file/data publisher (Alice)
@@ -1909,7 +1708,7 @@ export const estimatePolicyGas = async (
  * @param {string} porterUri - (Optional) the porter service url
  * @returns {Promise<BigNumber>} - the amount of bnb/tbnb in wei
  */
-export const estimatePolicysGas = async (
+export const _estimatePolicysGas = async (
   publisher: Account,
   userAccountIds: string[], // proposer account id
   applyIds: string[], // Application Record id
@@ -2174,7 +1973,7 @@ const getBlockchainPolicy = async (
 /**
  * @internal
  */
-const getBlockchainPolicys = async (
+export const getBlockchainPolicys = async (
   publisher: Account,
   userAccountIds: string[], // proposer account ids
   applyIds: string[], // Application Record ids
@@ -3657,14 +3456,3 @@ export const getPolicyLabelIdsByAccountId = async (accountId: string) => {
   const data = await serverPost('/label/label-ids', sendData);
   return data;
 };
-
-
-/**
-  * Set Project ID, which requires application to Nulink official
-  * @param {string} clientId -  Project ID, differentiate the sources of data from different applications
-  * @returns {Promise<void>}
-*/
-export const initClientId = async (clientId: string) => {
-  return setClientId(clientId);
-};
-

@@ -4,23 +4,25 @@
  * @module pre
  * @preferred
  */
-import { getPolicyTokenCost, getPolicysTokenCost, estimatePolicyGas as gasFee, estimatePolicysGas as getBatchCreatePolicyGasFee } from '../core/pre'
-import { PolicyHasBeenActivedOnChain } from '../core'
-import { BigNumber } from 'ethers'
-import { Account, NuLinkHDWallet } from '../core/hdwallet/api/account'
-import { getWalletDefaultAccount } from './wallet'
-import { getSettingsData as getConfigData } from '../core/chainnet'
-import * as pre from '../core/pre'
-import { isBlank } from '../core/utils'
-import * as exception from '../core/utils/exception'
-import {UnauthorizedError} from '../core/utils/exception' //for comment
 import {
-  sendRawTransaction,
-  sendRawTransactionGas,
-} from "../core/pre/api/transaction";
-import { GasInfo } from '../core/pre'
+  getPolicyTokenCost,
+  getPolicysTokenCost,
+  estimatePolicyGas as gasFee,
+  estimatePolicysGasFee
+} from '../core/pre';
+import { PolicyHasBeenActivedOnChain } from '../core';
+import { BigNumber } from 'ethers';
+import { Account, NuLinkHDWallet } from '../core/hdwallet/api/account';
+import { getWalletDefaultAccount } from './wallet';
+import { getSettingsData as getConfigData } from '../core/chainnet';
+import * as pre from '../core/pre';
+import { isBlank } from '../core/utils';
+import * as exception from '../core/utils/exception';
+import { UnauthorizedError } from '../core/utils/exception'; //for comment
+import { sendRawTransaction, sendRawTransactionGas } from '../core/pre/api/transaction';
+import { GasInfo } from '../core/pre';
 
-export type { BigNumber } from 'ethers'
+export type { BigNumber } from 'ethers';
 
 /**
  * get service fees (NLK/TNLK) for sharing data/files
@@ -33,28 +35,22 @@ export type { BigNumber } from 'ethers'
  * @returns {string} - the amount of NLK/TNLK in wei
  */
 export const getPolicyServerFee = async (startSeconds: number, endSeconds: number, ursulaShares: number) => {
-  const account = await getWalletDefaultAccount()
+  const account = await getWalletDefaultAccount();
   if (isBlank(account)) {
     throw new exception.UnauthorizedError(
       'Please unlock account with your password first by call getWalletDefaultAccount(userpassword)'
-    )
+    );
   }
 
-  console.log(account, startSeconds, endSeconds, ursulaShares)
+  console.log(account, startSeconds, endSeconds, ursulaShares);
 
-  const startDate: Date = new Date(startSeconds * 1000) //  start_at is seconds, but Date needs milliseconds
-  const endDate: Date = new Date(endSeconds * 1000) //  end_at is seconds, but Date needs milliseconds
+  const startDate: Date = new Date(startSeconds * 1000); //  start_at is seconds, but Date needs milliseconds
+  const endDate: Date = new Date(endSeconds * 1000); //  end_at is seconds, but Date needs milliseconds
 
-  const serverWei = await getPolicyTokenCost(
-    account as Account,
-    startDate,
-    endDate,
-    ursulaShares
-  );
+  const serverWei = await getPolicyTokenCost(account as Account, startDate, endDate, ursulaShares);
   // const gasValue = Web3.utils.fromWei(serverWei.toString(), "ether");
-  return serverWei.toString()
-}
-
+  return serverWei.toString();
+};
 
 /**
  * Retrieving the total of the service fees (NLK/TNLK) in bulk for data/file sharing purposes.
@@ -66,48 +62,37 @@ export const getPolicyServerFee = async (startSeconds: number, endSeconds: numbe
  * @param {number[]} ursulaShares - An array of the number of service shares
  * @returns {string} - the amount of NLK/TNLK in wei
  */
- export const getPolicysServerFee = async (startSeconds: number [], endSeconds: number [], ursulaShares: number []) => {
-  const account = await getWalletDefaultAccount()
+export const getPolicysServerFee = async (startSeconds: number[], endSeconds: number[], ursulaShares: number[]) => {
+  const account = await getWalletDefaultAccount();
   if (isBlank(account)) {
     throw new exception.UnauthorizedError(
       'Please unlock account with your password first by call getWalletDefaultAccount(userpassword)'
-    )
-  }
-
-  console.log(account);
-  const startDates : Date [] = [];
-  const endDates : Date [] = [];
-  for (let index = 0; index < startSeconds.length; index++) {
-    const _startSeconds = startSeconds[index];
-    const _endSeconds = endSeconds[index];
-    const startDate: Date = new Date(_startSeconds * 1000) //  start_at is seconds, but Date needs milliseconds
-    const endDate: Date = new Date(_endSeconds * 1000) //  end_at is seconds, but Date needs milliseconds
-    startDates.push(startDate);
-    endDates.push(endDate);
-
-    console.log(
-      "getPolicysServerFee: ",
-      index,
-      _startSeconds,
-      _endSeconds,
-      ursulaShares[index]
     );
   }
 
-  const serverWei = await getPolicysTokenCost(
-    account as Account,
-    startDates,
-    endDates,
-    ursulaShares
-  );
+  console.log(account);
+  const startDates: Date[] = [];
+  const endDates: Date[] = [];
+  for (let index = 0; index < startSeconds.length; index++) {
+    const _startSeconds = startSeconds[index];
+    const _endSeconds = endSeconds[index];
+    const startDate: Date = new Date(_startSeconds * 1000); //  start_at is seconds, but Date needs milliseconds
+    const endDate: Date = new Date(_endSeconds * 1000); //  end_at is seconds, but Date needs milliseconds
+    startDates.push(startDate);
+    endDates.push(endDate);
+
+    console.log('getPolicysServerFee: ', index, _startSeconds, _endSeconds, ursulaShares[index]);
+  }
+
+  const serverWei = await getPolicysTokenCost(account as Account, startDates, endDates, ursulaShares);
   // const gasValue = Web3.utils.fromWei(serverWei.toString(), "ether");
-  return serverWei.toString()
-}
+  return serverWei.toString();
+};
 
 /**
  * estimate service gas fees for sharing data/files
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
- * @category Data Publisher(Alice) Approval 
+ * @category Data Publisher(Alice) Approval
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @throws {@link PolicyHasBeenActivedOnChain} Policy has been actived(created) on chain (policy is currently active)
  * @throws {@link PolicyApproving} Policy are under review, please wait for the review to complete
@@ -129,20 +114,20 @@ export const getPolicyGasFee = async (
   startSeconds: number, //policy usage start
   endSeconds: number, //policy usage start
   serverFee: BigNumber, // nlk fee in wei
-  gasPrice: BigNumber = BigNumber.from("0") //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
+  gasPrice: BigNumber = BigNumber.from('0') //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
 ): Promise<GasInfo> => {
   try {
-    const account = await getWalletDefaultAccount()
+    const account = await getWalletDefaultAccount();
     if (isBlank(account)) {
       throw new exception.UnauthorizedError(
         'Please unlock account with your password first by call getWalletDefaultAccount(userpassword)'
-      )
+      );
     }
 
     // console.log(account, applyId, ursulaShares, ursulaThreshold);
 
-    const startDate: Date = new Date(Number(startSeconds) * 1000) //  start_at is seconds, but Date needs milliseconds
-    const endDate: Date = new Date(Number(endSeconds) * 1000) //  end_at is seconds, but Date needs milliseconds
+    const startDate: Date = new Date(Number(startSeconds) * 1000); //  start_at is seconds, but Date needs milliseconds
+    const endDate: Date = new Date(Number(endSeconds) * 1000); //  end_at is seconds, but Date needs milliseconds
 
     const gasInfo: GasInfo = await gasFee(
       account as Account,
@@ -158,18 +143,18 @@ export const getPolicyGasFee = async (
     // const gasValue = Web3.utils.fromWei(gasInfo.gasFee.toString(), "ether");
     return gasInfo;
   } catch (error: any) {
-    const error_info: string = error?.message || error
+    const error_info: string = error?.message || error;
 
     if (typeof error_info === 'string' && error_info?.toLowerCase()?.includes('policy is currently active')) {
       //The policy has been created successfully, and there is no need to created again
-      throw new PolicyHasBeenActivedOnChain('Policy is currently active')
+      throw new PolicyHasBeenActivedOnChain('Policy is currently active');
     }
 
-    console.error(error_info, error)
+    console.error(error_info, error);
     // Message.error(`Failed to get gas fee!! reason: ${error_info}`);
-    throw error
+    throw error;
   }
-}
+};
 
 /**
  * estimate service gas fees for sharing data/files. The batch version of the getPolicyGasFee function.
@@ -196,107 +181,69 @@ export const getPolicysGasFee = async (
   startSeconds: number[], //policy usage start
   endSeconds: number[], //policy usage start
   serverFee: BigNumber, // nlk fee in wei
-  gasPrice: BigNumber = BigNumber.from("0") //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
+  gasPrice: BigNumber = BigNumber.from('0') //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
 ): Promise<GasInfo> => {
-  try {
-    const account = await getWalletDefaultAccount()
-    if (isBlank(account)) {
-      throw new exception.UnauthorizedError(
-        'Please unlock account with your password first by call getWalletDefaultAccount(userpassword)'
-      )
-    }
-
-    // console.log(account, applyId, ursulaShares, ursulaThreshold);
-
-    console.log(account);
-    const startDates : Date [] = [];
-    const endDates : Date [] = [];
-    for (let index = 0; index < startSeconds.length; index++) {
-      const _startSeconds = startSeconds[index];
-      const _endSeconds = endSeconds[index];
-      const startDate: Date = new Date(_startSeconds * 1000) //  start_at is seconds, but Date needs milliseconds
-      const endDate: Date = new Date(_endSeconds * 1000) //  end_at is seconds, but Date needs milliseconds
-      startDates.push(startDate);
-      endDates.push(endDate);
-
-      console.log(
-        "getPolicysGasFee: ",
-        index,
-        _startSeconds,
-        _endSeconds,
-        ursulaShares[index]
-      );
-    }
-
-    const gasInfo: GasInfo = await getBatchCreatePolicyGasFee(
-      account as Account,
-      userAccountIds,
-      applyIds,
-      ursulaShares,
-      ursulaThresholds,
-      startDates,
-      endDates,
-      serverFee,
-      gasPrice
+  const publisher = await getWalletDefaultAccount();
+  if (isBlank(publisher)) {
+    throw new exception.UnauthorizedError(
+      'Please unlock account with your password first by call getWalletDefaultAccount(userpassword)'
     );
-    // const gasValue = Web3.utils.fromWei(gasInfo.gasFee.toString(), "ether");
-    return gasInfo;
-  } catch (error: any) {
-    const error_info: string = error?.message || error
-
-    if (
-      typeof error_info === "string" &&
-      error_info?.toLowerCase()?.includes("policy is currently active")
-    ) {
-      console.error(error_info, error);
-      //The policy has been created successfully, and there is no need to created again
-      throw new PolicyHasBeenActivedOnChain('Policy is currently active')
-    }
-
-    console.error(error_info, error)
-    // Message.error(`Failed to get gas fee!! reason: ${error_info}`);
-    throw error
   }
-}
+
+  // console.log(account, applyId, ursulaShares, ursulaThreshold);
+
+  console.log(publisher);
+  return await estimatePolicysGasFee(
+    publisher as Account,
+    userAccountIds,
+    applyIds,
+    ursulaShares,
+    ursulaThresholds,
+    startSeconds,
+    endSeconds,
+    serverFee,
+    gasPrice
+  );
+};
 
 /**
  * get information of the logged-in user
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
- * @category Wallet Account 
+ * @category Wallet Account
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @returns {Promise<object>} - The object containing the user information: {"name": , "address": "account address", "id": "account id",  "service": "service URL"}
  */
 export const getLoginedUserInfo = async () => {
   //Web page Checks whether the user has logged in or get logined UserInfo. If so, the current login user name is returned
-  const account = await getWalletDefaultAccount()
+  const account = await getWalletDefaultAccount();
   if (isBlank(account)) {
     throw new exception.UnauthorizedError(
       'Please unlock account with your password first by call getWalletDefaultAccount(userpassword)'
-    )
+    );
   }
 
-  const config = await getConfigData()
+  const config = await getConfigData();
   return {
     name: account?.name,
     address: account?.address,
     id: account?.id,
     service: config.service, //pre backend service url
     chainId: config.chainId,
-    chainName: config.chainName,
-  }
-}
+    chainName: config.chainName
+  };
+};
 
 /**
  * Retrieve if the default account is logged in
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
- * @category Wallet Account 
+ * @category Wallet Account
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @returns {Promise<Boolean>}
  */
 export const isUserLogined = async (): Promise<boolean> => {
-  const account = await getWalletDefaultAccount()
-  return !!account
-}
+  const account = await getWalletDefaultAccount();
+  return !!account;
+};
 
 /**
  * Retrieve user information details
@@ -322,15 +269,15 @@ export const isUserLogined = async (): Promise<boolean> => {
                   }
  */
 export const getUserDetails = async () => {
-  const account = await getWalletDefaultAccount()
+  const account = await getWalletDefaultAccount();
   if (isBlank(account)) {
     throw new exception.UnauthorizedError(
       'Please unlock account with your password first by call getWalletDefaultAccount(userpassword)'
-    )
+    );
   }
 
-  return await pre.getAccountInfo((account as Account).id)
-}
+  return await pre.getAccountInfo((account as Account).id);
+};
 
 /**
  * Retrieve user information details by user account Id
@@ -357,13 +304,13 @@ export const getUserDetails = async () => {
  */
 export const getUserByAccountId = async (data: { accountId: string }) => {
   if (Object.prototype.hasOwnProperty.call(data, 'accountId')) {
-    return await pre.getAccountInfo(data['accountId'])
+    return await pre.getAccountInfo(data['accountId']);
   }
-  return null
-}
+  return null;
+};
 
 /** update info of current user account
- * @category Wallet Account 
+ * @category Wallet Account
  * @param {Object} data - the Object of update data. The input data must be one or more fields in the "data" section
  * @param {string} data.avatar - (Optional) the photo of current account
  * @param {string} data.nickname - (Optional) the nickname of current account
@@ -377,18 +324,18 @@ export const getUserByAccountId = async (data: { accountId: string }) => {
  * @returns {Promise<void>}
  */
 export const updateUserInfo = async (data: {
-  avatar?: string
-  nickname?: string
-  userSite?: string
-  twitter?: string
-  instagram?: string
-  facebook?: string
-  personalProfile?: string
+  avatar?: string;
+  nickname?: string;
+  userSite?: string;
+  twitter?: string;
+  instagram?: string;
+  facebook?: string;
+  personalProfile?: string;
 }) => {
-  const account = await getWalletDefaultAccount()
+  const account = await getWalletDefaultAccount();
 
-  return await pre.updateAccountInfo(account as Account, data as Record<string, string>)
-}
+  return await pre.updateAccountInfo(account as Account, data as Record<string, string>);
+};
 
 /**
  * Check if the application status is "under review" or "approved"
@@ -400,10 +347,10 @@ export const updateUserInfo = async (data: {
  */
 export const checkDataApprovalStatusIsUnderReviewOrApproved = async (data: { applyId: string }) => {
   if (Object.prototype.hasOwnProperty.call(data, 'applyId')) {
-    return await pre.checkDataApprovalStatusIsApprovedOrApproving(data['applyId'])
+    return await pre.checkDataApprovalStatusIsApprovedOrApproving(data['applyId']);
   }
-  return null
-}
+  return null;
+};
 
 /**
  * Approve the user's data/file usage request
@@ -444,16 +391,16 @@ export const ApprovalUseData = async (data: {
     Object.prototype.hasOwnProperty.call(data, 'userAccountId') &&
     Object.prototype.hasOwnProperty.call(data, 'applyId')
   ) {
-    const publisher = await getWalletDefaultAccount()
+    const publisher = await getWalletDefaultAccount();
 
     if (isBlank(publisher)) {
       throw new exception.UnauthorizedError(
         'Please unlock account with your password first by call getWalletDefaultAccount(userpassword)'
-      )
+      );
     }
 
-    const startDate: Date = new Date(Number(data['startSeconds']) * 1000) //  start_at is seconds, but Date needs milliseconds
-    const endDate: Date = new Date(Number(data['endSeconds']) * 1000) //  end_at is seconds, but Date needs milliseconds
+    const startDate: Date = new Date(Number(data['startSeconds']) * 1000); //  start_at is seconds, but Date needs milliseconds
+    const endDate: Date = new Date(Number(data['endSeconds']) * 1000); //  end_at is seconds, but Date needs milliseconds
 
     return await pre.approvalApplicationForUseData(
       publisher as Account,
@@ -463,22 +410,15 @@ export const ApprovalUseData = async (data: {
       data['ursulaThreshold'],
       startDate,
       endDate,
-      data && Object.prototype.hasOwnProperty.call(data, "remark")
-        ? data["remark"]
-        : "",
-      "",
-      data && Object.prototype.hasOwnProperty.call(data, "gasFeeInWei")
-        ? data["gasFeeInWei"]
-        : BigNumber.from("0"),
-      data && Object.prototype.hasOwnProperty.call(data, "gasPrice")
-        ? data["gasPrice"]
-        : BigNumber.from("0")
+      data && Object.prototype.hasOwnProperty.call(data, 'remark') ? data['remark'] : '',
+      '',
+      data && Object.prototype.hasOwnProperty.call(data, 'gasFeeInWei') ? data['gasFeeInWei'] : BigNumber.from('0'),
+      data && Object.prototype.hasOwnProperty.call(data, 'gasPrice') ? data['gasPrice'] : BigNumber.from('0')
     );
   }
 
-  return null
-}
-
+  return null;
+};
 
 /**
  * Approve the user's multi data/file usage request. The batch version of the ApprovalUseData function.
@@ -519,20 +459,16 @@ export const ApprovalMultiUseData = async (data: {
     Object.prototype.hasOwnProperty.call(data, 'userAccountIds') &&
     Object.prototype.hasOwnProperty.call(data, 'applyIds')
   ) {
-    const publisher = await getWalletDefaultAccount()
+    const publisher = await getWalletDefaultAccount();
 
     if (isBlank(publisher)) {
       throw new exception.UnauthorizedError(
         'Please unlock account with your password first by call getWalletDefaultAccount(userpassword)'
-      )
+      );
     }
 
-    const startDates: Date[] = data["startSecondsArray"].map(
-      (startSeconds) => new Date(Number(startSeconds) * 1000)
-    ); // start_at is seconds, but Date needs milliseconds
-    const endDates: Date[] = data["endSecondsArray"].map(
-      (endSeconds) => new Date(Number(endSeconds) * 1000)
-    ); // end_at is seconds, but Date needs milliseconds
+    const startDates: Date[] = data['startSecondsArray'].map((startSeconds) => new Date(Number(startSeconds) * 1000)); // start_at is seconds, but Date needs milliseconds
+    const endDates: Date[] = data['endSecondsArray'].map((endSeconds) => new Date(Number(endSeconds) * 1000)); // end_at is seconds, but Date needs milliseconds
 
     return await pre.approvalApplicationsForUseData(
       publisher as Account,
@@ -542,21 +478,15 @@ export const ApprovalMultiUseData = async (data: {
       data['ursulaThresholds'],
       startDates,
       endDates,
-      data && Object.prototype.hasOwnProperty.call(data, "remark")
-        ? data["remark"]
-        : "",
-      "",
-      data && Object.prototype.hasOwnProperty.call(data, "gasFeeInWei")
-        ? data["gasFeeInWei"]
-        : BigNumber.from("0"),
-      data && Object.prototype.hasOwnProperty.call(data, "gasPrice")
-        ? data["gasPrice"]
-        : BigNumber.from("0")
+      data && Object.prototype.hasOwnProperty.call(data, 'remark') ? data['remark'] : '',
+      '',
+      data && Object.prototype.hasOwnProperty.call(data, 'gasFeeInWei') ? data['gasFeeInWei'] : BigNumber.from('0'),
+      data && Object.prototype.hasOwnProperty.call(data, 'gasPrice') ? data['gasPrice'] : BigNumber.from('0')
     );
   }
 
-  return null
-}
+  return null;
+};
 
 /**
  * The data/file publisher retrieves a list of data/files that have been approved for use by others.
@@ -587,20 +517,20 @@ export const ApprovalMultiUseData = async (data: {
             }
  */
 export const getDataForApprovedAsPublisher = async (data: { pageIndex?: number; pageSize?: number }) => {
-  const account = await getWalletDefaultAccount()
+  const account = await getWalletDefaultAccount();
 
   if (isBlank(account)) {
     throw new exception.UnauthorizedError(
       'Please unlock account with your password first by call getWalletDefaultAccount(userpassword)'
-    )
+    );
   }
 
   return await pre.getApprovedDataAsPublisher(
     account as Account,
     data && Object.prototype.hasOwnProperty.call(data, 'pageIndex') ? data['pageIndex'] : 1,
     data && Object.prototype.hasOwnProperty.call(data, 'pageSize') ? data['pageSize'] : 10
-  )
-}
+  );
+};
 
 /**
  * The data/file applicant retrieves a list of data/files that have been approved for their own use.
@@ -631,20 +561,20 @@ export const getDataForApprovedAsPublisher = async (data: { pageIndex?: number; 
             }
  */
 export const getDataForApprovedAsUser = async (data: { pageIndex?: number; pageSize?: number }) => {
-  const account = await getWalletDefaultAccount()
+  const account = await getWalletDefaultAccount();
 
   if (isBlank(account)) {
     throw new exception.UnauthorizedError(
       'Please unlock account with your password first by call getWalletDefaultAccount(userpassword)'
-    )
+    );
   }
 
   return await pre.getApprovedDataAsUser(
     account as Account,
     data && Object.prototype.hasOwnProperty.call(data, 'pageIndex') ? data['pageIndex'] : 1,
     data && Object.prototype.hasOwnProperty.call(data, 'pageSize') ? data['pageSize'] : 10
-  )
-}
+  );
+};
 
 /**
  * The data/file publisher retrieves a list of data/files in all states that need to be approved for use by others.
@@ -675,20 +605,20 @@ export const getDataForApprovedAsUser = async (data: { pageIndex?: number; pageS
             }
  */
 export const getDataForAllStatusAsPublisher = async (data: { pageIndex?: number; pageSize?: number }) => {
-  const account = await getWalletDefaultAccount()
+  const account = await getWalletDefaultAccount();
 
   if (isBlank(account)) {
     throw new exception.UnauthorizedError(
       'Please unlock account with your password first by call getWalletDefaultAccount(userpassword)'
-    )
+    );
   }
 
   return await pre.getDataAllStatusAsPublisher(
     account as Account,
     data && Object.prototype.hasOwnProperty.call(data, 'pageIndex') ? data['pageIndex'] : 1,
     data && Object.prototype.hasOwnProperty.call(data, 'pageSize') ? data['pageSize'] : 10
-  )
-}
+  );
+};
 
 /**
  * Retrieve a list of data/files that have been approved for the data/file applicant's own use.
@@ -719,20 +649,20 @@ export const getDataForAllStatusAsPublisher = async (data: { pageIndex?: number;
             }
  */
 export const getDataApprovedForApplicantAsUser = async (data: { pageIndex?: number; pageSize?: number }) => {
-  const account = await getWalletDefaultAccount()
+  const account = await getWalletDefaultAccount();
 
   if (isBlank(account)) {
     throw new exception.UnauthorizedError(
       'Please unlock account with your password first by call getWalletDefaultAccount(userpassword)'
-    )
+    );
   }
 
   return await pre.getApprovedDataAsUser(
     account as Account,
     data && Object.prototype.hasOwnProperty.call(data, 'pageIndex') ? data['pageIndex'] : 1,
     data && Object.prototype.hasOwnProperty.call(data, 'pageSize') ? data['pageSize'] : 10
-  )
-}
+  );
+};
 
 /**
  * Retrieve a list of data/files in a specified state that need to be approved for use by others, for the data/file publisher.
@@ -764,16 +694,16 @@ export const getDataApprovedForApplicantAsUser = async (data: { pageIndex?: numb
             }
  */
 export const getDataByStatusForAllApplyAsPublisher = async (data: {
-  pageIndex?: number
-  pageSize?: number
-  status?: string | number
+  pageIndex?: number;
+  pageSize?: number;
+  status?: string | number;
 }) => {
-  const account = await getWalletDefaultAccount()
+  const account = await getWalletDefaultAccount();
 
   if (isBlank(account)) {
     throw new exception.UnauthorizedError(
       'Please unlock account with your password first by call getWalletDefaultAccount(userpassword)'
-    )
+    );
   }
 
   return await pre.getDataByApplyStatusAsPublisher(
@@ -781,8 +711,8 @@ export const getDataByStatusForAllApplyAsPublisher = async (data: {
     data && Object.prototype.hasOwnProperty.call(data, 'status') ? Number(data['status']) : 0,
     data && Object.prototype.hasOwnProperty.call(data, 'pageIndex') ? data['pageIndex'] : 1,
     data && Object.prototype.hasOwnProperty.call(data, 'pageSize') ? data['pageSize'] : 10
-  )
-}
+  );
+};
 
 /**
  * The data/file applicant retrieves a list of data/files in a specified state that need to be approved by others.
@@ -814,16 +744,16 @@ export const getDataByStatusForAllApplyAsPublisher = async (data: {
             }
  */
 export const getDataByStatusForAllApplyAsUser = async (data: {
-  pageIndex?: number
-  pageSize?: number
-  status?: string | number
+  pageIndex?: number;
+  pageSize?: number;
+  status?: string | number;
 }) => {
-  const account = await getWalletDefaultAccount()
+  const account = await getWalletDefaultAccount();
 
   if (isBlank(account)) {
     throw new exception.UnauthorizedError(
       'Please unlock account with your password first by call getWalletDefaultAccount(userpassword)'
-    )
+    );
   }
 
   return await pre.getDataByApplyStatusAsUser(
@@ -831,8 +761,8 @@ export const getDataByStatusForAllApplyAsUser = async (data: {
     data && Object.prototype.hasOwnProperty.call(data, 'status') ? Number(data['status']) : 0,
     data && Object.prototype.hasOwnProperty.call(data, 'pageIndex') ? data['pageIndex'] : 1,
     data && Object.prototype.hasOwnProperty.call(data, 'pageSize') ? data['pageSize'] : 10
-  )
-}
+  );
+};
 
 /**
  * The data/file applicant retrieves the content of a data/file that has been approved for their usage.
@@ -847,27 +777,27 @@ export const getDataByStatusForAllApplyAsUser = async (data: {
  */
 export const getApprovedFileContentUrl = async (data: { dataId: string; dataLabel: string }) => {
   if (data && Object.prototype.hasOwnProperty.call(data, 'dataId')) {
-    const account = await getWalletDefaultAccount()
+    const account = await getWalletDefaultAccount();
 
     if (isBlank(account)) {
       throw new exception.UnauthorizedError(
         'Please unlock account with your password first by call getWalletDefaultAccount(userpassword)'
-      )
+      );
     }
 
-    const arraybuffer: ArrayBuffer = await pre.getDataContentByDataIdAsUser(account as Account, data['dataId'])
+    const arraybuffer: ArrayBuffer = await pre.getDataContentByDataIdAsUser(account as Account, data['dataId']);
     // console.log("getApprovedFileContentUrl downloadFile arrayBuffer:", arraybuffer);
-    const blob = new Blob([arraybuffer], { type: 'arraybuffer' })
-    const url = window.URL.createObjectURL(blob)
+    const blob = new Blob([arraybuffer], { type: 'arraybuffer' });
+    const url = window.URL.createObjectURL(blob);
     // console.log("blob: ", blob);
     // console.log("getApprovedFileContentUrl url: ",url);
     // chrome.runtime.sendMessage({ method: "downloadFile", data: { url: url, dataLabel: data["dataLabel"] } });
 
-    return { url: url, dataLabel: data['dataLabel'] }
+    return { url: url, dataLabel: data['dataLabel'] };
   } else {
-    throw new exception.ParameterError(`The input parameter must have the "dataId" ,"dataLabel" fields`)
+    throw new exception.ParameterError(`The input parameter must have the "dataId" ,"dataLabel" fields`);
   }
-}
+};
 
 /**
  * The data/file applicant retrieves the content of a data/file that has been approved for their usage.
@@ -880,20 +810,20 @@ export const getApprovedFileContentUrl = async (data: { dataId: string; dataLabe
  */
 export const getApprovedDataContent = async (dataId): Promise<ArrayBuffer> => {
   if (!isBlank(dataId)) {
-    const account = await getWalletDefaultAccount()
+    const account = await getWalletDefaultAccount();
 
     if (isBlank(account)) {
       throw new exception.UnauthorizedError(
         'Please unlock account with your password first by call getWalletDefaultAccount(userpassword)'
-      )
+      );
     }
 
-    const arraybuffer: ArrayBuffer = await pre.getDataContentByDataIdAsUser(account as Account, dataId)
-    return arraybuffer
+    const arraybuffer: ArrayBuffer = await pre.getDataContentByDataIdAsUser(account as Account, dataId);
+    return arraybuffer;
   } else {
-    throw new exception.ParameterError(`The input parameter must have the "dataId" field`)
+    throw new exception.ParameterError(`The input parameter must have the "dataId" field`);
   }
-}
+};
 
 /**
  * The data/file publisher obtains the content of the data/file
@@ -908,27 +838,27 @@ export const getApprovedDataContent = async (dataId): Promise<ArrayBuffer> => {
  */
 export const getDataContentAsPublisher = async (data: { dataId: string; dataLabel: string }) => {
   if (data && Object.prototype.hasOwnProperty.call(data, 'dataId')) {
-    const account = await getWalletDefaultAccount()
+    const account = await getWalletDefaultAccount();
 
     if (isBlank(account)) {
       throw new exception.UnauthorizedError(
         'Please unlock account with your password first by call getWalletDefaultAccount(userpassword)'
-      )
+      );
     }
 
-    const arraybuffer: ArrayBuffer = await pre.getDataContentByDataIdAsPublisher(account as Account, data['dataId'])
+    const arraybuffer: ArrayBuffer = await pre.getDataContentByDataIdAsPublisher(account as Account, data['dataId']);
     // console.log("getApprovedFileContentUrl downloadFile arrayBuffer:", arraybuffer);
-    const blob = new Blob([arraybuffer], { type: 'arraybuffer' })
-    const url = window.URL.createObjectURL(blob)
+    const blob = new Blob([arraybuffer], { type: 'arraybuffer' });
+    const url = window.URL.createObjectURL(blob);
     // console.log("blob: ", blob);
     // console.log("getApprovedFileContentUrl url: ",url);
     // chrome.runtime.sendMessage({ method: "downloadFile", data: { url: url, dataLabel: data["dataLabel"] } });
 
-    return { url: url, dataLabel: data['dataLabel'] }
+    return { url: url, dataLabel: data['dataLabel'] };
   } else {
-    throw new exception.ParameterError(`The input parameter must have the "dataId" ,"dataLabel" fields`)
+    throw new exception.ParameterError(`The input parameter must have the "dataId" ,"dataLabel" fields`);
   }
-}
+};
 
 /**
  * Retrieves a list of data/files in a specified state.
@@ -963,13 +893,13 @@ export const getDataContentAsPublisher = async (data: { dataId: string; dataLabe
             }
  */
 export const getDataInfoByStatus = async (data: {
-  pageIndex?: number
-  pageSize?: number
-  status?: string | number
-  dataId?: string
-  proposerId?: string
-  fileOwnerId?: string
-  applyId?: string
+  pageIndex?: number;
+  pageSize?: number;
+  status?: string | number;
+  dataId?: string;
+  proposerId?: string;
+  fileOwnerId?: string;
+  applyId?: string;
 }) => {
   return await pre.getDataByStatus(
     data && Object.prototype.hasOwnProperty.call(data, 'dataId') ? data['dataId'] : undefined,
@@ -979,8 +909,8 @@ export const getDataInfoByStatus = async (data: {
     data && Object.prototype.hasOwnProperty.call(data, 'status') ? Number(data['status']) : 1,
     data && Object.prototype.hasOwnProperty.call(data, 'pageIndex') ? data['pageIndex'] : 1,
     data && Object.prototype.hasOwnProperty.call(data, 'pageSize') ? data['pageSize'] : 10
-  )
-}
+  );
+};
 
 /**
  * The publisher of the file obtains a list of the information of the policies.
@@ -1014,21 +944,20 @@ export const getDataInfoByStatus = async (data: {
             }
  */
 export const getPublishedPolicyInfos = async (data: { pageIndex?: number; pageSize?: number }) => {
-  const account = await getWalletDefaultAccount()
+  const account = await getWalletDefaultAccount();
 
   if (isBlank(account)) {
     throw new exception.UnauthorizedError(
       'Please unlock account with your password first by call getWalletDefaultAccount(userpassword)'
-    )
+    );
   }
 
   return await pre.getPublishedPoliciesInfo(
     account as Account,
     data && Object.prototype.hasOwnProperty.call(data, 'pageIndex') ? data['pageIndex'] : 1,
     data && Object.prototype.hasOwnProperty.call(data, 'pageSize') ? data['pageSize'] : 10
-  )
-}
-
+  );
+};
 
 /**
  * The applicant of the file obtains a list of the policy information
@@ -1062,20 +991,20 @@ export const getPublishedPolicyInfos = async (data: { pageIndex?: number; pageSi
             }
  */
 export const getPolicyInfosAsUser = async (data: { pageIndex?: number; pageSize?: number }) => {
-  const account = await getWalletDefaultAccount()
+  const account = await getWalletDefaultAccount();
 
   if (isBlank(account)) {
     throw new exception.UnauthorizedError(
       'Please unlock account with your password first by call getWalletDefaultAccount(userpassword)'
-    )
+    );
   }
 
   return await pre.getInUsePoliciesInfo(
     account as Account,
     data && Object.prototype.hasOwnProperty.call(data, 'pageIndex') ? data['pageIndex'] : 1,
     data && Object.prototype.hasOwnProperty.call(data, 'pageSize') ? data['pageSize'] : 10
-  )
-}
+  );
+};
 
 /**
  * Obtain a list of data/files associated with the published policy information.
@@ -1113,34 +1042,34 @@ export const getPolicyInfosAsUser = async (data: { pageIndex?: number; pageSize?
             }
  */
 export const getDataInfoOfPolicy = async (data: {
-  pageIndex?: number
-  pageSize?: number
-  policyId: string
-  asPublisher?: boolean
+  pageIndex?: number;
+  pageSize?: number;
+  policyId: string;
+  asPublisher?: boolean;
 }) => {
   if (data && Object.prototype.hasOwnProperty.call(data, 'policyId')) {
     const bPublisher: boolean =
-      data && Object.prototype.hasOwnProperty.call(data, 'asPublisher') ? Boolean(data['asPublisher']) : true
-    const pageIndex = data && Object.prototype.hasOwnProperty.call(data, 'pageIndex') ? data['pageIndex'] : 1
-    const pageSize = data && Object.prototype.hasOwnProperty.call(data, 'pageSize') ? data['pageSize'] : 10
-    const account = await getWalletDefaultAccount()
+      data && Object.prototype.hasOwnProperty.call(data, 'asPublisher') ? Boolean(data['asPublisher']) : true;
+    const pageIndex = data && Object.prototype.hasOwnProperty.call(data, 'pageIndex') ? data['pageIndex'] : 1;
+    const pageSize = data && Object.prototype.hasOwnProperty.call(data, 'pageSize') ? data['pageSize'] : 10;
+    const account = await getWalletDefaultAccount();
 
     if (isBlank(account)) {
       throw new exception.UnauthorizedError(
         'Please unlock account with your password first by call getWalletDefaultAccount(userpassword)'
-      )
+      );
     }
 
-    const accountId = (account as Account).id
+    const accountId = (account as Account).id;
     if (bPublisher) {
-      return await pre.getDataInfosByPolicyId(data['policyId'], accountId, undefined, pageIndex, pageSize)
+      return await pre.getDataInfosByPolicyId(data['policyId'], accountId, undefined, pageIndex, pageSize);
     } else {
-      return await pre.getDataInfosByPolicyId(data['policyId'], undefined, accountId, pageIndex, pageSize)
+      return await pre.getDataInfosByPolicyId(data['policyId'], undefined, accountId, pageIndex, pageSize);
     }
   } else {
-    throw new exception.ParameterError(`The input parameter must have the "policyId" fields`)
+    throw new exception.ParameterError(`The input parameter must have the "policyId" fields`);
   }
-}
+};
 
 /**
  * Obtain a list of data/files associated with the policy (including the data/files of both the data/file publisher and the file applicant).
@@ -1180,15 +1109,15 @@ export const getAllDataInfoOfPolicy = async (data: { pageIndex?: number; pageSiz
       undefined,
       data && Object.prototype.hasOwnProperty.call(data, 'pageIndex') ? data['pageIndex'] : 1,
       data && Object.prototype.hasOwnProperty.call(data, 'pageSize') ? data['pageSize'] : 10
-    )
+    );
   } else {
-    throw new exception.ParameterError(`The input parameter must have the "policyId" fields`)
+    throw new exception.ParameterError(`The input parameter must have the "policyId" fields`);
   }
-}
+};
 
 /**
  * send the raw transaction
- * @category Send Raw Transaction 
+ * @category Send Raw Transaction
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @throws {Error} set Transaction failed exception
  * @param {string} toAddress - The recevier of the transaction, can be empty when deploying a contract.
@@ -1205,35 +1134,24 @@ export const sendCustomTransaction = async (
   value?: string, //wei
   gasPrice?: string, //wei
   gasLimit?: BigNumber,
-  account?: Account,
+  account?: Account
 ): Promise<string | null> => {
   try {
-    const _account = account || await getWalletDefaultAccount();
+    const _account = account || (await getWalletDefaultAccount());
     if (isBlank(_account)) {
       throw new exception.UnauthorizedError(
-        "Please unlock account with your password first by call getWalletDefaultAccount(userpassword)"
+        'Please unlock account with your password first by call getWalletDefaultAccount(userpassword)'
       );
     }
 
-    return sendRawTransaction(
-      _account as Account,
-      toAddress,
-      rawTxData,
-      value,
-      gasPrice,
-      false,
-      gasLimit
-    );
+    return sendRawTransaction(_account as Account, toAddress, rawTxData, value, gasPrice, false, gasLimit);
   } catch (error: any) {
     const error_info: string = error?.message || error;
 
-    if (
-      typeof error_info === "string" &&
-      error_info?.toLowerCase()?.includes("policy is currently active")
-    ) {
+    if (typeof error_info === 'string' && error_info?.toLowerCase()?.includes('policy is currently active')) {
       console.error(error_info, error);
       //The policy has been created successfully, and there is no need to created again
-      throw new PolicyHasBeenActivedOnChain("Policy is currently active");
+      throw new PolicyHasBeenActivedOnChain('Policy is currently active');
     }
 
     console.error(error_info, error);
@@ -1244,7 +1162,7 @@ export const sendCustomTransaction = async (
 
 /**
  * send the raw transaction
- * @category Send Raw Transaction 
+ * @category Send Raw Transaction
  * @throws {@link UnauthorizedError} get logined account failed, must be login account first
  * @throws {Error} estimateCustomTransactionGas failed exception
  * @param {string} toAddress - The recevier of the transaction, can be empty when deploying a contract.
@@ -1259,33 +1177,24 @@ export const estimateCustomTransactionGas = async (
   rawTxData?: string,
   value?: string, //wei
   gasPrice?: string, //wei
-  account?: Account,
+  account?: Account
 ): Promise<BigNumber | null> => {
   try {
-    const _account = account || await getWalletDefaultAccount();
+    const _account = account || (await getWalletDefaultAccount());
     if (isBlank(_account)) {
       throw new exception.UnauthorizedError(
-        "Please unlock account with your password first by call getWalletDefaultAccount(userpassword)"
+        'Please unlock account with your password first by call getWalletDefaultAccount(userpassword)'
       );
     }
 
-    return sendRawTransactionGas(
-      _account as Account,
-      toAddress,
-      rawTxData,
-      value,
-      gasPrice
-    );
+    return sendRawTransactionGas(_account as Account, toAddress, rawTxData, value, gasPrice);
   } catch (error: any) {
     const error_info: string = error?.message || error;
 
-    if (
-      typeof error_info === "string" &&
-      error_info?.toLowerCase()?.includes("policy is currently active")
-    ) {
+    if (typeof error_info === 'string' && error_info?.toLowerCase()?.includes('policy is currently active')) {
       console.error(error_info, error);
       //The policy has been created successfully, and there is no need to created again
-      throw new PolicyHasBeenActivedOnChain("Policy is currently active");
+      throw new PolicyHasBeenActivedOnChain('Policy is currently active');
     }
 
     console.error(error_info, error);

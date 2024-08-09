@@ -5,6 +5,7 @@
  * @module pre
  * @preferred
  */
-export * from "./workflow"
+export * from "./workflow";
+export * from "./workflowSubscriptionApproval"
 export * from "../types";
 export type {DataInfo as DataInfo} from "../types"
