@@ -629,10 +629,10 @@ export const approveUserSubscription = async (
   } //end of if ([NETWORK_LIST.Horus, NETWORK_LIST.HorusMainNet].includes(curNetwork))
 
   // "@nucypher_network/nucypher-ts": "^0.7.0",  must be this version
-  console.log('before multi policy enact');
-  const waitReceipt = false;
+  // console.log('before multi policy enact');
+  // const waitReceipt = false;
 
-  const web3: Web3 = await getWeb3();
+  // const web3: Web3 = await getWeb3();
 
   //const [GAS_PRICE_FACTOR_LEFT, GAS_PRICE_FACTOR_RIGHT] = DecimalToInteger(GAS_PRICE_FACTOR);
 
@@ -670,16 +670,27 @@ export const approveUserSubscription = async (
   //3. call center server to save policy info
   const policy_list: object[] = [];
   const crossChainHracs: CrossChainHRAC[] = preEnacted.ids;
-
+  
   for (let index = 0; index < crossChainHracs.length; index++) {
     const crossChainHrac: CrossChainHRAC = crossChainHracs[index];
+    const endTimeDate: Date = preEnacted.endTimestamps[index];
+    const bobAccountId = resultInfo.deDuplicationInfo.bobAccountIds[index];
+    // const bobAccountAddress = resultInfo.deDuplicationInfo.bobAddresses[index];
+    const policyLabelId = resultInfo.deDuplicationInfo.policyLabelIds[index];
     //Note: Since all applyIds may have duplicates, and applyIds should correspond one-to-one with policies, pass all duplicate policy information to the backend (deduplicating based on HRAC on the backend).
     policy_list.push({
       hrac: hexlify(crossChainHrac.toBytes() /* Uint8Array[]*/), //fromBytesByEncoding(crossChainHrac.toBytes(), 'binary'),
-      gas: costServerFeeWei.toString(),
+      end_timestamp: (endTimeDate.getTime() / 1000) | 0,
+      server_fee: costServerFeeWei.toString(), //server fee in wei
       //tx_hash: enMultiPolicy.txHash,
       encrypted_address: encryptedTreasureMapIPFSs[index],
-      encrypted_pk: resultInfo.strategys[index].strategyKeyPair._publicKey //policy_encrypted_pk
+      encrypted_pk: resultInfo.strategys[index].strategyKeyPair._publicKey, //policy_encrypted_pk
+      apply_id: Number(applyIds[index]),
+      // bob_address: bobAccountAddress, //policy_bob_address
+      // bob_pk: resultInfo.policyParameters.bobs[index].verifyingKey,
+      bob_account_id: bobAccountId, //
+      policy_label_id: policyLabelId,
+      
     });
   }
 

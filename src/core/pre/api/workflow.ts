@@ -1990,11 +1990,17 @@ export const getBlockchainPolicys = async (
   alice: Alice;
   ursulasArray: Array<Ursula[]>;
   publisherAccount: Account;
+  policyLabelIds: string[];
+  bobAccountIds: string[];
+  bobAddresses:  string[];
   deDuplicationInfo: {
     multiBlockchainPolicy: MultiBlockchainPolicy;
     strategys: Strategy[];
     policyParameters: MultiBlockchainPolicyParameters;
     ursulasArray: Array<Ursula[]>;
+    policyLabelIds: string[];
+    bobAccountIds: string[];
+    bobAddresses:  string[];
   };
 }> => {
   //https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E6%89%B9%E5%87%86%E6%96%87%E4%BB%B6%E4%BD%BF%E7%94%A8%E7%94%B3%E8%AF%B7
@@ -2095,6 +2101,10 @@ export const getBlockchainPolicys = async (
   const retThresholds: number[] = []; // m
   const retStartDates: Date[] = [];
   const retEndDates: Date[] = [];
+  const retPolicyLabelId: string[] = [];
+  const retBobAddresses: string[] = [];
+  const retBobAccountIds: string[] = [];
+  
 
   const deDuplicationBobs: RemoteBob[] = [];
   const deDuplicationLabels: string[] = [];
@@ -2104,6 +2114,10 @@ export const getBlockchainPolicys = async (
   const deDuplicationRetThresholds: number[] = []; // m
   const deDuplicationRetStartDates: Date[] = [];
   const deDuplicationRetEndDates: Date[] = [];
+  const deDuplicationPolicyLabelIds: string[] = [];
+  const deDuplicationBobAddresses: string[] = [];
+  const deDuplicationBobAccountIds: string[] = [];
+  
 
   //2. create policy to block chain
   // const config = await getSettingsData();
@@ -2162,6 +2176,9 @@ export const getBlockchainPolicys = async (
       deDuplicationRetThresholds.push(ursulaThresholds[index]);
       deDuplicationRetStartDates.push(startDates[index]);
       deDuplicationRetEndDates.push(endDates[index]);
+      deDuplicationPolicyLabelIds.push(policy_label_id);
+      deDuplicationBobAddresses.push(userInfo["ethereum_addr"]);
+      deDuplicationBobAccountIds.push(userInfo["account_id"]);
 
       publisherUserPolicyIds.add(pulisherUserPolicyId);
     }
@@ -2174,6 +2191,9 @@ export const getBlockchainPolicys = async (
     retThresholds.push(ursulaThresholds[index]);
     retStartDates.push(startDates[index]);
     retEndDates.push(endDates[index]);
+    retPolicyLabelId.push(policy_label_id);
+    retBobAddresses.push(userInfo["ethereum_addr"]);
+    retBobAccountIds.push(userInfo["account_id"]);
   }
 
   //const multiBlockchainPolicyParameters: MultiBlockchainPolicyParameters = {
@@ -2217,12 +2237,19 @@ export const getBlockchainPolicys = async (
     policyParameters: deDuplicationMultiBlockchainPolicyParameters, //multiBlockchainPolicyParameters,
     alice: alice,
     ursulasArray: deDuplicationUrsulasArray,
+    policyLabelIds: deDuplicationPolicyLabelIds,
+    bobAccountIds: deDuplicationBobAccountIds,
+    bobAddresses: deDuplicationBobAddresses,
+
     publisherAccount: publisher,
     deDuplicationInfo: {
       multiBlockchainPolicy: deDuplicationPolicy,
       strategys: deDuplicationStrategys,
       policyParameters: deDuplicationMultiBlockchainPolicyParameters,
-      ursulasArray: deDuplicationUrsulasArray
+      ursulasArray: deDuplicationUrsulasArray,
+      policyLabelIds: deDuplicationPolicyLabelIds,
+      bobAccountIds: deDuplicationBobAccountIds,
+      bobAddresses: deDuplicationBobAddresses,
     }
   };
 };
