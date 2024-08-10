@@ -74,3 +74,7 @@ export type DataInfo = {
     gasLimit: BigNumber;
     gasFee: BigNumber; //gas fee in wei
   };
+  export interface Dictionary<T> {
+    [key: string]: T;
+  }
+  

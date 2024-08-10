@@ -37,7 +37,7 @@ import { PublicKey, SecretKey as NucypherTsSecretKey, CrossChainHRAC } from '@nu
 
 import { encryptMessage } from './enrico';
 import { isBlank } from '../../utils/null';
-import { DataCategory, DataInfo, DataType, GasInfo } from '../types';
+import { DataCategory, DataInfo, DataType, DecryptedDataInfo, Dictionary, GasInfo } from '../types';
 //import { message as Message } from "antd";
 import assert from 'assert-ts';
 import { getCurrentNetworkKey, getSettingsData } from '../../chainnet';
@@ -94,6 +94,8 @@ import {
   checkMultiDataApprovalStatusIsApprovedOrApproving,
   estimatePolicysGasFee,
   getBlockchainPolicys,
+  getDataContentByDataIdAsUser,
+  getDataDetails,
   getMultiApplyDetails,
   getPolicysTokenCost,
   signUpdateServerDataMessage
@@ -367,7 +369,7 @@ export const queryBobPayStatus = async (dataId: string, account: Account): Promi
  * Note: Different from applying for the interface with multiple files (apply/files):
  *          If the policy corresponding to the document has already been applied for, it will return code: 4109, msg: "current file does not need to apply"
  * @category Data User(Bob) Request Data
- * @param {string} dataId - A file ID to apply for usage permission.
+ * @param {string} dataId - A file/data ID to apply for usage permission.
  * @param {string} orderId - order id e.g. uuid.
  * @param {string} payTokenAddress - payment token address
  * @param {string} payAmountInWei - payment amount, unit: wei
@@ -379,7 +381,7 @@ export const queryBobPayStatus = async (dataId: string, account: Account): Promi
 export const applyForSubscriptionAccess = async (
   account: Account,
   orderId: string,
-  fileId: string,
+  dataId: string,
   usageDays = 30,
   payTokenAddress: string,
   payAmountInWei: BigNumber | string,
@@ -395,7 +397,7 @@ export const applyForSubscriptionAccess = async (
 
   //query bob's payment status
 
-  const payStatus = await queryBobPayStatus(fileId, account);
+  const payStatus = await queryBobPayStatus(dataId, account);
 
   /*
     0: Unpaid
@@ -408,7 +410,7 @@ export const applyForSubscriptionAccess = async (
       payAmountInWei = BigNumber.from(payAmountInWei as string);
     }
     console.log(
-      `applyForSubscriptionAccess => bob address: ${account.address} bob id: ${account.id} orderId: ${orderId} fileId: ${fileId} payAmountInWei: ${payAmountInWei}, payTokenAddress: ${payTokenAddress}`
+      `applyForSubscriptionAccess => bob address: ${account.address} bob id: ${account.id} orderId: ${orderId} dataId: ${dataId} payAmountInWei: ${payAmountInWei}, payTokenAddress: ${payTokenAddress}`
     );
 
     //Bob pre-paid tokens to subscribe to the user feeds
@@ -416,7 +418,7 @@ export const applyForSubscriptionAccess = async (
   }
 
   //apply for Subscriber User Feeds Permission
-  const data = await applyForSubscriberVisiblePermission(fileId, account, payCheckUrl, usageDays);
+  const data = await applyForSubscriberVisiblePermission(dataId, account, payCheckUrl, usageDays);
 
   return (data as object)['apply_id'] as number;
 };
@@ -534,116 +536,7 @@ export const approveUserSubscription = async (
     porterUri
   );
 
-  const serverFeeNLKInWei: BigNumber = await getPolicysTokenCost(publisher, startDates, endDates, ursulaShares);
-
-  const serverValue = Web3.utils.fromWei(serverFeeNLKInWei.toString(), 'ether');
-  console.log('server nlk fee  ether is:', serverValue);
-
-  //2. Alice calc gas fee (wei): the chain of bsc test token
-  const gasInfo: GasInfo = await estimatePolicysGasFee(
-    publisher,
-    userAccountIds,
-    applyIds,
-    ursulaShares,
-    ursulaThresholds,
-    applyInfoList.map((applyInfo) => Number(applyInfo['start_at'])), //startMss.map((startMs) => startMs / 1000),
-    applyInfoList.map((applyInfo) => Number(applyInfo['end_at'])), //endMss.map((endMs) => endMs / 1000),
-    BigNumber.from(serverFeeNLKInWei)
-  );
-
-  const gasFeeInWei: BigNumber = gasInfo.gasFee; //must be the token of the chain (e.g. bnb), not be the nlk
-
-  //Ensure that the BNB balance is greater than the GAS fee balance
-  const balance: BigNumber = await getBalance(publisher.address);
-  const chainConfigInfo = await getSettingsData();
-
-  console.log(`the account token balance is: ${balance.toString()} wei ${chainConfigInfo.tokenSymbol}`);
-  console.log(`the create policy gas fee is: ${gasFeeInWei.toString()} wei ${chainConfigInfo.tokenSymbol}`);
-
-  if (!gasFeeInWei.lte(BigNumber.from('0')) && balance.lt(gasFeeInWei)) {
-    const balanceValue = Web3.utils.fromWei(balance.toString(), 'ether');
-    const gasValue = Web3.utils.fromWei(gasFeeInWei.toString(), 'ether');
-    // Message.error(
-    //   `The account (${publisher.address}) balance of ${balanceValue} ether in [token] ${chainConfigInfo.tokenSymbol} is insufficient to publish a policy with a gas value of ${gasValue} ether`,
-    // );
-    console.log(
-      `The account (${publisher.address}) balance of ${balanceValue} ether in [token] ${chainConfigInfo.tokenSymbol} is insufficient to publish a policy with a gas value of ${gasValue} ether`
-    );
-    throw new InsufficientBalanceError(
-      `The account (${publisher.address}) balance of ${balanceValue} ether in [token] ${chainConfigInfo.tokenSymbol} is insufficient to publish a policy with a gas value of ${gasValue} ether`
-    );
-  }
-
-  const costServerFeeWei: BigNumber = BigNumber.from('0');
-
-  const curNetwork: NETWORK_LIST = await getCurrentNetworkKey();
-
-  if ([NETWORK_LIST.Horus, NETWORK_LIST.HorusMainNet].includes(curNetwork)) {
-    //only mainnet can get nlk balance. if not crosschain mainnet, no nlk token, no need get nlk balance
-
-    //enPolicy service fee gas wei
-    const costServerFeeWei: BigNumber = await calcPolicysCost(
-      resultInfo.alice,
-      resultInfo.deDuplicationInfo.policyParameters.startDates,
-      resultInfo.deDuplicationInfo.policyParameters.endDates,
-      resultInfo.deDuplicationInfo.policyParameters.shares
-    );
-
-    const txHashOrEmpty: string = (await approveNLK(
-      publisher,
-      BigNumber.from('10000000000000000000000000'),
-      costServerFeeWei,
-      false
-      // gasPrice
-    )) as string;
-
-    // eslint-disable-next-line no-extra-boolean-cast
-    console.log(
-      !txHashOrEmpty
-        ? `approvalApplicationForUseData no need approve nlk`
-        : `approvalApplicationForUseData approveNLK txHash: ${txHashOrEmpty}`
-    );
-
-    //wei can use  BigNumber.from(), ether can use ethers.utils.parseEther(), because the BigNumber.from("1.2"), the number can't not be decimals (x.x)
-    //await publisher.getNLKBalance() return ethers
-    //Check whether the account balance is less than the policy creation cost
-    const nlkEther = await publisher.getNLKBalance();
-    const nlkBalanceWei: BigNumber = ethers.utils.parseEther(nlkEther as string);
-    const costServerEther = Web3.utils.fromWei(costServerFeeWei.toString(), 'ether');
-
-    console.log(`the account balance is: ${nlkEther} ether nlk`);
-    console.log(`the create policy server fee is: ${costServerEther.toString()} ether nlk`);
-
-    //Don't forget the mint fee (service charge), so use the method lte, not le
-    if (nlkBalanceWei.lt(costServerFeeWei)) {
-      // Message.error(
-      //   `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlkTokenSymbol} is insufficient to publish policy with a value of ${costServerGasEther} ether`,
-      // );
-      console.log(
-        `The account ${publisher.address} balance of ${nlkEther} ether in [token] ${chainConfigInfo.nlkTokenSymbol} is insufficient to publish policy with a value of ${costServerEther} ether`
-      );
-      throw new InsufficientBalanceError(
-        `The account ${publisher.address} balance of ${nlkEther} ether in [token] ${chainConfigInfo.nlkTokenSymbol} is insufficient to publish policy with a value of ${costServerEther} ether`
-      );
-    }
-  } //end of if ([NETWORK_LIST.Horus, NETWORK_LIST.HorusMainNet].includes(curNetwork))
-
-  // "@nucypher_network/nucypher-ts": "^0.7.0",  must be this version
-  // console.log('before multi policy enact');
-  // const waitReceipt = false;
-
-  // const web3: Web3 = await getWeb3();
-
-  //const [GAS_PRICE_FACTOR_LEFT, GAS_PRICE_FACTOR_RIGHT] = DecimalToInteger(GAS_PRICE_FACTOR);
-
-  ////estimatedGas * gasPrice * factor
-  //if (gasPrice.lte(BigNumber.from('0'))) {
-  //  // the gasPrice is obtained in real time
-  //  gasPrice = BigNumber.from(await web3.eth.getGasPrice());
-  //  gasPrice = gasPrice.mul(GAS_PRICE_FACTOR_LEFT).div(GAS_PRICE_FACTOR_RIGHT);
-  //} else {
-  //  //If the gasPrice is manually set, the GAS_PRICE_FACTOR is not set
-  //}
+  //Since Alice's set persona can be a web2 user, she does not need to pay gas fees or any service fees.
 
   //Requirement: The need to support user-friendly approval, without requiring any fees. In this case, when Alice approves, she needs to call a backend API to complete the approval process.
   //so: Here, the change from enact to generatePreEnactedPolicy is to shift the transaction initiation from the front-end to the back-end, with the front-end only responsible for constructing the transaction parameters
@@ -663,6 +556,7 @@ export const approveUserSubscription = async (
 
   const encryptedTreasureMapIPFSs: string[] = [];
 
+  //For the sake of efficiency, local upload
   //2. upload multiple encrypt files to IPFS
   const cids: string[] = await StorageManager.setData(encryptedTreasureMapBytesArray, publisher);
   encryptedTreasureMapIPFSs.push(...cids);
@@ -670,7 +564,7 @@ export const approveUserSubscription = async (
   //3. call center server to save policy info
   const policy_list: object[] = [];
   const crossChainHracs: CrossChainHRAC[] = preEnacted.ids;
-  
+
   for (let index = 0; index < crossChainHracs.length; index++) {
     const crossChainHrac: CrossChainHRAC = crossChainHracs[index];
     const endTimeDate: Date = preEnacted.endTimestamps[index];
@@ -681,16 +575,13 @@ export const approveUserSubscription = async (
     policy_list.push({
       hrac: hexlify(crossChainHrac.toBytes() /* Uint8Array[]*/), //fromBytesByEncoding(crossChainHrac.toBytes(), 'binary'),
       end_timestamp: (endTimeDate.getTime() / 1000) | 0,
-      server_fee: costServerFeeWei.toString(), //server fee in wei
-      //tx_hash: enMultiPolicy.txHash,
       encrypted_address: encryptedTreasureMapIPFSs[index],
       encrypted_pk: resultInfo.strategys[index].strategyKeyPair._publicKey, //policy_encrypted_pk
       apply_id: Number(applyIds[index]),
       // bob_address: bobAccountAddress, //policy_bob_address
       // bob_pk: resultInfo.policyParameters.bobs[index].verifyingKey,
       bob_account_id: bobAccountId, //
-      policy_label_id: policyLabelId,
-      
+      policy_label_id: policyLabelId
     });
   }
 
@@ -709,12 +600,12 @@ export const approveUserSubscription = async (
   //If the link is successfully connected after this transaction, the status of the page will not change,
   //and the button still displays Review request, which can still be approved again, and the Policy is active
 
-  console.log('before send request: apply/subscribe/batch-approve');
+  console.log('before send request: subscribe/batch-approve');
 
   //V1->V2: The background approve logic changes to: store tx_hash to a table , and then execute approve operator after listening for an on-chain event
-  const data = (await serverPost('/apply/subscribe/batch-approve', sendData)) as object;
+  const data = (await serverPost('/subscribe/batch-approve', sendData)) as object;
 
-  console.log('sended the request: apply/subscribe/batch-approve');
+  console.log('sended the request: /subscribe/batch-approve');
 
   const txHash = data['tx_hash'];
 
@@ -1187,4 +1078,27 @@ export const cancelUserSubscription = async (
   sendData['signature'] = await signUpdateServerDataMessage(account, sendData);
   const data = await serverPost('/refund/subscribe', sendData);
   return data;
+};
+
+
+/**
+ * Get approved document content (downloadable) list. The file/data applicant retrieves the content of a file/data that has been approved for their usage.
+ * @category Data User(Bob) Download Data
+ * @param {Account} userAccount - Account the current account object
+ * @param {string []} dataIds - file/data's id list
+ * @returns {Promise<Dictionary<ArrayBuffer>>} - {fileId1: dataContent1, fileId2: dataContent2, ....}
+ */
+export const getDataContentListByDataIdAsUser = async (userAccount: Account, dataIds: string[]): Promise<Dictionary<ArrayBuffer>> => {
+  //get file/data info
+
+  const dataDict: Dictionary<ArrayBuffer> = {};
+
+  for (let index = 0; index < dataIds.length; index++) {
+    const dataId = dataIds[index];
+    const dataContent: ArrayBuffer = await getDataContentByDataIdAsUser(userAccount, dataId);
+    dataDict[dataId] = dataContent;
+  }
+
+  return dataDict;
+
 };
