@@ -37,7 +37,7 @@ import { PublicKey, SecretKey as NucypherTsSecretKey, CrossChainHRAC } from '@nu
 
 import { encryptMessage } from './enrico';
 import { isBlank } from '../../utils/null';
-import { DataCategory, DataInfo, DataType, DecryptedDataInfo, Dictionary, GasInfo } from '../types';
+import { DataCategory, DataInfo, DataType, Dictionary, GasInfo } from '../types';
 //import { message as Message } from "antd";
 import assert from 'assert-ts';
 import { getCurrentNetworkKey, getSettingsData } from '../../chainnet';
