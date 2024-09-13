@@ -2,6 +2,7 @@ import type { NetworkConfigOptions } from '../types';
 import { store as storage } from '../../utils/storage';
 import { defaultChainNetWork, networkDetails } from '../config';
 import { NETWORK_LIST } from '../../sol';
+import { isNumeric } from '../../utils/math';
 
 /**
  * @internal
@@ -85,6 +86,12 @@ export const getCurrentNetworkInitialConfiguration = async () => {
  * @returns {Promise<void>}
  */
 export const setClientId = async (clientId: string) => {
+
+  //note: Each digit in the clientId must be composed of numbers.
+
+  if(!isNumeric(clientId)){
+    throw new Error('Each digit in the clientId must be composed of numbers');
+  }
   await storage.setItem(CLIENT_ID_LABEL, clientId as string);
 };
 

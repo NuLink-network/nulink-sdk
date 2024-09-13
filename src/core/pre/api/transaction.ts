@@ -57,7 +57,7 @@ export const sendRawTransactionGas = async (
  * @param {string} value - The value of the transaction in wei.
  * @param {string} gasPrice - (Optional) The gas price set by this transaction, if empty, it will use web3.eth.getGasPrice().
  * @param {boolean} estimateGas - (Optional) Whether to assess gas fees.
- * @param {boolean} gasLimit - (Optional) set gas limit
+ * @param {BigNumber} gasLimit - (Optional) set gas limit
  * @returns {Promise<string | null >} - Returns the transactionHash or null.
  */
 export const sendRawTransaction = async (

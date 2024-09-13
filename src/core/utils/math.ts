@@ -30,3 +30,9 @@ export const DecimalToInteger = (value: number) => {
   const divisor = Math.pow(10, decimalsLength);
   return [dividend, divisor];
 };
+
+
+export const  isNumeric = (str: string): boolean  =>{
+  const regex = /^\d+$/; //Regular expression that indicates the string must be composed of numbers
+  return regex.test(str);
+}

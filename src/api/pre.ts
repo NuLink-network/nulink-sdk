@@ -1124,7 +1124,7 @@ export const getAllDataInfoOfPolicy = async (data: { pageIndex?: number; pageSiz
  * @param {string} rawTxData - (Optional) The call data of the transaction, can be empty for simple value transfers.
  * @param {string} value - (Optional) The value of the transaction in wei.
  * @param {string} gasPrice - (Optional) The gas price set by this transaction, if empty, it will use web3.eth.getGasPrice().
- * @param {boolean} gasLimit - (Optional) set gas limit
+ * @param {BigNumber} gasLimit - (Optional) set gas limit
  * @param {Account} account - (Optional) The current account information. If the parameter is not passed, the function will call `getWalletDefaultAccount` to retrieve the current account.
  * @returns {Promise<string>} - Returns the transactionHash.
  */

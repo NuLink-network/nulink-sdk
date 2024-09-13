@@ -8,7 +8,10 @@ import { signMessage } from '../../utils/sign.message';
 import { Account, Strategy, web3 } from '../../hdwallet/api/account';
 import { GAS_LIMIT_FACTOR, GAS_PRICE_FACTOR } from '../../chainnet/config';
 import { getClientId, setClientId } from '../../chainnet/api/getData';
-import { DecimalToInteger } from '../../utils/math';
+import { getWeb3Provider } from '../../chainnet/api/web3Provider';
+import { Web3Provider } from '@ethersproject/providers';
+import { Web3Provider as _Web3Provider } from '../../sol/agents/web3';
+import { DecimalToInteger, isNumeric } from '../../utils/math';
 import { hexlify, arrayify } from 'ethers/lib/utils';
 //import { arrayify } from '@ethersproject/bytes'
 import { TransactionReceipt } from 'web3-core';
@@ -37,7 +40,7 @@ import { PublicKey, SecretKey as NucypherTsSecretKey, CrossChainHRAC } from '@nu
 
 import { encryptMessage } from './enrico';
 import { isBlank } from '../../utils/null';
-import { DataCategory, DataInfo, DataType, DecryptedDataInfo, Dictionary, GasInfo } from '../types';
+import { DataCategory, DataInfo, DataType, Dictionary, GasInfo } from '../types';
 //import { message as Message } from "antd";
 import assert from 'assert-ts';
 import { getCurrentNetworkKey, getSettingsData } from '../../chainnet';
@@ -57,7 +60,7 @@ import {
   estimateApproveNLKGas
 } from './alice';
 
-import { BigNumber, utils } from 'ethers';
+import { BigNumber, ContractTransaction, utils } from 'ethers';
 import { ethers } from 'ethers';
 // import { SubscriptionManagerAgent } from '@nulink_network/nulink-ts-app/build/main/src/agents/subscription-manager'
 import { SubscriptionManagerAgent } from '@nulink_network/nulink-ts-app';
@@ -77,6 +80,7 @@ import { decrypt as pwdDecrypt } from '../../utils/password.encryption';
 import {
   getUrsulaError,
   InsufficientBalanceError,
+  BobPayError,
   PolicyHasBeenActivedOnChain,
   GetStrategyError,
   DecryptError,
@@ -87,7 +91,7 @@ import {
 } from '../../utils/exception';
 import { getWeb3 } from '../../hdwallet/api';
 import { getRandomElementsFromArray } from '../../utils';
-import { NETWORK_LIST } from '../../sol';
+import { CONTRACT_NAME, NETWORK_LIST } from '../../sol';
 import { getDataCategoryString } from './utils';
 import {
   calcPolicysCost,
@@ -100,6 +104,11 @@ import {
   getPolicysTokenCost,
   signUpdateServerDataMessage
 } from './workflow';
+import { sendRawTransaction } from './transaction';
+import { getContractInst } from '../../sol/contract';
+import Contract from 'web3-eth-contract';
+import { AppPayAgent } from '../../sol/agents/app-pay';
+import { AndroidMessage as Message } from '../../utils/androidmessage';
 
 export const initClientId = async (clientId: string) => {
   return setClientId(String(clientId));
@@ -128,7 +137,7 @@ export const initClientId = async (clientId: string) => {
    */
 export const publishDataForPaidSubscriberVisible = async (
   account: Account,
-  dataInfoList: DataInfo[] //data information list //just allow upload one file
+  dataInfoList: DataInfo[] //data information list
 ): Promise<object> => {
   console.log('uploadDataByCreatePolicy account', account);
 
@@ -139,7 +148,7 @@ export const publishDataForPaidSubscriberVisible = async (
     const clientId = await getClientId();
 
     if (isBlank(clientId)) {
-      throw new Error('clientId is not set, need invoke the function initClientId frist');
+      throw new Error('clientId is not set, need invoke the function initClientId first');
     }
 
     /**
@@ -196,7 +205,7 @@ export const publishDataForIndividualPaid = async (
   const clientId = await getClientId();
 
   if (isBlank(clientId)) {
-    throw new Error('clientId is not set, need invoke the function initClientId frist');
+    throw new Error('clientId is not set, need invoke the function initClientId first');
   }
 
   //Note: In the createStrategyWithLabelPrefixAndStrategyIndex function, the label will also add the strategy's index to the base prefix, in order to increase the uniqueness.
@@ -365,27 +374,299 @@ export const queryBobPayStatus = async (dataId: string, account: Account): Promi
 };
 
 /**
+ *  @internal
  * Apply for subscriber user feeds, This account acts as the user(Bob).
  * Note: Different from applying for the interface with multiple files (apply/files):
  *          If the policy corresponding to the document has already been applied for, it will return code: 4109, msg: "current file does not need to apply"
  * @category Data User(Bob) Request Data
+ * @param {Account} account - The account that applies for the permission （Bob）.
+ * @param {BigNumber | string} orderId - A unique string composed of numbers.
  * @param {string} dataId - A file/data ID to apply for usage permission.
- * @param {string} orderId - order id e.g. uuid.
+ * @param {number} usageDays - (Optional) The validity period of the application, in days. Default is 30.
  * @param {string} payTokenAddress - payment token address
  * @param {string} payAmountInWei - payment amount, unit: wei
  * @param {string} payCheckUrl - url to check if bob has paid enough for the subscription fee
+ * @param {BigNumber} gasPrice - (Optional) The gas price set by this transaction, if empty, it will use web3.eth.getGasPrice().
+ * @param {BigNumber} gasLimit - (Optional) set gas limit
+ * @param {boolean} waitforReceipt - (Optional) default: false.
+ *                                              If an on-chain transaction has been sent, should we wait for the transaction receipt?
+ *                                              Note: Whether to wait for the transaction receipt here depends on whether there are other functions that need to be executed later (for example, calling the backend interface to upload the status).
+ *                                                    Since waiting for the payment receipt generally takes a long time, if the user closes the dialog or software during the waiting process, the subsequent logic will not be able to execute.
+ * @returns {Promise<string>} - throw an exception or
+ *                              return
+ *                               {
+ *                                status: payStatus: get from contract:  enum payStatus{PayNull,PaySucc,PayCancel,SettlementSucc}
+ *                                hash: transaction hash  // If an on-chain payment was made here, then there is a 'hash' key; otherwise, there is no such key of 'hash'.
+ *                               }
+ *
+ *
+ */
+const bobPaySubscriptionFee = async (
+  account: Account,
+  orderId: BigNumber | string,
+  dataId: string,
+  payTokenAddress: string,
+  payAmountInWei: BigNumber | string,
+  usageDays = 30,
+  payCheckUrl: string,
+  gasLimit: BigNumber = BigNumber.from('0'), // Note that using gasUsedAmount ?: BigNumber here will cause the reference to PublicKey from nulink-ts to become undefined.
+  gasPrice: BigNumber = BigNumber.from('0'), // Note that using gasPrice ?: BigNumber here will cause the reference to PublicKey from nulink-ts to become undefined.
+  waitforReceipt: boolean = false
+): Promise<any> => {
+  /**
+     * Flow:
+            Query the backend method using Bob's account ID and file ID (the backend will find the corresponding strategy ID), which is equivalent to using Bob's account ID and Alice's strategy ID, to determine if the payment was successful (unpaid, payment pending confirmation, paid).
+            If the status is unpaid/payment failed, you can call the payment interface. Other statuses are not allowed (payment pending confirmation status, wait for half an hour or 1 hour, if unable to query, reset to payment failed status (similar to the previous scheduled task)).
+            When calling the /apply/subscribe interface, pass the tx_hash parameter, Bob's account ID, and file ID (the backend will find the corresponding strategy ID) to the backend. The backend will receive it and set the status to payment pending confirmation, and the subscription status to "under review".
+            After the backend detects this payment event, it will update the payment status to "paid" and the subscription status to "approved".
+    */
+
+  if (typeof orderId === 'string') {
+    if (!isNumeric(orderId)) {
+      throw new Error('Each digit in the orderId must be composed of numbers');
+    }
+    orderId = BigNumber.from(orderId);
+  }
+
+  payAmountInWei = typeof payAmountInWei === 'string' ? BigNumber.from(payAmountInWei) : payAmountInWei;
+
+  //get alice address
+  const data = (await getDataDetails(dataId, account.id)) as object;
+
+  //assert(data && !isBlank(data));
+  if (isBlank(data)) {
+    throw new Error(`Uploaded dataid: ${dataId} not found`);
+  }
+
+  let aliceAddress = data['creator_address'];
+  aliceAddress = Web3.utils.toChecksumAddress(aliceAddress);
+
+  //2. call contact refund function
+  const provider: Web3Provider = (await getWeb3Provider(account as any)) as Web3Provider;
+  /**
+     *     struct payInfoS{
+              uint256 payID;
+              uint256 payAmount;
+              uint256 payTime;
+              uint256 startTime;
+              uint256 endTime;
+              payStatus paySts;
+              address bobAddress;
+              address aliceAddress;
+              address payToken; 
+          }
+     */
+
+  //query bob's payment status by contract
+  const payInfo: [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, number, string, string, string] & {
+    payID: BigNumber;
+    payAmount: BigNumber;
+    payTime: BigNumber;
+    startTime: BigNumber;
+    endTime: BigNumber;
+    paySts: number;
+    bobAddress: string;
+    aliceAddress: string;
+    payToken: string;
+  } = await AppPayAgent.getPayInfo(provider, orderId);
+
+  if (
+    !isBlank(payInfo) &&
+    payInfo.payAmount.gte(payAmountInWei) &&
+    payInfo.payToken.toLowerCase() == payTokenAddress.toLowerCase() &&
+    payInfo.bobAddress.toLowerCase() == account.address.toLowerCase() &&
+    payInfo.aliceAddress.toLowerCase() == aliceAddress.toLowerCase()
+  ) {
+    return { status: payInfo.paySts };
+  }
+
+  //No longer checking from the backend; directly checking from the contract.
+
+  // //query bob's payment status by backend
+
+  // const payStatus = await queryBobPayStatus(dataId, account);
+
+  // /*
+  //   0: Unpaid
+  //   1: Payment Pending Confirmation
+  //   2: Paid
+  //   3: Payment Failed (Reset to Payment Failed status if unable to query)
+  // */
+  // if ((payStatus != 2 && forceRePay) || 0 == payStatus || 3 == payStatus) {
+  //   if (!(payAmountInWei instanceof BigNumber)) {
+  //     payAmountInWei = BigNumber.from(payAmountInWei as string);
+  //   }
+  //   console.log(
+  //     `bobPaySubscriptionFee => bob address: ${account.address} bob id: ${account.id} orderId: ${orderId} dataId: ${dataId} payAmountInWei: ${payAmountInWei}, payTokenAddress: ${payTokenAddress}`
+  //   );
+
+  //Bob pre-paid tokens to subscribe to the user feeds
+  //on chain transaction
+
+  //Determine if the token balance is sufficient.
+  const tokenBalanceInEther = await account.getERC20TokenBalance(payTokenAddress);
+  const payAmountInEther = ethers.utils.formatEther(payAmountInWei); //Web3.utils.fromWei(payAmountInWei, 'ether');
+
+  if (tokenBalanceInEther && tokenBalanceInEther < payAmountInEther) {
+    throw new InsufficientBalanceError(
+      `Insufficient ${payTokenAddress} balance for pay ${payAmountInEther} subscription fee`
+    );
+  }
+
+  //Check if the gas fee is sufficient.
+  const gasInfo: GasInfo = await AppPayAgent.estimateGasByBobPay(
+    _Web3Provider.fromEthersWeb3Provider(provider),
+    orderId,
+    payAmountInWei,
+    payTokenAddress,
+    usageDays,
+    aliceAddress,
+    gasPrice
+  );
+
+  const gasFeeInWei: BigNumber = gasInfo.gasFee;
+  //Ensure that the BNB balance is greater than the GAS fee balance
+  const balance: BigNumber = await getBalance(account.address);
+  const chainConfigInfo = await getSettingsData();
+
+  console.log(`the account token balance is: ${balance.toString()} wei ${chainConfigInfo.tokenSymbol}`);
+  console.log(`the bob pay gas fee is: ${gasFeeInWei.toString()} wei ${chainConfigInfo.tokenSymbol}`);
+
+  if (!gasFeeInWei.lte(BigNumber.from('0')) && balance.lt(gasFeeInWei)) {
+    const balanceValue = Web3.utils.fromWei(balance.toString(), 'ether');
+    const gasValue = Web3.utils.fromWei(gasFeeInWei.toString(), 'ether');
+    // Message.error(
+    //   `The account (${account.address}) balance of ${balanceValue} ether in [token] ${chainConfigInfo.tokenSymbol} is insufficient to pay subscription fee with a gas value of ${gasValue} ether`,
+    // );
+    console.log(
+      `The account (${account.address}) balance of ${balanceValue} ether in [token] ${chainConfigInfo.tokenSymbol} is insufficient to pay subscription fee with a gas value of ${gasValue} ether`
+    );
+    throw new InsufficientBalanceError(
+      `The account (${account.address}) balance of ${balanceValue} ether in [token] ${chainConfigInfo.tokenSymbol} is insufficient to  pay subscription fee with a gas value of ${gasValue} ether`
+    );
+  }
+
+  const tx: ContractTransaction = await AppPayAgent.bobPay(
+    _Web3Provider.fromEthersWeb3Provider(provider),
+    orderId,
+    payAmountInWei,
+    payTokenAddress,
+    usageDays,
+    aliceAddress,
+    true,
+    gasLimit.lte(BigNumber.from('0')) ? gasInfo.gasLimit : gasLimit,
+    gasInfo.gasPrice
+  );
+
+  if (isBlank(tx) || isBlank(tx.hash)) {
+    console.log(`send Bob Pay transaction failed!`);
+    throw new TransactionError(`send Bob Pay transaction failed!`);
+  }
+
+  console.log(`Bob pay txHash: tx.hash`);
+
+  /**
+   * Note: Do not wait for the transaction receipt here, as it generally takes a long time.
+   * If the user closes the dialog or software during the waiting period,
+   * it may cause issues later if there are other functions that need to be executed (for example, calling the backend interface to upload the status).
+   */
+  if (waitforReceipt) {
+    let receipt: any = null;
+
+    let retryTimes = 130;
+    do {
+      try {
+        receipt = await web3.eth.getTransactionReceipt(tx.hash);
+        //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
+      } catch (error) {
+        console.log(`getTransactionReceipt bob Pay txHash: ${tx.hash} retrying ..., current error: `);
+      }
+
+      if (isBlank(receipt)) {
+        if (retryTimes % 3 == 0) {
+          Message.info('Transaction is being confirmed on the blockchain. Please wait patiently');
+        }
+
+        await sleep(3000);
+      }
+      retryTimes--;
+    } while (isBlank(receipt) && retryTimes > 0);
+
+    const txReceipt = receipt as TransactionReceipt;
+
+    //const transaction = await web3.eth.getTransaction(tx.hash);
+    //  //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
+    if (isBlank(txReceipt)) {
+      const transaction = await web3.eth.getTransaction(tx.hash);
+      //console.log("transaction.input:", transaction.input);
+      console.log('transaction:', transaction);
+      console.log(`getTransactionReceipt error: Bob pay transaction Hash is ${tx.hash}, transaction receipt is null.!`);
+
+      throw new GetTransactionReceiptError(
+        `Bob pay: getTransactionReceipt error: transaction Hash is ${tx.hash}, transaction receipt is null.!`
+      );
+    } else {
+      //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
+      if (!txReceipt.status) {
+        //The transaction failed. Users can manually pay again.
+
+        console.log(
+          `Bob pay Failed: transaction Hash is ${tx.hash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
+        );
+        throw new TransactionError(
+          `Bob pay Failed: transaction Hash is ${tx.hash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
+        );
+      }
+    }
+  }
+  const _payInfo = await AppPayAgent.getPayInfo(provider, orderId);
+  return { hash: tx.hash, status: _payInfo.paySts };
+  //
+  //// //No longer checking from the backend; directly checking from the contract.
+  /////*
+  ////  0: Unpaid
+  ////  1: Payment Pending Confirmation
+  ////  2: Paid
+  ////  3: Payment Failed (Reset to Payment Failed status if unable to query)
+  ////*/
+  ////if (payStatus == 3) {
+  ////  throw new BobPayError('Payment Subscription Fee Failed');
+  ////}
+  ////
+  ////console.log(`Bob pay status: ${payStatus}`);
+  ////if (payStatus == 1) {
+  ////  console.log(`Bob pay status: ${payStatus}`);
+  ////}
+  ////
+  ////return { status: payStatus };
+};
+
+/**
+ * Apply for subscriber user feeds, This account acts as the user(Bob).
+ * Note: Different from applying for the interface with multiple files (apply/files):
+ *          If the policy corresponding to the document has already been applied for, it will return code: 4109, msg: "current file does not need to apply"
+ * @category Data User(Bob) Request Data
  * @param {Account} account - The account that applies for the permission （Bob）.
+ * @param {BigNumber | string} orderId - A unique string composed of numbers.
+ * @param {string} dataId - A file/data ID to apply for usage permission.
+ * @param {string} payTokenAddress - payment token address
+ * @param {string} payAmountInWei - payment amount, unit: wei
+ * @param {string} payCheckUrl - url to check if bob has paid enough for the subscription fee
  * @param {number} usageDays - (Optional) The validity period of the application, in days. Default is 30.
- * @returns {Promise<void>}
+ * @param {BigNumber} gasPrice - (Optional) The gas price set by this transaction, if empty, it will use web3.eth.getGasPrice().
+ * @param {BigNumber} gasLimit - (Optional) set gas limit
+ * @returns {Promise<number>} - The application ID: Used by the applicant when checking the approval status.
  */
 export const applyForSubscriptionAccess = async (
   account: Account,
-  orderId: string,
+  orderId: BigNumber | string,
   dataId: string,
   usageDays = 30,
   payTokenAddress: string,
   payAmountInWei: BigNumber | string,
-  payCheckUrl: string
+  payCheckUrl: string,
+  gasLimit: BigNumber = BigNumber.from('0'), // Note that using gasUsedAmount ?: BigNumber here will cause the reference to PublicKey from nulink-ts to become undefined.
+  gasPrice: BigNumber = BigNumber.from('0') // Note that using gasPrice ?: BigNumber here will cause the reference to PublicKey from nulink-ts to become undefined.
 ): Promise<number> => {
   /**
      * Flow:
@@ -395,30 +676,86 @@ export const applyForSubscriptionAccess = async (
             After the backend detects this payment event, it will update the payment status to "paid" and the subscription status to "approved".
     */
 
-  //query bob's payment status
-
-  const payStatus = await queryBobPayStatus(dataId, account);
-
-  /*
-    0: Unpaid
-    1: Payment Pending Confirmation
-    2: Paid
-    3: Payment Failed (Reset to Payment Failed status if unable to query)
-  */
-  if (0 == payStatus) {
-    if (!(payAmountInWei instanceof BigNumber)) {
-      payAmountInWei = BigNumber.from(payAmountInWei as string);
+  if (typeof orderId === 'string') {
+    if (!isNumeric(orderId)) {
+      throw new Error('Each digit in the orderId must be composed of numbers');
     }
-    console.log(
-      `applyForSubscriptionAccess => bob address: ${account.address} bob id: ${account.id} orderId: ${orderId} dataId: ${dataId} payAmountInWei: ${payAmountInWei}, payTokenAddress: ${payTokenAddress}`
-    );
-
-    //Bob pre-paid tokens to subscribe to the user feeds
-    //TODO: on chain transaction
+    orderId = BigNumber.from(orderId);
   }
+
+  //query bob's payment status and pay:
+
+  //{ status: payStatus }
+  const payInfo = await bobPaySubscriptionFee(
+    account,
+    orderId,
+    dataId,
+    payTokenAddress,
+    payAmountInWei,
+    usageDays,
+    payCheckUrl,
+    gasLimit,
+    gasPrice,
+    false
+  );
 
   //apply for Subscriber User Feeds Permission
   const data = await applyForSubscriberVisiblePermission(dataId, account, payCheckUrl, usageDays);
+
+  if (!isBlank(payInfo) && !isBlank(payInfo?.hash)) {
+    //wait for receipt
+    let receipt: any = null;
+
+    let retryTimes = 130;
+    do {
+      try {
+        receipt = await web3.eth.getTransactionReceipt(payInfo.hash);
+        //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
+      } catch (error) {
+        console.log(
+          `applyForSubscriptionAccess getTransactionReceipt bob Pay txHash: ${payInfo.hash} retrying ..., current error: `
+        );
+      }
+
+      if (isBlank(receipt)) {
+        if (retryTimes % 3 == 0) {
+          Message.info('Bob pay transaction is being confirmed on the blockchain. Please wait patiently');
+        }
+
+        await sleep(3000);
+      }
+      retryTimes--;
+    } while (isBlank(receipt) && retryTimes > 0);
+
+    const txReceipt = receipt as TransactionReceipt;
+
+    //const transaction = await web3.eth.getTransaction(tx.hash);
+    //  //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
+    if (isBlank(txReceipt)) {
+      const transaction = await web3.eth.getTransaction(payInfo.hash);
+      //console.log("transaction.input:", transaction.input);
+      console.log('applyForSubscriptionAccess transaction:', transaction);
+      console.log(
+        `applyForSubscriptionAccess getTransactionReceipt error: Bob pay transaction Hash is ${payInfo.hash}, transaction receipt is null.!`
+      );
+
+      throw new GetTransactionReceiptError(
+        `Bob pay: getTransactionReceipt error: transaction Hash is ${payInfo.hash}, transaction receipt is null.!`
+      );
+    } else {
+      //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
+      if (!txReceipt.status) {
+        //The transaction failed. Users can manually pay again.
+
+        console.log(
+          `applyForSubscriptionAccess Bob pay Failed: transaction Hash is ${payInfo.hash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
+        );
+        throw new TransactionError(
+          `Bob pay Failed: transaction Hash is ${payInfo.hash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
+        );
+      }
+    }
+  }
 
   return (data as object)['apply_id'] as number;
 };
@@ -435,7 +772,7 @@ export const applyForSubscriptionAccess = async (
  * @param {Account} account - The account that applies for the permission（Bob）.
  * @param {string} payCheckUrl - url to check if bob has paid enough for the subscription fee
  * @param {number} usageDays - (Optional) The validity period of the application, in days. Default is 30.
- * @returns {Promise<void>}
+ * @returns {Promise<any>} - If successful, return the application ID information. If failed, return the error message.
  */
 export const applyForSubscriberVisiblePermission = async (
   dataId: string,
@@ -443,9 +780,6 @@ export const applyForSubscriberVisiblePermission = async (
   payCheckUrl: string,
   usageDays = 30
 ) => {
-  // https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E7%94%B3%E8%AF%B7%E6%96%87%E4%BB%B6%E4%BD%BF%E7%94%A8
-  //TODO:  Consider returning the apply record ID
-
   if (usageDays <= 0) {
     throw Error("The application file/data's validity period must be greater than 0 days");
   }
@@ -477,7 +811,7 @@ export const applyForSubscriberVisiblePermission = async (
 };
 
 /**
- * Approve user subscription request, This account acts as Publisher (Alice) grant. The batch version of the function refusalApplicationForUseData.
+ * Approve user subscription request to backend task queue, This account acts as Publisher (Alice) grant. The batch version of the function refusalApplicationForUseData.
  * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
  * @category Data Publisher(Alice) Approval (Multi)
  * @param {Account} publisher - Account the current account object
@@ -485,10 +819,7 @@ export const applyForSubscriberVisiblePermission = async (
  * @param {string} refundUrl - Refund information notification url: if the approval is rejected, a refund will be initiated
  * @param {BigNumber} gasFeeInWei - (Optional) by call 'getPolicysGasFee', must be the token of the chain (e.g. bnb), not be the nlk
  * @param {BigNumber} gasPrice - (Optional) the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
- * @returns {object} - {
- *                       txHash: 'the transaction hash of the "approve" transaction',
- *                       from: 'publisher.address'
- *                     }
+ * @returns {void} - This function has no return value; it will throw an exception on failure.. You can use the `getDataByStatus` interface to query the application status.
  */
 export const approveUserSubscription = async (
   publisher: Account,
@@ -607,7 +938,7 @@ export const approveUserSubscription = async (
 
   console.log('sended the request: /subscribe/batch-approve');
 
-  const txHash = data['tx_hash'];
+  // const txHash = data['tx_hash'];
 
   //
 
@@ -674,337 +1005,7 @@ export const approveUserSubscription = async (
   //  }
   //}
 
-  return Object.assign({ txHash: txHash, from: publisher.address }, data || { info: 'succeed' });
-};
-
-/**
- * Approval of applications for use of Files/Data, This account acts as Publisher (Alice) grant. The batch version of the function refusalApplicationForUseData.
- * Please unlock account with your password first by call getWalletDefaultAccount(userpassword), otherwise an UnauthorizedError exception will be thrown.
- * @category Data Publisher(Alice) Approval (Multi)
- * @param {Account} publisher - Account the current account object
- * @param {string[]} userAccountIds - string
- * @param {string[]} applyIds - string
- * @param {number[]} ursulaShares - number
- * @param {number[]} ursulaThresholds - number
- * @param {Date[]} startDates - policy usage start date
- * @param {Date[]} endDates - policy usage end date
- * @param {string} remark - (Optional)
- * @param {string} porterUri - (Optional) the porter services url
- * @param {BigNumber} gasFeeInWei - (Optional) by call 'getPolicysGasFee', must be the token of the chain (e.g. bnb), not be the nlk
- * @param {BigNumber} gasPrice - (Optional) the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
- * @returns {object} - {
- *                       txHash: 'the transaction hash of the "approve" transaction',
- *                       from: 'publisher.address'
- *                     }
- */
-export const approvalApplicationsForUseData1 = async (
-  publisher: Account,
-  userAccountIds: string[], // proposer account id
-  applyIds: string[], // Application Record ID
-  ursulaShares: number[], //n   m of n => 3 of 5
-  ursulaThresholds: number[], // m
-  startDates: Date[], //policy usage start date
-  endDates: Date[], //policy usage end date
-  remark = '', //remark
-  porterUri = '',
-  //To handle whole numbers, Wei can be converted using BigNumber.from(), and Ether can be converted using ethers.utils.parseEther(). It's important to note that BigNumber.from("1.2") cannot handle decimal numbers (x.x).
-  gasFeeInWei: BigNumber = BigNumber.from('0'), //must be the token of the chain (e.g. bnb), not be the nlk
-  gasPrice: BigNumber = BigNumber.from('0') //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
-) => {
-  //https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E6%89%B9%E5%87%86%E6%96%87%E4%BB%B6%E4%BD%BF%E7%94%A8%E7%94%B3%E8%AF%B7
-  //return { txHash: enPolicy.txHash, from: publisher.address , data }
-
-  // console.log("the account address is:", publisher.address);
-  // console.log("the account key is:", pwdDecrypt(publisher.encryptedKeyPair._privateKey, true));
-
-  // {"approvedApplyIds": [], "underViewApplyIds": []}
-  const { approvedApplyIds, underViewApplyIds }: any = await checkMultiDataApprovalStatusIsApprovedOrApproving(
-    applyIds
-  );
-
-  if (approvedApplyIds.length > 0) {
-    throw new PolicyHasBeenActivedOnChain(`Policys ${approvedApplyIds} are approved, no need apply again`);
-  }
-
-  if (underViewApplyIds.length > 0) {
-    throw new PolicyApproving(`Policys ${underViewApplyIds} are under review, please wait for the review to complete`);
-  }
-
-  const applyInfoList = await getMultiApplyDetails(applyIds);
-  if (isBlank(applyInfoList)) {
-    throw new ApplyNotExist(`one of the apply: ${applyIds} does not exist`);
-  }
-
-  const resultInfo = await getBlockchainPolicys(
-    publisher,
-    userAccountIds,
-    applyIds,
-    ursulaShares,
-    ursulaThresholds,
-    startDates, //policy usage start date
-    endDates, //policy usage start date
-    porterUri
-  );
-
-  //Ensure that the BNB balance is greater than the GAS fee balance
-  const balance: BigNumber = await getBalance(publisher.address);
-  const chainConfigInfo = await getSettingsData();
-
-  console.log(`the account token balance is: ${balance.toString()} wei ${chainConfigInfo.tokenSymbol}`);
-  console.log(`the create policy gas fee is: ${gasFeeInWei.toString()} wei ${chainConfigInfo.tokenSymbol}`);
-
-  if (!gasFeeInWei.lte(BigNumber.from('0')) && balance.lt(gasFeeInWei)) {
-    const balanceValue = Web3.utils.fromWei(balance.toString(), 'ether');
-    const gasValue = Web3.utils.fromWei(gasFeeInWei.toString(), 'ether');
-    // Message.error(
-    //   `The account (${publisher.address}) balance of ${balanceValue} ether in [token] ${chainConfigInfo.tokenSymbol} is insufficient to publish a policy with a gas value of ${gasValue} ether`,
-    // );
-    console.log(
-      `The account (${publisher.address}) balance of ${balanceValue} ether in [token] ${chainConfigInfo.tokenSymbol} is insufficient to publish a policy with a gas value of ${gasValue} ether`
-    );
-    throw new InsufficientBalanceError(
-      `The account (${publisher.address}) balance of ${balanceValue} ether in [token] ${chainConfigInfo.tokenSymbol} is insufficient to publish a policy with a gas value of ${gasValue} ether`
-    );
-  }
-
-  const costServerFeeWei: BigNumber = BigNumber.from('0');
-
-  const curNetwork: NETWORK_LIST = await getCurrentNetworkKey();
-
-  if ([NETWORK_LIST.Horus, NETWORK_LIST.HorusMainNet].includes(curNetwork)) {
-    //only mainnet can get nlk balance. if not crosschain mainnet, no nlk token, no need get nlk balance
-
-    //enPolicy service fee gas wei
-    const costServerFeeWei: BigNumber = await calcPolicysCost(
-      resultInfo.alice,
-      resultInfo.deDuplicationInfo.policyParameters.startDates,
-      resultInfo.deDuplicationInfo.policyParameters.endDates,
-      resultInfo.deDuplicationInfo.policyParameters.shares
-    );
-
-    const txHashOrEmpty: string = (await approveNLK(
-      publisher,
-      BigNumber.from('10000000000000000000000000'),
-      costServerFeeWei,
-      false,
-      gasPrice
-    )) as string;
-
-    // eslint-disable-next-line no-extra-boolean-cast
-    console.log(
-      !txHashOrEmpty
-        ? `approvalApplicationForUseData no need approve nlk`
-        : `approvalApplicationForUseData approveNLK txHash: ${txHashOrEmpty}`
-    );
-
-    //wei can use  BigNumber.from(), ether can use ethers.utils.parseEther(), because the BigNumber.from("1.2"), the number can't not be decimals (x.x)
-    //await publisher.getNLKBalance() return ethers
-    //Check whether the account balance is less than the policy creation cost
-    const nlkEther = await publisher.getNLKBalance();
-    const nlkBalanceWei: BigNumber = ethers.utils.parseEther(nlkEther as string);
-    const costServerEther = Web3.utils.fromWei(costServerFeeWei.toString(), 'ether');
-
-    console.log(`the account balance is: ${nlkEther} ether nlk`);
-    console.log(`the create policy server fee is: ${costServerEther.toString()} ether nlk`);
-
-    //Don't forget the mint fee (service charge), so use the method lte, not le
-    if (nlkBalanceWei.lt(costServerFeeWei)) {
-      // Message.error(
-      //   `The account ${publisher.address} balance of ${nlkBalanceEthers} ether in [token] ${chainConfigInfo.nlkTokenSymbol} is insufficient to publish policy with a value of ${costServerGasEther} ether`,
-      // );
-      console.log(
-        `The account ${publisher.address} balance of ${nlkEther} ether in [token] ${chainConfigInfo.nlkTokenSymbol} is insufficient to publish policy with a value of ${costServerEther} ether`
-      );
-      throw new InsufficientBalanceError(
-        `The account ${publisher.address} balance of ${nlkEther} ether in [token] ${chainConfigInfo.nlkTokenSymbol} is insufficient to publish policy with a value of ${costServerEther} ether`
-      );
-    }
-  } //end of if ([NETWORK_LIST.Horus, NETWORK_LIST.HorusMainNet].includes(curNetwork))
-
-  // "@nucypher_network/nucypher-ts": "^0.7.0",  must be this version
-  console.log('before multi policy enact');
-  const waitReceipt = false;
-
-  const web3: Web3 = await getWeb3();
-
-  const [GAS_PRICE_FACTOR_LEFT, GAS_PRICE_FACTOR_RIGHT] = DecimalToInteger(GAS_PRICE_FACTOR);
-
-  //estimatedGas * gasPrice * factor
-  if (gasPrice.lte(BigNumber.from('0'))) {
-    // the gasPrice is obtained in real time
-    gasPrice = BigNumber.from(await web3.eth.getGasPrice());
-    gasPrice = gasPrice.mul(GAS_PRICE_FACTOR_LEFT).div(GAS_PRICE_FACTOR_RIGHT);
-  } else {
-    //If the gasPrice is manually set, the GAS_PRICE_FACTOR is not set
-  }
-
-  const _gasPrice = gasPrice;
-
-  let gasLimit: BigNumber = gasFeeInWei.gt(BigNumber.from('0')) ? gasFeeInWei.div(_gasPrice) : BigNumber.from('0');
-
-  if (!gasLimit.lte(BigNumber.from('0')) && gasFeeInWei.gt(gasLimit.mul(_gasPrice))) {
-    //There may be rounding issues in English, indicating no exact division and resulting in a remainder
-
-    gasLimit = gasLimit.add(1); //.mul(2) //increase by two times
-  }
-
-  console.log('current set gasPrice: ', _gasPrice, utils.formatUnits(_gasPrice));
-  console.log('current set gasLimit: ', gasLimit, utils.formatUnits(gasLimit));
-
-  //MultiPreEnactedPolicy
-  //let enMultiPolicy: MultiEnactedPolicy;
-  // try {
-  //   enMultiPolicy = await resultInfo.deDuplicationInfo.multiBlockchainPolicy.enact(
-  //     resultInfo.deDuplicationInfo.ursulasArray,
-  //     waitReceipt,
-  //     gasLimit,
-  //     _gasPrice
-  //   )
-  // } catch (error) {
-  //   console.log("call enact failed error: ", error);
-  //   console.log("retrying enact");
-  //   enMultiPolicy = await resultInfo.deDuplicationInfo.multiBlockchainPolicy.enact(
-  //     resultInfo.deDuplicationInfo.ursulasArray,
-  //     waitReceipt,
-  //     BigNumber.from("0"),//gasLimit,
-  //     BigNumber.from("0"),//_gasPrice
-  //   )
-  // }
-
-  const enMultiPolicy = await resultInfo.deDuplicationInfo.multiBlockchainPolicy.enact(
-    resultInfo.deDuplicationInfo.ursulasArray,
-    waitReceipt,
-    gasLimit,
-    gasPrice
-    //BigNumber.from("0"), //gasLimit
-    //BigNumber.from("0") //gasPrice
-  );
-
-  console.log('after mulit policy enact');
-
-  if (isBlank(enMultiPolicy) || isBlank(enMultiPolicy.txHash)) {
-    console.log(`send transaction Approve failed, Please refresh page first and try again!`);
-    throw new TransactionError(`send transaction Approve failed, Please refresh page first and try again!`);
-  }
-
-  console.log(`enMultiPolicy txHash: ${enMultiPolicy.txHash}`);
-
-  // // Persist side-channel
-  // const aliceVerifyingKey: PublicKey = alice.verifyingKey;
-  // const policyEncryptingKey: PublicKey = enPolicy.policyKey;
-
-  const encryptedTreasureMapBytesArray: Uint8Array[] = enMultiPolicy.encryptedTreasureMaps.map((encryptedTreasureMap) =>
-    encryptedTreasureMap.toBytes()
-  );
-
-  const encryptedTreasureMapIPFSs: string[] = [];
-
-  //2. upload multiple encrypt files to IPFS
-  const cids: string[] = await StorageManager.setData(encryptedTreasureMapBytesArray, publisher);
-  encryptedTreasureMapIPFSs.push(...cids);
-
-  //3. call center server to save policy info
-  const policy_list: object[] = [];
-  const crossChainHracs: CrossChainHRAC[] = enMultiPolicy.ids;
-
-  for (let index = 0; index < crossChainHracs.length; index++) {
-    const crossChainHrac: CrossChainHRAC = crossChainHracs[index];
-    //Note: Since all applyIds may have duplicates, and applyIds should correspond one-to-one with policies, pass all duplicate policy information to the backend (deduplicating based on HRAC on the backend).
-    policy_list.push({
-      hrac: hexlify(crossChainHrac.toBytes() /* Uint8Array[]*/), //fromBytesByEncoding(crossChainHrac.toBytes(), 'binary'),
-      gas: costServerFeeWei.toString(),
-      tx_hash: enMultiPolicy.txHash,
-      encrypted_address: encryptedTreasureMapIPFSs[index],
-      encrypted_pk: resultInfo.strategys[index].strategyKeyPair._publicKey //policy_encrypted_pk
-    });
-  }
-
-  const sendData: any = {
-    account_id: publisher.id,
-    apply_ids: applyIds.map((applyId) => Number(applyId)),
-    remark: remark,
-    policy_list: policy_list
-  };
-  sendData['signature'] = await signUpdateServerDataMessage(publisher, sendData);
-
-  //Note: Notified the backend service: Send the transaction hash to the backend.
-  //Previously, the under view state background thought that it must be chained, now it can't be: The under view may be unsuccessful or successful.
-  // This status needs to be determined by the backend, because while waiting for the transaction to be connected,
-  // the user may get impatient and close the page, so the /apply/batch-approve interface will never be called.
-  //If the link is successfully connected after this transaction, the status of the page will not change,
-  //and the button still displays Review request, which can still be approved again, and the Policy is active
-
-  console.log('before send the notification: apply/batch-approve');
-
-  //V1->V2: The background approve logic changes to: store tx_hash to a table , and then execute approve operator after listening for an on-chain event
-  const data = await serverPost('/apply/batch-approve', sendData);
-
-  console.log('sended the notification: apply/batch-approve');
-
-  let receipt: any = null;
-
-  let retryTimes = 130;
-  do {
-    try {
-      receipt = await web3.eth.getTransactionReceipt(enMultiPolicy.txHash);
-      //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
-    } catch (error) {
-      console.log(
-        `getTransactionReceipt createPolicy txHash: ${enMultiPolicy.txHash} retrying ..., current error: `,
-        error
-      );
-    }
-
-    if (isBlank(receipt)) {
-      if (retryTimes % 3 == 0) {
-        // Message.info(
-        console.log('Transaction is being confirmed on the blockchain. Please wait patiently', 'info');
-      }
-
-      await sleep(3000);
-    }
-    retryTimes--;
-  } while (isBlank(receipt) && retryTimes > 0);
-
-  const txReceipt = receipt as TransactionReceipt;
-
-  //const transaction = await web3.eth.getTransaction(enMultiPolicy.txHash);
-  //  //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
-  if (isBlank(txReceipt)) {
-    const transaction = await web3.eth.getTransaction(enMultiPolicy.txHash);
-    //console.log("transaction.input:", transaction.input);
-    console.log('transaction:', transaction);
-    console.log(
-      `getTransactionReceipt error: transaction Hash is ${enMultiPolicy.txHash}, transaction receipt is null. The current status is "Underview". Please be patient and wait for the backend to confirm the transaction (it should be completed within approximately one hour)!`
-    );
-
-    throw new GetTransactionReceiptError(
-      `getTransactionReceipt error: transaction Hash is ${enMultiPolicy.txHash}, transaction receipt is null. The current status is "Underview". Please be patient and wait for the backend to confirm the transaction (it should be completed within approximately one hour)!`
-    );
-  } else {
-    //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
-    if (!txReceipt.status) {
-      //The transaction failed. Users can manually re-approve it. We need to notify the backend API to reset the status.
-      const _sendData: any = {
-        account_id: publisher.id,
-        policy_tx_hash: enMultiPolicy.txHash
-      };
-      _sendData['signature'] = await signUpdateServerDataMessage(publisher, _sendData);
-
-      const data = await serverPost('/apply/reset', sendData);
-
-      console.log('called apply reset, now Users can manually re-approve it');
-
-      console.log(
-        `Approve apply Failed: transaction Hash is ${enMultiPolicy.txHash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
-      );
-      throw new TransactionError(
-        `Approve apply Failed: transaction Hash is ${enMultiPolicy.txHash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
-      );
-    }
-  }
-
-  return Object.assign({ txHash: enMultiPolicy.txHash, from: publisher.address }, data || { info: 'succeed' });
+  return Object.assign({ /* txHash: txHash,  */ from: publisher.address }, data || { info: 'succeed' });
 };
 
 /**
@@ -1012,7 +1013,7 @@ export const approvalApplicationsForUseData1 = async (
  * @category Data Publisher(Alice) Approval (Multi)
  * @param {Account} publisher - The account of the publisher (Alice).
  * @param {string[]} applyIds - The application apply ID to reject.
- * @returns {Promise<void>}
+ * @returns {Promise<void>} - This function has no return value; it will throw an exception on failure.
  */
 export const refusalUserSubscription = async (
   publisher: Account,
@@ -1041,29 +1042,108 @@ export const refusalUserSubscription = async (
  * @category Data Publisher(Alice) Approval (Multi)
  * @param {Account} account - Refund account（Bob）.
  * @param {string} applyId - The application apply ID to reject.
+ * @param {BigNumber | string} orderId - A unique string composed of numbers.
  * @param {string} refundUrl - Refund information notification url: if the approval is rejected, a refund will be initiated
+ * @param {BigNumber} gasPrice - (Optional) The gas price set by this transaction, if empty, it will use web3.eth.getGasPrice().
+ * @param {BigNumber} gasLimit - (Optional) set gas limit
  * @returns {Promise<void>}
  */
 export const cancelUserSubscription = async (
   account: Account,
   applyId: string, // Application Record ID
-  orderId: string, // orderId
-  refundUrl: string //Refund information notification url: if the approval is rejected, a refund will be initiated
+  orderId: BigNumber | string, // orderId
+  refundUrl: string, //Refund information notification url: if the approval is rejected, a refund will be initiated
+  gasLimit: BigNumber = BigNumber.from('0'), // Note that using gasUsedAmount ?: BigNumber here will cause the reference to PublicKey from nulink-ts to become undefined.
+  gasPrice: BigNumber = BigNumber.from('0') // Note that using gasPrice ?: BigNumber here will cause the reference to PublicKey from nulink-ts to become undefined.
 ) => {
-  //TODO:
-
   const clientId = await getClientId();
 
+  if (typeof orderId === 'string') {
+    if (!isNumeric(orderId)) {
+      throw new Error('Each digit in the orderId must be composed of numbers');
+    }
+    orderId = BigNumber.from(orderId);
+  }
+
+  const provider: Web3Provider = (await getWeb3Provider(account as any)) as Web3Provider;
   //1. check if refund has already been processed
 
   //call contact function: payInfo(clientid,payid).payStatus is => enum payStatus{PayNull,PaySucc,PayCancel,SettlementSucc}
+  const payInfo = await AppPayAgent.getPayInfo(provider, orderId);
+
+  console.log(`cancelUserSubscription pay status: ${payInfo.paySts}`);
+
+  //enum payStatus{PayNull,PaySucc,PayCancel,SettlementSucc} PayNull：0， PaySucc：1， PayCancel：2， SettlementSucc：3
+  if ((!isBlank(payInfo) && payInfo.paySts == 2) || payInfo.paySts == 0) {
+    return;
+  }
+
+  //Settled payments cannot be refunded.
+  if (!isBlank(payInfo) && payInfo.paySts == 3) {
+    throw new Error('Settled payments cannot be refunded');
+  }
+
+  //enum payStatus{PayNull,PaySucc,PayCancel,SettlementSucc} PayNull：0， PaySucc：1， PayCancel：2， SettlementSucc：3
 
   //if the status is PayNull, PayCancel, SettlementSucc: a refund cannot be initiated, only paySuccess status allows for a refund
-  //TODO:
+  if (isBlank(payInfo) || (!isBlank(payInfo) && payInfo.paySts != 1)) {
+    console.log(
+      `only paySuccess status allows for a refund, current pay status is: ${
+        !isBlank(payInfo) ? payInfo.paySts : 'can not get pay info orderId: ' + orderId + ' clientId: ' + clientId
+      }`
+    );
+    throw new Error(
+      `only paySuccess status allows for a refund, current pay status is: ${
+        !isBlank(payInfo) ? payInfo.paySts : 'can not get pay info orderId: ' + orderId
+      }`
+    );
+  }
 
   //2. call contact refund function
-  //TODO:
-  const txHash = ''; //await refund(account, orderId, refundUrl);
+
+  //Check if the gas fee is sufficient.
+  const gasInfo: GasInfo = await AppPayAgent.estimateGasBybobPayCancel(
+    _Web3Provider.fromEthersWeb3Provider(provider),
+    orderId,
+    gasPrice
+  );
+
+  const gasFeeInWei: BigNumber = gasInfo.gasFee;
+  //Ensure that the BNB balance is greater than the GAS fee balance
+  const balance: BigNumber = await getBalance(account.address);
+  const chainConfigInfo = await getSettingsData();
+
+  console.log(`the account token balance is: ${balance.toString()} wei ${chainConfigInfo.tokenSymbol}`);
+  console.log(`the bob pay cancel gas fee is: ${gasFeeInWei.toString()} wei ${chainConfigInfo.tokenSymbol}`);
+
+  if (!gasFeeInWei.lte(BigNumber.from('0')) && balance.lt(gasFeeInWei)) {
+    const balanceValue = Web3.utils.fromWei(balance.toString(), 'ether');
+    const gasValue = Web3.utils.fromWei(gasFeeInWei.toString(), 'ether');
+    // Message.error(
+    //   `The account (${account.address}) balance of ${balanceValue} ether in [token] ${chainConfigInfo.tokenSymbol} is insufficient to pay subscription fee with a gas value of ${gasValue} ether`,
+    // );
+    console.log(
+      `The account (${account.address}) balance of ${balanceValue} ether in [token] ${chainConfigInfo.tokenSymbol} is insufficient to pay subscription fee with a gas value of ${gasValue} ether`
+    );
+    throw new InsufficientBalanceError(
+      `The account (${account.address}) balance of ${balanceValue} ether in [token] ${chainConfigInfo.tokenSymbol} is insufficient to  pay subscription fee with a gas value of ${gasValue} ether`
+    );
+  }
+
+  const tx: ContractTransaction = await AppPayAgent.bobPayCancel(
+    _Web3Provider.fromEthersWeb3Provider(provider),
+    orderId,
+    true,
+    gasLimit.lte(BigNumber.from('0')) ? gasInfo.gasLimit : gasLimit,
+    gasInfo.gasPrice
+  );
+
+  if (isBlank(tx) || isBlank(tx.hash)) {
+    console.log(`send Bob Pay Cancel transaction failed!`);
+    throw new TransactionError(`send Bob Pay Cancel transaction failed!`);
+  }
+
+  console.log(`Bob pay Cancel txHash: tx.hash`);
 
   //3. call pre backend API, and backend API needs to change payment status
 
@@ -1072,14 +1152,65 @@ export const cancelUserSubscription = async (
     proposer_id: account.id,
     account_id: account.id,
     refund_url: refundUrl,
-    tx_hash: txHash
+    tx_hash: tx.hash
   };
 
   sendData['signature'] = await signUpdateServerDataMessage(account, sendData);
   const data = await serverPost('/refund/subscribe', sendData);
+
+  let receipt: any = null;
+
+  let retryTimes = 130;
+  do {
+    try {
+      receipt = await web3.eth.getTransactionReceipt(tx.hash);
+      //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
+    } catch (error) {
+      console.log(`getTransactionReceipt bob Pay txHash: ${tx.hash} retrying ..., current error: `);
+    }
+
+    if (isBlank(receipt)) {
+      if (retryTimes % 3 == 0) {
+        Message.info('Transaction is being confirmed on the blockchain. Please wait patiently');
+      }
+
+      await sleep(3000);
+    }
+    retryTimes--;
+  } while (isBlank(receipt) && retryTimes > 0);
+
+  const txReceipt = receipt as TransactionReceipt;
+
+  //const transaction = await web3.eth.getTransaction(tx.hash);
+  //  //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
+  if (isBlank(txReceipt)) {
+    const transaction = await web3.eth.getTransaction(tx.hash);
+    //console.log("transaction.input:", transaction.input);
+    console.log('transaction:', transaction);
+    console.log(`getTransactionReceipt error: Bob pay transaction Hash is ${tx.hash}, transaction receipt is null.!`);
+
+    throw new GetTransactionReceiptError(
+      `Bob pay Cancel: getTransactionReceipt error: transaction Hash is ${tx.hash}, transaction receipt is null.!`
+    );
+  } else {
+    //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
+    if (!txReceipt.status) {
+      //The transaction failed. Users can manually pay again.
+
+      console.log(
+        `Bob pay Cancel Failed: transaction Hash is ${tx.hash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
+      );
+      throw new TransactionError(
+        `Bob pay Cancel Failed: transaction Hash is ${tx.hash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
+      );
+    }
+  }
+
+  const _payInfo = await AppPayAgent.getPayInfo(provider, orderId);
+  console.log(`cancelUserSubscription: after send transaction, txHash is ${tx.hash}, pay status is ${_payInfo.paySts}`);
+
   return data;
 };
-
 
 /**
  * Get approved document content (downloadable) list. The file/data applicant retrieves the content of a file/data that has been approved for their usage.
@@ -1088,7 +1219,10 @@ export const cancelUserSubscription = async (
  * @param {string []} dataIds - file/data's id list
  * @returns {Promise<Dictionary<ArrayBuffer>>} - {fileId1: dataContent1, fileId2: dataContent2, ....}
  */
-export const getDataContentListByDataIdAsUser = async (userAccount: Account, dataIds: string[]): Promise<Dictionary<ArrayBuffer>> => {
+export const getDataContentListByDataIdAsUser = async (
+  userAccount: Account,
+  dataIds: string[]
+): Promise<Dictionary<ArrayBuffer>> => {
   //get file/data info
 
   const dataDict: Dictionary<ArrayBuffer> = {};
@@ -1100,5 +1234,4 @@ export const getDataContentListByDataIdAsUser = async (userAccount: Account, dat
   }
 
   return dataDict;
-
 };

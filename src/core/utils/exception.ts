@@ -151,3 +151,11 @@ export class ApplyNotExist extends Error {
     this.name = "ApplyNotExist"; // (2)
   }
 }
+
+
+export class BobPayError extends Error {
+  constructor(message) {
+    super(message); // (1)
+    this.name = "BobPayError"; // (2)
+  }
+}

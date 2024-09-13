@@ -6,7 +6,7 @@
  * @preferred
  */
 // Importing the Required pakages from various sources
-import { Buffer } from 'buffer'
+import { Buffer } from 'buffer';
 import {
   IJson,
   KeyPair,
@@ -18,34 +18,34 @@ import {
   getRootExtendedPrivateKey as commonGetRootExtendedPrivateKey,
   EthWallet,
   getEthereumStrategyKeyPair as commonGetEthereumStrategyKeyPair
-} from './common'
-import { nanoid } from 'nanoid' //https://cloud.tencent.com/developer/article/1743958
-import AwaitLock from 'await-lock'
-import { Keccak } from 'sha3'
-import assert from 'assert-ts'
-import { hdkey } from 'ethereumjs-wallet'
+} from './common';
+import { nanoid } from 'nanoid'; //https://cloud.tencent.com/developer/article/1743958
+import AwaitLock from 'await-lock';
+import { Keccak } from 'sha3';
+import assert from 'assert-ts';
+import { hdkey } from 'ethereumjs-wallet';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { sign, check } from 'sign'
-import * as macro from '../types'
-import * as util from '../../utils/null'
-import { CryptoBroker } from './cryptography'
-import * as exception from '../../utils/exception'
-import { getWeb3 } from './web3'
-import Web3 from 'web3'
-import keccak256 from 'keccak256'
+import { sign, check } from 'sign';
+import * as macro from '../types';
+import * as util from '../../utils/null';
+import { CryptoBroker } from './cryptography';
+import * as exception from '../../utils/exception';
+import { getWeb3 } from './web3';
+import Web3 from 'web3';
+import keccak256 from 'keccak256';
 // import encryptpwd from 'encrypt-with-password'
 // import { generateRandomString } from 'ts-randomstring/lib'
 // import { errors } from 'web3-core-helpers'
 
-import md5 from 'md5'
-import { encrypt as pwdEncrypt, decrypt as pwdDecrypt } from '../../utils/password.encryption'
-import { getContractInst } from '../../sol/contract'
-import { CONTRACT_NAME } from '../../sol'
-import { Contract, ContractOptions } from 'web3-eth-contract'
-import SingletonService from 'singleton-service'
-import { isBlank, store } from '../../utils'
-import sleep from 'await-sleep'
-import { serverPost } from '../../servernet'
+import md5 from 'md5';
+import { encrypt as pwdEncrypt, decrypt as pwdDecrypt } from '../../utils/password.encryption';
+import { getContractInst } from '../../sol/contract';
+import { CONTRACT_NAME } from '../../sol';
+import { Contract, ContractOptions } from 'web3-eth-contract';
+import SingletonService from 'singleton-service';
+import { isBlank, store } from '../../utils';
+import sleep from 'await-sleep';
+import { serverPost } from '../../servernet';
 
 // import toBuffer from "typedarray-to-buffer";
 
@@ -57,35 +57,35 @@ import { serverPost } from '../../servernet'
 /**
  * @internal
  */
-export let web3: Web3 // eslint-disable-line
+export let web3: Web3; // eslint-disable-line
 
 // const HDWALLET_ENCRYPT_STR = 'wallet.enc'
-const HDWALLET_INSTANCE_NAME = 'hdwallet'
-const RESTORE_WALLET_TAG = 'tag_restore_wallet_backend_db'
+const HDWALLET_INSTANCE_NAME = 'hdwallet';
+const RESTORE_WALLET_TAG = 'tag_restore_wallet_backend_db';
 
 /**
  * @internal
  */
 export const getHDWalletInstance = (): any => {
   // attention please -> Here take the data from memory, don't call loadHDWalletFromPersistence method
-  return SingletonService.get<NuLinkHDWallet>(HDWALLET_INSTANCE_NAME)
-}
+  return SingletonService.get<NuLinkHDWallet>(HDWALLET_INSTANCE_NAME);
+};
 
 /**
  * @internal
  */
 const setHDWalletInstance = async (hdWallet: NuLinkHDWallet | null, persist = true) => {
   if (!hdWallet) {
-    console.log('setHDWallet failed cause by the NuLinkHDWallet is null')
-    return
+    console.log('setHDWallet failed cause by the NuLinkHDWallet is null');
+    return;
   }
-  assert(hdWallet != null)
+  assert(hdWallet != null);
 
-  SingletonService.set<NuLinkHDWallet>(HDWALLET_INSTANCE_NAME, hdWallet, true)
+  SingletonService.set<NuLinkHDWallet>(HDWALLET_INSTANCE_NAME, hdWallet, true);
   // if (persist) {
   //   await persistHDWallet(hdWallet)
   // }
-}
+};
 
 // Unsafe, abandoned
 // export const existHDWalletPersistData = async (): Promise<boolean> => {
@@ -142,11 +142,11 @@ export enum DataStrategyRecoveryMode {
  * @extends {IJson}
  */
 export class Strategy extends IJson {
-  accountAddressIndex: number
-  addressIndex: number //policy address index
-  id: string //Mainly to correspond to the background, globally unique
-  label: string
-  strategyKeyPair: KeyPair
+  accountAddressIndex: number;
+  addressIndex: number; //policy address index
+  id: string; //Mainly to correspond to the background, globally unique
+  label: string;
+  strategyKeyPair: KeyPair;
 
   /**
    * Creates a new policy object with the specified account and policy address indices, label, and ID.
@@ -158,33 +158,33 @@ export class Strategy extends IJson {
   constructor(accountAddressIndex: number, strategyAddressIndex: number, label: string, id = '') {
     //label's type and Id
 
-    super()
+    super();
     const keyPairDict: any = commonGetEthereumStrategyKeyPair(
       getHDWalletInstance().hdWallet,
       accountAddressIndex,
       strategyAddressIndex
-    )
+    );
 
-    this.accountAddressIndex = accountAddressIndex
-    this.addressIndex = strategyAddressIndex
+    this.accountAddressIndex = accountAddressIndex;
+    this.addressIndex = strategyAddressIndex;
 
     if (!util.isBlank(id)) {
-      this.id = id
+      this.id = id;
     } else {
       //this.id = nanoid()
-      /** 
-       * When multiple browser tabs are opened simultaneously, the frontend is unable to lock them, 
-       * resulting in overlapping indexes during generation. 
-       * As a result, when two files are approved separately, one might not find the corresponding strategy. 
-       * To address this situation, we ensure that the policy IDs for strategies generated in simultaneously opened tabs are the same. 
+      /**
+       * When multiple browser tabs are opened simultaneously, the frontend is unable to lock them,
+       * resulting in overlapping indexes during generation.
+       * As a result, when two files are approved separately, one might not find the corresponding strategy.
+       * To address this situation, we ensure that the policy IDs for strategies generated in simultaneously opened tabs are the same.
        * This, combined with backend restrictions on the same HRAC application, can resolve the problem.
        */
       //this.id = md5(`${accountAddressIndex}_${strategyAddressIndex}_${label}`, { encoding: 'string' });
-      this.id = keccak256(keyPairDict.pk).toString('hex');//Same as the Account
+      this.id = keccak256(keyPairDict.pk).toString('hex'); //Same as the Account
     }
 
-    this.label = label
-    this.strategyKeyPair = new KeyPair(keyPairDict.pk, keyPairDict.sk)
+    this.label = label;
+    this.strategyKeyPair = new KeyPair(keyPairDict.pk, keyPairDict.sk);
     //this.serialize(this.getSaveKey());
     // Can't do it in the constructor (async), do it when the upper level is called
   }
@@ -193,7 +193,7 @@ export class Strategy extends IJson {
    * @internal
    */
   public getSaveKey(): string {
-    return macro.strategyKey(this.accountAddressIndex, this.addressIndex)
+    return macro.strategyKey(this.accountAddressIndex, this.addressIndex);
   }
 
   /**
@@ -211,7 +211,7 @@ export class Strategy extends IJson {
       /*There is no need to dump this item, and it can be recovered through the account,
        because the mnemonic (or root extension private key), 
        account index and strategy index are determined, and the generated pk and sk must be*/
-    })
+    });
   }
 
   /**
@@ -224,12 +224,12 @@ export class Strategy extends IJson {
    */
   public static async load(jsonString: string, _save = false): Promise<Strategy | null> {
     try {
-      const jsonObj = JSON.parse(jsonString)
+      const jsonObj = JSON.parse(jsonString);
 
-      return new Strategy(jsonObj.acntAdrIndex, jsonObj.sAdrIndex, jsonObj.label, jsonObj.id)
+      return new Strategy(jsonObj.acntAdrIndex, jsonObj.sAdrIndex, jsonObj.label, jsonObj.id);
     } catch (error) {
-      console.log(`strategy load ${error}`)
-      return null
+      console.log(`strategy load ${error}`);
+      return null;
     }
   }
 
@@ -239,8 +239,8 @@ export class Strategy extends IJson {
    * @memberof Strategy
    */
   public async serialize(): Promise<void> {
-    const strategyString: string = this.dump()
-    return await getHDWalletInstance().encryptSaveData(this.getSaveKey(), strategyString)
+    const strategyString: string = this.dump();
+    return await getHDWalletInstance().encryptSaveData(this.getSaveKey(), strategyString);
   }
 
   /**
@@ -249,8 +249,8 @@ export class Strategy extends IJson {
    * @memberof Strategy
    */
   public async deserialize(): Promise<Strategy | null> {
-    const strategyString = await getHDWalletInstance().decryptSavedData(this.getSaveKey())
-    return await Strategy.load(strategyString)
+    const strategyString = await getHDWalletInstance().decryptSavedData(this.getSaveKey());
+    return await Strategy.load(strategyString);
   }
 
   /**
@@ -262,12 +262,12 @@ export class Strategy extends IJson {
   public async save() {
     //Store account individual policy information
 
-    const nuLinkHDWallet = getHDWalletInstance()
-    const accountDump = this.dump()
+    const nuLinkHDWallet = getHDWalletInstance();
+    const accountDump = this.dump();
     await nuLinkHDWallet.encryptSaveData(
       macro.accountStrategyInfo(this.accountAddressIndex, this.addressIndex),
       accountDump
-    )
+    );
   }
 
   /**
@@ -281,8 +281,8 @@ export class Strategy extends IJson {
 
     const strategyString = await getHDWalletInstance().decryptSavedData(
       macro.accountStrategyInfo(accountAddressIndex, addressIndex)
-    )
-    return await Strategy.load(strategyString)
+    );
+    return await Strategy.load(strategyString);
   }
 
   /**
@@ -292,9 +292,9 @@ export class Strategy extends IJson {
    * @static
    */
   public async erase() {
-    const nuLinkHDWallet = getHDWalletInstance()
+    const nuLinkHDWallet = getHDWalletInstance();
     //Remove account single policy storage information
-    await nuLinkHDWallet.removeSavedData(macro.accountStrategyInfo(this.accountAddressIndex, this.addressIndex))
+    await nuLinkHDWallet.removeSavedData(macro.accountStrategyInfo(this.accountAddressIndex, this.addressIndex));
   }
 }
 
@@ -305,14 +305,14 @@ export class Strategy extends IJson {
  * @extends {IJson}
  */
 export class Account extends IJson {
-  name = ''
-  address = ''
-  addressIndex = -1
-  id = '' //Mainly to correspond to the background, globally unique
-  public encryptedKeyPair: KeyPair
-  public verifyKeyPair: KeyPair
-  private generateStrateAddressIndexLock = new AwaitLock() //Generation strategy (key spanning tree path) index
-  private strategyMapping = new Map<number, Strategy>() //Strategy related information address_index: Strategy
+  name = '';
+  address = '';
+  addressIndex = -1;
+  id = ''; //Mainly to correspond to the background, globally unique
+  public encryptedKeyPair: KeyPair;
+  public verifyKeyPair: KeyPair;
+  private generateStrateAddressIndexLock = new AwaitLock(); //Generation strategy (key spanning tree path) index
+  private strategyMapping = new Map<number, Strategy>(); //Strategy related information address_index: Strategy
 
   /**
    * Constructs a new policy object with the specified name, address index, and optional ID.
@@ -321,22 +321,22 @@ export class Account extends IJson {
    * @param {string} [id=''] - The optional ID of the account.  Generate a account id if the parameter is not passed.
    */
   constructor(name: string, addressIndex: number, id = '') {
-    super()
-    this.name = name
-    this.addressIndex = addressIndex
+    super();
+    this.name = name;
+    this.addressIndex = addressIndex;
 
-    let keyPairDict = getEthereumEncryptAccount(getHDWalletInstance().hdWallet, addressIndex)
+    let keyPairDict = getEthereumEncryptAccount(getHDWalletInstance().hdWallet, addressIndex);
     if (!util.isBlank(id)) {
-      this.id = id
+      this.id = id;
     } else {
       //this.id = nanoid(); //we use the privatekey or mnemonic restore the account, the account id will lose, so the account id use the public key hash instead of nanoid()
-      this.id = keccak256(keyPairDict.pk).toString('hex')
+      this.id = keccak256(keyPairDict.pk).toString('hex');
     }
 
-    this.encryptedKeyPair = new KeyPair(keyPairDict.pk, keyPairDict.sk)
-    this.address = keyPairDict.addr
-    keyPairDict = getEthereumVerifyAccount(getHDWalletInstance().hdWallet, addressIndex)
-    this.verifyKeyPair = new KeyPair(keyPairDict.pk, keyPairDict.sk)
+    this.encryptedKeyPair = new KeyPair(keyPairDict.pk, keyPairDict.sk);
+    this.address = keyPairDict.addr;
+    keyPairDict = getEthereumVerifyAccount(getHDWalletInstance().hdWallet, addressIndex);
+    this.verifyKeyPair = new KeyPair(keyPairDict.pk, keyPairDict.sk);
     //this.serialize(this.getSaveKey());
     //Can't do it in the constructor (async), do it when the upper level is called
   }
@@ -345,7 +345,7 @@ export class Account extends IJson {
    * @internal
    */
   public getSaveKey(): string {
-    return macro.accountKey(this.addressIndex)
+    return macro.accountKey(this.addressIndex);
   }
 
   /**
@@ -354,26 +354,26 @@ export class Account extends IJson {
    * @memberof Account
    */
   public setStrategyMapping(_strategyMapping: Map<number, Strategy>) {
-    this.strategyMapping = _strategyMapping
+    this.strategyMapping = _strategyMapping;
   }
   /**
    * @internal
    */
   public async updateHDWalletAccountStrategys() {
-    const nuLinkHDWallet = getHDWalletInstance()
+    const nuLinkHDWallet = getHDWalletInstance();
     if (util.isBlank(nuLinkHDWallet)) {
-      return false
+      return false;
     }
-    const accountManager = nuLinkHDWallet.getAccountManager()
+    const accountManager = nuLinkHDWallet.getAccountManager();
 
-    const accountMapping: Map<number, Account> = accountManager.accountMapping
+    const accountMapping: Map<number, Account> = accountManager.accountMapping;
 
     // We don’t escape the key '__proto__'
     // which can cause problems on older engines
-    const account: Account = accountMapping.get(this.addressIndex) as Account
-    account.setStrategyMapping(this.strategyMapping)
+    const account: Account = accountMapping.get(this.addressIndex) as Account;
+    account.setStrategyMapping(this.strategyMapping);
 
-    await setHDWalletInstance(nuLinkHDWallet, true)
+    await setHDWalletInstance(nuLinkHDWallet, true);
   }
 
   /**
@@ -385,15 +385,15 @@ export class Account extends IJson {
   private async generateStrategyAddressIndex(): Promise<number> {
     //Get the policy index (maximum value) + 1 under the key spanning tree path (seventh level) of the current last policy, that is, the address_index required when creating the policy
 
-    await this.generateStrateAddressIndexLock.acquireAsync()
+    await this.generateStrateAddressIndexLock.acquireAsync();
 
-    let max = -1
+    let max = -1;
     try {
-      const keys = this.strategyMapping.keys()
+      const keys = this.strategyMapping.keys();
       for (const addressIndex of Array.from(keys)) {
         // es6 no need use Array.from()
         if (addressIndex > max) {
-          max = addressIndex
+          max = addressIndex;
         }
       }
       // IMPORTANT: Do not return a promise from here because the finally clause
@@ -401,10 +401,10 @@ export class Account extends IJson {
       // the promise is rejected
       //return max + 1
     } finally {
-      this.generateStrateAddressIndexLock.release()
+      this.generateStrateAddressIndexLock.release();
     }
 
-    return max + 1
+    return max + 1;
   }
   /**
    * Gets the policy object associated with the specified ID from the policy mapping.
@@ -415,15 +415,15 @@ export class Account extends IJson {
   public getStrategyInfo(strategyId: string): Strategy | null {
     //Get the policy PK and SK by Strategy Id
 
-    const values = this.strategyMapping.values()
+    const values = this.strategyMapping.values();
     for (const strategyInfo of Array.from(values)) {
       // es6 no need use Array.from()
       if (strategyInfo.id === strategyId) {
-        return strategyInfo
+        return strategyInfo;
       }
     }
 
-    return null
+    return null;
   }
   /**
    * Creates a new policy object with the specified label and a generated ID. The policy object is used to encrypt data/files uploaded by the user.
@@ -434,15 +434,15 @@ export class Account extends IJson {
   public async createStrategyByLabel(label: string): Promise<Strategy> {
     //label is composed of ID and incoming label common (in order to make label unique)
     //const id: string = nanoid()
-    
-    /** 
-     * When multiple browser tabs are opened simultaneously, the frontend is unable to lock them, 
-     * resulting in overlapping indexes during generation. 
-     * As a result, when two files are approved separately, one might not find the corresponding strategy. 
-     * To address this situation, we ensure that the policy IDs for strategies generated in simultaneously opened tabs are the same. 
+
+    /**
+     * When multiple browser tabs are opened simultaneously, the frontend is unable to lock them,
+     * resulting in overlapping indexes during generation.
+     * As a result, when two files are approved separately, one might not find the corresponding strategy.
+     * To address this situation, we ensure that the policy IDs for strategies generated in simultaneously opened tabs are the same.
      * This, combined with backend restrictions on the same HRAC application, can resolve the problem.
-    */
-    return await this.createStrategy(`${label}`, '')
+     */
+    return await this.createStrategy(`${label}`, '');
     //return await this.createStrategy(`${label}_${id}`, id)
   }
 
@@ -456,37 +456,42 @@ export class Account extends IJson {
    */
   public async createStrategy(label: string, id = ''): Promise<Strategy> {
     //The default label should be the name of the incoming data/file. If it is repeated, add the policy id identifier (uuid)
-    const strategyAddressIndex = await this.generateStrategyAddressIndex()
-    console.log(`createStrategy strategyAddressIndex: ${strategyAddressIndex}`)
-    const strategy: Strategy = new Strategy(this.addressIndex, strategyAddressIndex, label, id)
-    this.strategyMapping.set(strategyAddressIndex, strategy)
+    const strategyAddressIndex = await this.generateStrategyAddressIndex();
+    console.log(`createStrategy strategyAddressIndex: ${strategyAddressIndex}`);
+    const strategy: Strategy = new Strategy(this.addressIndex, strategyAddressIndex, label, id);
+    this.strategyMapping.set(strategyAddressIndex, strategy);
     //Synchronize the hdWallet object
-    await this.updateHDWalletAccountStrategys()
+    await this.updateHDWalletAccountStrategys();
     //Because the strategy has no next-level data, the overall and decentralized storage are consistent
-    await strategy.save()
-    await this.saveAccountAllStrategyIndexInfo()
-    console.log('createStrategy finish')
-    return strategy
+    await strategy.save();
+    await this.saveAccountAllStrategyIndexInfo();
+    console.log('createStrategy finish');
+    return strategy;
   }
 
-    /**
+  /**
    * Creates a new policy object with the specified label and ID, and adds it to the policy mapping. The policy object is used to encrypt data/files uploaded by the user.
    * @internal
    */
-    public async createStrategyWithLabelPrefixAndStrategyIndex(labelPrefix: string, id = ''): Promise<Strategy> {
-      //The default label should be the name of the incoming data/file. If it is repeated, add the policy id identifier (uuid)
-      const strategyAddressIndex = await this.generateStrategyAddressIndex()
-      console.log(`createStrategy strategyAddressIndex: ${strategyAddressIndex}`)
-      const strategy: Strategy = new Strategy(this.addressIndex, strategyAddressIndex, labelPrefix + "_" + strategyAddressIndex, id)
-      this.strategyMapping.set(strategyAddressIndex, strategy)
-      //Synchronize the hdWallet object
-      await this.updateHDWalletAccountStrategys()
-      //Because the strategy has no next-level data, the overall and decentralized storage are consistent
-      await strategy.save()
-      await this.saveAccountAllStrategyIndexInfo()
-      console.log('createStrategy finish')
-      return strategy
-    }
+  public async createStrategyWithLabelPrefixAndStrategyIndex(labelPrefix: string, id = ''): Promise<Strategy> {
+    //The default label should be the name of the incoming data/file. If it is repeated, add the policy id identifier (uuid)
+    const strategyAddressIndex = await this.generateStrategyAddressIndex();
+    console.log(`createStrategy strategyAddressIndex: ${strategyAddressIndex}`);
+    const strategy: Strategy = new Strategy(
+      this.addressIndex,
+      strategyAddressIndex,
+      labelPrefix + '_' + strategyAddressIndex,
+      id
+    );
+    this.strategyMapping.set(strategyAddressIndex, strategy);
+    //Synchronize the hdWallet object
+    await this.updateHDWalletAccountStrategys();
+    //Because the strategy has no next-level data, the overall and decentralized storage are consistent
+    await strategy.save();
+    await this.saveAccountAllStrategyIndexInfo();
+    console.log('createStrategy finish');
+    return strategy;
+  }
 
   /**
    * Deletes the policy object associated with the specified address index from the policy mapping.
@@ -501,22 +506,22 @@ export class Account extends IJson {
     // Judging whether the deletion policy should be (with data/file sharing) should be judged by the upper-level function
     console.warn(
       'Delete policy, note that if there is a data share, the policy cannot be deleted. Here, the funcion is the Lowest level function. To determine whether the policy should be deleted (in a data/file share), it should be judged by the upper-level function'
-    )
+    );
 
-    let strategy: Strategy | undefined = this.strategyMapping.get(strategyAddressIndex)
+    let strategy: Strategy | undefined = this.strategyMapping.get(strategyAddressIndex);
 
     if (util.isBlank(strategy)) {
-      return
+      return;
     }
 
-    this.strategyMapping.delete(strategyAddressIndex)
+    this.strategyMapping.delete(strategyAddressIndex);
 
     //Synchronize the hdWallet object
-    await this.updateHDWalletAccountStrategys()
+    await this.updateHDWalletAccountStrategys();
 
-    strategy = strategy as Strategy
-    await strategy.erase()
-    await this.saveAccountAllStrategyIndexInfo()
+    strategy = strategy as Strategy;
+    await strategy.erase();
+    await this.saveAccountAllStrategyIndexInfo();
 
     //Note to the front end, after deleting it, return it to the front end. The front end should call the backend interface to delete the backend policy id corresponding to the policy information    return strategy;
   }
@@ -529,8 +534,8 @@ export class Account extends IJson {
   public getAllStrategy(): Strategy[] {
     const sortStrategyArray: Strategy[] = Array.from(this.strategyMapping.values()).sort((strategy1, strategy2) =>
       strategy1.addressIndex < strategy2.addressIndex ? strategy1.addressIndex : strategy2.addressIndex
-    )
-    return sortStrategyArray
+    );
+    return sortStrategyArray;
   }
 
   /**
@@ -541,8 +546,8 @@ export class Account extends IJson {
   public getAllStrategySortByStategyId(): Strategy[] {
     const sortStrategyArray: Strategy[] = Array.from(this.strategyMapping.values()).sort((strategy1, strategy2) =>
       strategy1.id < strategy2.id ? -1 : strategy1.id > strategy2.id ? 1 : 0
-    )
-    return sortStrategyArray
+    );
+    return sortStrategyArray;
   }
 
   /**
@@ -552,15 +557,15 @@ export class Account extends IJson {
    * @memberof Account
    */
   public getAccountStrategyByStategyId = (strategyId: string): Strategy | undefined => {
-    const strategys: Strategy[] = this.getAllStrategy()
+    const strategys: Strategy[] = this.getAllStrategy();
     for (const strategy of strategys) {
       if (strategy.id === strategyId) {
-        return strategy
+        return strategy;
       }
     }
 
-    return undefined
-  }
+    return undefined;
+  };
 
   /**
    * Retrieves a policy by its address index.
@@ -569,7 +574,7 @@ export class Account extends IJson {
    * @memberof Account
    */
   public getStrategy(strategyAddressIndex: number): Strategy | undefined {
-    return this.strategyMapping.get(strategyAddressIndex)
+    return this.strategyMapping.get(strategyAddressIndex);
   }
 
   /**
@@ -579,15 +584,15 @@ export class Account extends IJson {
    * @memberof Account
    */
   public getStrategyByLabel(label: string): Strategy | undefined {
-    const values = this.strategyMapping.values()
+    const values = this.strategyMapping.values();
     for (const strategy of Array.from(values)) {
       // Es6 does not require array.from ()
       if (strategy.label === label) {
-        return strategy
+        return strategy;
       }
     }
 
-    return undefined
+    return undefined;
   }
 
   /**
@@ -596,15 +601,15 @@ export class Account extends IJson {
    * @memberof Account
    */
   public strategyIds(): string[] {
-    const strategyIds: string[] = []
+    const strategyIds: string[] = [];
 
     // for (const [k, v] of Array.from(this.strategyMapping)) {
     for (const strategy of Array.from(this.strategyMapping.values())) {
       // We don’t escape the key '__proto__'
       // which can cause problems on older engines
-      strategyIds.push(strategy.id)
+      strategyIds.push(strategy.id);
     }
-    return strategyIds
+    return strategyIds;
   }
 
   /**
@@ -613,13 +618,13 @@ export class Account extends IJson {
    * @memberof Account
    */
   public dump(): string {
-    const strategys: string[] = []
+    const strategys: string[] = [];
 
     // for (const [k, v] of Array.from(this.strategyMapping)) {
     for (const strategy of Array.from(this.strategyMapping.values())) {
       // We don’t escape the key '__proto__'
       // which can cause problems on older engines
-      strategys.push(strategy.dump())
+      strategys.push(strategy.dump());
     }
 
     return JSON.stringify({
@@ -630,7 +635,7 @@ export class Account extends IJson {
       strategys: strategys
       //'encryptedKeyPair': this.encryptedKeyPair.dump() //Dump is not required,，It can be recovered through the account, because the mnemonic (or root extended private key), account index is determined, pk is generated, sk is certain
       //'verifyKeyPair': this.encryptedKeyPair.dump() //Dump is not required,，It can be recovered through the account, because the mnemonic (or root extended private key), account index is determined, pk is generated, sk is certain
-    })
+    });
   }
 
   /**
@@ -653,10 +658,10 @@ export class Account extends IJson {
   public static async getStrategyInfosFromServerByAddr(accountAddress: string) {
     const sendData = {
       account_address: accountAddress
-    }
+    };
 
-    const data = await serverPost('/label', sendData)
-    return data
+    const data = await serverPost('/label', sendData);
+    return data;
   }
 
   /**
@@ -666,10 +671,10 @@ export class Account extends IJson {
    * @memberof Account
    */
   public static async restoreByStrategyInfos(): Promise<Account> {
-    const account = new Account('', 0)
+    const account = new Account('', 0);
 
     //get strategys from backend db
-    const strategyInfos: any = await Account.getStrategyInfosFromServerByAddr(account.address)
+    const strategyInfos: any = await Account.getStrategyInfosFromServerByAddr(account.address);
 
     for (const strategyInfo of strategyInfos) {
       // We don’t escape the key '__proto__'
@@ -679,25 +684,25 @@ export class Account extends IJson {
         strategyInfo.policy_label_index,
         strategyInfo.policy_label,
         strategyInfo.policy_label_id
-      )
+      );
       if (strategy.strategyKeyPair._publicKey.toLowerCase() !== strategyInfo.policy_encrypted_pk.toLowerCase()) {
         //TODO: If the process goes this far Most likely there is a bug in the program
         //debugger;
-        throw new Error('There seems to be something wrong with the program, please contact the administrator')
+        throw new Error('There seems to be something wrong with the program, please contact the administrator');
       }
-      account.strategyMapping.set(Number(strategy.addressIndex), strategy)
+      account.strategyMapping.set(Number(strategy.addressIndex), strategy);
 
       //await strategy.serialize(); //This operation is not done here, but is done when the account is recovered
     }
 
-    await account.saveAccountItselfInfo()
+    await account.saveAccountItselfInfo();
     // await account.serialize(); //This operation is not done here, but is done when the account is recovered
-    await account.saveAccountAllStrategyInfo()
+    await account.saveAccountAllStrategyInfo();
 
     //saveAccountAllStrategyInfo : It calls, it doesn't have to be called again
     //await account.saveAccountAllStrategyIndexInfo();
 
-    return account
+    return account;
   }
 
   /**
@@ -709,31 +714,31 @@ export class Account extends IJson {
    * @memberof Account
    */
   public static async load(jsonString: string, save = false): Promise<Account> {
-    const jsonObj = JSON.parse(jsonString)
+    const jsonObj = JSON.parse(jsonString);
 
-    const account = new Account(jsonObj.name, jsonObj.addressIndex, jsonObj.id)
-    const strategys: string[] = jsonObj.strategys
+    const account = new Account(jsonObj.name, jsonObj.addressIndex, jsonObj.id);
+    const strategys: string[] = jsonObj.strategys;
     for (const strategyString of strategys) {
       // We don’t escape the key '__proto__'
       // which can cause problems on older engines
-      const strategy: Strategy | null = await Strategy.load(strategyString, save)
-      const _strategy = strategy as Strategy
+      const strategy: Strategy | null = await Strategy.load(strategyString, save);
+      const _strategy = strategy as Strategy;
       if (!isBlank(strategy)) {
-        account.strategyMapping.set(Number(_strategy.addressIndex), _strategy)
+        account.strategyMapping.set(Number(_strategy.addressIndex), _strategy);
       }
       //await strategy.serialize(); //This operation is not done here, but is done when the account is recovered
     }
 
     // await account.serialize(); //This operation is not done here, but is done when the account is recovered
     if (save) {
-      await account.saveAccountItselfInfo()
-      await account.saveAccountAllStrategyInfo()
+      await account.saveAccountItselfInfo();
+      await account.saveAccountAllStrategyInfo();
 
       //saveAccountAllStrategyInfo : It calls, it doesn't have to be called again
       //await account.saveAccountAllStrategyIndexInfo();
     }
 
-    return account
+    return account;
   }
   /**
    * Deserializes a account object from 'Browser-local storage' by decrypting it and creating a account object in memory.
@@ -742,8 +747,8 @@ export class Account extends IJson {
    * @memberof Account
    */
   public static async loadSaved(addressIndex: number): Promise<Account | null> {
-    const hdWalletInstance = await getHDWalletInstance()
-    const accountItselfInfoString = await hdWalletInstance.decryptSavedData(macro.accountItselfInfo(addressIndex))
+    const hdWalletInstance = await getHDWalletInstance();
+    const accountItselfInfoString = await hdWalletInstance.decryptSavedData(macro.accountItselfInfo(addressIndex));
     // console.log(
     //   `loadSaved get accountItselfInfo addressIndex: ${addressIndex}, plaintext: ${accountItselfInfoString}`
     // );
@@ -755,30 +760,30 @@ export class Account extends IJson {
     }
     */
     try {
-      const accountItselfInfo = JSON.parse(accountItselfInfoString)
+      const accountItselfInfo = JSON.parse(accountItselfInfoString);
 
-      const account = new Account(accountItselfInfo.name, accountItselfInfo.addressIndex, accountItselfInfo.id)
+      const account = new Account(accountItselfInfo.name, accountItselfInfo.addressIndex, accountItselfInfo.id);
 
-      const strategyIndexs: number[] = await account.getSavedAccountAllStrategyIndexInfo()
+      const strategyIndexs: number[] = await account.getSavedAccountAllStrategyIndexInfo();
 
       for (const strategyIndex of strategyIndexs) {
         // We don’t escape the key '__proto__'
         // which can cause problems on older engines
-        const strategy = await Strategy.loadSaved(account.addressIndex, strategyIndex)
+        const strategy = await Strategy.loadSaved(account.addressIndex, strategyIndex);
 
         if (!isBlank(strategy)) {
-          account.strategyMapping.set(Number(strategyIndex), strategy as Strategy)
+          account.strategyMapping.set(Number(strategyIndex), strategy as Strategy);
         }
       }
 
-      return account
+      return account;
     } catch (error) {
       console.log(
         `account loadSaved  addressIndex ${addressIndex}, accountItselfInfoString:  ${accountItselfInfoString}`
-      )
-      console.error(error)
+      );
+      console.error(error);
       // debugger;
-      return null
+      return null;
     }
   }
 
@@ -788,8 +793,8 @@ export class Account extends IJson {
    * @memberof Account
    */
   public async serialize(): Promise<void> {
-    const accountString: string = this.dump()
-    return await getHDWalletInstance().encryptSaveData(this.getSaveKey(), accountString)
+    const accountString: string = this.dump();
+    return await getHDWalletInstance().encryptSaveData(this.getSaveKey(), accountString);
   }
 
   /**
@@ -798,8 +803,8 @@ export class Account extends IJson {
    * @memberof Account
    */
   public async deserialize(): Promise<Account> {
-    const accountString = await getHDWalletInstance().decryptSavedData(this.getSaveKey())
-    return await Account.load(accountString)
+    const accountString = await getHDWalletInstance().decryptSavedData(this.getSaveKey());
+    return await Account.load(accountString);
   }
 
   /**
@@ -818,7 +823,7 @@ export class Account extends IJson {
         //'encryptedKeyPair': this.encryptedKeyPair.dump()  //Dump is not required，It can be recovered through the account, because the mnemonic (or root extended private key), account index is determined, pk is generated, sk is certain
         //'verifyKeyPair': this.encryptedKeyPair.dump()  //Dump is not required，It can be recovered through the account, because the mnemonic (or root extended private key), account index is determined, pk is generated, sk is certain
       })
-    )
+    );
 
     // console.log(
     //   `saveAccountItselfInfo save accountItselfInfo addressIndex: ${this.addressIndex}, cipherText: ${cipherText}`
@@ -834,12 +839,12 @@ export class Account extends IJson {
     // Get the storage of the current account source information, except for the policy information, all information is complete
     const accountItselfInfoString = await getHDWalletInstance().decryptSavedData(
       macro.accountItselfInfo(this.addressIndex)
-    )
+    );
 
     // console.log(
     //   `getSavedAccountItselfInfo get accountItselfInfo addressIndex: ${this.addressIndex}, plaintext: ${accountItselfInfoString}`
     // );
-    return JSON.parse(accountItselfInfoString)
+    return JSON.parse(accountItselfInfoString);
   }
 
   /**
@@ -848,9 +853,9 @@ export class Account extends IJson {
    * @memberof Account
    */
   public async removeSavedAccountItselfInfo() {
-    const nuLinkHDWallet = getHDWalletInstance()
+    const nuLinkHDWallet = getHDWalletInstance();
     // Delete the original storage information of the current account, except for the policy information, all storage information is complete
-    await getHDWalletInstance().removeSavedData(macro.accountItselfInfo(this.addressIndex))
+    await getHDWalletInstance().removeSavedData(macro.accountItselfInfo(this.addressIndex));
   }
 
   /**
@@ -861,12 +866,12 @@ export class Account extends IJson {
   public async saveAccountAllStrategyIndexInfo() {
     // store account index information
 
-    console.log('save this.addressIndex: ', this.addressIndex)
-    console.log('save this.strategyMapping.keys(): ', JSON.stringify(Array.from(this.strategyMapping.keys())))
+    console.log('save this.addressIndex: ', this.addressIndex);
+    console.log('save this.strategyMapping.keys(): ', JSON.stringify(Array.from(this.strategyMapping.keys())));
     await getHDWalletInstance().encryptSaveData(
       macro.accountStrategyList(this.addressIndex),
       JSON.stringify(Array.from(this.strategyMapping.keys()))
-    )
+    );
   }
 
   /**
@@ -878,16 +883,16 @@ export class Account extends IJson {
     // store account index information
     const strategyListString = await getHDWalletInstance().decryptSavedData(
       macro.accountStrategyList(this.addressIndex)
-    )
+    );
     if (util.isBlank(strategyListString)) {
       //No policy information is created for the original account
-      return []
+      return [];
     }
     //
     //debugger;
-    console.log('getSaved this.addressIndex: ', this.addressIndex)
-    console.log('getSaved strategyListString: ', strategyListString)
-    return JSON.parse(strategyListString)
+    console.log('getSaved this.addressIndex: ', this.addressIndex);
+    console.log('getSaved strategyListString: ', strategyListString);
+    return JSON.parse(strategyListString);
   }
 
   /**
@@ -896,9 +901,9 @@ export class Account extends IJson {
    * @memberof Account
    */
   public async removeSavedAccountAllStrategyIndexInfo() {
-    const nuLinkHDWallet = getHDWalletInstance()
+    const nuLinkHDWallet = getHDWalletInstance();
     // remove account index storage information
-    await nuLinkHDWallet.removeSavedData(macro.accountStrategyList(this.addressIndex))
+    await nuLinkHDWallet.removeSavedData(macro.accountStrategyList(this.addressIndex));
   }
 
   /**
@@ -912,10 +917,10 @@ export class Account extends IJson {
     for (const strategy of Array.from(this.strategyMapping.values())) {
       // We don’t escape the key '__proto__'
       // which can cause problems on older engines
-      await strategy.save()
+      await strategy.save();
     }
 
-    await this.saveAccountAllStrategyIndexInfo()
+    await this.saveAccountAllStrategyIndexInfo();
   }
 
   /**
@@ -927,11 +932,11 @@ export class Account extends IJson {
     for (const strategy of Array.from(this.strategyMapping.values())) {
       // We don’t escape the key '__proto__'
       // which can cause problems on older engines
-      await strategy.erase()
+      await strategy.erase();
     }
 
     // Remove all strategy index information of the current account
-    await this.removeSavedAccountAllStrategyIndexInfo()
+    await this.removeSavedAccountAllStrategyIndexInfo();
   }
 
   /**
@@ -941,12 +946,12 @@ export class Account extends IJson {
    */
   public async balance(): Promise<string | undefined> {
     // Get account balance from Ethereum
-    return await this.refreshBalance()
+    return await this.refreshBalance();
   }
 
   /**
    * Refreshes the account balance of (bnb/tbnb) from the Ethereum blockchain using web3.
-   * @returns{Promise<string | undefined>} - A Promise that resolves to the account balance in ether as a string, or undefined if the balance could not be retrieved.
+   * @returns{Promise<string | undefined>} - A Promise that resolves to the account balance in ether as a string, or throw exception if the balance could not be retrieved.
    * @memberof Account
    */
   public async refreshBalance(): Promise<string | undefined> {
@@ -954,24 +959,24 @@ export class Account extends IJson {
 
     // const account = web3.eth.accounts.privateKeyToAccount('0x2cc983ef0f52c5e430b780e53da10ee2bb5cbb5be922a63016fc39d4d52ce962');
     //web3.eth.accounts.wallet.add(account);
-    web3 = await getWeb3()
+    web3 = await getWeb3();
     const address = Web3.utils.toChecksumAddress(
       this.address
       //"0xDCf049D1a3770f17a64E622D88BFb67c67Ee0e01"
-    )
+    );
 
-    let i = 0
+    let i = 0;
     while (i < 3)
       try {
-        return Web3.utils.fromWei(await web3.eth.getBalance(address))
+        return Web3.utils.fromWei(await web3.eth.getBalance(address));
       } catch (e) {
         // if (e instanceof errors.ConnectionError) {
 
         // }
-        i++
+        i++;
         // Message.error(((e as any)?.message || e) as string);
-        await sleep(1000)
-        throw e
+        await sleep(1000);
+        throw e;
       }
   }
 
@@ -982,12 +987,12 @@ export class Account extends IJson {
    */
   public async getNLKBalance(): Promise<string | undefined> {
     // Get account NLK balance from Ethereum
-    return await this.refreshNLKBalance()
+    return await this.refreshNLKBalance();
   }
 
   /**
    * Refreshes the account balance of nlk from the Ethereum blockchain using web3.
-   * @returns{Promise<string | undefined>} - A Promise that resolves to the account balance in ether as a string, or undefined if the balance could not be retrieved.
+   * @returns{Promise<string | undefined>} - A Promise that resolves to the account balance in ether as a string, or throw exception if the balance could not be retrieved.
    * @memberof Account
    */
   public async refreshNLKBalance(): Promise<string | undefined> {
@@ -995,26 +1000,78 @@ export class Account extends IJson {
 
     // const account = web3.eth.accounts.privateKeyToAccount('0x2cc983ef0f52c5e430b780e53da10ee2bb5cbb5be922a63016fc39d4d52ce962');
     //web3.eth.accounts.wallet.add(account);
-    const contract: Contract = await getContractInst(CONTRACT_NAME.nuLinkToken)
+    const contract: Contract = await getContractInst(CONTRACT_NAME.nuLinkToken);
     const address = Web3.utils.toChecksumAddress(
       this.address
       //"0xDCf049D1a3770f17a64E622D88BFb67c67Ee0e01"
-    )
+    );
 
-    let i = 0
+    let i = 0;
     while (i < 3)
       try {
-        const result = await contract.methods.balanceOf(address).call() // 29803630997051883414242659
+        const result = await contract.methods.balanceOf(address).call(); // 29803630997051883414242659
         // Convert the value from Wei to Ether
-        return Web3.utils.fromWei(result, 'ether')
+        return Web3.utils.fromWei(result, 'ether');
       } catch (e) {
         // if (e instanceof errors.ConnectionError) {
 
         // }
-        i++
+        i++;
         // Message.error(((e as any)?.message || e) as string);
-        await sleep(1000)
-        throw e
+        await sleep(1000);
+        throw e;
+      }
+  }
+
+  /**
+   * get the account balance of erc20 token from the Ethereum blockchain using web3.  Unit: ether
+   * @returns {Promise<string | undefined>} - A Promise that resolves to the account balance in ether as a string, or throw exception if the balance could not be retrieved.  
+   * @memberof Account
+   */
+  public async getERC20TokenBalance(tokenAddress: string): Promise<string | undefined> {
+    // Get account ERC20 token balance from Ethereum
+    // const account = web3.eth.accounts.privateKeyToAccount('0x2cc983ef0f52c5e430b780e53da10ee2bb5cbb5be922a63016fc39d4d52ce962');
+    //web3.eth.accounts.wallet.add(account);
+
+    const tokenContractAddress = 'erc20_token_' + Web3.utils.toChecksumAddress(tokenAddress);
+
+    let contractInst = SingletonService.get<Contract>(tokenContractAddress);
+    if (isBlank(contractInst)) {
+      // ERC20 ABI of token
+      const abi = [
+        // only include the method of  balanceOf
+        {
+          constant: true,
+          inputs: [{ name: '_owner', type: 'address' }],
+          name: 'balanceOf',
+          outputs: [{ name: 'balance', type: 'uint256' }],
+          payable: false,
+          stateMutability: 'view',
+          type: 'function'
+        }
+      ];
+
+      const contract: Contract = new web3.eth.Contract(abi as any, tokenContractAddress);
+      SingletonService.set<Contract>(tokenContractAddress, contract, true);
+      contractInst = contract;
+    }
+
+    const address = Web3.utils.toChecksumAddress(this.address);
+
+    let i = 0;
+    while (i < 3)
+      try {
+        const result = await contractInst.methods.balanceOf(address).call(); // 29803630997051883414242659
+        // Convert the value from Wei to Ether
+        return Web3.utils.fromWei(result, 'ether');
+      } catch (e) {
+        // if (e instanceof errors.ConnectionError) {
+
+        // }
+        i++;
+        // Message.error(((e as any)?.message || e) as string);
+        await sleep(1000);
+        throw e;
       }
   }
 }
@@ -1027,9 +1084,9 @@ export class Account extends IJson {
  */
 export class AccountManager extends IJson {
   //accountCount: number = 0; //Number of current accounts
-  private generateAccountAddressIndexLock = new AwaitLock() //Generation account (key spanning tree path) index
-  private accountMapping = new Map<number, Account>() //Strategy related information address_index: Strategy
-  public defaultAccountAddressIndex = 0
+  private generateAccountAddressIndexLock = new AwaitLock(); //Generation account (key spanning tree path) index
+  private accountMapping = new Map<number, Account>(); //Strategy related information address_index: Strategy
+  public defaultAccountAddressIndex = 0;
 
   // constructor() {
   //   super();
@@ -1043,19 +1100,19 @@ export class AccountManager extends IJson {
    */
   private async generateAddressIndex(): Promise<number> {
     //Get the policy index (maximum value) + 1 under the key spanning tree path (seventh level) of the current last policy, that is, the address_index required when creating the policy
-    await this.generateAccountAddressIndexLock.acquireAsync()
+    await this.generateAccountAddressIndexLock.acquireAsync();
     try {
-      let max = -1
-      const keys = this.accountMapping.keys()
+      let max = -1;
+      const keys = this.accountMapping.keys();
       for (const addressIndex of Array.from(keys)) {
         // es6 doesn't need Array.from()
         if (addressIndex > max) {
-          max = addressIndex
+          max = addressIndex;
         }
       }
-      return Number(max + 1)
+      return Number(max + 1);
     } finally {
-      this.generateAccountAddressIndexLock.release()
+      this.generateAccountAddressIndexLock.release();
     }
   }
   /**
@@ -1064,7 +1121,7 @@ export class AccountManager extends IJson {
    * @memberof AccountManager
    */
   getAccountCount(): number {
-    return this.accountMapping.size
+    return this.accountMapping.size;
   }
 
   /**
@@ -1075,8 +1132,8 @@ export class AccountManager extends IJson {
   getAllAccount(): Account[] {
     const sortAccountArray: Account[] = Array.from(this.accountMapping.values()).sort((account1, account2) =>
       account1.addressIndex < account2.addressIndex ? account1.addressIndex : account2.addressIndex
-    )
-    return sortAccountArray
+    );
+    return sortAccountArray;
   }
   /**
    * Returns an array of all the accounts in the account mapping data structure, sorted by account ID in ascending order.
@@ -1086,8 +1143,8 @@ export class AccountManager extends IJson {
   getAllAccountSortByAccountId(): Account[] {
     const sortAccountArray: Account[] = Array.from(this.accountMapping.values()).sort((account1, account2) =>
       account1.id < account2.id ? -1 : account1.id > account2.id ? 1 : 0
-    )
-    return sortAccountArray
+    );
+    return sortAccountArray;
   }
 
   /**
@@ -1109,7 +1166,7 @@ export class AccountManager extends IJson {
      So if you want to support a single account skin care wallet, you must have the wallet root private key, so this function mentions NuLinkHDWallet
      Restore the wallet in the wallet class (through the wallet root private key)
      */
-    throw new Error('Restoring a single account is not supported')
+    throw new Error('Restoring a single account is not supported');
   }
 
   /**
@@ -1131,7 +1188,7 @@ export class AccountManager extends IJson {
       So if you want to support a single account skin care wallet, you must have the extended private key of the root account, so this function mentions NuLinkHDWallet
      Restoring the wallet in the wallet class (via the extended private key of the root account (call it the wallet))
      */
-    throw new Error('Restoring a single account is not supported')
+    throw new Error('Restoring a single account is not supported');
   }
 
   /**
@@ -1142,32 +1199,32 @@ export class AccountManager extends IJson {
    * @memberof AccountManager
    */
   public async createAccount(name = '', defaultAccount = false) {
-    const accountAddressIndex = await this.generateAddressIndex()
+    const accountAddressIndex = await this.generateAddressIndex();
 
     if (util.isBlank(name)) {
-      name = `account${accountAddressIndex + 1}`
+      name = `account${accountAddressIndex + 1}`;
     }
-    const account: Account = new Account(name, accountAddressIndex)
+    const account: Account = new Account(name, accountAddressIndex);
 
-    this.accountMapping.set(accountAddressIndex, account)
+    this.accountMapping.set(accountAddressIndex, account);
 
     if (defaultAccount) {
-      this.defaultAccountAddressIndex = accountAddressIndex
+      this.defaultAccountAddressIndex = accountAddressIndex;
     }
 
     //Synchronize the hdWallet object
     // this.updateHDWalletWhenAddOrUpdateAccount(account);
-    await this.updateHDWalletAccountManager()
+    await this.updateHDWalletAccountManager();
 
     //Increase the account storage of the local disk and encrypt it with the root private key
     //await account.serialize();
 
     // Do not store as a whole, the efficiency is too low, change to decentralized storage
-    await this.saveAllAccountAddressIndex()
-    await this.saveDefaultAccountAddressIndex()
+    await this.saveAllAccountAddressIndex();
+    await this.saveDefaultAccountAddressIndex();
 
     //Store account meta information in a decentralized manner
-    await account.saveAccountItselfInfo()
+    await account.saveAccountItselfInfo();
 
     // attention please -------------------------
     //Decouple, move to external level with createAccount. when call the function "createAccount", TODO: You need to call the function of "createAccountIfNotExist" manually
@@ -1176,7 +1233,7 @@ export class AccountManager extends IJson {
     // await createAccountIfNotExist(account);
     //
 
-    return account
+    return account;
   }
 
   /**
@@ -1193,47 +1250,47 @@ export class AccountManager extends IJson {
     //Note that there is no function to delete accounts in metamask, consider whether to block this function here
     console.warn(
       'Delete an account, note that the policy in the account cannot delete the account if there is a data/file share. Delete here is the bottom-level function. To determine whether the account should be deleted (in a data/file share), it should be judged by the upper-level function'
-    )
+    );
 
     if (addressIndex === 0) {
       //We think the 0th account is considered as the initial account and cannot be deleted (note that there is no function to delete accounts in metamask)
       //When restoring an account through a mnemonic or root extension private key, the 0th account is restored by default
-      return undefined
+      return undefined;
     }
 
-    let account = this.accountMapping.get(addressIndex)
+    let account = this.accountMapping.get(addressIndex);
     if (!util.isBlank(account)) {
-      this.accountMapping.delete(addressIndex)
+      this.accountMapping.delete(addressIndex);
       // delete the account storage on the local disk
-      account = account as Account
+      account = account as Account;
 
       // const nuLinkHDWallet = getHDWallet();
       // await getHDWallet().removeSavedData(account.getSaveKey());
 
       if (addressIndex === this.defaultAccountAddressIndex) {
-        const addressIndexs: number[] = Array.from(this.accountMapping.keys())
+        const addressIndexs: number[] = Array.from(this.accountMapping.keys());
         if (addressIndexs.length > 0) {
-          this.defaultAccountAddressIndex = Number(addressIndexs[0])
+          this.defaultAccountAddressIndex = Number(addressIndexs[0]);
         } else {
-          this.defaultAccountAddressIndex = 0 // No account anymore, 0 or -1 will do
+          this.defaultAccountAddressIndex = 0; // No account anymore, 0 or -1 will do
         }
       }
 
       //Synchronize the hdWallet object
       // this.updateHDWalletWhenRemoveAccount(account.address);
-      await this.updateHDWalletAccountManager()
+      await this.updateHDWalletAccountManager();
 
       //Do not store as a whole, the efficiency is too low, change to decentralized storage
       //Save account index and account source information
-      await this.saveAllAccountAddressIndex()
-      await account.removeSavedAccountItselfInfo()
+      await this.saveAllAccountAddressIndex();
+      await account.removeSavedAccountItselfInfo();
       // delete all policy information of the account
-      await account.removeSavedAccountAllStrategyInfo()
+      await account.removeSavedAccountAllStrategyInfo();
     }
 
-    await this.saveDefaultAccountAddressIndex()
+    await this.saveDefaultAccountAddressIndex();
 
-    return account
+    return account;
   }
 
   /**
@@ -1243,12 +1300,12 @@ export class AccountManager extends IJson {
    * @memberof AccountManager
    */
   public async updateHDWalletAccountManager() {
-    const nuLinkHDWallet = getHDWalletInstance()
+    const nuLinkHDWallet = getHDWalletInstance();
     if (util.isBlank(nuLinkHDWallet)) {
-      return
+      return;
     }
-    nuLinkHDWallet.setAccountManager(this)
-    await setHDWalletInstance(nuLinkHDWallet, true)
+    nuLinkHDWallet.setAccountManager(this);
+    await setHDWalletInstance(nuLinkHDWallet, true);
   }
 
   /*   
@@ -1325,7 +1382,7 @@ export class AccountManager extends IJson {
    * @memberof AccountManager
    */
   public getAccount(index: number): Account | undefined {
-    return this.accountMapping.get(index)
+    return this.accountMapping.get(index);
   }
 
   /**
@@ -1339,11 +1396,11 @@ export class AccountManager extends IJson {
       // We don’t escape the key '__proto__'
       // which can cause problems on older engines
       if (account.address.toLowerCase().trim() === address.toLowerCase().trim()) {
-        return account
+        return account;
       }
     }
 
-    return undefined
+    return undefined;
   }
 
   /**
@@ -1353,8 +1410,8 @@ export class AccountManager extends IJson {
    * @memberof AccountManager
    */
   public getDefaultAccount(): Account | undefined {
-    const index = Number(this.defaultAccountAddressIndex) >= 0 ? Number(this.defaultAccountAddressIndex) : 0
-    return this.accountMapping.get(Number(index))
+    const index = Number(this.defaultAccountAddressIndex) >= 0 ? Number(this.defaultAccountAddressIndex) : 0;
+    return this.accountMapping.get(Number(index));
   }
 
   /**
@@ -1363,15 +1420,15 @@ export class AccountManager extends IJson {
    * @memberof AccountManager
    */
   public strategyIds(): string[] {
-    let strategyIds: string[] = []
+    let strategyIds: string[] = [];
 
     for (const account of Array.from(this.accountMapping.values())) {
       // We don’t escape the key '__proto__'
       // which can cause problems on older engines
-      strategyIds = strategyIds.concat(account.strategyIds())
+      strategyIds = strategyIds.concat(account.strategyIds());
     }
 
-    return strategyIds
+    return strategyIds;
   }
 
   /**
@@ -1380,15 +1437,15 @@ export class AccountManager extends IJson {
    * @memberof AccountManager
    */
   public accountIds(): string[] {
-    const accountIds: string[] = []
+    const accountIds: string[] = [];
 
     for (const account of Array.from(this.accountMapping.values())) {
       // We don’t escape the key '__proto__'
       // which can cause problems on older engines
-      accountIds.push(account.id)
+      accountIds.push(account.id);
     }
 
-    return accountIds
+    return accountIds;
   }
 
   /**
@@ -1398,18 +1455,18 @@ export class AccountManager extends IJson {
    * @static
    */
   public static async restoreDefaultAccount(): Promise<AccountManager> {
-    const accountManager = new AccountManager()
-    accountManager.defaultAccountAddressIndex = 0
+    const accountManager = new AccountManager();
+    accountManager.defaultAccountAddressIndex = 0;
 
     // We don’t escape the key '__proto__'
     // which can cause problems on older engines
-    const account: Account = await Account.restoreByStrategyInfos()
-    accountManager.accountMapping.set(account.addressIndex, account)
+    const account: Account = await Account.restoreByStrategyInfos();
+    accountManager.accountMapping.set(account.addressIndex, account);
 
-    await accountManager.saveAllAccountAddressIndex()
-    await accountManager.saveDefaultAccountAddressIndex()
+    await accountManager.saveAllAccountAddressIndex();
+    await accountManager.saveDefaultAccountAddressIndex();
 
-    return accountManager
+    return accountManager;
   }
 
   /**
@@ -1418,19 +1475,19 @@ export class AccountManager extends IJson {
    * @memberof AccountManager
    */
   public dump(): string {
-    const accounts: string[] = []
+    const accounts: string[] = [];
 
     // for (const [k, v] of Array.from(this.strategyMapping)) {
     for (const account of Array.from(this.accountMapping.values())) {
       // We don’t escape the key '__proto__'
       // which can cause problems on older engines
-      accounts.push(account.dump())
+      accounts.push(account.dump());
     }
 
     return JSON.stringify({
       default_index: this.defaultAccountAddressIndex,
       accounts: accounts
-    })
+    });
   }
 
   /**
@@ -1442,35 +1499,35 @@ export class AccountManager extends IJson {
    * @memberof AccountManager
    */
   public static async load(jsonString: string, save = false): Promise<AccountManager> {
-    const jsonObj = JSON.parse(jsonString)
+    const jsonObj = JSON.parse(jsonString);
 
-    const accountManager = new AccountManager()
-    accountManager.defaultAccountAddressIndex = Number(jsonObj.default_index)
+    const accountManager = new AccountManager();
+    accountManager.defaultAccountAddressIndex = Number(jsonObj.default_index);
 
-    const accounts: string[] = jsonObj.accounts
+    const accounts: string[] = jsonObj.accounts;
     for (const accountString of accounts) {
       // We don’t escape the key '__proto__'
       // which can cause problems on older engines
-      const account: Account = await Account.load(accountString, save)
-      accountManager.accountMapping.set(account.addressIndex, account)
+      const account: Account = await Account.load(accountString, save);
+      accountManager.accountMapping.set(account.addressIndex, account);
 
       //await account.serialize();//Do not do this operation here, do it when you restore the account
     }
 
-    const addressIndexs: number[] = Array.from(accountManager.accountMapping.keys())
+    const addressIndexs: number[] = Array.from(accountManager.accountMapping.keys());
     if (addressIndexs.length > 0 && addressIndexs.includes(Number(accountManager.defaultAccountAddressIndex))) {
       //Nothing to do
     } else {
-      accountManager.defaultAccountAddressIndex = 0 // No account anymore, 0 or -1 will do
+      accountManager.defaultAccountAddressIndex = 0; // No account anymore, 0 or -1 will do
     }
     // await accountManager.serialize();//Do not do this operation here, do it when you restore the account
 
     if (save) {
-      await accountManager.saveAllAccountAddressIndex()
-      await accountManager.saveDefaultAccountAddressIndex()
+      await accountManager.saveAllAccountAddressIndex();
+      await accountManager.saveDefaultAccountAddressIndex();
     }
 
-    return accountManager
+    return accountManager;
   }
 
   /**
@@ -1480,28 +1537,28 @@ export class AccountManager extends IJson {
    * @memberof AccountManager
    */
   public static async loadSaved(): Promise<AccountManager> {
-    const accountManager = new AccountManager()
-    accountManager.defaultAccountAddressIndex = Number(await accountManager.getSavedDefaultAccountAddressIndex())
+    const accountManager = new AccountManager();
+    accountManager.defaultAccountAddressIndex = Number(await accountManager.getSavedDefaultAccountAddressIndex());
 
-    const nulinkHDWallet: NuLinkHDWallet = getHDWalletInstance()
-    nulinkHDWallet.setAccountManager(accountManager)
-    await setHDWalletInstance(nulinkHDWallet, false) //need to save for account.createStrategyByLabel() works
+    const nulinkHDWallet: NuLinkHDWallet = getHDWalletInstance();
+    nulinkHDWallet.setAccountManager(accountManager);
+    await setHDWalletInstance(nulinkHDWallet, false); //need to save for account.createStrategyByLabel() works
 
-    const addressIndexs: number[] = await accountManager.getSavedAllAccountAddressIndex()
+    const addressIndexs: number[] = await accountManager.getSavedAllAccountAddressIndex();
     // console.log("AccountManager loadSaved addressIndexs", addressIndexs);
     for (const accountAddrIndex of addressIndexs) {
       // We don’t escape the key '__proto__'
       // which can cause problems on older engines
-      const account: Account | null = await Account.loadSaved(accountAddrIndex)
+      const account: Account | null = await Account.loadSaved(accountAddrIndex);
 
       if (isBlank(account)) {
-        continue
+        continue;
       }
 
       // Since the function call of account.createStrategyByLabel() relies on
       // updateHDWalletAccountStrategys() which uses accountManager.accountMapping,
       // the AccountMapping must be set up with all Account objects beforehand.
-      accountManager.accountMapping.set(Number(accountAddrIndex), account as Account)
+      accountManager.accountMapping.set(Number(accountAddrIndex), account as Account);
       //don't call the function of createStrategyByLabel, because the strategy has recoveryed from the localstorage or indexdb
       //await account.createStrategyByLabel('label')
     }
@@ -1509,10 +1566,10 @@ export class AccountManager extends IJson {
     if (addressIndexs.length > 0 && addressIndexs.includes(Number(accountManager.defaultAccountAddressIndex))) {
       //Nothing to do
     } else {
-      accountManager.defaultAccountAddressIndex = 0 // No account anymore, 0 or -1 will do
+      accountManager.defaultAccountAddressIndex = 0; // No account anymore, 0 or -1 will do
     }
 
-    return accountManager
+    return accountManager;
   }
 
   /**
@@ -1525,7 +1582,7 @@ export class AccountManager extends IJson {
     await getHDWalletInstance().encryptSaveData(
       macro.accountListAddressIndex,
       JSON.stringify(Array.from(this.accountMapping.keys()))
-    )
+    );
   }
 
   /**
@@ -1535,8 +1592,8 @@ export class AccountManager extends IJson {
    * @memberof AccountManager
    */
   public async getSavedAllAccountAddressIndex() {
-    const accountAddressIndexString = await getHDWalletInstance().decryptSavedData(macro.accountListAddressIndex)
-    return JSON.parse(accountAddressIndexString)
+    const accountAddressIndexString = await getHDWalletInstance().decryptSavedData(macro.accountListAddressIndex);
+    return JSON.parse(accountAddressIndexString);
   }
 
   /**
@@ -1549,7 +1606,7 @@ export class AccountManager extends IJson {
     await getHDWalletInstance().encryptSaveData(
       macro.accountDefaultAddressIndex,
       Number(this.defaultAccountAddressIndex)
-    )
+    );
   }
 
   /**
@@ -1559,7 +1616,7 @@ export class AccountManager extends IJson {
    * @memberof AccountManager
    */
   public async getSavedDefaultAccountAddressIndex(): Promise<number> {
-    return await getHDWalletInstance().decryptSavedData(macro.accountDefaultAddressIndex)
+    return await getHDWalletInstance().decryptSavedData(macro.accountDefaultAddressIndex);
   }
 
   /**
@@ -1568,8 +1625,8 @@ export class AccountManager extends IJson {
    * @memberof AccountManager
    */
   public async serialize(): Promise<void> {
-    const accountManagerString: string = this.dump()
-    return await getHDWalletInstance().encryptSaveData(this.getSaveKey(), accountManagerString)
+    const accountManagerString: string = this.dump();
+    return await getHDWalletInstance().encryptSaveData(this.getSaveKey(), accountManagerString);
   }
 
   /**
@@ -1578,8 +1635,8 @@ export class AccountManager extends IJson {
    * @memberof AccountManager
    */
   public async deserialize(): Promise<AccountManager> {
-    const strategyString = await getHDWalletInstance().decryptSavedData(this.getSaveKey())
-    return await AccountManager.load(strategyString)
+    const strategyString = await getHDWalletInstance().decryptSavedData(this.getSaveKey());
+    return await AccountManager.load(strategyString);
   }
 
   /**
@@ -1589,7 +1646,7 @@ export class AccountManager extends IJson {
    * @memberof AccountManager
    */
   public getSaveKey(): string {
-    return macro.accountManagerKey
+    return macro.accountManagerKey;
   }
 }
 
@@ -1612,13 +1669,13 @@ enum HDWalletCreateType {
  * @class NuLinkHDWallet
  */
 export class NuLinkHDWallet {
-  private _passwordHash: string
-  private mnemonic: string
-  private rootExtendedPrivateKey: string
-  private createType: HDWalletCreateType // wallet creation method
-  private hdWallet: hdkey /*EthereumHDKey*/ | null = null
-  protected accountManager: AccountManager
-  private cryptoBroker: CryptoBroker | null = null // Encryption and decryption middleware
+  private _passwordHash: string;
+  private mnemonic: string;
+  private rootExtendedPrivateKey: string;
+  private createType: HDWalletCreateType; // wallet creation method
+  private hdWallet: hdkey /*EthereumHDKey*/ | null = null;
+  protected accountManager: AccountManager;
+  private cryptoBroker: CryptoBroker | null = null; // Encryption and decryption middleware
 
   /**
    * Constructs an HDWallet object.
@@ -1631,12 +1688,12 @@ export class NuLinkHDWallet {
    * @private
    */
   private constructor() {
-    this.accountManager = new AccountManager()
-    this._passwordHash = ''
-    this.mnemonic = ''
-    this.rootExtendedPrivateKey = ''
-    this.createType = HDWalletCreateType.Mnemonic
-    this.cryptoBroker = null
+    this.accountManager = new AccountManager();
+    this._passwordHash = '';
+    this.mnemonic = '';
+    this.rootExtendedPrivateKey = '';
+    this.createType = HDWalletCreateType.Mnemonic;
+    this.cryptoBroker = null;
   }
 
   /**
@@ -1653,13 +1710,13 @@ export class NuLinkHDWallet {
    * @param password {string}- This parameter is not used now.
    */
   private copyConstructor(_nuLinkHDWallet: NuLinkHDWallet, password: string) {
-    this.accountManager = _nuLinkHDWallet.accountManager
-    this._passwordHash = _nuLinkHDWallet._passwordHash
-    this.mnemonic = pwdEncrypt(_nuLinkHDWallet.mnemonic, null, false)
-    this.rootExtendedPrivateKey = pwdEncrypt(_nuLinkHDWallet.rootExtendedPrivateKey, null, false)
-    this.createType = _nuLinkHDWallet.createType
-    this.cryptoBroker = _nuLinkHDWallet.cryptoBroker
-    this.hdWallet = _nuLinkHDWallet.hdWallet
+    this.accountManager = _nuLinkHDWallet.accountManager;
+    this._passwordHash = _nuLinkHDWallet._passwordHash;
+    this.mnemonic = pwdEncrypt(_nuLinkHDWallet.mnemonic, null, false);
+    this.rootExtendedPrivateKey = pwdEncrypt(_nuLinkHDWallet.rootExtendedPrivateKey, null, false);
+    this.createType = _nuLinkHDWallet.createType;
+    this.cryptoBroker = _nuLinkHDWallet.cryptoBroker;
+    this.hdWallet = _nuLinkHDWallet.hdWallet;
   }
 
   /**
@@ -1669,7 +1726,7 @@ export class NuLinkHDWallet {
    * @memberof NuLinkHDWallet
    */
   public static generateMnemonic(): string {
-    return commonGenerateMnemonic()
+    return commonGenerateMnemonic();
   }
 
   /**
@@ -1685,7 +1742,7 @@ export class NuLinkHDWallet {
    */
   public static async loadHDWallet(password = ''): Promise<NuLinkHDWallet | null> {
     // console.log("loadHDWallet in .....................");
-    const nuLinkHDWallet = getHDWalletInstance()
+    const nuLinkHDWallet = getHDWalletInstance();
     // console.log("loadHDWallet getHDWallet: ", nuLinkHDWallet);
     if (!util.isBlank(nuLinkHDWallet)) {
       // Unsafe, abandoned
@@ -1693,7 +1750,7 @@ export class NuLinkHDWallet {
       //   await persistHDWallet(nuLinkHDWallet as NuLinkHDWallet)
       // }
       // console.log("loadHDWallet get persistHDWallet: ", nuLinkHDWallet);
-      return nuLinkHDWallet as NuLinkHDWallet
+      return nuLinkHDWallet as NuLinkHDWallet;
     }
 
     // // Unsafe, abandoned
@@ -1711,20 +1768,20 @@ export class NuLinkHDWallet {
     // console.log("loadHDWallet loadSaved by password");
     //Load the account from the storage, if there is no more in the storage, return to empty => At this time, there are two ways to restore the account through the mnemonic phrase or restore the account through the private key
     try {
-      const nulinkHDWallet = await NuLinkHDWallet.loadSaved(password)
-      await setHDWalletInstance(nulinkHDWallet, true)
+      const nulinkHDWallet = await NuLinkHDWallet.loadSaved(password);
+      await setHDWalletInstance(nulinkHDWallet, true);
 
       // If there is no storage, getHDWallet() is empty
-      console.log('Password verification success')
-      return nulinkHDWallet
+      console.log('Password verification success');
+      return nulinkHDWallet;
     } catch (e) {
       if (e instanceof exception.PasswordDecryptError) {
         // Message.error(
         //   "Password verification failed" /* t("verify_password_error") */
         // );
-        console.error('Password verification failed')
+        console.error('Password verification failed');
       }
-      throw e
+      throw e;
     }
   }
 
@@ -1742,33 +1799,33 @@ export class NuLinkHDWallet {
       macro.accountListAddressIndex,
       macro.accountDefaultAddressIndex,
       macro.accountItselfInfo(0)
-    ]
-    const etherExistValueList: string[] = [macro.mnemonicByPassword, macro.rootExtendedPrivateKeyByPassword]
+    ];
+    const etherExistValueList: string[] = [macro.mnemonicByPassword, macro.rootExtendedPrivateKeyByPassword];
     for (let index = 0; index < mustExistValueList.length; index++) {
-      const key = mustExistValueList[index]
+      const key = mustExistValueList[index];
 
-      const value = await store.getItem(key)
+      const value = await store.getItem(key);
       if (isBlank(value)) {
-        return false
+        return false;
       }
     }
 
-    let exist = false
+    let exist = false;
     for (let index = 0; index < etherExistValueList.length; index++) {
-      const key = etherExistValueList[index]
+      const key = etherExistValueList[index];
 
-      const value = await store.getItem(key)
+      const value = await store.getItem(key);
       if (!isBlank(value)) {
-        exist = true
-        return true
+        exist = true;
+        return true;
       }
     }
 
     if (!exist) {
-      return false
+      return false;
     }
 
-    return true
+    return true;
   }
 
   /**
@@ -1778,7 +1835,7 @@ export class NuLinkHDWallet {
    * @memberof NuLinkHDWallet
    */
   public static async logout(): Promise<void> {
-    await store.clear()
+    await store.clear();
   }
 
   /**
@@ -1793,8 +1850,8 @@ export class NuLinkHDWallet {
    */
   static async createHDWallet(mnemonic: string, newPassword: string): Promise<NuLinkHDWallet> {
     //To create a wallet, you need to clear the local wallet storage first, to prevent the original local storage account from being too many, and there is only one account when creating it, which will cause multiple accounts to be restored when restoring
-    await NuLinkHDWallet.logout()
-    return await NuLinkHDWallet.restoreHDWallet(mnemonic, newPassword)
+    await NuLinkHDWallet.logout();
+    return await NuLinkHDWallet.restoreHDWallet(mnemonic, newPassword);
   }
 
   /**
@@ -1815,27 +1872,27 @@ export class NuLinkHDWallet {
     newPassword: string,
     dataBinaryString = ''
   ): Promise<NuLinkHDWallet> {
-    const nulinkHDWallet = new NuLinkHDWallet()
+    const nulinkHDWallet = new NuLinkHDWallet();
 
-    nulinkHDWallet.mnemonic = pwdEncrypt(mnemonic, null, false)
-    nulinkHDWallet.createType = HDWalletCreateType.Mnemonic
+    nulinkHDWallet.mnemonic = pwdEncrypt(mnemonic, null, false);
+    nulinkHDWallet.createType = HDWalletCreateType.Mnemonic;
 
-    nulinkHDWallet.hdWallet = await commonGetHDWallet(mnemonic)
+    nulinkHDWallet.hdWallet = await commonGetHDWallet(mnemonic);
     //Note that this line cannot be placed later, the wallet object getHDWallet().hdWallet needs to be used when restoring account data
-    await setHDWalletInstance(nulinkHDWallet, false)
+    await setHDWalletInstance(nulinkHDWallet, false);
     // console.log("restoreHDWallet set _HdWallet", getHDWallet());
     if (dataBinaryString) {
       if (RESTORE_WALLET_TAG === dataBinaryString) {
-        await nulinkHDWallet.restoreDataByStrategyInfos(newPassword)
+        await nulinkHDWallet.restoreDataByStrategyInfos(newPassword);
       } else {
-        await nulinkHDWallet.recoverUserData(newPassword, dataBinaryString)
+        await nulinkHDWallet.recoverUserData(newPassword, dataBinaryString);
       }
     } else {
       //no data so create new Account
       // Restore the public and private keys of the 0th account
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const account: Account = await nulinkHDWallet.accountManager.createAccount('account1', true)
-      assert(!!account)
+      const account: Account = await nulinkHDWallet.accountManager.createAccount('account1', true);
+      assert(!!account);
       //console.log("account", account);
       //TODO: need to call the createAccountIfNotExist method outside of this function for add user account to the center server for decouple
       // import { createAccount as cAccount, createAccountIfNotExist } from "@feats/pre/api/workflow";
@@ -1843,15 +1900,15 @@ export class NuLinkHDWallet {
     }
 
     // need to be placed after the restore data
-    await nulinkHDWallet.getCryptoBroker()
-    await nulinkHDWallet.savePassword(newPassword)
-    await nulinkHDWallet.saveMnemonicByPassword(newPassword)
-    await nulinkHDWallet.saveHDWalletCreateType(newPassword, HDWalletCreateType[HDWalletCreateType.Mnemonic])
-    await nulinkHDWallet.saveEncryptedKeyIv(newPassword)
+    await nulinkHDWallet.getCryptoBroker();
+    await nulinkHDWallet.savePassword(newPassword);
+    await nulinkHDWallet.saveMnemonicByPassword(newPassword);
+    await nulinkHDWallet.saveHDWalletCreateType(newPassword, HDWalletCreateType[HDWalletCreateType.Mnemonic]);
+    await nulinkHDWallet.saveEncryptedKeyIv(newPassword);
 
-    await setHDWalletInstance(nulinkHDWallet, true)
+    await setHDWalletInstance(nulinkHDWallet, true);
 
-    return nulinkHDWallet
+    return nulinkHDWallet;
   }
 
   /**
@@ -1897,34 +1954,34 @@ export class NuLinkHDWallet {
     if (!privateKeyString.startsWith('xprv')) {
       throw new exception.InvalidRootExtendedPrivateKeyError(
         'The Private Key must be a BIP32 Root Extended Private Key (e.g., xprv...)'
-      )
+      );
     }
 
-    const nulinkHDWallet = new NuLinkHDWallet()
-    nulinkHDWallet.mnemonic = ''
-    nulinkHDWallet.rootExtendedPrivateKey = pwdEncrypt(privateKeyString, null, false)
-    nulinkHDWallet.createType = HDWalletCreateType.RootExtendedPrivateKey
+    const nulinkHDWallet = new NuLinkHDWallet();
+    nulinkHDWallet.mnemonic = '';
+    nulinkHDWallet.rootExtendedPrivateKey = pwdEncrypt(privateKeyString, null, false);
+    nulinkHDWallet.createType = HDWalletCreateType.RootExtendedPrivateKey;
 
     try {
-      nulinkHDWallet.hdWallet = commonGetHDWalletByRootExtendedPrivateKey(privateKeyString)
+      nulinkHDWallet.hdWallet = commonGetHDWalletByRootExtendedPrivateKey(privateKeyString);
     } catch (error) {
-      throw new exception.InvalidRootExtendedPrivateKeyError('Invalid Root Extended Private Key')
+      throw new exception.InvalidRootExtendedPrivateKeyError('Invalid Root Extended Private Key');
     }
 
     //Note that this line cannot be placed later, the wallet object getHDWallet().hdWallet needs to be used when restoring account data
-    await setHDWalletInstance(nulinkHDWallet, false)
+    await setHDWalletInstance(nulinkHDWallet, false);
     // console.log("restoreHDWallet set _HdWallet", getHDWallet());
     if (dataBinaryString) {
       if (RESTORE_WALLET_TAG === dataBinaryString) {
-        await nulinkHDWallet.restoreDataByStrategyInfos(newPassword)
+        await nulinkHDWallet.restoreDataByStrategyInfos(newPassword);
       } else {
-        await nulinkHDWallet.recoverUserData(newPassword, dataBinaryString)
+        await nulinkHDWallet.recoverUserData(newPassword, dataBinaryString);
       }
     } else {
       //no data so create new Account
       // Restore the public and private keys of the 0th account
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const account: Account = await nulinkHDWallet.accountManager.createAccount('', true)
+      const account: Account = await nulinkHDWallet.accountManager.createAccount('', true);
 
       //TODO: need to call the createAccountIfNotExist method outside of this function for add user account to the center server for decouple
       // import { createAccount as cAccount, createAccountIfNotExist } from "@feats/pre/api/workflow";
@@ -1932,19 +1989,19 @@ export class NuLinkHDWallet {
     }
 
     // need to be placed after the restore data
-    await nulinkHDWallet.getCryptoBroker()
-    await nulinkHDWallet.savePassword(newPassword)
+    await nulinkHDWallet.getCryptoBroker();
+    await nulinkHDWallet.savePassword(newPassword);
     // wallet root private key recovery account
-    await nulinkHDWallet.saveRootExtendedPrivateKeyByPassword(newPassword)
+    await nulinkHDWallet.saveRootExtendedPrivateKeyByPassword(newPassword);
     await nulinkHDWallet.saveHDWalletCreateType(
       newPassword,
       HDWalletCreateType[HDWalletCreateType.RootExtendedPrivateKey]
-    )
-    await nulinkHDWallet.saveEncryptedKeyIv(newPassword)
+    );
+    await nulinkHDWallet.saveEncryptedKeyIv(newPassword);
 
-    await setHDWalletInstance(nulinkHDWallet, true)
+    await setHDWalletInstance(nulinkHDWallet, true);
 
-    return nulinkHDWallet
+    return nulinkHDWallet;
   }
 
   /**
@@ -1960,8 +2017,8 @@ export class NuLinkHDWallet {
     newPassword: string,
     rootExtendedPrivateKey: string
   ): Promise<NuLinkHDWallet> {
-    const privateKeyString = pwdDecrypt(rootExtendedPrivateKey, true)
-    return this.restoreHDWalletByRootExtendedPrivateKey(privateKeyString, newPassword, RESTORE_WALLET_TAG)
+    const privateKeyString = pwdDecrypt(rootExtendedPrivateKey, true);
+    return this.restoreHDWalletByRootExtendedPrivateKey(privateKeyString, newPassword, RESTORE_WALLET_TAG);
   }
 
   /**
@@ -1977,8 +2034,8 @@ export class NuLinkHDWallet {
     newPassword: string,
     mnemonic: string
   ): Promise<NuLinkHDWallet> {
-    const _mnemonic = pwdDecrypt(mnemonic, true)
-    return this.restoreHDWallet(_mnemonic, newPassword, RESTORE_WALLET_TAG)
+    const _mnemonic = pwdDecrypt(mnemonic, true);
+    return this.restoreHDWallet(_mnemonic, newPassword, RESTORE_WALLET_TAG);
   }
 
   // restore account by data info
@@ -1993,31 +2050,28 @@ export class NuLinkHDWallet {
    * @static
    * @memberof NuLinkHDWallet
    */
-  public static async restoreHDWalletByData(
-    newPassword: string,
-    dataBinaryString: string
-  ): Promise<NuLinkHDWallet> {
-    let dataJson: any = null
+  public static async restoreHDWalletByData(newPassword: string, dataBinaryString: string): Promise<NuLinkHDWallet> {
+    let dataJson: any = null;
     try {
-      dataJson = JSON.parse(dataBinaryString)
+      dataJson = JSON.parse(dataBinaryString);
     } catch (error) {
-      console.log('parseWalletData error: ', error)
+      console.log('parseWalletData error: ', error);
       throw new exception.UserDataCorruptedError(
         'Existing data appears to be corrupted or tampered with by external parties!'
-      )
+      );
     }
 
     if (dataJson.pcode) {
-      const rootExtendedPrivateKey = pwdDecrypt(dataJson.pcode, true)
-      return this.restoreHDWalletByRootExtendedPrivateKey(rootExtendedPrivateKey, newPassword, dataBinaryString)
+      const rootExtendedPrivateKey = pwdDecrypt(dataJson.pcode, true);
+      return this.restoreHDWalletByRootExtendedPrivateKey(rootExtendedPrivateKey, newPassword, dataBinaryString);
     } else if (dataJson.mcode) {
-      const mnemonic = pwdDecrypt(dataJson.mcode, true)
-      return this.restoreHDWallet(mnemonic, newPassword, dataBinaryString)
+      const mnemonic = pwdDecrypt(dataJson.mcode, true);
+      return this.restoreHDWallet(mnemonic, newPassword, dataBinaryString);
     } else {
-      console.log('parseWalletData error: Wallet Wallet data missing')
+      console.log('parseWalletData error: Wallet Wallet data missing');
       throw new exception.UserDataCorruptedError(
         ' Existing data is missing; possible tampering or destruction has occurred!'
-      )
+      );
     }
   }
 
@@ -2027,8 +2081,8 @@ export class NuLinkHDWallet {
    * @memberof NuLinkHDWallet
    */
   private wallet(): EthWallet {
-    assert(!util.isBlank(this.hdWallet))
-    return (this.hdWallet as hdkey).getWallet()
+    assert(!util.isBlank(this.hdWallet));
+    return (this.hdWallet as hdkey).getWallet();
   }
 
   /**
@@ -2037,9 +2091,9 @@ export class NuLinkHDWallet {
    * @memberof NuLinkHDWallet
    */
   private getRootAccountKeyPair(): KeyPair {
-    const wallet = this.wallet()
+    const wallet = this.wallet();
 
-    return new KeyPair(wallet.getPublicKeyString(), wallet.getPrivateKeyString())
+    return new KeyPair(wallet.getPublicKeyString(), wallet.getPrivateKeyString());
   }
 
   /**
@@ -2055,26 +2109,26 @@ export class NuLinkHDWallet {
     //Restore the object through encryptedSymmetricKeyIv
 
     if (!util.isBlank(this.cryptoBroker)) {
-      this.cryptoBroker = this.cryptoBroker as CryptoBroker
+      this.cryptoBroker = this.cryptoBroker as CryptoBroker;
       if (reCreate) {
         if (!util.isBlank(encryptedSymmetricKeyIv)) {
           //Note that after the load, since the key and iv are updated, allstr the data encrypted and saved by the key and iv need to be re-encrypted
-          await this.cryptoBroker.load(encryptedSymmetricKeyIv, save)
+          await this.cryptoBroker.load(encryptedSymmetricKeyIv, save);
         }
       } else {
         // console.debug("user old cryptoBroker", this.cryptoBroker);
       }
-      return this.cryptoBroker
+      return this.cryptoBroker;
     }
 
-    const rootAccountKeyPair: KeyPair = this.getRootAccountKeyPair()
+    const rootAccountKeyPair: KeyPair = this.getRootAccountKeyPair();
     this.cryptoBroker = await CryptoBroker.cryptoBrokerFactoryByEncryptedKeyIV(
       rootAccountKeyPair,
       encryptedSymmetricKeyIv,
       save
-    )
+    );
     // console.debug("getCryptoBroker cryptoBroker", this.cryptoBroker);
-    return this.cryptoBroker as CryptoBroker
+    return this.cryptoBroker as CryptoBroker;
   }
 
   /**
@@ -2107,15 +2161,15 @@ export class NuLinkHDWallet {
     //The logic here should be the data of all imported accounts
 
     try {
-      await setHDWalletInstance(this, false) //need to save for AccountManager.loadSaved() works
+      await setHDWalletInstance(this, false); //need to save for AccountManager.loadSaved() works
 
-      this.accountManager = await AccountManager.restoreDefaultAccount()
+      this.accountManager = await AccountManager.restoreDefaultAccount();
 
-      this.savePassword(newPassword)
-      this.saveEncryptedKeyIv(newPassword)
+      this.savePassword(newPassword);
+      this.saveEncryptedKeyIv(newPassword);
     } catch (error) {
-      console.error(error)
-      throw new Error('Data recovery has failed') // data recovery failed
+      console.error(error);
+      throw new Error('Data recovery has failed'); // data recovery failed
     }
 
     //Note: The method of calling this function needs to save the account-related data after the call (decentralized storage)
@@ -2153,21 +2207,21 @@ export class NuLinkHDWallet {
     //The logic here should be the data of all imported accounts
 
     try {
-      const dataJson = JSON.parse(dataBinaryString)
+      const dataJson = JSON.parse(dataBinaryString);
 
-      const encryptedSymmetricKeyIv: string = dataJson.seed
+      const encryptedSymmetricKeyIv: string = dataJson.seed;
       // console.log(`recoverUserData: seed encryptedSymmetricKeyIv: ${toBuffer(encryptedSymmetricKeyIv)}`);
 
-      const cryptoBroker = await this.getCryptoBroker(encryptedSymmetricKeyIv, true)
-      const nulinkHDWallet = await NuLinkHDWallet.load(await cryptoBroker.decryptData(dataJson.data), true, false)
-      nulinkHDWallet.savePassword(newPassword)
+      const cryptoBroker = await this.getCryptoBroker(encryptedSymmetricKeyIv, true);
+      const nulinkHDWallet = await NuLinkHDWallet.load(await cryptoBroker.decryptData(dataJson.data), true, false);
+      nulinkHDWallet.savePassword(newPassword);
       // update the current object
-      this.copyConstructor(nulinkHDWallet, newPassword)
+      this.copyConstructor(nulinkHDWallet, newPassword);
 
-      this.saveEncryptedKeyIv(newPassword)
+      this.saveEncryptedKeyIv(newPassword);
     } catch (error) {
-      console.error(error)
-      throw new Error('Data recovery has failed') // data recovery failed
+      console.error(error);
+      throw new Error('Data recovery has failed'); // data recovery failed
     }
 
     //Note: The method of calling this function needs to save the account-related data after the call (decentralized storage)
@@ -2188,27 +2242,27 @@ export class NuLinkHDWallet {
 
     //First verify that the password is correct
     if (!(await this.verifyPassword(password))) {
-      throw new Error('Incorrect password')
+      throw new Error('Incorrect password');
     }
     // console.log("persistHDWallet HDWALLET_ENCRYPT_STR", HDWALLET_ENCRYPT_STR);
     // console.log("persistHDWallet password", password);
 
-    const strategyIdJsonString = pwdEncrypt(JSON.stringify({ strategyIds: this.strategyIds() }), null, false)
-    const accountIdsJsonString = pwdEncrypt(JSON.stringify({ accountIds: this.accountIds() }), null, false)
+    const strategyIdJsonString = pwdEncrypt(JSON.stringify({ strategyIds: this.strategyIds() }), null, false);
+    const accountIdsJsonString = pwdEncrypt(JSON.stringify({ accountIds: this.accountIds() }), null, false);
 
     //Ensure key, iv have value
-    const cryptoBroker = await this.getCryptoBroker()
-    const encryptedKeyIv: string = await cryptoBroker.dump()
+    const cryptoBroker = await this.getCryptoBroker();
+    const encryptedKeyIv: string = await cryptoBroker.dump();
     // console.log("exportUserData before seed");
     const jsonData = {
       seed: encryptedKeyIv,
       data: await cryptoBroker.encryptData(await this.dump()),
       strategyIds: strategyIdJsonString, //the data not so important, Just for the convenience of deciding the version
       accountIds: accountIdsJsonString //the data not so important, Just for the convenience of deciding the version
-    }
+    };
     // console.log(`exportUserData: seed encryptedSymmetricKeyIv: ${toBuffer(encryptedKeyIv)}`);
 
-    return JSON.stringify(jsonData)
+    return JSON.stringify(jsonData);
   }
 
   /**
@@ -2220,17 +2274,17 @@ export class NuLinkHDWallet {
   public async exportWalletData(password: string): Promise<string> {
     //First verify that the password is correct
     if (!(await this.verifyPassword(password))) {
-      throw new Error('Incorrect password')
+      throw new Error('Incorrect password');
     }
     // console.log("persistHDWallet HDWALLET_ENCRYPT_STR", HDWALLET_ENCRYPT_STR);
     // console.log("persistHDWallet password", password);
 
-    const strategyIdJsonString = pwdEncrypt(JSON.stringify({ strategyIds: this.strategyIds() }), null, false)
-    const accountIdsJsonString = pwdEncrypt(JSON.stringify({ accountIds: this.accountIds() }), null, false)
+    const strategyIdJsonString = pwdEncrypt(JSON.stringify({ strategyIds: this.strategyIds() }), null, false);
+    const accountIdsJsonString = pwdEncrypt(JSON.stringify({ accountIds: this.accountIds() }), null, false);
 
     //Ensure key, iv have value
-    const cryptoBroker = await this.getCryptoBroker()
-    const encryptedKeyIv: string = await cryptoBroker.dump()
+    const cryptoBroker = await this.getCryptoBroker();
+    const encryptedKeyIv: string = await cryptoBroker.dump();
     // console.log("exportUserData before seed");
 
     const jsonData = {
@@ -2238,19 +2292,19 @@ export class NuLinkHDWallet {
       data: await cryptoBroker.encryptData(await this.dump()),
       strategyIds: strategyIdJsonString, //the data not so important, Just for the convenience of deciding the version
       accountIds: accountIdsJsonString //the data not so important, Just for the convenience of deciding the version
-    }
+    };
 
     // console.log(`exportUserData: seed encryptedSymmetricKeyIv: ${toBuffer(encryptedKeyIv)}`);
-    const mnemonic = await this.getMnemonic(password)
+    const mnemonic = await this.getMnemonic(password);
 
     if (mnemonic) {
-      jsonData['mcode'] = pwdEncrypt(mnemonic, null, false)
+      jsonData['mcode'] = pwdEncrypt(mnemonic, null, false);
     } else {
-      const rootExtendedPrivateKey = await this.getRootExtendedPrivateKey(password)
-      jsonData['pcode'] = pwdEncrypt(rootExtendedPrivateKey as string, null, false)
+      const rootExtendedPrivateKey = await this.getRootExtendedPrivateKey(password);
+      jsonData['pcode'] = pwdEncrypt(rootExtendedPrivateKey as string, null, false);
     }
 
-    return JSON.stringify(jsonData)
+    return JSON.stringify(jsonData);
   }
 
   /**
@@ -2262,11 +2316,11 @@ export class NuLinkHDWallet {
   public async getMnemonic(password: string): Promise<string | null> {
     if (await this.verifyPassword(password)) {
       //this must be plainText
-      const mnemonic = pwdDecrypt(this.mnemonic, true)
-      return mnemonic
+      const mnemonic = pwdDecrypt(this.mnemonic, true);
+      return mnemonic;
     }
 
-    return null
+    return null;
   }
 
   /**
@@ -2276,14 +2330,14 @@ export class NuLinkHDWallet {
    * @memberof NuLinkHDWallet
    */
   public async getRootExtendedPrivateKey(password: string): Promise<string | null> {
-    assert(!!this.hdWallet)
+    assert(!!this.hdWallet);
 
     if (await this.verifyPassword(password)) {
-      const buffer: Buffer = this.hdWallet.privateExtendedKey()
-      return buffer.toString()
+      const buffer: Buffer = this.hdWallet.privateExtendedKey();
+      return buffer.toString();
     }
 
-    return null
+    return null;
   }
 
   /**
@@ -2296,16 +2350,16 @@ export class NuLinkHDWallet {
    */
   private async calcPasswordHash(password: string, salt: string): Promise<string> {
     //The length of the salt we use here is 21 (nanoid())
-    assert(!util.isBlank(this.hdWallet))
+    assert(!util.isBlank(this.hdWallet));
 
-    const sk: string = this.wallet().getPrivateKeyString()
+    const sk: string = this.wallet().getPrivateKeyString();
     // console.log("calcPasswordHash before sign",password + salt, sk);
     //sign will raise exception Failed to execute 'sign' on 'SubtleCrypto': parameter 2 is not of type 'CryptoKey'.
     // const signed = await sign(password + salt, sk);
-    const signed = md5(password + salt + sk, { encoding: 'string' })
-    const hash = new Keccak(256)
-    hash.update(signed)
-    return hash.digest('hex') + salt
+    const signed = md5(password + salt + sk, { encoding: 'string' });
+    const hash = new Keccak(256);
+    hash.update(signed);
+    return hash.digest('hex') + salt;
     // return password;
   }
 
@@ -2317,23 +2371,23 @@ export class NuLinkHDWallet {
    * @memberof NuLinkHDWallet
    */
   public async verifyPassword(password: string): Promise<boolean> {
-    assert(!util.isBlank(this.hdWallet))
+    assert(!util.isBlank(this.hdWallet));
 
     // Compare local storage for the same
     if (util.isBlank(this._passwordHash)) {
-      this._passwordHash = await this.decryptSavedData(macro.passwordHash)
+      this._passwordHash = await this.decryptSavedData(macro.passwordHash);
       if (!this._passwordHash) {
         //debugger;
       }
     }
 
-    assert(!util.isBlank(this._passwordHash))
+    assert(!util.isBlank(this._passwordHash));
 
-    const salt = this._passwordHash.slice(-21)
+    const salt = this._passwordHash.slice(-21);
 
-    const toBeVerifiedPasswordHash = await this.calcPasswordHash(password, salt)
+    const toBeVerifiedPasswordHash = await this.calcPasswordHash(password, salt);
 
-    return toBeVerifiedPasswordHash === this._passwordHash
+    return toBeVerifiedPasswordHash === this._passwordHash;
   }
   /**
    * Retrieves the AccountManager object associated with the NuLinkHDWallet.
@@ -2341,7 +2395,7 @@ export class NuLinkHDWallet {
    * @memberof NuLinkHDWallet
    */
   public getAccountManager() {
-    return this.accountManager
+    return this.accountManager;
   }
 
   /**
@@ -2350,7 +2404,7 @@ export class NuLinkHDWallet {
    * @memberof NuLinkHDWallet
    */
   public setAccountManager(_accountManager: AccountManager) {
-    this.accountManager = _accountManager
+    this.accountManager = _accountManager;
   }
 
   /**
@@ -2362,17 +2416,17 @@ export class NuLinkHDWallet {
    */
   private async savePassword(password: string): Promise<string> {
     //return password hash
-    assert(this.hdWallet != null)
-    const salt = nanoid()
-    this._passwordHash = await this.calcPasswordHash(password, salt)
+    assert(this.hdWallet != null);
+    const salt = nanoid();
+    this._passwordHash = await this.calcPasswordHash(password, salt);
     if (!this._passwordHash) {
       //debugger;
     }
-    console.log('NuLinkHDWallet savePassword _passwordHash', this._passwordHash)
+    console.log('NuLinkHDWallet savePassword _passwordHash', this._passwordHash);
     // store to local
-    await this.savePasswordHash(this._passwordHash)
+    await this.savePasswordHash(this._passwordHash);
 
-    return this._passwordHash
+    return this._passwordHash;
   }
 
   /**
@@ -2384,7 +2438,7 @@ export class NuLinkHDWallet {
    */
   private async savePasswordHash(passwordHash: string) {
     // store to local
-    await this.encryptSaveData(macro.passwordHash, passwordHash)
+    await this.encryptSaveData(macro.passwordHash, passwordHash);
     // console.log("savePasswordHash  passwordHash: ", passwordHash);
   }
 
@@ -2396,7 +2450,7 @@ export class NuLinkHDWallet {
    */
   private async getSavedPasswordHash(): Promise<string> {
     //return password hash
-    return await this.decryptSavedData(macro.passwordHash)
+    return await this.decryptSavedData(macro.passwordHash);
   }
 
   /**
@@ -2408,9 +2462,9 @@ export class NuLinkHDWallet {
   private async saveMnemonic() {
     // Save the mnemonic to the local via the symmetric key
     //this must be plainText
-    const mnemonic = pwdDecrypt(this.mnemonic, true)
+    const mnemonic = pwdDecrypt(this.mnemonic, true);
 
-    await this.encryptSaveData(macro.mnemonicKey, mnemonic)
+    await this.encryptSaveData(macro.mnemonicKey, mnemonic);
   }
 
   /**
@@ -2421,7 +2475,7 @@ export class NuLinkHDWallet {
    */
   private async getSavedMnemonic() {
     // Get the locally saved mnemonic through the symmetric key
-    return await this.decryptSavedData(macro.mnemonicKey)
+    return await this.decryptSavedData(macro.mnemonicKey);
   }
 
   /**
@@ -2434,10 +2488,10 @@ export class NuLinkHDWallet {
   private async saveMnemonicByPassword(password: string) {
     // Save the mnemonic to the local with the password
     if (util.isBlank(this.mnemonic)) {
-      return
+      return;
     }
-    const mnemonic = pwdDecrypt(this.mnemonic, true)
-    await CryptoBroker.encryptWithPasswordSave(mnemonic, password, macro.mnemonicByPassword)
+    const mnemonic = pwdDecrypt(this.mnemonic, true);
+    await CryptoBroker.encryptWithPasswordSave(mnemonic, password, macro.mnemonicByPassword);
   }
 
   /**
@@ -2450,7 +2504,7 @@ export class NuLinkHDWallet {
   private async getSavedMnemonicByPassword(password: string) {
     // Get the local mnemonic by password
 
-    return await CryptoBroker.decryptWithPasswordSaved(password, macro.mnemonicByPassword)
+    return await CryptoBroker.decryptWithPasswordSaved(password, macro.mnemonicByPassword);
   }
 
   /**
@@ -2461,8 +2515,8 @@ export class NuLinkHDWallet {
    */
   private async saveRootExtendedPrivateKey() {
     // Save the mnemonic to the local via the symmetric key
-    const rootExtendedPrivateKey = pwdDecrypt(this.rootExtendedPrivateKey, true)
-    await this.encryptSaveData(macro.rootExtendedPrivateKey, rootExtendedPrivateKey)
+    const rootExtendedPrivateKey = pwdDecrypt(this.rootExtendedPrivateKey, true);
+    await this.encryptSaveData(macro.rootExtendedPrivateKey, rootExtendedPrivateKey);
   }
 
   /**
@@ -2473,7 +2527,7 @@ export class NuLinkHDWallet {
    */
   private async getSavedRootExtendedPrivateKey(): Promise<string> {
     // Get the locally saved mnemonic through the symmetric key
-    return await this.decryptSavedData(macro.rootExtendedPrivateKey)
+    return await this.decryptSavedData(macro.rootExtendedPrivateKey);
   }
 
   /**
@@ -2485,11 +2539,15 @@ export class NuLinkHDWallet {
    */
   private async saveRootExtendedPrivateKeyByPassword(password: string) {
     // Save the wallet root private key to the local with the password
-    let rootExtendedPrivateKey: string = commonGetRootExtendedPrivateKey(getHDWalletInstance().hdWallet).toString()
+    let rootExtendedPrivateKey: string = commonGetRootExtendedPrivateKey(getHDWalletInstance().hdWallet).toString();
 
-    rootExtendedPrivateKey = pwdDecrypt(rootExtendedPrivateKey, true)
+    rootExtendedPrivateKey = pwdDecrypt(rootExtendedPrivateKey, true);
 
-    await CryptoBroker.encryptWithPasswordSave(rootExtendedPrivateKey, password, macro.rootExtendedPrivateKeyByPassword)
+    await CryptoBroker.encryptWithPasswordSave(
+      rootExtendedPrivateKey,
+      password,
+      macro.rootExtendedPrivateKeyByPassword
+    );
   }
 
   /**
@@ -2501,7 +2559,7 @@ export class NuLinkHDWallet {
    */
   private async getSavedRootExtendedPrivateKeyByPassword(password: string): Promise<string> {
     //Get the local (wallet) root private key through the password
-    return await CryptoBroker.decryptWithPasswordSaved(password, macro.rootExtendedPrivateKeyByPassword)
+    return await CryptoBroker.decryptWithPasswordSaved(password, macro.rootExtendedPrivateKeyByPassword);
   }
 
   /**
@@ -2514,7 +2572,7 @@ export class NuLinkHDWallet {
    */
   private async saveHDWalletCreateType(password: string, hDWalletCreateType: string) {
     // Save the wallet create(restore) type : Mnemonic or RootExtendedPrivateKey
-    await CryptoBroker.encryptWithPasswordSave(hDWalletCreateType, password, macro.hDWalletCreateType)
+    await CryptoBroker.encryptWithPasswordSave(hDWalletCreateType, password, macro.hDWalletCreateType);
   }
 
   /**
@@ -2526,7 +2584,7 @@ export class NuLinkHDWallet {
    */
   private async getSavedHDWalletCreateType(password: string): Promise<string> {
     //Get the local (wallet) root private key through the password
-    return await CryptoBroker.decryptWithPasswordSaved(password, macro.hDWalletCreateType)
+    return await CryptoBroker.decryptWithPasswordSaved(password, macro.hDWalletCreateType);
   }
 
   /**
@@ -2538,11 +2596,11 @@ export class NuLinkHDWallet {
    */
   private async saveEncryptedKeyIv(password: string) {
     //Save the encrypted symmetric key key,iv to the local by password
-    const cryptoBroker = await this.getCryptoBroker()
-    const encryptedKeyIv: string = await cryptoBroker.dump()
+    const cryptoBroker = await this.getCryptoBroker();
+    const encryptedKeyIv: string = await cryptoBroker.dump();
 
     // console.log("saveEncryptedKeyIv encryptedKeyIv: ", encryptedKeyIv);
-    await CryptoBroker.encryptWithPasswordSave(encryptedKeyIv, password, macro.encryptedKeyIvByPassword)
+    await CryptoBroker.encryptWithPasswordSave(encryptedKeyIv, password, macro.encryptedKeyIvByPassword);
   }
 
   /**
@@ -2554,10 +2612,13 @@ export class NuLinkHDWallet {
    */
   private async getSavedEncryptedKeyIv(password: string): Promise<string> {
     //Get the local encrypted symmetric key key,iv through the password
-    const encryptedKeyIv: string = await CryptoBroker.decryptWithPasswordSaved(password, macro.encryptedKeyIvByPassword)
+    const encryptedKeyIv: string = await CryptoBroker.decryptWithPasswordSaved(
+      password,
+      macro.encryptedKeyIvByPassword
+    );
     // console.log("getSavedEncryptedKeyIv encryptedKeyIv: ", encryptedKeyIv);
 
-    return encryptedKeyIv
+    return encryptedKeyIv;
   }
 
   /**
@@ -2569,11 +2630,11 @@ export class NuLinkHDWallet {
    * @memberof NuLinkHDWallet
    */
   private async encryptSaveData(saveKey: string, plainText: string): Promise<string> {
-    const cryptoBroker = await this.getCryptoBroker()
-    const result = await cryptoBroker.encryptSaveData(saveKey, String(plainText))
+    const cryptoBroker = await this.getCryptoBroker();
+    const result = await cryptoBroker.encryptSaveData(saveKey, String(plainText));
     //this the is very important for sync the HDWallet object to background
-    await setHDWalletInstance(this, true)
-    return result
+    await setHDWalletInstance(this, true);
+    return result;
   }
   /**
    * @internal
@@ -2583,10 +2644,10 @@ export class NuLinkHDWallet {
    * @memberof NuLinkHDWallet
    */
   private async decryptSavedData(savedKey: string): Promise<string> {
-    const cryptoBroker = await this.getCryptoBroker()
+    const cryptoBroker = await this.getCryptoBroker();
     // console.log("decryptSavedData cryptoBroker", cryptoBroker);
     // console.log("decryptSavedData savedKey", savedKey);
-    return await cryptoBroker.decryptSavedData(savedKey)
+    return await cryptoBroker.decryptSavedData(savedKey);
   }
 
   /**
@@ -2600,10 +2661,10 @@ export class NuLinkHDWallet {
   private async removeSavedData(savedKey: string) {
     //Try not to call this function. If you delete a key without logic, it will destroy the overall storage interface.
     //Unless you know the consequences of deleting a key (such as load failure), don't do this lightly.
-    const cryptoBroker = await this.getCryptoBroker()
-    const result = await cryptoBroker.decryptSavedData(savedKey)
-    await setHDWalletInstance(this, true)
-    return result
+    const cryptoBroker = await this.getCryptoBroker();
+    const result = await cryptoBroker.decryptSavedData(savedKey);
+    await setHDWalletInstance(this, true);
+    return result;
   }
 
   /**
@@ -2612,7 +2673,7 @@ export class NuLinkHDWallet {
    * @memberof NuLinkHDWallet
    */
   public strategyIds(): string[] {
-    return this.accountManager.strategyIds()
+    return this.accountManager.strategyIds();
   }
 
   /**
@@ -2621,7 +2682,7 @@ export class NuLinkHDWallet {
    * @memberof NuLinkHDWallet
    */
   public accountIds(): string[] {
-    return this.accountManager.accountIds()
+    return this.accountManager.accountIds();
   }
 
   /**
@@ -2631,17 +2692,17 @@ export class NuLinkHDWallet {
    */
   public async dump(): Promise<string> {
     if (!this._passwordHash) {
-      this._passwordHash = await this.getSavedPasswordHash()
+      this._passwordHash = await this.getSavedPasswordHash();
       // debugger;
     }
     // console.log("NuLinkHDWallet dump _passwordHash", this._passwordHash);
     //encrypt mnemonic
-    const mnemonic = pwdEncrypt(this.mnemonic, null, false)
+    const mnemonic = pwdEncrypt(this.mnemonic, null, false);
 
     let rootExtendedPrivateKey =
-      this.rootExtendedPrivateKey || commonGetRootExtendedPrivateKey(getHDWalletInstance().hdWallet).toString()
+      this.rootExtendedPrivateKey || commonGetRootExtendedPrivateKey(getHDWalletInstance().hdWallet).toString();
 
-    rootExtendedPrivateKey = pwdEncrypt(rootExtendedPrivateKey, null, false)
+    rootExtendedPrivateKey = pwdEncrypt(rootExtendedPrivateKey, null, false);
     if (!this._passwordHash) {
       //debugger;
     }
@@ -2654,49 +2715,49 @@ export class NuLinkHDWallet {
       encryptedKeyIv: await (await this.getCryptoBroker()).dump()
       //hdWallet can be recovered by mnemonic
       //cryptoBroker can be recovered through hdWallet, note that key and iv must be exported
-    })
+    });
   }
 
   public static async parseUserDataVersionInfo(dataBinaryString: string): Promise<any | undefined> {
     //return sorted strategyId list
 
     if (!dataBinaryString) {
-      return undefined
+      return undefined;
     }
 
-    const jsonObj = JSON.parse(dataBinaryString)
+    const jsonObj = JSON.parse(dataBinaryString);
 
     if (!jsonObj?.strategyIds) {
       throw new exception.UserDataVersionLowError(
         `Your user data version is outdated. Please import the latest data to utilize this function`
-      )
+      );
     }
 
     try {
-      const strategyIdJsonString = pwdDecrypt(jsonObj.strategyIds, true)
-      const accountIdsJsonString = pwdDecrypt(jsonObj.accountIds, true)
-      const strategyIdsJsonObject = JSON.parse(strategyIdJsonString)
-      const accountIdsJsonObject = JSON.parse(accountIdsJsonString)
+      const strategyIdJsonString = pwdDecrypt(jsonObj.strategyIds, true);
+      const accountIdsJsonString = pwdDecrypt(jsonObj.accountIds, true);
+      const strategyIdsJsonObject = JSON.parse(strategyIdJsonString);
+      const accountIdsJsonObject = JSON.parse(accountIdsJsonString);
 
       if (util.isBlank(strategyIdsJsonObject?.strategyIds) || util.isBlank(accountIdsJsonObject?.accountIds)) {
         //please make sure the dataBinaryString is not empty
-        throw new exception.UserDataCorruptedError('Data corrupted or tampered with by others !!')
+        throw new exception.UserDataCorruptedError('Data corrupted or tampered with by others !!');
       }
 
       if (accountIdsJsonObject?.accountIds.length < 1) {
         //accounts length is null
         throw new exception.UserDataCorruptedError(
           'Data is abnormal. Please attempt to re-export the data and subsequently re-import it.'
-        )
+        );
       }
 
       return {
         strategyIds: strategyIdsJsonObject?.strategyIds,
         accountIds: accountIdsJsonObject?.accountIds
-      }
+      };
     } catch (error) {
-      console.log('parseUserDataAllStrategys error: ', error)
-      throw new exception.UserDataCorruptedError('Data appears to be corrupted or tampered with by external parties!')
+      console.log('parseUserDataAllStrategys error: ', error);
+      throw new exception.UserDataCorruptedError('Data appears to be corrupted or tampered with by external parties!');
     }
 
     // const strategyIds: string[] = [];
@@ -2762,48 +2823,48 @@ export class NuLinkHDWallet {
    * @memberof NuLinkHDWallet
    */
   public static async load(jsonString: string, save = false, recoverPassword = true): Promise<NuLinkHDWallet> {
-    const jsonObj = JSON.parse(jsonString)
+    const jsonObj = JSON.parse(jsonString);
 
-    const nulinkHDWallet = new NuLinkHDWallet()
+    const nulinkHDWallet = new NuLinkHDWallet();
 
-    nulinkHDWallet.mnemonic = pwdEncrypt(jsonObj.mnemonic, null, false)
-    nulinkHDWallet.rootExtendedPrivateKey = pwdEncrypt(jsonObj.rootExtendedPrivateKey, null, false)
-    nulinkHDWallet.createType = jsonObj.createType
+    nulinkHDWallet.mnemonic = pwdEncrypt(jsonObj.mnemonic, null, false);
+    nulinkHDWallet.rootExtendedPrivateKey = pwdEncrypt(jsonObj.rootExtendedPrivateKey, null, false);
+    nulinkHDWallet.createType = jsonObj.createType;
 
     if (!util.isBlank(jsonObj.mnemonic)) {
-      jsonObj.mnemonic = pwdDecrypt(jsonObj.mnemonic, true)
-      nulinkHDWallet.hdWallet = await commonGetHDWallet(jsonObj.mnemonic)
+      jsonObj.mnemonic = pwdDecrypt(jsonObj.mnemonic, true);
+      nulinkHDWallet.hdWallet = await commonGetHDWallet(jsonObj.mnemonic);
     } else if (!util.isBlank(jsonObj.rootExtendedPrivateKey)) {
-      jsonObj.rootExtendedPrivateKey = pwdDecrypt(jsonObj.rootExtendedPrivateKey, true)
-      nulinkHDWallet.hdWallet = commonGetHDWalletByRootExtendedPrivateKey(jsonObj.rootExtendedPrivateKey)
+      jsonObj.rootExtendedPrivateKey = pwdDecrypt(jsonObj.rootExtendedPrivateKey, true);
+      nulinkHDWallet.hdWallet = commonGetHDWalletByRootExtendedPrivateKey(jsonObj.rootExtendedPrivateKey);
     } else {
-      throw new Error('NuLinkHDWallet failed to load due to empty mnemonic or rootExtendedPrivateKey')
+      throw new Error('NuLinkHDWallet failed to load due to empty mnemonic or rootExtendedPrivateKey');
     }
 
     //Note that reCreate must be set to true
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const cryptoBroker = await nulinkHDWallet.getCryptoBroker(jsonObj.encryptedKeyIv, true)
+    const cryptoBroker = await nulinkHDWallet.getCryptoBroker(jsonObj.encryptedKeyIv, true);
 
     //note if not recoverPassword, You must set the password after calling this function
     if (recoverPassword) {
       if (!jsonObj.pwdHash) {
-        nulinkHDWallet._passwordHash = await nulinkHDWallet.getSavedPasswordHash()
+        nulinkHDWallet._passwordHash = await nulinkHDWallet.getSavedPasswordHash();
         // debugger;
       } else {
-        nulinkHDWallet._passwordHash = jsonObj.pwdHash
+        nulinkHDWallet._passwordHash = jsonObj.pwdHash;
       }
 
       // console.log("NuLinkHDWallet load recoverPassword pwdHash", jsonObj.pwdHash);
     } else {
       //load origin password, when call the setHDWallet, Prevent password overwriting
-      nulinkHDWallet._passwordHash = await nulinkHDWallet.getSavedPasswordHash()
-      console.log('NuLinkHDWallet load _passwordHash', nulinkHDWallet._passwordHash)
+      nulinkHDWallet._passwordHash = await nulinkHDWallet.getSavedPasswordHash();
+      console.log('NuLinkHDWallet load _passwordHash', nulinkHDWallet._passwordHash);
     }
 
-    await setHDWalletInstance(nulinkHDWallet, false) //need to save for AccountManager.loadSaved() works
+    await setHDWalletInstance(nulinkHDWallet, false); //need to save for AccountManager.loadSaved() works
     //await cryptoBroker.load(jsonObj.encryptedKeyIv)
 
-    nulinkHDWallet.accountManager = await AccountManager.load(jsonObj.acntManager, save)
+    nulinkHDWallet.accountManager = await AccountManager.load(jsonObj.acntManager, save);
 
     if (save) {
       if (recoverPassword) {
@@ -2811,22 +2872,22 @@ export class NuLinkHDWallet {
           //debugger;
         }
         if (!jsonObj || !jsonObj.pwdHash) {
-          console.log('NuLinkHDWallet load savePasswordHash _passwordHash', jsonObj.pwdHash)
+          console.log('NuLinkHDWallet load savePasswordHash _passwordHash', jsonObj.pwdHash);
         }
 
-        await nulinkHDWallet.savePasswordHash(jsonObj.pwdHash)
+        await nulinkHDWallet.savePasswordHash(jsonObj.pwdHash);
       }
       //await nulinkHDWallet.saveEncryptedKeyIv(password); //Set this value when nulinkhdWallet.load is called
       if (!util.isBlank(jsonObj.mnemonic)) {
-        await nulinkHDWallet.saveMnemonic()
+        await nulinkHDWallet.saveMnemonic();
       } else if (!util.isBlank(jsonObj.rootExtendedPrivateKey)) {
-        await nulinkHDWallet.saveRootExtendedPrivateKey()
+        await nulinkHDWallet.saveRootExtendedPrivateKey();
       }
     }
 
-    await setHDWalletInstance(nulinkHDWallet, true)
+    await setHDWalletInstance(nulinkHDWallet, true);
 
-    return nulinkHDWallet
+    return nulinkHDWallet;
   }
 
   /**
@@ -2842,74 +2903,74 @@ export class NuLinkHDWallet {
     // Load wallet from storage with password
 
     if (isBlank(password)) {
-      throw new exception.PasswordDecryptError('password not be null')
+      throw new exception.PasswordDecryptError('password not be null');
     }
 
-    const nulinkHDWallet = new NuLinkHDWallet()
+    const nulinkHDWallet = new NuLinkHDWallet();
 
     //Get the local encrypted symmetric key key through the password, iv: decrypt and get the encrypted save data later
-    const encryptedKeyIv: string = await nulinkHDWallet.getSavedEncryptedKeyIv(password)
+    const encryptedKeyIv: string = await nulinkHDWallet.getSavedEncryptedKeyIv(password);
 
-    const walletCreateType: string = await nulinkHDWallet.getSavedHDWalletCreateType(password)
+    const walletCreateType: string = await nulinkHDWallet.getSavedHDWalletCreateType(password);
     if (walletCreateType === HDWalletCreateType[HDWalletCreateType.Mnemonic]) {
       // Attempt to load wallet with mnemonic
-      const mnemonic: string = await nulinkHDWallet.getSavedMnemonicByPassword(password)
+      const mnemonic: string = await nulinkHDWallet.getSavedMnemonicByPassword(password);
       // console.log("mnemonic: ", mnemonic);
       if (util.isBlank(mnemonic)) {
         throw new exception.PasswordDecryptError(
           'load hdWallet failure, password error or the data is lost or incomplete'
-        ) // data recovery failed
+        ); // data recovery failed
       }
 
       // console.log("loadSaved: 1");
-      nulinkHDWallet.createType = HDWalletCreateType.Mnemonic
-      nulinkHDWallet.hdWallet = await commonGetHDWallet(mnemonic)
-      nulinkHDWallet.mnemonic = pwdEncrypt(mnemonic, null, false)
+      nulinkHDWallet.createType = HDWalletCreateType.Mnemonic;
+      nulinkHDWallet.hdWallet = await commonGetHDWallet(mnemonic);
+      nulinkHDWallet.mnemonic = pwdEncrypt(mnemonic, null, false);
 
       try {
-        await setHDWalletInstance(nulinkHDWallet, false) //need to save for commonGetRootExtendedPrivateKey(getHDWallet().hdWallet) works
+        await setHDWalletInstance(nulinkHDWallet, false); //need to save for commonGetRootExtendedPrivateKey(getHDWallet().hdWallet) works
         nulinkHDWallet.rootExtendedPrivateKey = pwdEncrypt(
           commonGetRootExtendedPrivateKey(getHDWalletInstance().hdWallet).toString(),
           null,
           false
-        )
+        );
       } catch (error) {}
 
       // console.log("loadSaved: nulinkHDWallet.hdWallet", nulinkHDWallet.hdWallet);
     } else {
-      let rootExtendedPrivateKey = ''
+      let rootExtendedPrivateKey = '';
 
       // The mnemonic is empty, try to load the wallet with the wallet root private key
-      rootExtendedPrivateKey = await nulinkHDWallet.getSavedRootExtendedPrivateKeyByPassword(password)
+      rootExtendedPrivateKey = await nulinkHDWallet.getSavedRootExtendedPrivateKeyByPassword(password);
       // console.log("rootExtendedPrivateKey: ", rootExtendedPrivateKey);
       if (util.isBlank(rootExtendedPrivateKey)) {
         throw new exception.PasswordDecryptError(
           'load hdWallet failure, password error or the data is lost or incomplete'
-        ) // data recovery failed
+        ); // data recovery failed
       }
       // console.log("loadSaved: 2");
-      nulinkHDWallet.createType = HDWalletCreateType.RootExtendedPrivateKey
-      nulinkHDWallet.hdWallet = commonGetHDWalletByRootExtendedPrivateKey(rootExtendedPrivateKey)
-      nulinkHDWallet.mnemonic = ''
-      nulinkHDWallet.rootExtendedPrivateKey = pwdEncrypt(rootExtendedPrivateKey, null, false)
+      nulinkHDWallet.createType = HDWalletCreateType.RootExtendedPrivateKey;
+      nulinkHDWallet.hdWallet = commonGetHDWalletByRootExtendedPrivateKey(rootExtendedPrivateKey);
+      nulinkHDWallet.mnemonic = '';
+      nulinkHDWallet.rootExtendedPrivateKey = pwdEncrypt(rootExtendedPrivateKey, null, false);
       // console.log("loadSaved: nulinkHDWallet.hdWallet", nulinkHDWallet.hdWallet);
     }
     //Note that reCreate must be set to true
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    nulinkHDWallet.cryptoBroker = null
-    const cryptoBroker = await nulinkHDWallet.getCryptoBroker(encryptedKeyIv, true)
+    nulinkHDWallet.cryptoBroker = null;
+    const cryptoBroker = await nulinkHDWallet.getCryptoBroker(encryptedKeyIv, true);
     // console.log("loadSaved cryptoBroker: ", cryptoBroker);
-    await setHDWalletInstance(nulinkHDWallet, false) //need to save for AccountManager.loadSaved() works
-    nulinkHDWallet.accountManager = await AccountManager.loadSaved()
+    await setHDWalletInstance(nulinkHDWallet, false); //need to save for AccountManager.loadSaved() works
+    nulinkHDWallet.accountManager = await AccountManager.loadSaved();
     // console.log("loadSaved: nulinkHDWallet.accountManager", nulinkHDWallet.accountManager);
     // console.log("loadSaved: nulinkHDWallet", nulinkHDWallet);
 
     //load origin password, when call the setHDWallet, Prevent password overwriting
-    nulinkHDWallet._passwordHash = await nulinkHDWallet.getSavedPasswordHash()
+    nulinkHDWallet._passwordHash = await nulinkHDWallet.getSavedPasswordHash();
 
-    await setHDWalletInstance(nulinkHDWallet, true)
+    await setHDWalletInstance(nulinkHDWallet, true);
 
-    return nulinkHDWallet
+    return nulinkHDWallet;
   }
 
   /**
@@ -2919,8 +2980,8 @@ export class NuLinkHDWallet {
    * @memberof NuLinkHDWallet
    */
   private async serialize(): Promise<void> {
-    const nuLinkHDWalletEncStr: string = await this.dump()
-    await this.encryptSaveData(this.getSaveKey(), nuLinkHDWalletEncStr)
+    const nuLinkHDWalletEncStr: string = await this.dump();
+    await this.encryptSaveData(this.getSaveKey(), nuLinkHDWalletEncStr);
   }
 
   /**
@@ -2929,8 +2990,8 @@ export class NuLinkHDWallet {
    * @memberof NuLinkHDWallet
    */
   private async deserialize(): Promise<NuLinkHDWallet> {
-    const nuLinkHDWalletEncStr = await this.decryptSavedData(this.getSaveKey())
-    return await NuLinkHDWallet.load(nuLinkHDWalletEncStr, true, true)
+    const nuLinkHDWalletEncStr = await this.decryptSavedData(this.getSaveKey());
+    return await NuLinkHDWallet.load(nuLinkHDWalletEncStr, true, true);
   }
 
   /**
@@ -2940,7 +3001,7 @@ export class NuLinkHDWallet {
    * @memberof NuLinkHDWallet
    */
   private getSaveKey(): string {
-    return macro.hdWalletManagerKey
+    return macro.hdWalletManagerKey;
   }
 
   /**
@@ -2953,28 +3014,28 @@ export class NuLinkHDWallet {
   public async verifyPasswordAndEncrypt(plaintext: string, password: string /*userpassword*/): Promise<string> {
     //First verify that the password is correct
     if (!(await this.verifyPassword(password))) {
-      throw new Error('Incorrect password')
+      throw new Error('Incorrect password');
     }
-    let secretKey: string | null = ''
+    let secretKey: string | null = '';
     if (this.createType === HDWalletCreateType.Mnemonic) {
-      const mnemonic = await this.getMnemonic(password)
-      const hdWallet: hdkey = await commonGetHDWallet(mnemonic as string)
-      const rootExtendedPrivateKey = hdWallet.privateExtendedKey().toString()
-      secretKey = rootExtendedPrivateKey
+      const mnemonic = await this.getMnemonic(password);
+      const hdWallet: hdkey = await commonGetHDWallet(mnemonic as string);
+      const rootExtendedPrivateKey = hdWallet.privateExtendedKey().toString();
+      secretKey = rootExtendedPrivateKey;
     } else {
       //HDWalletCreateType.RootExtendedPrivateKey;
-      const rootExtendedPrivateKey = await this.getRootExtendedPrivateKey(password)
-      secretKey = rootExtendedPrivateKey
+      const rootExtendedPrivateKey = await this.getRootExtendedPrivateKey(password);
+      secretKey = rootExtendedPrivateKey;
     }
 
-    assert(secretKey != null)
+    assert(secretKey != null);
 
     //calc secretKey hash
-    const hash = new Keccak(256)
-    hash.update(secretKey)
-    const salt = nanoid() //21
-    const passwordHash = hash.digest('hex') + salt
-    return CryptoBroker.encryptWithPassword(plaintext, passwordHash) + salt
+    const hash = new Keccak(256);
+    hash.update(secretKey);
+    const salt = nanoid(); //21
+    const passwordHash = hash.digest('hex') + salt;
+    return CryptoBroker.encryptWithPassword(plaintext, passwordHash) + salt;
   }
 
   /**
@@ -2984,26 +3045,26 @@ export class NuLinkHDWallet {
    * @memberof NuLinkHDWallet
    */
   public async encrypt(plaintext: string): Promise<string> {
-    let secretKey: string | null = ''
+    let secretKey: string | null = '';
     if (this.createType === HDWalletCreateType.Mnemonic) {
-      const mnemonic = await pwdDecrypt(this.mnemonic, true)
-      const hdWallet: hdkey = await commonGetHDWallet(mnemonic as string)
-      const rootExtendedPrivateKey = hdWallet.privateExtendedKey().toString()
-      secretKey = rootExtendedPrivateKey
+      const mnemonic = await pwdDecrypt(this.mnemonic, true);
+      const hdWallet: hdkey = await commonGetHDWallet(mnemonic as string);
+      const rootExtendedPrivateKey = hdWallet.privateExtendedKey().toString();
+      secretKey = rootExtendedPrivateKey;
     } else {
       //HDWalletCreateType.RootExtendedPrivateKey;
-      const rootExtendedPrivateKey = pwdDecrypt(this.rootExtendedPrivateKey, true)
-      secretKey = rootExtendedPrivateKey
+      const rootExtendedPrivateKey = pwdDecrypt(this.rootExtendedPrivateKey, true);
+      secretKey = rootExtendedPrivateKey;
     }
 
-    assert(secretKey != null)
+    assert(secretKey != null);
 
     //calc secretKey hash
-    const hash = new Keccak(256)
-    hash.update(secretKey)
-    const salt = nanoid() //21
-    const passwordHash = hash.digest('hex') + salt
-    return CryptoBroker.encryptWithPassword(plaintext, passwordHash) + salt
+    const hash = new Keccak(256);
+    hash.update(secretKey);
+    const salt = nanoid(); //21
+    const passwordHash = hash.digest('hex') + salt;
+    return CryptoBroker.encryptWithPassword(plaintext, passwordHash) + salt;
   }
 
   /**
@@ -3015,27 +3076,27 @@ export class NuLinkHDWallet {
    * @memberof NuLinkHDWallet
    */
   public static async decrypt(ciphertext: string, walletSecret: macro.walletSecretKeyType): Promise<string> {
-    let secretKey: string = ''
+    let secretKey: string = '';
     if (!isBlank(walletSecret.mnemonic)) {
       try {
-        const hdWallet: hdkey = await commonGetHDWallet(walletSecret.mnemonic as string)
-        const rootExtendedPrivateKey = hdWallet.privateExtendedKey().toString()
-        secretKey = rootExtendedPrivateKey
+        const hdWallet: hdkey = await commonGetHDWallet(walletSecret.mnemonic as string);
+        const rootExtendedPrivateKey = hdWallet.privateExtendedKey().toString();
+        secretKey = rootExtendedPrivateKey;
       } catch (error) {
-        throw new exception.MnemonicError('mnemonic Error')
+        throw new exception.MnemonicError('mnemonic Error');
       }
     } else {
       if (!isBlank(walletSecret.rootExtendedPrivateKey)) {
-        throw new exception.RootExtendedPrivateKeyError('RootExtendedPrivateKey Error')
+        throw new exception.RootExtendedPrivateKeyError('RootExtendedPrivateKey Error');
       }
-      secretKey = walletSecret.rootExtendedPrivateKey as string
+      secretKey = walletSecret.rootExtendedPrivateKey as string;
     }
     //calc secretKey hash
-    const hash = new Keccak(256)
-    hash.update(secretKey)
-    const salt = ciphertext.slice(-21) // const salt = nanoid() //21
-    const passwordHash = hash.digest('hex') + salt
+    const hash = new Keccak(256);
+    hash.update(secretKey);
+    const salt = ciphertext.slice(-21); // const salt = nanoid() //21
+    const passwordHash = hash.digest('hex') + salt;
 
-    return CryptoBroker.decryptWithPassword(ciphertext.slice(0, -21), passwordHash)
+    return CryptoBroker.decryptWithPassword(ciphertext.slice(0, -21), passwordHash);
   }
 }
