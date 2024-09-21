@@ -20,7 +20,4 @@ export type NetworkConfigKeys = keyof NetworkConfigOptions;
 /**
  * @internal
  */
-export type AsyncConfigChangedCallbackFunction = (
-  value: string,
-  oldValue?: string
-) => Promise<any>;
+export type AsyncConfigChangedCallbackFunction = (value: string, oldValue?: string) => Promise<any>;

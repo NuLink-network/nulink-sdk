@@ -670,6 +670,7 @@ export const deleteUploadedData = async (account: Account, dataIds: string[]) =>
 * @param {boolean} include - Indicates whether the query result contains file/data list data of the current account.
 * @param {DataCategory|string} category - (Optional) The category of the file/data to search for.
 * @param {DataType} dataType - (Optional) The type of the file/data to search for.
+* @param {string} mimeType - (Optional) The mime type of the file/data to search for.
 * @param {boolean} descOrder - (Optional) Whether to sort by upload time in reverse order.
 * @param {number} pageIndex - (Optional) The index of the page to retrieve. Default is 1.
 * @param {number} pageSize - (Optional) The number of files/data to retrieve per page. Default is 10.
@@ -681,6 +682,7 @@ export const deleteUploadedData = async (account: Account, dataIds: string[]) =>
                                 file_name: string - Data name
                                 category: string - Data category/type
                                 format: string - Data format
+                                mime_type: string - Data mime type
                                 suffix: string - Data suffix
                                 address: string - Data address
                                 thumbnail: string - Data thumbnail
@@ -697,6 +699,7 @@ export const getOtherShareData = async (
   include?: boolean, //indicates whether the query result contains file/data list data of the current account
   category?: DataCategory | string,
   dataType?: DataType,
+  mimeType?: string,
   descOrder = true, //Whether to sort by upload time in reverse order
   pageIndex = 1,
   pageSize = 10
@@ -725,6 +728,10 @@ return data format: {
 
   if (!isBlank(dataLabel)) {
     sendData['file_name'] = dataLabel;
+  }
+
+  if (!isBlank(mimeType)) {
+    sendData['mime_type'] = mimeType;
   }
 
   if (!isBlank(category)) {
@@ -3333,6 +3340,42 @@ export const getMultiApplyDetails = async (applyIds: string[]): Promise<object[]
     throw error;
   }
 };
+
+/**
+ * Convert the status corresponding to applyId to a string.
+ * @category Data Apply Details
+ * @param {string []} applyId - The ID of the application record.
+ * @returns {Promise<string[]>} - Returns an string of status.
+ *              {
+ *                status: "apply status: 1 - In progress, 2 - Approved, 3 - Rejected, 4 - Under review, 5 - Expired"
+ *              }
+ */
+export const convertApplyIdStatusToString = (applyIdStatus: number): string =>
+{
+  if(applyIdStatus === 1)
+  {
+    return "In progress";
+  }
+  else if(applyIdStatus === 2)
+  {
+    return "Approved";
+  }
+  else if(applyIdStatus === 3)
+  {
+    return "Rejected";
+  }
+  else if(applyIdStatus === 4)
+  {
+    return "Under review";
+  }
+  else if(applyIdStatus === 5)
+  {
+    return "Expired";
+  }
+  else{
+    return "Unknown";
+  }
+}
 
 /**
   * Retrieves the details of a file/data (include apply file/data info, file/data info, about policy info) by its ID and user account ID.

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+
+  <body>
+    <div id="text" class="text-box">This is a text display box.</div>
+    <div id="text1" class="text-box">Initializing</div>
+
+    <script src="./nulink-sdk.js"></script>
+
+    <script>
+      console.log('【---NUSDK----】', NUSDK);
+      document.getElementById('text').textContent = NUSDK;
+      // console.log('【---NUSDK.getPolicysGasFee----】', NUSDK.getPolicysGasFee)
+      // console.log('【---NUSDK.Buffer----】', NUSDK.Buffer)
+      // console.log('【---NUSDK.BigNumber----】', NUSDK.BigNumber)
+      // //console.log('【---Web3----】', Web3)
+
+      // ----------------------Global variable area start ------------------------
+
+      const sleep = async (ms) => {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      };
+
+      const asyncInit = async () => {
+        try {
+          await NUSDK.init();
+
+          const dataCallback = {
+            setData: NUSDK.setIPFSData,
+            getData: NUSDK.getIPFSData
+          };
+
+          //Set the external storage used by the Pre process to IPFS (for example, encrypted files uploaded by users will be stored in this storage, and users can customize the storage).
+          NUSDK.StorageManager.setDataCallback(dataCallback);
+
+          console.log('init finish');
+          document.getElementById('text1').textContent = 'initialization complete';
+          return true;
+        } catch (error) {
+          document.getElementById('text1').textContent = 'initialization failed';
+          throw error;
+        }
+        return false;
+      };
+      // ----------------------Global variable area end ------------------------
+
+      // document.addEventListener('DOMContentLoaded', () => {
+      //   //async function: init
+      //   asyncInit();  // Call after the DOM has fully loaded
+      //   });
+      (async () => {
+        const result = await asyncInit();
+        console.log('init result:', result);
+      })();
+    </script>
+  </body>
+</html>

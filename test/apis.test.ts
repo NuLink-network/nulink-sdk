@@ -148,6 +148,7 @@ export const run = async () => {
     undefined,
     undefined,
     undefined,
+    true,
     1,
     1000
   )) as object

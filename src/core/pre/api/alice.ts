@@ -236,8 +236,8 @@ export class BlockchainPolicy {
         value,
         this.hrac.toBytes(),
         this.shares,
-        startTimestamp,
-        endTimestamp,
+        startTimestamp, // unit: seconds
+        endTimestamp, // unit: seconds
         ownerAddress
       )
 

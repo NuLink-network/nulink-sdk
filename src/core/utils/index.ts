@@ -14,3 +14,4 @@ export * from "./sign.message";
 export * from "./external-storage"
 export * from "./androidbridge";
 export * from "./androidmessage";
+export * from "./hexstring.arraybuffer"

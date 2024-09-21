@@ -13178,6 +13178,11 @@ simple-concat@^1.0.0:
   resolved "https://registry.yarnpkg.com/simple-concat/-/simple-concat-1.0.1.tgz#f46976082ba35c2263f1c8ab5edfe26c41c9552f"
   integrity sha512-cSFtAPtRhljv69IK0hTVZQ+OfE9nePi/rtJmw5UjHeVyVroEqJXP1sFztKUy1qU+xvz3u/sfYJLa947b7nAN2Q==
 
+simple-flakeid@^0.0.5:
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/simple-flakeid/-/simple-flakeid-0.0.5.tgz#a1632950af192ec20200af346b8bae2fe78febd8"
+  integrity sha512-CR40AmHCBAFra1KWp2G3YSgwYmbzEI51ksRkNZDhzYm2v0Jbup9xtwdRhE6GhstLJoz15t3bqFYmi6yeA1wjLw==
+
 simple-get@^2.7.0:
   version "2.8.2"
   resolved "https://registry.yarnpkg.com/simple-get/-/simple-get-2.8.2.tgz#5708fb0919d440657326cd5fe7d2599d07705019"

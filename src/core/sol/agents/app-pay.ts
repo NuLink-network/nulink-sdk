@@ -44,8 +44,8 @@ export class AppPayAgent {
       clientId,
       orderId,
       payAmount,
-      // startTimestamp,
-      // endTimestamp,
+      // startTimestamp, // unit: seconds
+      // endTimestamp, // unit: seconds
       // usageDays * 86400, //seconds, 
       aliceAddress,
       payToken,
@@ -88,8 +88,8 @@ export class AppPayAgent {
     payAmount: BigNumber,
     payToken: ChecksumAddress,
     usageDays: number,
-    // startTimestamp: number,
-    // endTimestamp: number,
+    // startTimestamp: number, // unit: seconds
+    // endTimestamp: number, // unit: seconds
     aliceAddress: ChecksumAddress,
     waitReceipt = true,
     gasUsedAmounts: BigNumber = BigNumber.from('0'), // Note that using gasUsedAmount ?: BigNumber here will cause the reference to PublicKey from nulink-ts to become undefined.

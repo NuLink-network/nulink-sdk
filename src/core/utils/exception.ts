@@ -57,6 +57,13 @@ export class PolicyApproving extends Error {
   }
 }
 
+export class PolicyNotExpired extends Error {
+  constructor(message) {
+    super(message); // (1)
+    this.name = "PolicyNotExpired"; // (2)
+  }
+}
+
 export class UserDataVersionLowError extends Error {
   constructor(message) {
     super(message); // (1)
