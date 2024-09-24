@@ -92,7 +92,10 @@ export const setClientId = async (clientId: string) => {
   if(!isNumeric(clientId)){
     throw new Error('Each digit in the clientId must be composed of numbers');
   }
+
+  console.log("before setclientId: ", clientId)
   await storage.setItem(CLIENT_ID_LABEL, clientId as string);
+  console.log("after setclientId: ", clientId)
 };
 
 /**

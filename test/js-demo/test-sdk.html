@@ -48,7 +48,7 @@
       const test1 = async () => {
         //we need set Project ID: differentiate the sources of data from different applications.
         // which requires application to Nulink official.
-        const clientId = '12345';
+        const clientId = '593689189003333';
         await NUSDK.init(clientId);
 
         const dataCallback = {
@@ -536,13 +536,13 @@
 
       const asyncInit = async () => {
         try {
-          const clientId = '12345';
+          const clientId = '593689189003333';
           await NUSDK.init(clientId);
           console.log('init finish');
+          document.getElementById('text').textContent = 'initialization complete';
           return true;
-          document.getElementById('text1').textContent = 'initialization complete';
         } catch (error) {
-          document.getElementById('text1').textContent = 'initialization failed';
+          document.getElementById('text').textContent = 'initialization failed';
           throw error;
         }
         return false;

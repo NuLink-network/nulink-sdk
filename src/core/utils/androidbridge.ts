@@ -76,7 +76,7 @@ export class AndroidBridge {
       globalThis.__JSHOST.postMessage(JSON.stringify(messageData));
 
       //(window as any).__JSHOST.postMessage(JSON.stringify(messageData));
-      // console.log("after window.__JSHOST. postMessage: " + JSON.stringify(messageData));
+      console.log("after sendmessage: window.__JSHOST. postMessage: " + JSON.stringify(messageData));
     });
   }
 
@@ -168,7 +168,6 @@ export class AndroidBridge {
   }
 
   public static initialize(): void {
-    console.log('AndroidBridge initialize');
 
     const globalThis = getGlobalThis();
 
@@ -176,6 +175,7 @@ export class AndroidBridge {
       return;
     }
 
+    console.log('AndroidBridge initialize __jMessage');
     //Note: The Android side can directly send messages to me via __jMessage.
     globalThis.__jMessage = (id: string, method: string, data: string) => {
       // (window as any).__jMessage = (id: string, method: string, data: string) => {
