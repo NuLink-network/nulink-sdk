@@ -96,7 +96,8 @@ export const getServerTimeStamp = async (): Promise<string> => {
   //get golbal time from server
   const sendData = {};
 
-  const data = (await serverGet('/timestamp', sendData)) as object;
+  //Add a random number to prevent browser caching
+  const data = (await serverGet('/timestamp?t='+new Date().getTime(), sendData)) as object;
 
   return data['timestamp'] as string;
 };

@@ -49,6 +49,8 @@
         //we need set Project ID: differentiate the sources of data from different applications.
         // which requires application to Nulink official.
         const clientId = '593689189003333';
+
+        console.log("in test1 function before init clientId");
         await NUSDK.init(clientId);
 
         const dataCallback = {

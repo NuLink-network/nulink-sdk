@@ -46,6 +46,7 @@ import SingletonService from 'singleton-service';
 import { isBlank, store } from '../../utils';
 import sleep from 'await-sleep';
 import { serverPost } from '../../servernet';
+import { getClientId, setClientId } from '../../chainnet/api/getData';
 
 // import toBuffer from "typedarray-to-buffer";
 
@@ -1025,7 +1026,7 @@ export class Account extends IJson {
 
   /**
    * get the account balance of erc20 token from the Ethereum blockchain using web3.  Unit: ether
-   * @returns {Promise<string | undefined>} - A Promise that resolves to the account balance in ether as a string, or throw exception if the balance could not be retrieved.  
+   * @returns {Promise<string | undefined>} - A Promise that resolves to the account balance in ether as a string, or throw exception if the balance could not be retrieved.
    * @memberof Account
    */
   public async getERC20TokenBalance(tokenAddress: string): Promise<string | undefined> {
@@ -1835,7 +1836,12 @@ export class NuLinkHDWallet {
    * @memberof NuLinkHDWallet
    */
   public static async logout(): Promise<void> {
+    //Before clearing the storage, save the clientId first
+    const clientId = await getClientId();
     await store.clear();
+    if (!isBlank(clientId)) {
+      await setClientId(clientId);
+    }
   }
 
   /**

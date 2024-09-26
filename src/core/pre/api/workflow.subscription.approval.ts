@@ -124,10 +124,15 @@ import { registerMessageHandler } from './app.sdk';
  */
 export const init = async (clientId: string ="") => {
   AndroidBridge.initialize();
+
+  console.log("init ing..., ", clientId, isBlank(clientId))
   if(!isBlank(clientId))
   {
+    console.log("initClientId set");
     await initClientId(clientId);
   }
+
+  console.log("initClientId get clientId", await getClientId());
   await registerMessageHandler();
 };
 
