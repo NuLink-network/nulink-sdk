@@ -78,7 +78,7 @@ const test = async (data: any) => {
   console.log('Test receiving messages actively pushed from the app.: ', message);
 
   //Note that all registered functions must return a JSON object.
-  return { message: 'success' };
+  return { msg: 'success' };
 };
 
 /**
