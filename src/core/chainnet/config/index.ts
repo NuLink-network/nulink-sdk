@@ -18,7 +18,7 @@ export const networkDetails = {
     TOKEN_ADDRESS: process.env.REACT_APP_BSC_TESTNET_BNB_ADDRESS || "", //"0x0000000000000000000000000000000000000001", //process.env.REACT_APP_BSC_TESTNET_BNB_ADDRESS || "",
     TOKEN_SYMBOL: "TBNB",
     NLK_TOKEN_SYMBOL: "TNLK",
-    NLK_TOKEN_ADDRESS: process.env.REACT_APP_BSC_TESTNET_CONTRACT_NULINKTOKEN_ADDRESS || "", //"0x79725FC1badFd5f744c0d293d528197EaA88fdE5", //process.env.REACT_APP_BSC_TESTNET_CONTRACT_NULINKTOKEN_ADDRESS || "",
+    NLK_TOKEN_ADDRESS: process.env.REACT_APP_BSC_TESTNET_CONTRACT_NULINKTOKEN_ADDRESS || "", //"0x8A95eF66ef0b5bCD10cb8aB433c768f50B5822a8", //process.env.REACT_APP_BSC_TESTNET_CONTRACT_NULINKTOKEN_ADDRESS || "",
   },
   [NETWORK_LIST.ConfluxTestNet]: {
     WEB3_RPC_URL: process.env.REACT_APP_CONFLUX_ESPACE_TESTNET_WEB3_RPC_URL as string || "", //"https://data-seed-prebsc-1-s1.binance.org:8545/", //"https://polygon-mumbai.g.alchemy.com/v2/46LmJOYydi52yqUdANxbLDReG13MDYw5"; //"https://rpc-mumbai.polygon.technology/v1/84cc5f2f2beca130d1d33b38a7085e5d8b57d404";

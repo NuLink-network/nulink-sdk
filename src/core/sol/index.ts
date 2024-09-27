@@ -48,8 +48,8 @@ const networkContractList = {
     },
   },
   // [NETWORK_LIST.Horus]: {
-  //   [CONTRACT_NAME.nuLinkToken]: { address:  "0x79725FC1badFd5f744c0d293d528197EaA88fdE5", /*process.env.REACT_APP_BSC_TESTNET_CONTRACT_NULINKTOKEN_ADDRESS as string,*/ abi: NuLinkTokenABI },
-  //   [CONTRACT_NAME.subScriptManager]: { address: "0xa24DE231995c29Bd2A5c0f307e48E62F75250531", /*process.env.REACT_APP_BSC_TESTNET_CONTRACT_SUBSCRIPTMANAGER_ADDRESS as string,*/ abi: SubscriptionManagerABI },
+  //   [CONTRACT_NAME.nuLinkToken]: { address:  "0x8A95eF66ef0b5bCD10cb8aB433c768f50B5822a8", /*process.env.REACT_APP_BSC_TESTNET_CONTRACT_NULINKTOKEN_ADDRESS as string,*/ abi: NuLinkTokenABI },
+  //   [CONTRACT_NAME.subScriptManager]: { address: "0xc337EE62Fd5A6bF36A52A5f6a1C83DFc81945EB3", /*process.env.REACT_APP_BSC_TESTNET_CONTRACT_SUBSCRIPTMANAGER_ADDRESS as string,*/ abi: SubscriptionManagerABI },
   // },
   [NETWORK_LIST.ConfluxTestNet]: {
     [CONTRACT_NAME.nuLinkToken]: {
