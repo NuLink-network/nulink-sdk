@@ -34,7 +34,7 @@ export class AppPayAgent {
 
     //const gasPrice: BigNumber = await web3Provider.provider.getGasPrice();
 
-    const clientId = await getClientId();
+    const clientId = await getClientId(true);
 
     if (isBlank(clientId)) {
       throw new Error('clientId is not set, need invoke the function initClientId first');
@@ -103,7 +103,7 @@ export class AppPayAgent {
     //const gasPrice: BigNumber = await web3Provider.provider.getGasPrice();
 
     //note: Each digit in the clientId must be composed of numbers.
-    const clientId = await getClientId();
+    const clientId = await getClientId(true);
 
     if (isBlank(clientId)) {
       throw new Error('clientId is not set, need invoke the function initClientId first');
@@ -154,7 +154,7 @@ export class AppPayAgent {
 
     //const gasPrice: BigNumber = await web3Provider.provider.getGasPrice();
 
-    const clientId = await getClientId();
+    const clientId = await getClientId(true);
 
     if (isBlank(clientId)) {
       throw new Error('clientId is not set, need invoke the function initClientId first');
@@ -211,7 +211,7 @@ export class AppPayAgent {
     //const gasPrice: BigNumber = await web3Provider.provider.getGasPrice();
 
     //note: Each digit in the clientId must be composed of numbers.
-    const clientId = await getClientId();
+    const clientId = await getClientId(true);
 
     if (isBlank(clientId)) {
       throw new Error('clientId is not set, need invoke the function initClientId first');
@@ -275,7 +275,7 @@ export class AppPayAgent {
     // console.log("provider", provider);
 
     //note: Each digit in the clientId must be composed of numbers.
-    const clientId = await getClientId(); 
+    const clientId = await getClientId(true); 
     
     /**
      *     struct payInfoS{

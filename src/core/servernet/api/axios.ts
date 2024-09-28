@@ -198,7 +198,7 @@ export const serverPost = async (urlPath: string, data: object, config?: object)
     }
   };
 
-  const clientId = await getClientId();
+  const clientId = await getClientId(true);
   //projectId
   if (clientId) {
     baseConfig.headers['NuClientId'] = clientId;

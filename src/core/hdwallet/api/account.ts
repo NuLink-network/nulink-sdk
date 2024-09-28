@@ -1837,7 +1837,7 @@ export class NuLinkHDWallet {
    */
   public static async logout(): Promise<void> {
     //Before clearing the storage, save the clientId first
-    const clientId = await getClientId();
+    const clientId = await getClientId(false);
     await store.clear();
     if (!isBlank(clientId)) {
       await setClientId(clientId);

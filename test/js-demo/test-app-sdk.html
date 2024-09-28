@@ -14,25 +14,29 @@
 
     <script src="./nulink-sdk.js"></script>
 
-<script>
-  console.log('【---NUSDK----】', NUSDK);
-  document.getElementById('text').textContent = NUSDK;
-  // console.log('【---NUSDK.getPolicysGasFee----】', NUSDK.getPolicysGasFee)
-  // console.log('【---NUSDK.Buffer----】', NUSDK.Buffer)
-  // console.log('【---NUSDK.BigNumber----】', NUSDK.BigNumber)
-  // //console.log('【---Web3----】', Web3)
+    <script>
+      //mock the android bridge
+      const bridge = (window.__JSHOST = window);
 
-  // ----------------------Global variable area start ------------------------
-  // const password = '1';
-  // let nuLinkHDWallet;
-  // let mnemonic;
-  // let accountAlice;
+      
+      console.log('【---NUSDK----】', NUSDK);
+      document.getElementById('text').textContent = NUSDK;
+      // console.log('【---NUSDK.getPolicysGasFee----】', NUSDK.getPolicysGasFee)
+      // console.log('【---NUSDK.Buffer----】', NUSDK.Buffer)
+      // console.log('【---NUSDK.BigNumber----】', NUSDK.BigNumber)
+      // //console.log('【---Web3----】', Web3)
 
-  const sleep = async (ms) => {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  };
+      // ----------------------Global variable area start ------------------------
+      // const password = '1';
+      // let nuLinkHDWallet;
+      // let mnemonic;
+      // let accountAlice;
 
-  const asyncInit = async () => {
+      const sleep = async (ms) => {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      };
+
+      const asyncInit = async () => {
         try {
           const clientId = '593689189003333';
           await NUSDK.init(clientId);
@@ -54,8 +58,10 @@
       (async () => {
         const result = await asyncInit();
         console.log('init result:', result);
+
+        //not works now ...... troubleshoot later
+        bridge.postMessage(JSON.stringify({ id: 1, method: 'test', data: { message: 'this is a test message' } }), '/');
       })();
-</script>
+    </script>
   </body>
 </html>
-

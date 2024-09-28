@@ -101,14 +101,18 @@ export const setClientId = async (clientId: string) => {
 /**
  * @internal
  * get Project ID, which requires application to Nulink official
- * @param {string} clientId -  Project ID, differentiate the sources of data from different applications
+ * @param {boolean} throwException -  Will it throw an exception if the clientId is not set
  * @returns {Promise<void>}
  */
-export const getClientId = async (): Promise<string> => {
-  const clientId = await storage.getItem(CLIENT_ID_LABEL);
+export const getClientId = async (throwException: boolean =false): Promise<string> => {
+  let clientId = await storage.getItem(CLIENT_ID_LABEL);
 
   if (clientId === null || clientId === undefined || clientId === '') {
-    throw new Error('clientId is not set');
+    if(throwException)
+    {
+      throw new Error('clientId is not set');
+    }
+    clientId = ''
   }
 
   return clientId;

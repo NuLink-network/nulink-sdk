@@ -132,7 +132,7 @@ export const init = async (clientId: string ="") => {
     await initClientId(clientId);
   }
 
-  console.log("initClientId get clientId", await getClientId());
+  console.log("initClientId get clientId", await getClientId(false));
   await registerMessageHandler();
 };
 
@@ -177,7 +177,7 @@ export const publishDataForPaidSubscriberVisible = async (
   let strategy: Strategy | undefined = account.getStrategy(strategyIndex);
 
   if (isBlank(strategy)) {
-    const clientId = await getClientId();
+    const clientId = await getClientId(true);
 
     if (isBlank(clientId)) {
       throw new Error('clientId is not set, need invoke the function initClientId first');
@@ -234,7 +234,7 @@ export const publishDataForIndividualPaid = async (
 ): Promise<object> => {
   console.log('uploadDataByCreatePolicy account', account);
 
-  const clientId = await getClientId();
+  const clientId = await getClientId(true);
 
   if (isBlank(clientId)) {
     throw new Error('clientId is not set, need invoke the function initClientId first');
@@ -1092,7 +1092,7 @@ export const cancelUserSubscription = async (
   gasLimit: BigNumber = BigNumber.from('0'), // Note that using gasUsedAmount ?: BigNumber here will cause the reference to PublicKey from nulink-ts to become undefined.
   gasPrice: BigNumber = BigNumber.from('0') // Note that using gasPrice ?: BigNumber here will cause the reference to PublicKey from nulink-ts to become undefined.
 ) => {
-  const clientId = await getClientId();
+  const clientId = await getClientId(true);
 
   if (typeof orderId === 'string') {
     if (!isNumeric(orderId)) {
