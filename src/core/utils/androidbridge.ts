@@ -76,7 +76,7 @@ export class AndroidBridge {
       globalThis.__JSHOST.postMessage(JSON.stringify(messageData));
 
       //(window as any).__JSHOST.postMessage(JSON.stringify(messageData));
-      console.log("after sendmessage: window.__JSHOST. postMessage: " + JSON.stringify(messageData));
+      console.log(`SDK Sended [${method}]: message {JSON.stringify(messageData)}`);
     });
   }
 
@@ -117,11 +117,11 @@ export class AndroidBridge {
       pendingPromises[responseId](_data);
       delete pendingPromises[responseId]; // Clean up the processed Promise.
     } else {
-      //Messages sent proactively from the Android side.
-      console.log(
-        `messageHandler: Messages sent proactively from the Android side:  id-> ${id} method: ${method}, data:`,
-        data
-      );
+      // //Messages sent proactively from the Android side.
+      // console.log(
+      //   `messageHandler: Messages sent proactively from the Android side:  id-> ${id} method: ${method}, data:`,
+      //   data
+      // );
 
       if (Object.prototype.hasOwnProperty.call(asyncMessageHandler, lowerMethod)) {
         const f = asyncMessageHandler[lowerMethod];
@@ -132,7 +132,8 @@ export class AndroidBridge {
 
               //Return the request result to the app side.
               // Note:response must be JSON object
-              console.log(`messageHandler method ${method} call success:`, response);
+              console.log(`=======================================================`);
+              console.log(`SDK Received [${method}]: messageHandler processed successfully:`, response);
 
               return new Promise((resolve, reject) => {
                 const messageData = {
@@ -148,7 +149,8 @@ export class AndroidBridge {
             .catch((error) => {
               //Return the request result to the app side.
               // Note:response must be JSON object
-              console.error(`messageHandler method ${method} call failed:`, error);
+              console.error(`---------------------------------------------------------`);
+              console.error(`SDK Received [${method}]: messageHandler processing failed:`, error);
               return new Promise((resolve, reject) => {
                 const messageData = {
                   id: id,
@@ -161,7 +163,8 @@ export class AndroidBridge {
               });
             });
         } catch (error) {
-          console.error(`messageHandler method: ${method} exception: `, error);
+          console.error(`+++++++++++++++++++++++++++++++++++++++++++++++++++++++`);
+          console.error(`SDK Received [${method}]: messageHandler processing exception: `, error);
         }
       }
     }
@@ -180,7 +183,7 @@ export class AndroidBridge {
     globalThis.__jMessage = (id: string, method: string, data: string) => {
       // (window as any).__jMessage = (id: string, method: string, data: string) => {
 
-      console.log(`__jMessage: receive message from android:  id-> ${id} method: ${method}, data:`, data);
+      // console.log(`__jMessage: receive message from android:  id-> ${id} method: ${method}, data:`, data);
       this.messageHandler(id, method, data);
     };
   }

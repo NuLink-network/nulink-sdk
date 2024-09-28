@@ -18,7 +18,6 @@
       //mock the android bridge
       const bridge = (window.__JSHOST = window);
 
-      
       console.log('【---NUSDK----】', NUSDK);
       document.getElementById('text').textContent = NUSDK;
       // console.log('【---NUSDK.getPolicysGasFee----】', NUSDK.getPolicysGasFee)
@@ -59,8 +58,46 @@
         const result = await asyncInit();
         console.log('init result:', result);
 
-        //not works now ...... troubleshoot later
-        bridge.postMessage(JSON.stringify({ id: 1, method: 'test', data: { message: 'this is a test message' } }), '/');
+        //mock the message handling function (process messages received from Android)
+        window.addEventListener('message', function (e) {
+          let data = {};
+          // debugger
+          if (e.origin !== 'null') {
+            //Verify the source address of the message
+              return;
+            }
+            
+          try {
+            data = JSON.parse(e.data);
+            if(data?.data?.code !== undefined && data?.data?.msg !== undefined)
+          {
+            //console.log("response from android bridge: ", data.data);
+          }
+          else{
+            window.__jMessage(String(data.id), String(data.method), data.data);
+          }
+            
+          } catch (error) {
+
+            data = e.data;
+            //console.log("message handler error: ", error);
+            // console.log("unknown message data: ", data);
+            //debugger
+          }
+        });
+
+        
+        // // console.log("SDK: [test] send message to app");
+        // bridge.postMessage(JSON.stringify({ id: "1", method: 'test', data: { message: 'this is a test message' } }), '/');
+        // sleep(1000)
+        // console.log("SDK: [generateMnemonic] send message to app");
+        bridge.postMessage(JSON.stringify({ id: "2", method: 'generateMnemonic', data: {} }), '/');
+        sleep(1000)
+        const password = '1';
+        bridge.postMessage(JSON.stringify({ id: "3", method: 'createWallet', data: {"password": password, "mnemonic": "buffalo capable tomato office riot slam finger spirit lesson lucky debate volcano"} }), '/');
+        sleep(3000)
+        bridge.postMessage(JSON.stringify({ id: "4", method: 'getAccountInfo', data: {"password": password} }), '/');
+
       })();
     </script>
   </body>
