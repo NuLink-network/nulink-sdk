@@ -60,7 +60,7 @@ export const saveSettingsData = async (data: NetworkConfigOptions): Promise<void
     }
   }
   const mergedData = Object.assign(initialConfig, temp);
-  await storage.setItem(CHAIN_NETWORK_CONFIG, mergedData);
+  await storage.setItem(CHAIN_NETWORK_CONFIG, mergedData as NetworkConfigOptions);
 };
 
 //get the default network key

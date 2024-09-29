@@ -1,17 +1,32 @@
-
-
 /**
  * @internal
  */
-//TODO: 
-export const localStore =  {
+export const localStore = {
   setItem: async (key: string, value: unknown): Promise<void> => {
-    localStorage.setItem(key, value as string);
+    let _value: string = '';
+    try {
+      _value = JSON.stringify(value);
+    } catch (error) {
+      _value = value as string;
+    }
+    localStorage.setItem(key, _value as string);
   },
 
   getItem: async (key: string): Promise<any> => {
-    return localStorage.getItem(key);
+    let value = localStorage.getItem(key);
+
+    if (value === null) {
+      return null;
+    }
+
+    value = value as string;
+    try {
+      return JSON.parse(value);
+    } catch (error) {
+      return value as string;
+    }
   },
+  
   removeItem: async (key: string): Promise<void> => {
     try {
       localStorage.removeItem(key);
@@ -28,5 +43,5 @@ export const localStore =  {
 
   clear: async (): Promise<void> => {
     localStorage.clear();
-  },
+  }
 };

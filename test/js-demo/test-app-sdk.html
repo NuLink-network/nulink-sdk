@@ -15,6 +15,10 @@
     <script src="./nulink-sdk.js"></script>
 
     <script>
+      // Note: 
+      //need .env* change config to: REACT_APP_STORAGE=localstorage
+      console.log("need .env* change config to: REACT_APP_STORAGE=localstorage");
+      
       //mock the android bridge
       const bridge = (window.__JSHOST = window);
 
@@ -48,6 +52,7 @@
         }
         return false;
       };
+
       // ----------------------Global variable area end ------------------------
 
       // document.addEventListener('DOMContentLoaded', () => {
@@ -97,8 +102,14 @@
         bridge.postMessage(JSON.stringify({ id: "3", method: 'createWallet', data: {"password": password, "mnemonic": "buffalo capable tomato office riot slam finger spirit lesson lucky debate volcano"} }), '/');
         sleep(3000)
         bridge.postMessage(JSON.stringify({ id: "4", method: 'getAccountInfo', data: {"password": password} }), '/');
-
+        sleep(1000)
+        bridge.postMessage(JSON.stringify({ id: "5", method: 'restoreWallet', data: {"newPassword": password, "mnemonic": "buffalo capable tomato office riot slam finger spirit lesson lucky debate volcano"} }), '/');
+        sleep(1000)
+        bridge.postMessage(JSON.stringify({ id: "6", method: 'setRpcUrl', data: {"rpcUrl": "https://data-seed-prebsc-1-s2.bnbchain.org:8545"} }), '/');
+        sleep(1000)
+        
       })();
+      
     </script>
   </body>
 </html>
