@@ -162,7 +162,7 @@ export const initClientId = async (clientId: string) => {
  *         id: fileId,
  *         label: fileName,
  *         thumbnail: fileThumbnail,  //return only if the input parameters include the specified parameters （thumbnail url or unique identifier ）
- *         mimtype: fileMimtype,   //return only if the input parameters include the specified parameters
+ *         mimtype: fileMimetype,   //return only if the input parameters include the specified parameters
  *       }
  *      ]
  * }
