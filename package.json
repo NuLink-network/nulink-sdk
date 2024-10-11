@@ -1,5 +1,5 @@
 {
-  "name": "@nulink_network/nulink-sdk-app-test",
+  "name": "@nulink_network/nulink-sdk-app",
   "version": "0.0.19",
   "private": false,
   "dependencies": {
@@ -86,7 +86,9 @@
     "copy-nucypher-core-wasm-bin": "ncp src/core/nucypher-core-wasm-bin build/main/src/core/nucypher-core-wasm-bin",
     "/build": "run-p build:*",
     "copy-js": "rimraf test/js-demo/nulink-sdk.js && ncp build/nulink-sdk.js test/js-demo/nulink-sdk.js",
-    "build": "rimraf build && webpack && yarn run copy-nucypher-core-wasm-bin && rimraf build/main && npm run copy-js",
+    "build:dev": "cross-env GENERATE_SOURCEMAP=true && rimraf build && webpack --stats-error-details --env RUN_ENV=dev --mode development --progress && yarn run copy-nucypher-core-wasm-bin && rimraf build/main && npm run copy-js",
+    "build:app:dev": "cross-env GENERATE_SOURCEMAP=true && rimraf build && webpack --stats-error-details --env RUN_ENV=android.dev --mode development --progress && yarn run copy-nucypher-core-wasm-bin && rimraf build/main && npm run copy-js",
+    "build:app:prod": "cross-env GENERATE_SOURCEMAP=true && rimraf build && webpack --stats-error-details --env RUN_ENV=android --mode development --progress && yarn run copy-nucypher-core-wasm-bin && rimraf build/main && npm run copy-js",
     "//build:main": "rimraf build && tsc -p tsconfig.json",
     "//build:module": "rimraf build && tsc -p tsconfig.module.json",
     "//build specify a configuration file": " other command && tsc --build tsconfig.dev.json",
@@ -96,7 +98,7 @@
     "//build:dev": "cross-env GENERATE_SOURCEMAP=true && rimraf build && yarn run build:main && webpack --stats-error-details --env RUN_ENV=dev --mode development --progress",
     "typechain": "typechain --target=ethers-v5 \"src/core/sol/abi/**/*.json\"",
     "npm-publish": "npm publish --access=public",
-    "//npm-unpublish": "npm unpublish @nulink_network/nulink-sdk-app-test@0.0.18 --force",
+    "//npm-unpublish": "npm unpublish @nulink_network/nulink-sdk-app@0.0.18 --force",
     "commit": "git-cz",
     "commitizen:initial": "commitizen init cz-conventional-changelog --save --save-exact",
     "prepare": "husky install"
