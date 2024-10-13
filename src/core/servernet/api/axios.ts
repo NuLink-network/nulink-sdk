@@ -53,7 +53,13 @@ export const signatureRequest = async (urlPath: string, method: string, data: ob
 };
 
 //exclude show error message list
-const excludeList = ['file/create-policy-and-upload', 'file/upload', 'file/batch-upload', '/file/create-or-specified-policy-and-upload', 'apply/detail'];
+const excludeList = [
+  'file/create-policy-and-upload',
+  'file/upload',
+  'file/batch-upload',
+  '/file/create-or-specified-policy-and-upload',
+  'apply/detail'
+];
 
 // Configure common request headers
 // axios.defaults.baseURL = 'https://127.0.0.1:3000/api'
@@ -134,12 +140,26 @@ axios.interceptors.response.use(
       return Promise.reject(response);
     }
 
+    //The following is the logic for handling the bob pay check url
+    if ((response.config.url as string).indexOf('/subscribe/getOrderStatus') < 0) {
+      /** 
+         * {
+              "success": false,
+              "code": 400,
+              "message": "order not found",
+              "data": null
+           }
+        */
+      return response;
+    }
+
     return response_msg && Object.prototype.hasOwnProperty.call(response_msg, 'data')
       ? response_msg.data
       : response_msg;
   },
   (error) => {
-    const message = error.response?.msg || error.msg;
+    const message =
+      error.response?.msg || error.msg || error.response?.message; /** for app backend: /subscribe/getOrderStatus*/
     console.error('axios: ', message);
     // Message.error(message);
     return Promise.reject(error);
@@ -169,7 +189,6 @@ axiosRetry(axios, {
 
 //uploadDataInfo
 export const serverPostFormData = async (urlPath: string, data: FormData, config?: object): Promise<unknown> => {
-  const serverUrl = await getServerUrl();
 
   const baseConfig = {
     headers: {
@@ -180,16 +199,22 @@ export const serverPostFormData = async (urlPath: string, data: FormData, config
 
   urlPath = urlPath.startsWith('/') ? urlPath : '/' + urlPath;
 
+  const bFullPathUrl = urlPath.startsWith("http") || urlPath.startsWith("https");
+
+  urlPath = bFullPathUrl ? urlPath: (urlPath.startsWith('/') ? urlPath : '/' + urlPath);
+  
+  const fulPathUrl = bFullPathUrl ? urlPath: `${await getServerUrl()}${urlPath}`;
+  
+
   //note: The same key will be overwritten
   config = Object.assign({}, baseConfig, config);
 
   // await signatureRequest(urlPath, "POST", data, config);
 
-  return await axios.post(`${serverUrl}${urlPath}`, data, config);
+  return await axios.post(fulPathUrl, data, config);
 };
 
 export const serverPost = async (urlPath: string, data: object, config?: object): Promise<unknown> => {
-  const serverUrl = await getServerUrl();
 
   const baseConfig = {
     headers: {
@@ -204,14 +229,19 @@ export const serverPost = async (urlPath: string, data: object, config?: object)
     baseConfig.headers['NuClientId'] = clientId;
   }
 
-  urlPath = urlPath.startsWith('/') ? urlPath : '/' + urlPath;
+  const bFullPathUrl = urlPath.startsWith("http") || urlPath.startsWith("https");
 
+  urlPath = bFullPathUrl ? urlPath: (urlPath.startsWith('/') ? urlPath : '/' + urlPath);
+  
+  const fulPathUrl = bFullPathUrl ? urlPath: `${await getServerUrl()}${urlPath}`;
+  
+  
   //note: The same key will be overwritten
   config = Object.assign({}, baseConfig, config);
 
   // await signatureRequest(urlPath, "POST", data, config);
 
-  return await axios.post(`${serverUrl}${urlPath}`, data, config);
+  return await axios.post(fulPathUrl, data, config);
 };
 
 export const serverGet = async (
@@ -219,16 +249,19 @@ export const serverGet = async (
   data: object,
   config?: object
 ): Promise<unknown> => {
-  const serverUrl = await getServerUrl();
 
+  const bFullPathUrl = urlPath.startsWith("http") || urlPath.startsWith("https");
+
+  urlPath = bFullPathUrl ? urlPath: (urlPath.startsWith('/') ? urlPath : '/' + urlPath);
+  
+  const fulPathUrl = bFullPathUrl ? urlPath: `${await getServerUrl()}${urlPath}`;
+  
   const baseConfig = {
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json'
     }
   };
-
-  urlPath = urlPath.startsWith('/') ? urlPath : '/' + urlPath;
 
   //note: The same key will be overwritten
   config = Object.assign({}, baseConfig, config);
@@ -237,7 +270,7 @@ export const serverGet = async (
 
   const order = Object.keys(data);
   const urlObject: UrlObject = {
-    url: `${serverUrl}${urlPath}`,
+    url: fulPathUrl,
     query: data as StringifiableRecord
   };
   const url = queryString.stringifyUrl(urlObject, {

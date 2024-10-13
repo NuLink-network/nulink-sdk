@@ -14,7 +14,7 @@ export const run = async () => {
 
   //we need set Project ID: differentiate the sources of data from different applications. 
   // which requires application to Nulink official.
-  await initClientId("xxxxxxx-xxxxx-xxxxxx");
+  await initClientId("593689189003333");
 
   // Declaring and intializing the mnemonic and password variables.
   const password: string = '1'

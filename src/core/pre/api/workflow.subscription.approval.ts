@@ -104,6 +104,7 @@ import {
   getDataContentByDataIdAsUser,
   getDataDetails,
   getMultiApplyDetails,
+  getApplyDetails,
   getPolicysTokenCost,
   signUpdateServerDataMessage
 } from './workflow';
@@ -115,27 +116,24 @@ import { AndroidMessage as Message } from '../../utils/androidmessage';
 import { toBytes } from '../../sol/agents/utils';
 import { registerMessageHandler } from './app.sdk';
 
-
 /**
  * SDK initialization. You need to call this initialization function before invoking any APIs.
  * @category initialization
  * @param {string} clientId - The project party ID, which needs to be applied for from Nulink's official team.
  * @returns {Promise<void>}
  */
-export const init = async (clientId: string ="") => {
+export const init = async (clientId: string = '') => {
   AndroidBridge.initialize();
 
-  console.log("init ing..., ", clientId, isBlank(clientId))
-  if(!isBlank(clientId))
-  {
-    console.log("initClientId set");
+  console.log('init ing..., ', clientId, isBlank(clientId));
+  if (!isBlank(clientId)) {
+    console.log('initClientId set');
     await initClientId(clientId);
   }
 
-  console.log("initClientId get clientId", await getClientId(false));
+  console.log('initClientId get clientId', await getClientId(false));
   await registerMessageHandler();
 };
-
 
 /**
  * @interal
@@ -386,24 +384,63 @@ export const uploadDataSpecifiedLocalPolicy = async (
  * Query Bob's Payment Status
  
  * @category Data User(Bob) Request Data
- * @param {string} dataId - A file ID to apply for usage permission.
- * @param {Account} account - The account that applies for the permission （Bob）.
- * @returns {Promise<number>}   0: Unpaid
-                                1: Payment Pending Confirmation
-                                2: Paid
-                                3: Payment Failed (Reset to Payment Failed status if unable to query)
+ * @param {BigNumber | string} orderId - A unique string composed of numbers. 
+ * @param {string} payCheckUrl - url to check if bob has paid enough for the subscription fee
+ * @returns {Promise<string>}   NOT_PAID (not paid or Insufficient payment), PENDING, UNDER_REVIEW, APPROVED, REJECTED, EXPRIED
  */
-export const queryBobPayStatus = async (dataId: string, account: Account): Promise<number> => {
-  //get golbal time from server
+export const queryBobPayStatus = async (orderId: BigNumber | string, payCheckUrl: string): Promise<string> => {
+  //check the status and params
+  if (typeof orderId === 'string') {
+    if (!isNumeric(orderId)) {
+      throw new Error('Each digit in the orderId must be composed of numbers');
+    }
+    orderId = BigNumber.from(orderId);
+  }
+
   const sendData = {
-    file_id: dataId,
-    proposer_id: account.id
+    orderId: orderId.toString()
   };
 
-  const data = (await serverGet('/pay/status', sendData)) as object;
+  //payCheckUrl ==> http(s)://domain/subscribe/getOrderStatus
+  const data = (await serverGet(payCheckUrl, sendData)) as object;
 
-  return data['status'] as number;
+  /*   {
+    "success": false,
+    "code": 400,
+    "message": "order not found",
+    "data": null
+ } */
+
+  if (Number(data['code']) != 200) {
+    throw new Error(data['message']);
+  }
+
+  const dataStatus: string = isBlank(data['data']) ? '' : data['data'];
+
+  return dataStatus.toUpperCase();
 };
+
+// /** @Deprecated
+//  * Query Bob's Payment Status
+//  * @category Data User(Bob) Request Data
+//  * @param {string} dataId - A file ID to apply for usage permission.
+//  * @param {Account} account - The account that applies for the permission （Bob）.
+//  * @returns {Promise<number>}   0: Unpaid
+//                                 1: Payment Pending Confirmation
+//                                 2: Paid
+//                                 3: Payment Failed (Reset to Payment Failed status if unable to query)
+//  */
+// export const queryBobPayStatusByBackend = async (dataId: string, account: Account): Promise<number> => {
+//   //get golbal time from server
+//   const sendData = {
+//     file_id: dataId,
+//     proposer_id: account.id
+//   };
+
+//   const data = (await serverGet('/pay/status', sendData)) as object;
+
+//   return data['status'] as number;
+// };
 
 /**
  *  @internal
@@ -453,15 +490,6 @@ const bobPaySubscriptionFee = async (
             After the backend detects this payment event, it will update the payment status to "paid" and the subscription status to "approved".
     */
 
-  if (typeof orderId === 'string') {
-    if (!isNumeric(orderId)) {
-      throw new Error('Each digit in the orderId must be composed of numbers');
-    }
-    orderId = BigNumber.from(orderId);
-  }
-
-  payAmountInWei = typeof payAmountInWei === 'string' ? BigNumber.from(payAmountInWei) : payAmountInWei;
-
   //get alice address
   const data = (await getDataDetails(dataId, account.id)) as object;
 
@@ -472,6 +500,77 @@ const bobPaySubscriptionFee = async (
 
   let aliceAddress = data['creator_address'];
   aliceAddress = Web3.utils.toChecksumAddress(aliceAddress);
+
+  return bobPaySubscriptionFee2(
+    account,
+    orderId,
+    aliceAddress,
+    payTokenAddress,
+    payAmountInWei,
+    usageDays,
+    payCheckUrl,
+    gasLimit,
+    gasPrice,
+    waitforReceipt
+  );
+};
+
+/**
+ *  @internal
+ * Apply for subscriber user feeds, This account acts as the user(Bob).
+ * Note: Different from applying for the interface with multiple files (apply/files):
+ *          If the policy corresponding to the document has already been applied for, it will return code: 4109, msg: "current file does not need to apply"
+ * @category Data User(Bob) Request Data
+ * @param {Account} account - The account that applies for the permission （Bob）.
+ * @param {BigNumber | string} orderId - A unique string composed of numbers.
+ * @param {string} aliceAddress - Alice checksum address
+ * @param {number} usageDays - (Optional) The validity period of the application, in days. Default is 30.
+ * @param {string} payTokenAddress - payment token address
+ * @param {string} payAmountInWei - payment amount, unit: wei
+ * @param {string} payCheckUrl - url to check if bob has paid enough for the subscription fee
+ * @param {BigNumber} gasPrice - (Optional) The gas price set by this transaction, if empty, it will use web3.eth.getGasPrice().
+ * @param {BigNumber} gasLimit - (Optional) set gas limit
+ * @param {boolean} waitforReceipt - (Optional) default: false.
+ *                                              If an on-chain transaction has been sent, should we wait for the transaction receipt?
+ *                                              Note: Whether to wait for the transaction receipt here depends on whether there are other functions that need to be executed later (for example, calling the backend interface to upload the status).
+ *                                                    Since waiting for the payment receipt generally takes a long time, if the user closes the dialog or software during the waiting process, the subsequent logic will not be able to execute.
+ * @returns {Promise<string>} - throw an exception or
+ *                              return
+ *                               {
+ *                                status: payStatus: get from contract:  enum payStatus{PayNull,PaySucc,PayCancel,SettlementSucc}
+ *                                hash: transaction hash  // If an on-chain payment was made here, then there is a 'hash' key; otherwise, there is no such key of 'hash'.
+ *                               }
+ *
+ *
+ */
+const bobPaySubscriptionFee2 = async (
+  account: Account,
+  orderId: BigNumber | string,
+  aliceAddress: string,
+  payTokenAddress: string,
+  payAmountInWei: BigNumber | string,
+  usageDays = 30,
+  payCheckUrl: string,
+  gasLimit: BigNumber = BigNumber.from('0'), // Note that using gasUsedAmount ?: BigNumber here will cause the reference to PublicKey from nulink-ts to become undefined.
+  gasPrice: BigNumber = BigNumber.from('0'), // Note that using gasPrice ?: BigNumber here will cause the reference to PublicKey from nulink-ts to become undefined.
+  waitforReceipt: boolean = false
+): Promise<any> => {
+  /**
+     * Flow:
+            Query the backend method using Bob's account ID and file ID (the backend will find the corresponding strategy ID), which is equivalent to using Bob's account ID and Alice's strategy ID, to determine if the payment was successful (unpaid, payment pending confirmation, paid).
+            If the status is unpaid/payment failed, you can call the payment interface. Other statuses are not allowed (payment pending confirmation status, wait for half an hour or 1 hour, if unable to query, reset to payment failed status (similar to the previous scheduled task)).
+            When calling the /apply/subscribe interface, pass the tx_hash parameter, Bob's account ID, and file ID (the backend will find the corresponding strategy ID) to the backend. The backend will receive it and set the status to payment pending confirmation, and the subscription status to "under review".
+            After the backend detects this payment event, it will update the payment status to "paid" and the subscription status to "approved".
+    */
+
+  if (typeof orderId === 'string') {
+    if (!isNumeric(orderId)) {
+      throw new Error('Each digit in the orderId must be composed of numbers');
+    }
+    orderId = BigNumber.from(orderId);
+  }
+
+  payAmountInWei = typeof payAmountInWei === 'string' ? BigNumber.from(payAmountInWei) : payAmountInWei;
 
   //2. call contact refund function
   const provider: Web3Provider = (await getWeb3Provider(account as any)) as Web3Provider;
@@ -513,24 +612,6 @@ const bobPaySubscriptionFee = async (
   }
 
   //No longer checking from the backend; directly checking from the contract.
-
-  // //query bob's payment status by backend
-
-  // const payStatus = await queryBobPayStatus(dataId, account);
-
-  // /*
-  //   0: Unpaid
-  //   1: Payment Pending Confirmation
-  //   2: Paid
-  //   3: Payment Failed (Reset to Payment Failed status if unable to query)
-  // */
-  // if ((payStatus != 2 && forceRePay) || 0 == payStatus || 3 == payStatus) {
-  //   if (!(payAmountInWei instanceof BigNumber)) {
-  //     payAmountInWei = BigNumber.from(payAmountInWei as string);
-  //   }
-  //   console.log(
-  //     `bobPaySubscriptionFee => bob address: ${account.address} bob id: ${account.id} orderId: ${orderId} dataId: ${dataId} payAmountInWei: ${payAmountInWei}, payTokenAddress: ${payTokenAddress}`
-  //   );
 
   //Bob pre-paid tokens to subscribe to the user feeds
   //on chain transaction
@@ -715,83 +796,90 @@ export const applyForSubscriptionAccess = async (
     orderId = BigNumber.from(orderId);
   }
 
-  //TODO: check the pay status by payCheckUrl
+  //check the pay status by payCheckUrl
+  const payStatus: string = await queryBobPayStatus(orderId, payCheckUrl);
 
-  // Note: Wait for the payment to succeed before notifying the backend;
-  //        otherwise, even if the backend is notified, the application will be rejected
-  //query bob's payment status and pay:
-  //{ status: payStatus }
-  const payInfo = await bobPaySubscriptionFee(
-    account,
-    orderId,
-    dataId,
-    payTokenAddress,
-    payAmountInWei,
-    usageDays,
-    payCheckUrl,
-    gasLimit,
-    gasPrice,
-    true //waitforReceipt, Wait for the payment to succeed before notifying the backend;
-    //        otherwise, even if the backend is notified, the application will be rejected
-  );
+  //NOT_PAID (not paid or Insufficient payment), PENDING, UNDER_REVIEW, APPROVED, REJECTED, EXPRIED
+
+  let payInfo: any = null;
+  if (payStatus === 'NOT_PAID' || payStatus === 'EXPRIED' || payStatus === 'REJECTED') {
+    payInfo = await bobPaySubscriptionFee(
+      account,
+      orderId,
+      dataId,
+      payTokenAddress,
+      payAmountInWei,
+      usageDays,
+      payCheckUrl,
+      gasLimit,
+      gasPrice,
+      false //Notify the backend first, then wait for it to be on-chain to prevent the user from closing the dialog prematurely
+    );
+  }
 
   //apply for Subscriber User Feeds Permission
-  const data = await applyForSubscriberVisiblePermission(dataId, account, payCheckUrl, usageDays);
+  const data = await applyForSubscriberVisiblePermission(
+    orderId,
+    dataId,
+    account,
+    isBlank(payInfo) ? '' : payInfo?.hash,
+    /* payCheckUrl,  */ usageDays
+  );
 
-  //if (!isBlank(payInfo) && !isBlank(payInfo?.hash)) {
-  //  //wait for receipt
-  //  let receipt: any = null;
-  //
-  //  let retryTimes = 130;
-  //  do {
-  //    try {
-  //      receipt = await web3.eth.getTransactionReceipt(payInfo.hash);
-  //      //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
-  //    } catch (error) {
-  //      console.log(
-  //        `applyForSubscriptionAccess getTransactionReceipt bob Pay txHash: ${payInfo.hash} retrying ..., current error: `
-  //      );
-  //    }
-  //
-  //    if (isBlank(receipt)) {
-  //      if (retryTimes % 3 == 0) {
-  //        Message.info('Bob pay transaction is being confirmed on the blockchain. Please wait patiently');
-  //      }
-  //
-  //      await sleep(3000);
-  //    }
-  //    retryTimes--;
-  //  } while (isBlank(receipt) && retryTimes > 0);
-  //
-  //  const txReceipt = receipt as TransactionReceipt;
-  //
-  //  //const transaction = await web3.eth.getTransaction(tx.hash);
-  //  //  //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
-  //  if (isBlank(txReceipt)) {
-  //    const transaction = await web3.eth.getTransaction(payInfo.hash);
-  //    //console.log("transaction.input:", transaction.input);
-  //    console.log('applyForSubscriptionAccess transaction:', transaction);
-  //    console.log(
-  //      `applyForSubscriptionAccess getTransactionReceipt error: Bob pay transaction Hash is ${payInfo.hash}, transaction receipt is null.!`
-  //    );
-  //
-  //    throw new GetTransactionReceiptError(
-  //      `Bob pay: getTransactionReceipt error: transaction Hash is ${payInfo.hash}, transaction receipt is null.!`
-  //    );
-  //  } else {
-  //    //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
-  //    if (!txReceipt.status) {
-  //      //The transaction failed. Users can manually pay again.
-  //
-  //      console.log(
-  //        `applyForSubscriptionAccess Bob pay Failed: transaction Hash is ${payInfo.hash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
-  //      );
-  //      throw new TransactionError(
-  //        `Bob pay Failed: transaction Hash is ${payInfo.hash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
-  //      );
-  //    }
-  //  }
-  //}
+  if (!isBlank(payInfo) && !isBlank(payInfo?.hash)) {
+    //wait for receipt
+    let receipt: any = null;
+
+    let retryTimes = 130;
+    do {
+      try {
+        receipt = await web3.eth.getTransactionReceipt(payInfo.hash);
+        //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
+      } catch (error) {
+        console.log(
+          `applyForSubscriptionAccess getTransactionReceipt bob Pay txHash: ${payInfo.hash} retrying ..., current error: `
+        );
+      }
+
+      if (isBlank(receipt)) {
+        if (retryTimes % 3 == 0) {
+          Message.info('Bob pay transaction is being confirmed on the blockchain. Please wait patiently');
+        }
+
+        await sleep(3000);
+      }
+      retryTimes--;
+    } while (isBlank(receipt) && retryTimes > 0);
+
+    const txReceipt = receipt as TransactionReceipt;
+
+    //const transaction = await web3.eth.getTransaction(tx.hash);
+    //  //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
+    if (isBlank(txReceipt)) {
+      const transaction = await web3.eth.getTransaction(payInfo.hash);
+      //console.log("transaction.input:", transaction.input);
+      console.log('applyForSubscriptionAccess transaction:', transaction);
+      console.log(
+        `applyForSubscriptionAccess getTransactionReceipt error: Bob pay transaction Hash is ${payInfo.hash}, transaction receipt is null.!`
+      );
+
+      throw new GetTransactionReceiptError(
+        `Bob pay: getTransactionReceipt error: transaction Hash is ${payInfo.hash}, transaction receipt is null.!`
+      );
+    } else {
+      //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
+      if (!txReceipt.status) {
+        //The transaction failed. Users can manually pay again.
+
+        console.log(
+          `applyForSubscriptionAccess Bob pay Failed: transaction Hash is ${payInfo.hash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
+        );
+        throw new TransactionError(
+          `Bob pay Failed: transaction Hash is ${payInfo.hash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
+        );
+      }
+    }
+  }
 
   return (data as object)['apply_id'] as number;
 };
@@ -804,16 +892,20 @@ export const applyForSubscriptionAccess = async (
  * Note: Different from applying for the interface with multiple files (apply/files):
  *          If the policy corresponding to the document has already been applied for, it will return code: 4109, msg: "current file does not need to apply"
  * @category Data User(Bob) Request Data
+ * @param {BigNumber | string} orderId - A unique string composed of numbers.
  * @param {string} dataId - A file ID to apply for usage permission.
  * @param {Account} account - The account that applies for the permission（Bob）.
- * @param {string} payCheckUrl - url to check if bob has paid enough for the subscription fee
+ * @param {string} txHash - Bob pay transaction hash for the subscription fee.
+//  * @param {string} payCheckUrl - url to check if bob has paid enough for the subscription fee
  * @param {number} usageDays - (Optional) The validity period of the application, in days. Default is 30.
  * @returns {Promise<any>} - If successful, return the application ID information. If failed, return the error message.
  */
 export const applyForSubscriberVisiblePermission = async (
+  orderId: BigNumber,
   dataId: string,
   account: Account,
-  payCheckUrl: string,
+  txHash: string,
+  //payCheckUrl: string, //no need now for pre backend
   usageDays = 30
 ) => {
   if (usageDays <= 0) {
@@ -821,12 +913,15 @@ export const applyForSubscriberVisiblePermission = async (
   }
 
   const sendData: any = {
+    order_id: orderId.toString(),
     file_id: dataId,
     proposer_id: account.id,
     account_id: account.id, //new for backend signature
     days: usageDays,
-    pay_check_url: payCheckUrl
+    //pay_check_url: payCheckUrl, //no need now for pre backend
+    tx_hash: isBlank(txHash) ? '' : txHash
   };
+
   /*   console.log(
       `usageDays: ${usageDays}, startMs: ${startMs}, endMs: ${endMs}, endMs-startMs:${
         (endMs - startMs) / (1000.0 * 60 * 60 * 24)
@@ -1314,105 +1409,116 @@ export const extendPolicysValidity = async (
   }
 
   const applyIds: string[] = [applyId];
-  const extendedDayses: number[] = [extendedDays];
+  // const extendedDayses: number[] = [extendedDays];
 
-  let applyInfoList = await getMultiApplyDetails(applyIds);
-  if (isBlank(applyInfoList)) {
-    throw new ApplyNotExist(`one of the apply: ${applyIds} does not exist`);
+  const policyData = (await getApplyDetails(applyId)) as object;
+  // assert(policyData && !isBlank(policyData));
+  if (!policyData || isBlank(policyData)) {
+    throw new ApplyNotExist(`the apply Id: ${applyId} does not exist`);
   }
 
-  applyInfoList = applyInfoList as object[];
+  // let applyInfoList = await getMultiApplyDetails(applyIds);
+
+  // if (isBlank(applyInfoList)) {
+  //   throw new ApplyNotExist(`one of the apply Id: ${applyIds} does not exist`);
+  // }
+
+  //applyInfoList = applyInfoList as object[];
 
   const endTimestamps: number[] = [];
 
   const crossChainHRACList: CrossChainHRAC[] = [];
 
-  for (let index = 0; index < applyInfoList.length; index++) {
-    const applyInfo = applyInfoList[index];
-    const applyId = applyIds[index];
-    if (applyInfo['status'] != 5) {
-      //status: "apply status: 1 - In progress, 2 - Approved, 3 - Rejected, 4 - Under review, 5 - Expired"
-      throw new PolicyNotExpired(
-        `apply: ${applyId} is not Expired, status is ${convertApplyIdStatusToString(applyInfo['status'])}`
-      );
-    }
-
-    const proposerAccountId: string = applyInfo['proposer_id'];
-
-    if (proposerAccountId.toLowerCase() != account.id.toLowerCase()) {
-      throw new Error(
-        `The applicant(account id) ${proposerAccountId} corresponding to the application ID ${applyId} is not yourself (account id ${account.id}). `
-      );
-    }
-
-    if (applyInfo['status'] != 5) {
-      //status: "apply status: 1 - In progress, 2 - Approved, 3 - Rejected, 4 - Under review, 5 - Expired"
-      throw new PolicyNotExpired(
-        `apply: ${applyId} is not Expired, status is ${convertApplyIdStatusToString(applyInfo['status'])}`
-      );
-    }
-
-    const alice_verify_pk = applyInfo['alice_verify_pk'];
-    const bob_verify_pk = applyInfo['bob_verify_pk'];
-    const label = applyInfo['policy_label_id'];
-
-    console.log(
-      ` applyInfo index: ${index} \n alice_verify_pk: ${alice_verify_pk} bytes: ${toBytes(
-        alice_verify_pk
-      )}, \n bob_verify_pk: ${bob_verify_pk} bytes: ${toBytes(bob_verify_pk)}\n label: ${label}`
+  const applyInfo = policyData;
+  if (applyInfo['status'] != 5) {
+    //status: "apply status: 1 - In progress, 2 - Approved, 3 - Rejected, 4 - Under review, 5 - Expired"
+    throw new PolicyNotExpired(
+      `apply: ${applyId} is not Expired, status is ${convertApplyIdStatusToString(applyInfo['status'])}`
     );
-
-    const publisherVerifyingKey = NucypherCore.PublicKey.fromBytes(toBytes(alice_verify_pk));
-    const bobVerifyingKey = NucypherCore.PublicKey.fromBytes(toBytes(bob_verify_pk));
-
-    const _hrac = new HRAC(publisherVerifyingKey, bobVerifyingKey, toBytes(label));
-
-    const config = await getConfigData();
-    console.log('chainId: ', config.chainId);
-
-    const hrac = new CrossChainHRAC(_hrac, config.chainId);
-    crossChainHRACList.push(hrac);
-
-    //Extend backwards from the current time as a reference
-
-    //toEpoch: date to seconds
-    const endTimestamp = toEpoch(new Date()) + extendedDayses[index] * 86400;
-    endTimestamps.push(endTimestamp);
   }
 
-  //TODO: check the pay status by payCheckUrl
+  const proposerAccountId: string = applyInfo['proposer_id'];
 
-  //TODO:
-  //这里有问题，支付这里的订阅时间是和createPolicy的endtimes的时间一样，通过Bob延长有效期时指定时间。
-  //必须先调用extendPolicyTimeMulti才行，这个是管理员调用的，必须Bob先延长有效期续费才行。矛盾了 (链上修改了endTimetamps, 感觉这里需要新增一个延长策略有效期的付款函数)。
-  //其实也不影响，付费不管有有效期，但是payCheckUrl去检查这个。 bobPaySubscriptionFee需要重写一个，不传dataId,直接传Alice地址
+  if (proposerAccountId.toLowerCase() != account.id.toLowerCase()) {
+    throw new Error(
+      `The applicant(account id) ${proposerAccountId} corresponding to the application ID ${applyId} is not yourself (account id ${account.id}). `
+    );
+  }
 
-  //2.Bob pays the subscription fee.
+  if (applyInfo['status'] != 5) {
+    //status: "apply status: 1 - In progress, 2 - Approved, 3 - Rejected, 4 - Under review, 5 - Expired"
+    throw new PolicyNotExpired(
+      `apply: ${applyId} is not Expired, status is ${convertApplyIdStatusToString(applyInfo['status'])}`
+    );
+  }
 
-  // Note: Wait for the payment to succeed before notifying the backend;
-  //        otherwise, even if the backend is notified, the application will be rejected
-  //query bob's payment status and pay:
-  //{ status: payStatus }
-  // const payInfo = await bobPaySubscriptionFee(
-  //   account,
-  //   orderId,
-  //   dataId,
-  //   payTokenAddress,
-  //   payAmountInWei,
-  //   usageDays,
-  //   payCheckUrl,
-  //   gasLimit,
-  //   gasPrice,
-  //   true //waitforReceipt, Wait for the payment to succeed before notifying the backend;
-  //   //        otherwise, even if the backend is notified, the application will be rejected
+  // const alice_verify_pk = applyInfo['alice_verify_pk'];
+  // const bob_verify_pk = applyInfo['bob_verify_pk'];
+  // const label = applyInfo['policy_label_id'];
+
+  // console.log(
+  //   ` applyInfo \n alice_verify_pk: ${alice_verify_pk} bytes: ${toBytes(
+  //     alice_verify_pk
+  //   )}, \n bob_verify_pk: ${bob_verify_pk} bytes: ${toBytes(bob_verify_pk)}\n label: ${label}`
   // );
+
+  // const publisherVerifyingKey = NucypherCore.PublicKey.fromBytes(toBytes(alice_verify_pk));
+  // const bobVerifyingKey = NucypherCore.PublicKey.fromBytes(toBytes(bob_verify_pk));
+
+  // const _hrac = new HRAC(publisherVerifyingKey, bobVerifyingKey, toBytes(label));
+
+  // const config = await getConfigData();
+  // console.log('chainId: ', config.chainId);
+
+  // const hrac = new CrossChainHRAC(_hrac, config.chainId);
+  // crossChainHRACList.push(hrac);
+
+  //Extend backwards from the current time as a reference
+
+  //toEpoch: date to seconds
+  const endTimestamp = toEpoch(new Date()) + extendedDays * 86400;
+  endTimestamps.push(endTimestamp);
+
+  const aliceAddress = applyInfo['alice_address'];
+
+  //check the pay status by payCheckUrl
+  const payStatus: string = await queryBobPayStatus(orderId, payCheckUrl);
+  //NOT_PAID (not paid or Insufficient payment), PENDING, UNDER_REVIEW, APPROVED, REJECTED, EXPRIED
+
+  let payInfo: any = null;
+  if (payStatus === 'NOT_PAID' || payStatus === 'EXPRIED' || payStatus === 'REJECTED') {
+    //这里有问题，支付这里的订阅时间是和createPolicy的endtimes的时间一样，通过Bob延长有效期时指定时间。
+    //必须先调用extendPolicyTimeMulti才行，这个是管理员调用的，必须Bob先延长有效期续费才行。矛盾了 (链上修改了endTimetamps, 感觉这里需要新增一个延长策略有效期的付款函数)。
+    //其实也不影响，付费不管有有效期，但是payCheckUrl去检查这个。
+
+    //2.Bob pays the subscription fee.
+
+    // Note: Wait for the payment to succeed before notifying the backend;
+    //        otherwise, even if the backend is notified, the application will be rejected
+    //query bob's payment status and pay:
+    //{ status: payStatus }
+    payInfo = await bobPaySubscriptionFee2(
+      account,
+      orderId,
+      aliceAddress,
+      payTokenAddress,
+      payAmountInWei,
+      extendedDays,
+      payCheckUrl,
+      gasLimit,
+      gasPrice,
+      false //Notify the backend first, then wait for it to be on-chain to prevent the user from closing the dialog prematurely
+    );
+  }
 
   //3. send message to backend service
 
   const sendData: any = {
     account_id: account.id,
-    policy_ids: crossChainHRACList.map((hracId) => hracId.toBytes()),
-    end_ats: endTimestamps
+    applyIds: applyIds,
+    //policy_ids: crossChainHRACList.map((hracId) => hracId.toBytes()),
+    end_ats: endTimestamps,
+    tx_hash: isBlank(payInfo) ? '' : payInfo?.hash
   };
   sendData['signature'] = await signUpdateServerDataMessage(account, sendData);
 
@@ -1430,58 +1536,58 @@ export const extendPolicysValidity = async (
 
   console.log('sended the request: /policy/extend-times');
 
-  //if (!isBlank(payInfo) && !isBlank(payInfo?.hash)) {
-  //  //wait for receipt
-  //  let receipt: any = null;
-  //
-  //  let retryTimes = 130;
-  //  do {
-  //    try {
-  //      receipt = await web3.eth.getTransactionReceipt(payInfo.hash);
-  //      //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
-  //    } catch (error) {
-  //      console.log(
-  //        `applyForSubscriptionAccess getTransactionReceipt bob Pay txHash: ${payInfo.hash} retrying ..., current error: `
-  //      );
-  //    }
-  //
-  //    if (isBlank(receipt)) {
-  //      if (retryTimes % 3 == 0) {
-  //        Message.info('Bob pay transaction is being confirmed on the blockchain. Please wait patiently');
-  //      }
-  //
-  //      await sleep(3000);
-  //    }
-  //    retryTimes--;
-  //  } while (isBlank(receipt) && retryTimes > 0);
-  //
-  //  const txReceipt = receipt as TransactionReceipt;
-  //
-  //  //const transaction = await web3.eth.getTransaction(tx.hash);
-  //  //  //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
-  //  if (isBlank(txReceipt)) {
-  //    const transaction = await web3.eth.getTransaction(payInfo.hash);
-  //    //console.log("transaction.input:", transaction.input);
-  //    console.log('applyForSubscriptionAccess transaction:', transaction);
-  //    console.log(
-  //      `applyForSubscriptionAccess getTransactionReceipt error: Bob pay transaction Hash is ${payInfo.hash}, transaction receipt is null.!`
-  //    );
-  //
-  //    throw new GetTransactionReceiptError(
-  //      `Bob pay: getTransactionReceipt error: transaction Hash is ${payInfo.hash}, transaction receipt is null.!`
-  //    );
-  //  } else {
-  //    //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
-  //    if (!txReceipt.status) {
-  //      //The transaction failed. Users can manually pay again.
-  //
-  //      console.log(
-  //        `applyForSubscriptionAccess Bob pay Failed: transaction Hash is ${payInfo.hash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
-  //      );
-  //      throw new TransactionError(
-  //        `Bob pay Failed: transaction Hash is ${payInfo.hash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
-  //      );
-  //    }
-  //  }
-  //}
+  if (!isBlank(payInfo) && !isBlank(payInfo?.hash)) {
+    //wait for receipt
+    let receipt: any = null;
+
+    let retryTimes = 130;
+    do {
+      try {
+        receipt = await web3.eth.getTransactionReceipt(payInfo.hash);
+        //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
+      } catch (error) {
+        console.log(
+          `applyForSubscriptionAccess getTransactionReceipt bob Pay txHash: ${payInfo.hash} retrying ..., current error: `
+        );
+      }
+
+      if (isBlank(receipt)) {
+        if (retryTimes % 3 == 0) {
+          Message.info('Bob pay transaction is being confirmed on the blockchain. Please wait patiently');
+        }
+
+        await sleep(3000);
+      }
+      retryTimes--;
+    } while (isBlank(receipt) && retryTimes > 0);
+
+    const txReceipt = receipt as TransactionReceipt;
+
+    //const transaction = await web3.eth.getTransaction(tx.hash);
+    //  //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
+    if (isBlank(txReceipt)) {
+      const transaction = await web3.eth.getTransaction(payInfo.hash);
+      //console.log("transaction.input:", transaction.input);
+      console.log('applyForSubscriptionAccess transaction:', transaction);
+      console.log(
+        `applyForSubscriptionAccess getTransactionReceipt error: Bob pay transaction Hash is ${payInfo.hash}, transaction receipt is null.!`
+      );
+
+      throw new GetTransactionReceiptError(
+        `Bob pay: getTransactionReceipt error: transaction Hash is ${payInfo.hash}, transaction receipt is null.!`
+      );
+    } else {
+      //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
+      if (!txReceipt.status) {
+        //The transaction failed. Users can manually pay again.
+
+        console.log(
+          `applyForSubscriptionAccess Bob pay Failed: transaction Hash is ${payInfo.hash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
+        );
+        throw new TransactionError(
+          `Bob pay Failed: transaction Hash is ${payInfo.hash}, Please refresh page first, then set a larger gaslimit and gasPrice and try again!`
+        );
+      }
+    }
+  }
 };
