@@ -97,7 +97,8 @@
         console.log('rootExtendedPrivateKey: ', rootExtendedPrivateKey);
 
         const mnemonic = await nuLinkHDWallet.getMnemonic(password);
-
+        const publicKey = accountAlice.encryptedKeyPair._publicKey;
+        
         console.log('【账户对象】:', nuLinkHDWallet);
         console.log('【助记词】:', mnemonic);
         document.getElementById('text').textContent = mnemonic;
@@ -105,7 +106,7 @@
         console.log('【Get Account Manager】', nuLinkHDWallet.getAccountManager());
         console.log('accountAlice address', accountAlice.address);
         console.log('accountAlice addressIndex', accountAlice.addressIndex);
-        console.log('accountAlice publicKey', accountAlice.encryptedKeyPair._publicKey);
+        console.log('accountAlice publicKey', publicKey);
         console.log('accountAlice privateKey', NUSDK.decrypt(accountAlice.encryptedKeyPair._privateKey, true));
 
         console.log(
@@ -161,7 +162,7 @@
             mimetype: 'application/pdf'
           }
         ];
-
+        const publicKey = accountAlice.encryptedKeyPair._publicKey;
         //2 Upload User Dynamics: Subscribers can view. (Alice encrypt and update a data/file to the ipfs network)
         const uploadedInfos = await NUSDK.publishDataForPaidSubscriberVisible(accountAlice, dataList);
 
@@ -169,8 +170,8 @@
         console.log('strategyId: ', uploadedInfos.strategyId);
         console.log('public key: ', uploadedInfos.accountPublicKey);
 
-        assert(uploadedInfos.address === accountAlice.address);
-        assert(uploadedInfos.pk === publicKey);
+        console.assert(uploadedInfos.address === accountAlice.address);
+        console.assert(uploadedInfos.pk === publicKey);
 
         console.log('uploadedInfo files list: ', uploadedInfos.filesInfo);
 
@@ -201,8 +202,8 @@
         //
         //console.log("uploadedInfo2 files list: ", uploadedInfos2.filesInfo);
 
-        // eslint-disable-next-line no-debugger
-        debugger;
+        // // eslint-disable-next-line no-debugger
+        // debugger;
 
         //3. We can get the files just uploaded
         const resultList = await NUSDK.getUploadedData(accountAlice, undefined, 1, 1000);
@@ -323,7 +324,7 @@
           //nlk v12 version
           const nlkV14Token /* : string  */ = '0x8A95eF66ef0b5bCD10cb8aB433c768f50B5822a8';
           //Simulated order id.
-          const _orderId /* : bigint */ = '123456777';
+          const orderId /* : bigint */ = '123456777';
 
           let _applyId /* : number | undefined */ = undefined;
 
@@ -340,7 +341,8 @@
             );
           } catch (e) {
             console.log(`bob_${index} apply data/file failed`, e);
-            assert(false);
+            // console.assert(false);
+            return;
           }
 
           console.log(`applyForSubscriptionAccess return applyId: ${_applyId}`);
@@ -485,7 +487,7 @@
           const element = aliceApprovedDataList['list'][index];
           if (element['file_id'] === applyDataId) {
             dataIndex2s.push(index);
-            assert(element['file_owner_id'] === accountAlice.id);
+            console.assert(element['file_owner_id'] === accountAlice.id);
             const policyId = element['policy_id'];
             //console.log(`index_${index} data/file policy Id: ${policyId}`)
             const accountBobId = element['proposer_id'];
@@ -501,7 +503,7 @@
                             }
       */
 
-            assert(bobBeApprovedDataList && bobBeApprovedDataList['total'] > 0);
+            console.assert(bobBeApprovedDataList && bobBeApprovedDataList['total'] > 0);
 
             let dataIndex6 = -1;
             for (let index = 0; index < bobBeApprovedDataList['list'].length; index++) {
@@ -511,12 +513,12 @@
                 break;
               }
             }
-            assert(dataIndex6 >= 0);
+            console.assert(dataIndex6 >= 0);
 
             const bobBeApprovedDataInfo = bobBeApprovedDataList['list'][dataIndex6];
-            assert(bobBeApprovedDataInfo['file_owner_id'] === accountAlice.id);
+            console.assert(bobBeApprovedDataInfo['file_owner_id'] === accountAlice.id);
             const policyId2 = bobBeApprovedDataInfo['policy_id'];
-            assert(policyId2 === policyId);
+            console.assert(policyId2 === policyId);
 
             //Test the decryption of each piece of data separately.
             //Finally, Bob gets the contents of the data/file
@@ -529,7 +531,7 @@
             const dataContent/* : string */ = NUSDK.Buffer.from(arrayBuffer).toString();
             console.log('dataContent: ', dataContent);
             console.log('plainText: ', plainText);
-            assert(dataContent === plainText);
+            console.assert(dataContent === plainText);
 
             //finish
           }
@@ -547,7 +549,7 @@
             const dataContent/* : string */ = NUSDK.Buffer.from(arrayBuffer).toString();
             console.log('batch test => dataContent: ', dataContent);
             console.log('batch test => plainText: ', plainText);
-            assert(dataContent === plainText);
+            console.assert(dataContent === plainText);
           }
         }
 

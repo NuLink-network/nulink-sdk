@@ -186,7 +186,7 @@ export const publishDataForPaidSubscriberVisible = async (
      * 2. Paid subscriptions can only be used within the same project, cross-project subscriptions require re-payment.
      */
     const label =
-      'pair_for_subscriber_visable_' +
+      'pair_for_subscriber_visible_' +
       clientId.toLowerCase() +
       '_' +
       account.address.toLowerCase() +
@@ -239,7 +239,7 @@ export const publishDataForIndividualPaid = async (
   }
 
   //Note: In the createStrategyWithLabelPrefixAndStrategyIndex function, the label will also add the strategy's index to the base prefix, in order to increase the uniqueness.
-  const labelPrefix = 'pair_for_individual_visable_' + clientId.toLowerCase() + account.address.toLowerCase() + '_'; //'_' + strategyIndex; //nanoid();
+  const labelPrefix = 'pair_for_individual_visible_' + clientId.toLowerCase() + account.address.toLowerCase() + '_'; //'_' + strategyIndex; //nanoid();
   const strategy: Strategy = await account.createStrategyWithLabelPrefixAndStrategyIndex(`${labelPrefix}`, '');
 
   const filesInfo = await uploadDataSpecifiedLocalPolicy(account, strategy, dataInfoList);
@@ -402,7 +402,7 @@ export const queryBobPayStatus = async (orderId: BigNumber | string, payCheckUrl
   };
 
   //payCheckUrl ==> http(s)://domain/subscribe/getOrderStatus
-  const data = (await serverGet(payCheckUrl, sendData)) as object;
+  const _data: any = (await serverGet(payCheckUrl, sendData)) as object;
 
   /*   {
     "success": false,
@@ -411,8 +411,11 @@ export const queryBobPayStatus = async (orderId: BigNumber | string, payCheckUrl
     "data": null
  } */
 
+  const data = _data?.data;
+  
+  console.log(`queryBobPayStatus _data: `, _data);
   if (Number(data['code']) != 200) {
-    throw new Error(data['message']);
+    throw new Error(`${data['message']} orderId: ${orderId}`);
   }
 
   const dataStatus: string = isBlank(data['data']) ? '' : data['data'];
