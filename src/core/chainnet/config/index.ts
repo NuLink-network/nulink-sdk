@@ -11,7 +11,7 @@ export const networkDetails = {
     CHAIN_ID: 97, //notes: If you add this field, you must also put it in the newworkConfig structure
     CHAIN_NAME: NETWORK_LIST.Horus,
     // ETH_EXPOLRER: "https://testnet.bscscan.com/", //"https://polygonscan.com"; //notes: If you add this field, you must also put it in the newworkConfig structure
-    CENTRALIZED_SERVER_URL: process.env.REACT_APP_CENTRALIZED_SERVER_URL as string || "", //'http://8.219.11.39:8181', //process.env.REACT_APP_CENTRALIZED_SERVER_URL as string || "",
+    CENTRALIZED_SERVER_URL: process.env.REACT_APP_CENTRALIZED_SERVER_URL as string || "", //'http://8.219.11.39:8182', //process.env.REACT_APP_CENTRALIZED_SERVER_URL as string || "",
     //"encrypted:0c282750a6f5be15394d171980af6023:8cbdd88a89b74a11cfd8c2a88e0fd4fb045fa83e911058b23894b2f87f2407d45326299618a30682762f5a82ca995f70d0d1cd558d51ac88b7a92656ab6e0d7c2bfef02040df1c23e76b64136d4dc236c6f01e9733e94a293e504cdff027d632c5f60f1befb22b2c75beab3738024e345c9e72f6d589fa7de775d36e0d99e0cdy9Zxst06",
     PORTER_URL: process.env.REACT_APP_BSC_TESTNET_PORTER_URI as string || "", //'http://8.219.11.39:9155', //process.env.REACT_APP_BSC_TESTNET_PORTER_URI as string || "", //"http://54.241.67.36:9155",
     CONTRACT_INFO: contractList[NETWORK_LIST.Horus],
@@ -25,7 +25,7 @@ export const networkDetails = {
     CHAIN_ID: 71, //notes: If you add this field, you must also put it in the newworkConfig structure
     CHAIN_NAME: NETWORK_LIST.ConfluxTestNet,
     // ETH_EXPOLRER: "https://testnet.bscscan.com/", //"https://polygonscan.com"; //notes: If you add this field, you must also put it in the newworkConfig structure
-    CENTRALIZED_SERVER_URL: process.env.REACT_APP_CENTRALIZED_SERVER_URL as string || "", //"http://8.219.11.39:8181", //"http://54.241.67.36:8181",
+    CENTRALIZED_SERVER_URL: process.env.REACT_APP_CENTRALIZED_SERVER_URL as string || "", //"http://8.219.11.39:8182", //"http://54.241.67.36:8181",
     //"encrypted:0c282750a6f5be15394d171980af6023:8cbdd88a89b74a11cfd8c2a88e0fd4fb045fa83e911058b23894b2f87f2407d45326299618a30682762f5a82ca995f70d0d1cd558d51ac88b7a92656ab6e0d7c2bfef02040df1c23e76b64136d4dc236c6f01e9733e94a293e504cdff027d632c5f60f1befb22b2c75beab3738024e345c9e72f6d589fa7de775d36e0d99e0cdy9Zxst06",
     //crosschain use main chain's porter
     PORTER_URL: process.env.REACT_APP_BSC_TESTNET_PORTER_URI as string || "",//process.env.REACT_APP_CONFLUX_ESPACE_TESTNET_PORTER_URI as string || "", //"http://8.222.146.98:9165", //"http://54.241.67.36:9155", // "http://8.219.188.70:9155", //"https://porter-ibex.nucypher.community"; //nucypher porter service url
@@ -40,7 +40,7 @@ export const networkDetails = {
     CHAIN_ID: 80001, //notes: If you add this field, you must also put it in the newworkConfig structure
     CHAIN_NAME: NETWORK_LIST.PolygonTestNet,
     // ETH_EXPOLRER: "https://testnet.bscscan.com/", //"https://polygonscan.com"; //notes: If you add this field, you must also put it in the newworkConfig structure
-    CENTRALIZED_SERVER_URL: process.env.REACT_APP_CENTRALIZED_SERVER_URL as string || "", //"http://8.219.11.39:8181", //"http://54.241.67.36:8181",
+    CENTRALIZED_SERVER_URL: process.env.REACT_APP_CENTRALIZED_SERVER_URL as string || "", //"http://8.219.11.39:8182", //"http://54.241.67.36:8181",
     //"encrypted:0c282750a6f5be15394d171980af6023:8cbdd88a89b74a11cfd8c2a88e0fd4fb045fa83e911058b23894b2f87f2407d45326299618a30682762f5a82ca995f70d0d1cd558d51ac88b7a92656ab6e0d7c2bfef02040df1c23e76b64136d4dc236c6f01e9733e94a293e504cdff027d632c5f60f1befb22b2c75beab3738024e345c9e72f6d589fa7de775d36e0d99e0cdy9Zxst06",
     //crosschain use main chain's porter
     PORTER_URL: process.env.REACT_APP_BSC_TESTNET_PORTER_URI as string || "",//process.env.REACT_APP_POLYGON_TESTNET_PORTER_URI as string || "", //"http://8.222.146.98:9165", //"http://54.241.67.36:9155", // "http://8.219.188.70:9155", //"https://porter-ibex.nucypher.community"; //nucypher porter service url
@@ -55,7 +55,7 @@ export const networkDetails = {
     CHAIN_ID: 195, //notes: If you add this field, you must also put it in the newworkConfig structure
     CHAIN_NAME: NETWORK_LIST.XChainTestNet,
     // ETH_EXPOLRER: "https://testnet.bscscan.com/", //"https://polygonscan.com"; //notes: If you add this field, you must also put it in the newworkConfig structure
-    CENTRALIZED_SERVER_URL: process.env.REACT_APP_CENTRALIZED_SERVER_URL as string || "", //"http://8.219.11.39:8181", //"http://54.241.67.36:8181",
+    CENTRALIZED_SERVER_URL: process.env.REACT_APP_CENTRALIZED_SERVER_URL as string || "", //"http://8.219.11.39:8182", //"http://54.241.67.36:8181",
     //"encrypted:0c282750a6f5be15394d171980af6023:8cbdd88a89b74a11cfd8c2a88e0fd4fb045fa83e911058b23894b2f87f2407d45326299618a30682762f5a82ca995f70d0d1cd558d51ac88b7a92656ab6e0d7c2bfef02040df1c23e76b64136d4dc236c6f01e9733e94a293e504cdff027d632c5f60f1befb22b2c75beab3738024e345c9e72f6d589fa7de775d36e0d99e0cdy9Zxst06",
     //crosschain use main chain's porter
     PORTER_URL: process.env.REACT_APP_BSC_TESTNET_PORTER_URI as string || "",//process.env.REACT_APP_XCHAIN_TESTNET_PORTER_URI as string || "", //"http://8.222.146.98:9165", //"http://54.241.67.36:9155", // "http://8.219.188.70:9155", //"https://porter-ibex.nucypher.community"; //nucypher porter service url

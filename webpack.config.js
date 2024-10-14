@@ -5,11 +5,12 @@ const Dotenv = require('dotenv-webpack');
 
 // select '.env' file
 
-
 module.exports = (env) => {
-
   const envFile = '.env.' + env.RUN_ENV; //env.RUN_ENV === 'dev' ? '.env.android.dev' : '.env.android.prod';
+
   console.log('envFile:', envFile);
+
+  const bDebug = envFile.endsWith('.dev');
 
   return {
     entry: './src/index.ts', // 入口文件
@@ -65,7 +66,7 @@ module.exports = (env) => {
       ]
     },
     optimization: {
-      minimize: false
+      minimize: bDebug ? false : true
     },
     plugins: [
       new NodePolyfillPlugin(),
@@ -82,6 +83,7 @@ module.exports = (env) => {
       })
     ],
     //mode:  'development' ,  //开发模式, 代码不最小化
-    mode: 'production' // 设置模式为生产模式
+    //mode: 'production' // 设置模式为生产模式
+    mode: bDebug ? 'development' : 'production'
   };
 };
