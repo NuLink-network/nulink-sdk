@@ -189,7 +189,7 @@
         //    mimetype: "application/pdf",
         //  },
         //]
-        //const uploadedInfos2: any = await pre.publishDataForIndividualPaid(accountAlice, dataList2)
+        //const uploadedInfos2: any = await NUSDK.publishDataForIndividualPaid(accountAlice, dataList2)
         //
         //
         //console.log("address2: ", uploadedInfos2.address);
@@ -256,7 +256,7 @@
         for (let index = 0; index < numReqData; index++) {
           //const accountBob: Account = await accountManager.createAccount(`Bob_${index}`)
           // call the createAccountIfNotExist method for add user account to the center server for decouple
-          await pre.createAccountIfNotExist(_accountBob);
+          await NUSDK.createAccountIfNotExist(_accountBob);
           accountBobs.push(_accountBob);
           bobAccountId2AccountMap[_accountBob.id] = _accountBob;
         }
@@ -329,7 +329,7 @@
 
           //Bob requests permission to use the data/file for 30 days
           try {
-            _applyId = await pre.applyForSubscriptionAccess(
+            _applyId = await NUSDK.applyForSubscriptionAccess(
               accountBob,
               orderId,
               applyDataId,
@@ -448,7 +448,7 @@
         // );
 
         //Alice approves Bob's application for data/file usage. Whenever Alice approves a data/file request, an on-chain policy is created
-        await pre.approveUserSubscription(accountAlice, applyIds);
+        await NUSDK.approveUserSubscription(accountAlice, applyIds);
 
         // eslint-disable-next-line no-debugger
         debugger;
