@@ -141,7 +141,7 @@ axios.interceptors.response.use(
     }
 
     //The following is the logic for handling the bob pay check url
-    if ((response.config.url as string).indexOf('/subscribe/getOrderStatus') < 0) {
+    if ((response.config.url as string).indexOf('/subscribe/getOrderStatus') >= 0) {
       /** 
          * {
               "success": false,
