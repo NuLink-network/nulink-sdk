@@ -12,12 +12,12 @@ export const CLIENT_ID_LABEL = 'CLIENT_ID';
 /**
  * @internal
  */
-export const CHAIN_NETWORK_LABEL = 'chain_network_sdk';
+export const CHAIN_NETWORK_LABEL = 'chain_network_app_sdk';
 
 /**
  * @internal
  */
-export const CHAIN_NETWORK_CONFIG = 'chain_network_config_sdk';
+export const CHAIN_NETWORK_CONFIG = 'chain_network_config_app_sdk';
 
 /**
  * get current setting data

@@ -1029,6 +1029,7 @@ export const approveUserSubscription = async (
 
   for (let index = 0; index < crossChainHracs.length; index++) {
     const crossChainHrac: CrossChainHRAC = crossChainHracs[index];
+    const startTimeDate: Date = preEnacted.startTimestamps[index];
     const endTimeDate: Date = preEnacted.endTimestamps[index];
     const bobAccountId = resultInfo.deDuplicationInfo.bobAccountIds[index];
     // const bobAccountAddress = resultInfo.deDuplicationInfo.bobAddresses[index];
@@ -1037,13 +1038,15 @@ export const approveUserSubscription = async (
     policy_list.push({
       hrac: hexlify(crossChainHrac.toBytes() /* Uint8Array[]*/), //fromBytesByEncoding(crossChainHrac.toBytes(), 'binary'),
       end_timestamp: (endTimeDate.getTime() / 1000) | 0,
+      start_timestamp: (startTimeDate.getTime() / 1000) | 0,
       encrypted_address: encryptedTreasureMapIPFSs[index],
       encrypted_pk: resultInfo.strategys[index].strategyKeyPair._publicKey, //policy_encrypted_pk
       apply_id: Number(applyIds[index]),
       // bob_address: bobAccountAddress, //policy_bob_address
       // bob_pk: resultInfo.policyParameters.bobs[index].verifyingKey,
       bob_account_id: bobAccountId, //
-      policy_label_id: policyLabelId
+      policy_label_id: policyLabelId,
+      size: preEnacted.sizes[index],
     });
   }
 

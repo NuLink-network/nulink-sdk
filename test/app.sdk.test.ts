@@ -52,7 +52,7 @@ export const run = async () => {
 
   //we need set Project ID: differentiate the sources of data from different applications. 
   // which requires application to Nulink official.
-  await pre.init("xxxxxxx-xxxxx-xxxxxx");
+  await pre.init("593689189003333");
 
   // eslint-disable-next-line no-debugger
   debugger
@@ -234,7 +234,7 @@ export const run = async () => {
       break
     }
   }
-  assert(dataIndex >= 0)
+  assert(dataIndex >= 0, "can't find the files just uploaded")
   const uploadDataInfo = resultList['list'][dataIndex]
 
   /*   console.log('uploadDataInfo["file_name"] ', uploadDataInfo["file_name"]);
@@ -518,7 +518,7 @@ export const run = async () => {
     }
   }
 
-  assert(dataIndex2s.length >= 0 && dataIndex2s.length > 0)
+  assert(dataIndex2s.length > 0)
 
   //  //Alice upload data/file to exist policy
 

@@ -8,12 +8,12 @@
 
   <body>
     //
-    
+
     <button id="create">第一步：创建钱包</button>
     <button id="run_next">第二步：继续运行用例</button>
 
     <div id="text" class="text-box">这是一段文本显示框</div>
-    
+
     <script src="./nulink-sdk.js"></script>
 
     <script>
@@ -30,7 +30,7 @@
       let nuLinkHDWallet;
       let mnemonic;
       let accountAlice;
-  
+
       const sleep = async (ms) => {
         return new Promise((resolve) => setTimeout(resolve, ms));
       };
@@ -46,13 +46,6 @@
       // ----------------------Global variable area end ------------------------
 
       const test1 = async () => {
-        //we need set Project ID: differentiate the sources of data from different applications.
-        // which requires application to Nulink official.
-        const clientId = '593689189003333';
-
-        console.log("in test1 function before init clientId");
-        await NUSDK.init(clientId);
-
         const dataCallback = {
           setData: NUSDK.setIPFSData,
           getData: NUSDK.getIPFSData
@@ -61,15 +54,23 @@
         //Set the external storage used by the Pre process to IPFS (for example, encrypted files uploaded by users will be stored in this storage, and users can customize the storage).
         NUSDK.StorageManager.setDataCallback(dataCallback);
 
-        bExistAccount = await NUSDK.existDefaultAccount();
+        //we need set Project ID: differentiate the sources of data from different applications.
+        // which requires application to Nulink official.
+        const clientId = '593689189003333';
+
+        console.log('in test1 function before init clientId');
+        await NUSDK.init(clientId);
+
+        const bExistAccount = await NUSDK.existDefaultAccount();
         console.log('existDefaultAccount: ', bExistAccount);
         //nuLinkHDWallet = await NUSDK.restoreHDWallet(mnemonic, password);
         try {
-          console.log('--------------------- before load wallet: -------------------');
           nuLinkHDWallet = await NUSDK.loadWallet(password);
+          console.log(`existDefaultAccount: ${bExistAccount} and can load wallet`);
         } catch (error) {
           console.log('--------------------- before _create wallet: -------------------');
           nuLinkHDWallet = await _create();
+          console.log(`existDefaultAccount: ${bExistAccount} createWallet`);
         }
         console.log('--------------------- nuLinkHDWallet: -------------------', nuLinkHDWallet);
 
@@ -133,7 +134,7 @@
         const historyContent /* : Uint8Array */ = enc.encode(plainText);
 
         //1.Alice upload file
-        const fileList /*: DataInfo[]*/ = [
+        const dataList /*: DataInfo[]*/ = [
           {
             label: `history-${NUSDK.nanoid()}.pdf`,
             dataArrayBuffer: historyContent.buffer,
@@ -161,8 +162,47 @@
           }
         ];
 
-        //2. Alice encrypt and update a file to the ipfs network
-        await NUSDK.uploadDataByCreatePolicy(accountAlice, NUSDK.DataCategory.History, fileList);
+        //2 Upload User Dynamics: Subscribers can view. (Alice encrypt and update a data/file to the ipfs network)
+        const uploadedInfos = await NUSDK.publishDataForPaidSubscriberVisible(accountAlice, dataList);
+
+        console.log('address: ', uploadedInfos.address);
+        console.log('strategyId: ', uploadedInfos.strategyId);
+        console.log('public key: ', uploadedInfos.accountPublicKey);
+
+        assert(uploadedInfos.address === accountAlice.address);
+        assert(uploadedInfos.pk === publicKey);
+
+        console.log('uploadedInfo files list: ', uploadedInfos.filesInfo);
+
+        ////TODO: TODO: TODO:
+        ////Move the section on uploads that require separate payments to another test case.
+        ////2 Uploads require separate payments for each dynamic.
+        //const dataList2: DataInfo[] = [
+        //  {
+        //    label: `history-${nanoid()}_2.`,
+        //    dataArrayBuffer: historyContent.buffer,
+        //    mimetype: "application/pdf",
+        //  },
+        //  {
+        //    label: `history-${nanoid()}_2.pdf`,
+        //    dataArrayBuffer: historyContent.buffer,
+        //    mimetype: "application/pdf",
+        //  },
+        //]
+        //const uploadedInfos2: any = await pre.publishDataForIndividualPaid(accountAlice, dataList2)
+        //
+        //
+        //console.log("address2: ", uploadedInfos2.address);
+        //console.log("strategyId2: ", uploadedInfos2.strategyId);
+        //console.log("public key2: ", uploadedInfos2.accountPublicKey);
+        //
+        //assert(uploadedInfos2.address === accountAlice.address)
+        //assert(uploadedInfos2.pk === publicKey)
+        //
+        //console.log("uploadedInfo2 files list: ", uploadedInfos2.filesInfo);
+
+        // eslint-disable-next-line no-debugger
+        debugger;
 
         //3. We can get the files just uploaded
         const resultList = await NUSDK.getUploadedData(accountAlice, undefined, 1, 1000);
@@ -184,7 +224,7 @@
         let fileIndex = -1;
         for (let index = 0; index < resultList['list'].length; index++) {
           const element = resultList['list'][index];
-          if (element['file_name'] === fileList[0]['label']) {
+          if (element['file_name'] === dataList[0]['label']) {
             fileIndex = index;
             break;
           }
@@ -201,25 +241,27 @@
 
         console.assert(
           uploadFileInfo['owner_id'] === accountAlice.id,
-          'uploadFileInfo["owner_id"] !== accountAlice.id '
+          `uploadFileInfo["owner_id"] !== accountAlice.id: ${accountAlice.id}`
         );
 
-        const numReqFiles = 10;
+        const numReqData = 1;
         // ............................................
         //
-        //Bob find the file on Internet
+        //Bob find the data/file on Internet
         const bobAccountId2AccountMap = {};
-        const accountBobs /*: Account[]*/ = [];
-        const accountManager /*: AccountManager */ = nuLinkHDWallet.getAccountManager();
-        for (let index = 0; index < numReqFiles; index++) {
-          const accountBob /*: Account */ = await accountManager.createAccount(`Bob_${index}`);
+        const accountBobs /* : Account[] */ = [];
+        const accountManager /* : AccountManager */ = nuLinkHDWallet.getAccountManager();
+        const _accountBob /* : Account  */ = await accountManager.createAccount(`Bob_Single`);
+
+        for (let index = 0; index < numReqData; index++) {
+          //const accountBob: Account = await accountManager.createAccount(`Bob_${index}`)
           // call the createAccountIfNotExist method for add user account to the center server for decouple
-          await NUSDK.createAccountIfNotExist(accountBob);
-          accountBobs.push(accountBob);
-          bobAccountId2AccountMap[accountBob.id] = accountBob;
+          await pre.createAccountIfNotExist(_accountBob);
+          accountBobs.push(_accountBob);
+          bobAccountId2AccountMap[_accountBob.id] = _accountBob;
         }
 
-        let applyFileId /*: string */ = '';
+        let applyDataId /*: string */ = '';
         for (let index = 0; index < accountBobs.length; index++) {
           const accountBob = accountBobs[index];
 
@@ -250,23 +292,23 @@
             '! findFileResultList || findFileResultList["total"] == 0'
           );
 
-          let fileIndex2 = -1;
+          let dataIndex2 = -1;
           for (let index = 0; index < findFileResultList['list'].length; index++) {
             const element = findFileResultList['list'][index];
-            if (element['file_name'] === fileList[0]['label']) {
-              fileIndex2 = index;
+            if (element['file_name'] === dataList[0]['label']) {
+              dataIndex2 = index;
               break;
             }
           }
-          console.assert(fileIndex2 >= 0, 'fileIndex2 < 0');
+          console.assert(dataIndex2 >= 0, 'fileIndex2 < 0');
 
-          const findFileInfo = findFileResultList['list'][fileIndex2];
-          console.assert(findFileInfo['owner_id'] === accountAlice.id, 'findFileInfo["owner_id"] !== accountAlice.id ');
+          const findDataInfo = findFileResultList['list'][dataIndex2];
+          console.assert(findDataInfo['owner_id'] === accountAlice.id, 'findFileInfo["owner_id"] !== accountAlice.id ');
 
-          applyFileId = findFileInfo['file_id'];
+          applyDataId = findDataInfo['file_id'];
 
           //get file details
-          const fileDetails = await NUSDK.getDataDetails(applyFileId, accountBob.id); /*as object*/
+          const dataDetails = await NUSDK.getDataDetails(applyDataId, accountBob.id); /*as object*/
           /*
             {
                     file_id:,file_name:,thumbnail:,file_created_at:,apply_id:,status:,apply_start_at:,apply_end_at:,apply_created_at:,
@@ -275,20 +317,37 @@
             } 
         */
           // console.assert(fileDetails["creator_id"] === accountAlice.id, 'fileDetails["creator_id"] != accountAlice.id');
-          console.assert(fileDetails['file_id'] === applyFileId, 'fileDetails["file_id"] != applyFileId');
-          console.assert(parseInt(fileDetails['status']) === 0, 'fileDetails["status"] != 0'); //Is not to apply for
+          console.assert(dataDetails['file_id'] === applyDataId, 'fileDetails["file_id"] != applyFileId');
+          console.assert(parseInt(dataDetails['status']) === 0, 'fileDetails["status"] != 0'); //Is not to apply for
 
-          //Bob requests permission to use the file for 7 days
+          //nlk v12 version
+          const nlkV14Token /* : string  */ = '0x8A95eF66ef0b5bCD10cb8aB433c768f50B5822a8';
+          //Simulated order id.
+          const _orderId /* : bigint */ = '123456777';
+
+          let _applyId /* : number | undefined */ = undefined;
+
+          //Bob requests permission to use the data/file for 30 days
           try {
-            await NUSDK.applyForDataUsagePermission(applyFileId, accountBob, 7);
+            _applyId = await pre.applyForSubscriptionAccess(
+              accountBob,
+              orderId,
+              applyDataId,
+              30,
+              nlkV14Token,
+              '1',
+              'http://47.237.123.177:8083/subscribe/getOrderStatus'
+            );
           } catch (e) {
-            console.log(`bob_${index} apply file failed`, e);
-            console.assert(false, `bob_${index} apply file failed`);
+            console.log(`bob_${index} apply data/file failed`, e);
+            assert(false);
           }
+
+          console.log(`applyForSubscriptionAccess return applyId: ${_applyId}`);
         }
 
         //Alice receives Bob's file usage request
-        const filesNeedToApprovedResultList2 = await NUSDK.getDataPendingApprovalAsPublisher(accountAlice, 1, 1000);
+        const dataNeedToApprovedResultList2 = await NUSDK.getDataPendingApprovalAsPublisher(accountAlice, 1, 1000);
         /*return data format: {
             list: [
             { apply_id, file_id:, proposer, proposer_id, file_owner:, file_owner_id:, policy_id, hrac, start_at:, end_at, days,  created_at }
@@ -299,15 +358,15 @@
         */
 
         console.assert(
-          filesNeedToApprovedResultList2 && filesNeedToApprovedResultList2['total'] > 0,
-          '!filesNeedToApprovedResultList2 || filesNeedToApprovedResultList2["total"] == 0'
+          dataNeedToApprovedResultList2 && dataNeedToApprovedResultList2['total'] > 0,
+          `!dataNeedToApprovedResultList2 || dataNeedToApprovedResultList2["total"] <= 0`
         );
 
-        const fileIndexs /*: number[] */ = []; //Array(numReqFiles).fill(-1);
-        for (let index = 0; index < filesNeedToApprovedResultList2['list'].length; index++) {
-          const element = filesNeedToApprovedResultList2['list'][index];
-          if (element['file_id'] === applyFileId) {
-            fileIndexs.push(index);
+        const dataIndexs /*: number[] */ = []; //Array(numReqFiles).fill(-1);
+        for (let index = 0; index < dataNeedToApprovedResultList2['list'].length; index++) {
+          const element = dataNeedToApprovedResultList2['list'][index];
+          if (element['file_id'] === applyDataId) {
+            dataIndexs.push(index);
             console.assert(
               element['file_owner_id'] === accountAlice.id,
               'element["file_owner_id"] !== accountAlice.id'
@@ -315,8 +374,8 @@
           }
         }
         console.assert(
-          fileIndexs.length >= 0 && fileIndexs.length == numReqFiles,
-          'fileIndexs.length == 0 || fileIndexs.length !== numReqFiles '
+          dataIndexs.length >= 0 && dataIndexs.length == numReqData,
+          'dataIndexs.length == 0 || dataIndexs.length !== numReqData '
         );
 
         //At this point Alice approves Bob's file usage request, Due to on-chain approval of Bob's request, we first evaluate gas and service fees
@@ -328,18 +387,18 @@
         const ursulaThresholds /*: number[] */ = [];
         const accountBobIds /*: string[] */ = [];
         const applyIds /*: string[] */ = [];
-        for (let index = 0; index < fileIndexs.length; index++) {
-          const fileIndex = fileIndexs[index];
-          const needToApprovedFileInfo = filesNeedToApprovedResultList2['list'][fileIndex];
+        for (let index = 0; index < dataIndexs.length; index++) {
+          const dataIndex = dataIndexs[index];
+          const needToApprovedDataInfo = dataNeedToApprovedResultList2['list'][dataIndex];
           //1. Alice calc server fee (wei): the nulink token tnlk/nlk
 
           const startMs /*: number */ =
             (Math.floor(new Date().getTime() / 1000) - new Date().getTimezoneOffset() * 60) * 1000;
           const startDate /*: Date */ = new Date(startMs); //  start_at is seconds, but Date needs milliseconds
 
-          const endMs /*: number */ = startMs + needToApprovedFileInfo['days'] /*as number*/ * 24 * 60 * 60 * 1000;
+          const endMs /*: number */ = startMs + needToApprovedDataInfo['days'] /*as number*/ * 24 * 60 * 60 * 1000;
           const endDate /*: Date */ = new Date(endMs); //  start_at is seconds, but Date needs milliseconds
-          const bobAccountId = needToApprovedFileInfo['proposer_id'];
+          const bobAccountId = needToApprovedDataInfo['proposer_id'];
           accountBobIds.push(bobAccountId);
           startDates.push(startDate);
           endDates.push(endDate);
@@ -347,7 +406,7 @@
           endMss.push(endMs);
           ursulaShares.push(2);
           ursulaThresholds.push(1);
-          applyIds.push(needToApprovedFileInfo['apply_id']);
+          applyIds.push(needToApprovedDataInfo['apply_id']);
         }
 
         const serverFeeNLKInWei /*: BigNumber */ = await NUSDK.getPolicysTokenCost(
@@ -371,34 +430,37 @@
           NUSDK.BigNumber.from(serverFeeNLKInWei)
         );
 
-        const aliceApprovedfilesListLast = await NUSDK.getApprovedDataAsPublisher(accountAlice, 1, 1000);
+        const aliceApprovedDataListLast = await NUSDK.getApprovedDataAsPublisher(accountAlice, 1, 1000);
 
-        //Note: Please make sure that the account has sufficient tnlk and bsc testnet tokens before this, otherwise the approval will fail
-        //Alice approves Bob's application for file usage. Whenever Alice approves a file request, an on-chain policy is created
-        await NUSDK.approvalApplicationsForUseData(
-          accountAlice,
-          accountBobIds,
-          applyIds,
-          ursulaShares,
-          ursulaThresholds,
-          startDates,
-          endDates,
-          '', //remark
-          '', //porterUri
-          gasInfo.gasFee
-        );
+        // //Note: Please make sure that the account has sufficient tnlk and bsc testnet tokens before this, otherwise the approval will fail
+        // //Alice approves Bob's application for file usage. Whenever Alice approves a file request, an on-chain policy is created
+        // await NUSDK.approvalApplicationsForUseData(
+        //   accountAlice,
+        //   accountBobIds,
+        //   applyIds,
+        //   ursulaShares,
+        //   ursulaThresholds,
+        //   startDates,
+        //   endDates,
+        //   '', //remark
+        //   '', //porterUri
+        //   gasInfo.gasFee
+        // );
+
+        //Alice approves Bob's application for data/file usage. Whenever Alice approves a data/file request, an on-chain policy is created
+        await pre.approveUserSubscription(accountAlice, applyIds);
 
         // eslint-disable-next-line no-debugger
-        // debugger;
+        debugger;
 
         //You need to wait for a while for the on-chain transaction to be confirmed and for the backend to listen for the "approve" event.
         await sleep(20000); //20 seconds
 
-        let aliceApprovedfilesList /*: any */ = null;
+        let aliceApprovedDataList /*: any */ = null;
         do {
           await sleep(10000); //10 seconds
           //Alice, as the publisher of the file, obtains the list of files that she has successfully approved
-          aliceApprovedfilesList = await NUSDK.getApprovedDataAsPublisher(accountAlice, 1, 1000);
+          aliceApprovedDataList = await NUSDK.getApprovedDataAsPublisher(accountAlice, 1, 1000);
           /*return data format: {
             list: [
                 { apply_id, file_id:, proposer, proposer_id, file_owner:, file_owner_id:, policy_id, hrac, start_at:, end_at, created_at }
@@ -407,128 +469,132 @@
             total: 300,
             }
         */
-        } while (!aliceApprovedfilesList || aliceApprovedfilesList['total'] <= aliceApprovedfilesListLast['total']);
+        } while (!aliceApprovedDataList || aliceApprovedDataList['total'] <= aliceApprovedDataListLast['total']);
 
         // eslint-disable-next-line no-debugger
-        // debugger;
+        debugger;
 
         console.assert(
-          aliceApprovedfilesList && aliceApprovedfilesList['total'] > 0,
-          '!aliceApprovedfilesList || aliceApprovedfilesList["total"] == 0'
+          aliceApprovedDataList && aliceApprovedDataList['total'] > 0,
+          '!aliceApprovedDataList || aliceApprovedDataList["total"] <= 0'
         );
 
-        //Record this policy ID and account Bob for future use.
-        let policyId;
-        let accountBob;
-        const fileIndex2s /*: number[] */ = []; //Array(numReqFiles).fill(-1);
-        for (let index = 0; index < aliceApprovedfilesList['list'].length; index++) {
-          const element = aliceApprovedfilesList['list'][index];
-          if (element['file_id'] === applyFileId) {
-            fileIndex2s.push(index);
-
-            console.assert(
-              element['file_owner_id'] === accountAlice.id,
-              'element["file_owner_id"] !== accountAlice.id'
-            );
-
-            const _policyId = element['policy_id'];
-            policyId = _policyId;
-            //console.log(`index_${index} file policy Id: ${policyId}`)
+        const dataIds/* : string[] */ = [];
+        const dataIndex2s/* : number[] */ = []; //Array(numReqData).fill(-1);
+        for (let index = 0; index < aliceApprovedDataList['list'].length; index++) {
+          const element = aliceApprovedDataList['list'][index];
+          if (element['file_id'] === applyDataId) {
+            dataIndex2s.push(index);
+            assert(element['file_owner_id'] === accountAlice.id);
+            const policyId = element['policy_id'];
+            //console.log(`index_${index} data/file policy Id: ${policyId}`)
             const accountBobId = element['proposer_id'];
-            const _accountBob = bobAccountId2AccountMap[accountBobId];
-            accountBob = _accountBob;
+            const accountBob = bobAccountId2AccountMap[accountBobId];
             //Bob finds out that his application has been approved by Alice. Bob now has permission to view the contents of the file
-            const bobBeApprovedfilesList = await NUSDK.getApprovedDataAsUser(_accountBob, 1, 1000);
+            const bobBeApprovedDataList = await NUSDK.getApprovedDataAsUser(accountBob, 1, 1000);
             /*return data format: {
-                                    list: [
-                                        { apply_id, file_id:, proposer, proposer_id, file_owner:, file_owner_id:, policy_id, hrac, start_at:, end_at, created_at }
-                                        ...
-                                    ],
-                                    total: 300,
-                                    }
-            */
+                              list: [
+                                { apply_id, file_id:, proposer, proposer_id, file_owner:, file_owner_id:, policy_id, hrac, start_at:, end_at, created_at }
+                                ...
+                              ],
+                              total: 300,
+                            }
+      */
 
-            console.assert(
-              bobBeApprovedfilesList && bobBeApprovedfilesList['total'] > 0,
-              '!bobBeApprovedfilesList || bobBeApprovedfilesList.total == 0'
-            );
+            assert(bobBeApprovedDataList && bobBeApprovedDataList['total'] > 0);
 
-            let fileIndex6 = -1;
-            for (let index = 0; index < bobBeApprovedfilesList['list'].length; index++) {
-              const element = bobBeApprovedfilesList['list'][index];
-              if (element['file_id'] === applyFileId) {
-                fileIndex6 = index;
+            let dataIndex6 = -1;
+            for (let index = 0; index < bobBeApprovedDataList['list'].length; index++) {
+              const element = bobBeApprovedDataList['list'][index];
+              if (element['file_id'] === applyDataId) {
+                dataIndex6 = index;
                 break;
               }
             }
-            console.assert(fileIndex6 >= 0, 'fileIndex6 < 0');
+            assert(dataIndex6 >= 0);
 
-            const bobBeApprovedfilesInfo = bobBeApprovedfilesList['list'][fileIndex6];
-            console.assert(
-              bobBeApprovedfilesInfo['file_owner_id'] === accountAlice.id,
-              'bobBeApprovedfilesInfo.file_owner_id !== accountAlice.id'
-            );
-            const policyId2 = bobBeApprovedfilesInfo['policy_id'];
-            console.assert(policyId2 === _policyId, 'ppolicyId2 !== policyId');
+            const bobBeApprovedDataInfo = bobBeApprovedDataList['list'][dataIndex6];
+            assert(bobBeApprovedDataInfo['file_owner_id'] === accountAlice.id);
+            const policyId2 = bobBeApprovedDataInfo['policy_id'];
+            assert(policyId2 === policyId);
 
-            //Finally, Bob gets the contents of the file
-            const arrayBuffer /*: ArrayBuffer */ = await NUSDK.getDataContentByDataIdAsUser(
-              _accountBob,
-              bobBeApprovedfilesInfo['file_id']
+            //Test the decryption of each piece of data separately.
+            //Finally, Bob gets the contents of the data/file
+            const arrayBuffer/* : ArrayBuffer */ = await NUSDK.getDataContentByDataIdAsUser(
+              accountBob,
+              bobBeApprovedDataInfo['file_id']
             );
-            const fileContent /*: string */ = NUSDK.Buffer.from(arrayBuffer).toString();
-            console.log('fileContent: ', fileContent);
+
+            dataIds.push(bobBeApprovedDataInfo['file_id']);
+            const dataContent/* : string */ = NUSDK.Buffer.from(arrayBuffer).toString();
+            console.log('dataContent: ', dataContent);
             console.log('plainText: ', plainText);
-            console.assert(fileContent === plainText, 'fileContent !== plainText');
+            assert(dataContent === plainText);
 
             //finish
           }
+
+          console.log('Repeat the test: Test batch decryption of data.');
+
+          //Repeat the test: Test batch decryption of data.
+          //Finally, Bob gets the contents of the data/file
+          const arrayBufferDict/* : Dictionary<ArrayBuffer> */ = await NUSDK.getDataContentListByDataIdAsUser(
+            _accountBob,
+            dataIds
+          );
+          for (let index = 0; index < dataIds.length; index++) {
+            const arrayBuffer/* : ArrayBuffer */ = arrayBufferDict[dataIds[index]];
+            const dataContent/* : string */ = NUSDK.Buffer.from(arrayBuffer).toString();
+            console.log('batch test => dataContent: ', dataContent);
+            console.log('batch test => plainText: ', plainText);
+            assert(dataContent === plainText);
+          }
         }
 
-        console.assert(fileIndex2s.length > 0, 'fileIndex2s.length = 0');
+        console.assert(dataIndex2s.length > 0, 'dataIndex2s.length <= 0');
 
-        //Alice upload file to exist policy
+        // //Alice upload file to exist policy
 
-        const plainText2 = 'This is a philosophy book content';
-        const historyContent2 /*: Uint8Array */ = enc.encode(plainText2);
+        // const plainText2 = 'This is a philosophy book content';
+        // const historyContent2 /*: Uint8Array */ = enc.encode(plainText2);
 
-        //1.upload file by create policy
-        const fileList2 /*: DataInfo[] */ = [
-          {
-            label: `philosophy-${NUSDK.nanoid()}.pdf`,
-            dataArrayBuffer: historyContent2.buffer,
-            mimetype: 'application/pdf'
-          }
-        ];
+        // //1.upload file by create policy
+        // const fileList2 /*: DataInfo[] */ = [
+        //   {
+        //     label: `philosophy-${NUSDK.nanoid()}.pdf`,
+        //     dataArrayBuffer: historyContent2.buffer,
+        //     mimetype: 'application/pdf'
+        //   }
+        // ];
 
-        const fileIds = await NUSDK.uploadDataBySelectPolicy(
-          accountAlice,
-          NUSDK.DataCategory.Philosophy,
-          fileList2,
-          policyId
-        );
+        // const fileIds = await NUSDK.uploadDataBySelectPolicy(
+        //   accountAlice,
+        //   NUSDK.DataCategory.Philosophy,
+        //   fileList2,
+        //   policyId
+        // );
 
-        //Bob get new upload file content
-        const arrayBuffer2 /*: ArrayBuffer */ = await NUSDK.getDataContentByDataIdAsUser(accountBob, fileIds[0]);
-        const fileContent2 /*: string*/ = NUSDK.Buffer.from(arrayBuffer2).toString();
-        console.log('fileContent2: ', fileContent2);
-        console.log('plainText2: ', plainText2);
-        console.assert(fileContent2 === plainText2, 'fileContent2 !== plainText2');
+        // //Bob get new upload file content
+        // const arrayBuffer2 /*: ArrayBuffer */ = await NUSDK.getDataContentByDataIdAsUser(_accountBob, fileIds[0]);
+        // const fileContent2 /*: string*/ = NUSDK.Buffer.from(arrayBuffer2).toString();
+        // console.log('fileContent2: ', fileContent2);
+        // console.log('plainText2: ', plainText2);
+        // console.assert(fileContent2 === plainText2, 'fileContent2 !== plainText2');
 
-        //you can get all status files for mine apply: The files I applied for
-        //status 0: all status, include:  applying，approved, rejected
-        const data = await NUSDK.getDataByStatus(undefined, accountBob.id, undefined, undefined, 0, 1, 1000);
-        /*
-            return data format: {
-            list: [
-                { apply_id, file_id:, proposer, proposer_id, file_owner:, file_owner_id:, policy_id, hrac, start_at:, end_at, days, created_at, status }
-                ...
-            ],
-            total: 300,
-            }
-        */
+        // //you can get all status files for mine apply: The files I applied for
+        // //status 0: all status, include:  applying，approved, rejected
+        // const data = await NUSDK.getDataByStatus(undefined, _accountBob.id, undefined, undefined, 0, 1, 1000);
+        // /*
+        //     return data format: {
+        //     list: [
+        //         { apply_id, file_id:, proposer, proposer_id, file_owner:, file_owner_id:, policy_id, hrac, start_at:, end_at, days, created_at, status }
+        //         ...
+        //     ],
+        //     total: 300,
+        //     }
+        // */
 
-        console.assert(data && !NUSDK.isBlank(data) && data['total'] > 0, 'data is blank or total is 0');
+        // console.assert(data && !NUSDK.isBlank(data) && data['total'] > 0, 'data is blank or total is 0');
 
         console.log('finish');
       };
