@@ -166,6 +166,9 @@
         //2 Upload User Dynamics: Subscribers can view. (Alice encrypt and update a data/file to the ipfs network)
         const uploadedInfos = await NUSDK.publishDataForPaidSubscriberVisible(accountAlice, dataList);
 
+        // eslint-disable-next-line no-debugger
+        debugger;
+        
         console.log('address: ', uploadedInfos.address);
         console.log('strategyId: ', uploadedInfos.strategyId);
         console.log('public key: ', uploadedInfos.accountPublicKey);

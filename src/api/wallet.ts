@@ -100,6 +100,8 @@ export const restoreWalletDataByMnemonic = async (newPassword: string, mnemonic:
     newPassword,
     mnemonic
   )
+  // // eslint-disable-next-line no-debugger
+  // debugger;
   const defalutAccount: Account = wallet.getAccountManager().getAccount(0) as Account
 
   //create account to center server

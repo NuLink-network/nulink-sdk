@@ -336,7 +336,7 @@ export const uploadDataSpecifiedLocalPolicy = async (
 
     retDataInfoList.push({
       id: _data.id,
-      name: _data.name,
+      label: _data.name,
       thumbnail: _data.thumbnail,
       mimtype: _data.mimtype
     });

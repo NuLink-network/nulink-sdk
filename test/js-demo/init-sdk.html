@@ -28,7 +28,8 @@
 
       const asyncInit = async () => {
         try {
-          await NUSDK.init();
+          const clientId = '593689189003333';
+          await NUSDK.init(clientId);
 
           const dataCallback = {
             setData: NUSDK.setIPFSData,

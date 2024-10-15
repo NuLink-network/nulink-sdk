@@ -112,6 +112,16 @@
         try {
           const clientId = '593689189003333';
           await NUSDK.init(clientId);
+
+          
+          const dataCallback = {
+            setData: NUSDK.setIPFSData,
+            getData: NUSDK.getIPFSData
+          };
+
+          //Set the external storage used by the Pre process to IPFS (for example, encrypted files uploaded by users will be stored in this storage, and users can customize the storage).
+          NUSDK.StorageManager.setDataCallback(dataCallback);
+          
           console.log('init finish');
           document.getElementById('text').textContent = 'initialization complete';
           return true;

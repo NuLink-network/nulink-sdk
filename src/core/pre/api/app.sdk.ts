@@ -85,6 +85,7 @@ const test = async (data: any) => {
  * @internal
  */
 const sdkInit = async (data: any) => {
+  
   const clientId: string = data['clientId'];
   await initClientId(clientId);
   //Note: If it can reach here, it means the `__jMessage` message handler has been initialized, and there is no need to initialize the `__jMessage` handler again.
@@ -370,6 +371,7 @@ type AndroidDataInfo = {
  * Upload dynamic content that subscribed users can view.
  */
 const _publishDataForPaidSubscriberVisible = async (data: any) => {
+
   const password: string = data['password'];
   const _dataInfoList: AndroidDataInfo[] = data['dataInfoList'];
 
