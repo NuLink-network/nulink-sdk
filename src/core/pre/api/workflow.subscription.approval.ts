@@ -92,8 +92,8 @@ import {
   PolicyNotExpired
 } from '../../utils/exception';
 import { getWeb3 } from '../../hdwallet/api';
-import { AndroidBridge, getRandomElementsFromArray } from '../../utils';
-import { CONTRACT_NAME, NETWORK_LIST } from '../../sol';
+import { AndroidBridge, getRandomElementsFromArray, getTransactionNonceLock } from '../../utils';
+import { CONTRACT_NAME, contractList, NETWORK_LIST } from '../../sol';
 import { getDataCategoryString } from './utils';
 import {
   calcPolicysCost,
@@ -115,6 +115,7 @@ import { AppPayAgent } from '../../sol/agents/app-pay';
 import { AndroidMessage as Message } from '../../utils/androidmessage';
 import { toBytes } from '../../sol/agents/utils';
 import { registerMessageHandler } from './app.sdk';
+import AwaitLock from 'await-lock';
 
 /**
  * SDK initialization. You need to call this initialization function before invoking any APIs.
@@ -717,6 +718,25 @@ const bobPaySubscriptionFee2 = async (
     );
   }
 
+  console.log('before bob pay approveNLK estimateGas');
+  const approveGasInfo: GasInfo = await bobPaySubscriptionFeeApproveNLKEstimateGas(
+    account,
+    BigNumber.from('10000000000000000000000000'),
+    gasPrice
+  );
+
+  console.log('before bob pay approveNLK approveGasInfo', approveGasInfo);
+  //Note that it takes time to evaluate gas, and since the transfer nlk function is called, it must be approved first
+  const txHash: string = (await bobPaySubscriptionFeeApproveNLK(
+    account,
+    BigNumber.from('10000000000000000000000000'),
+    false,
+    gasPrice
+  )) as string;
+
+  console.log('after bob pay approveNLK txHash:', txHash);
+  
+
   //Check if the gas fee is sufficient.
   const gasInfo: GasInfo = await AppPayAgent.estimateGasByBobPay(
     _Web3Provider.fromEthersWeb3Provider(provider),
@@ -750,6 +770,8 @@ const bobPaySubscriptionFee2 = async (
     );
   }
 
+  console.log("Bob address: ", account.address);
+  
   const tx: ContractTransaction = await AppPayAgent.bobPay(
     _Web3Provider.fromEthersWeb3Provider(provider),
     orderId,
@@ -767,7 +789,7 @@ const bobPaySubscriptionFee2 = async (
     throw new TransactionError(`send Bob Pay transaction failed!`);
   }
 
-  console.log(`Bob pay txHash: tx.hash`);
+  console.log(`Bob pay txHash: ${tx.hash}`);
 
   /**
    * Note: Do not wait for the transaction receipt here, as it generally takes a long time.
@@ -844,6 +866,249 @@ const bobPaySubscriptionFee2 = async (
   ////
   ////return { status: payStatus };
 };
+
+
+
+/**
+ * @innernal
+ * @returns 
+ */
+export const bobPaySubscriptionFeeApproveNLKEstimateGas = async (
+  account: Account,
+  nlkInWei: BigNumber,
+  gasPrice: BigNumber = BigNumber.from('0') //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
+): Promise<GasInfo> => {
+  //approveNLKEstimateGas
+
+  // const serverFeeNlkInWei: BigNumber = BigNumber.from("0")
+  const gasInfo = await bobPaySubscriptionFeeApproveNLK(account, nlkInWei, true, gasPrice)
+  return gasInfo as GasInfo
+}
+
+/**
+ * @innernal
+ * @param account
+ * @param approveNlkInWei
+// * @param serverFeeNlkInWei
+ * @param estimateGas
+ * @param gasPrice
+ * @returns when estimateGas is true, return GasInfo. else return transaction Hash
+ */
+export const bobPaySubscriptionFeeApproveNLK = async (
+  account: Account,
+  approveNlkInWei: BigNumber,
+  // serverFeeNlkInWei: BigNumber, //nlk
+  estimateGas = false,
+  gasPrice: BigNumber = BigNumber.from('0') //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
+): Promise<string | GasInfo> => {
+  // Allow my nlk to be deducted from the subscriptManager contract
+
+  const web3: Web3 = await getWeb3()
+  // const account = web3.eth.accounts.privateKeyToAccount('0x2cc983ef0f52c5e430b780e53da10ee2bb5cbb5be922a63016fc39d4d52ce962');
+  //web3.eth.accounts.wallet.add(account);
+
+  const [GAS_PRICE_FACTOR_LEFT, GAS_PRICE_FACTOR_RIGHT] = DecimalToInteger(GAS_PRICE_FACTOR)
+
+  if (gasPrice.lte(BigNumber.from('0'))) {
+    // the gasPrice is obtained in real time
+    gasPrice = BigNumber.from(await web3.eth.getGasPrice())
+    gasPrice = gasPrice.mul(GAS_PRICE_FACTOR_LEFT).div(GAS_PRICE_FACTOR_RIGHT)
+  } else {
+    //If the gasPrice is manually set, the GAS_PRICE_FACTOR is not set
+  }
+
+  const curNetwork: NETWORK_LIST = await getCurrentNetworkKey()
+
+  if (![NETWORK_LIST.Horus, NETWORK_LIST.HorusMainNet].includes(curNetwork)) {
+    //if (curNetwork !== NETWORK_LIST.Horus) {
+    //not crosschain mainnet, no nlk token, no need approve nlk
+    if (!isBlank(estimateGas)) {
+      const gasInfo: GasInfo = {
+        gasPrice: gasPrice,
+        gasLimit: BigNumber.from('0'),
+        gasFee: BigNumber.from('0')
+      }
+      return gasInfo
+    }
+    return ''
+  }
+
+  const nlkBalanceEthers = (await account.getNLKBalance()) as string
+
+  const nlkBalanceWei = BigNumber.from(Web3.utils.toWei(nlkBalanceEthers))
+
+  console.log('nlkBalanceWei is ', nlkBalanceWei.toString())
+  // console.log('serverFeeInWei is ', serverFeeNlkInWei.toString())
+
+  // const serverFeeNlkInEthers = Web3.utils.fromWei(serverFeeNlkInWei.toString(), 'ether')
+
+  console.log('nlkBalanceEthers is ', nlkBalanceEthers)
+  // console.log('serverFeeNlkInEthers is ', serverFeeNlkInEthers)
+
+  const chainConfigInfo = await getSettingsData()
+
+  //if (serverFeeNlkInWei.gt(nlkBalanceWei)) {
+  //  // Message.error(
+  //  //   `Insufficient balance ${nlkBalance} ${chainConfigInfo.nlkTokenSymbol} for pay ${nlkInWei} ${chainConfigInfo.nlkTokenSymbol}`,
+  //  // );
+  //  console.log(
+  //    `approveNLK - Insufficient balance ${nlkBalanceEthers} ${chainConfigInfo.nlkTokenSymbol} to cover payment ${serverFeeNlkInEthers} ${chainConfigInfo.nlkTokenSymbol}`
+  //  )
+  //  throw new InsufficientBalanceError(
+  //    `approveNLK - Insufficient balance ${nlkBalanceEthers} ${chainConfigInfo.nlkTokenSymbol} to cover payment ${serverFeeNlkInEthers} ${chainConfigInfo.nlkTokenSymbol}`
+  //  )
+  //}
+
+  const nuLinkTokenContractInfo: any = contractList[curNetwork][CONTRACT_NAME.nuLinkToken]
+  const appPayContractInfo: any = contractList[curNetwork][CONTRACT_NAME.appPay]
+
+  const nuLinkTokenContract: Contract = await getContractInst(CONTRACT_NAME.nuLinkToken)
+
+  const aliceBob = Web3.utils.toChecksumAddress(
+    account.address //"0xDCf049D1a3770f17a64E622D88BFb67c67Ee0e01"
+  )
+
+  const appPayAddress = Web3.utils.toChecksumAddress(appPayContractInfo.address)
+  const nuLinkTokenAddress = Web3.utils.toChecksumAddress(nuLinkTokenContractInfo.address)
+
+  //owner, spender,
+  const allowanceWei: string = await nuLinkTokenContract.methods
+    .allowance(aliceBob, appPayAddress)
+    .call()
+
+  if (BigNumber.from(allowanceWei).gte(approveNlkInWei)) {
+    console.log(`allowance is ${allowanceWei}, to approve is ${approveNlkInWei}`)
+    return ''
+  }
+
+  //privateKeyString startwith 0x and total length is 66( include the length of 0x)
+  const privateKeyStringHex = pwdDecrypt(account.encryptedKeyPair._privateKey, true)
+  const privateKeyString = privateKeyStringHex.substring(2, 66)
+  // console.log(privateKeyString);
+
+  const _encodedABI = nuLinkTokenContract.methods
+    .approve(appPayAddress, web3.utils.toBN(approveNlkInWei.toHexString()))
+    .encodeABI()
+
+  const transactionNonceLock: AwaitLock = await getTransactionNonceLock(aliceBob)
+  await transactionNonceLock.acquireAsync()
+
+  try {
+    const txCount = await web3.eth.getTransactionCount(aliceBob)
+
+    const gasPriceHex = web3.utils.toHex(gasPrice.toString())
+
+    const rawTx = {
+      nonce: web3.utils.toHex(txCount),
+      from: aliceBob,
+      to: nuLinkTokenAddress,
+      data: _encodedABI,
+      gasPrice: gasPriceHex, //'0x09184e72a000',
+      value: '0x0'
+    }
+
+    // const networkId = await web3.eth.net.getId();
+
+    //https://github.com/paulmillr/noble-ed25519/issues/23
+    // const tx = new Tx(rawTx, {common});  //attention: cause extension error: Cannot convert a BigInt value to a number
+    // tx.sign(/* Buffer.from("1aefdd79679b4e8fe2d55375d976a79b9a0082d23fff8e2768befe6aceb8d3646", 'hex') */ account.encryptedKeyPair.privateKeyBuffer()); //Buffer.from(aliceEthAccount.privateKey, 'hex')
+
+    // const serializedTx = tx.serialize().toString("hex");
+
+    //don't add this
+    // if (!!estimateGas) {
+    //   //fix error: invalid argument 0: json: cannot unmarshal non-string into Go struct field TransactionArgs.chainId of type *hexutil.Big
+    //   rawTx["chainId"] = web3.utils.toHex(chainConfigInfo.chainId);
+    // } else {
+    //   rawTx["chainId"] =chainConfigInfo.chainId; // chainConfigInfo.chainId.toString(); //97
+    // }
+
+    // gasUsed => estimateGas return gasUsed is the gasLimit (How many gas were used,that is the amount of gas), not the gasFee (gasLimit * gasPrice)
+    const gasUsed: number = await web3.eth.estimateGas(rawTx as any)
+    console.log(`approveNLK estimateGas Used is ${gasUsed} wei`)
+
+    const [GAS_LIMIT_FACTOR_LEFT, GAS_LIMIT_FACTOR_RIGHT] = DecimalToInteger(GAS_LIMIT_FACTOR)
+
+    //estimatedGas * gasPrice * factor
+    const gasLimit = BigNumber.from(gasUsed).mul(GAS_LIMIT_FACTOR_LEFT).div(GAS_LIMIT_FACTOR_RIGHT)
+    const gasFeeInWei = gasLimit.mul(BigNumber.from(gasPrice))
+
+    console.log(`approveNLK estimate GasFee is ${gasFeeInWei} wei`)
+    // eslint-disable-next-line no-extra-boolean-cast
+    if (!!estimateGas) {
+      const gasInfo: GasInfo = {
+        gasPrice: gasPrice,
+        gasLimit: gasLimit,
+        gasFee: gasFeeInWei
+      }
+      return gasInfo
+    }
+
+    const tokenBalanceEthers = (await account.balance()) as string //tbnb
+    const tokenBalanceWei = Web3.utils.toWei(tokenBalanceEthers)
+
+    // tokenBalanceWei must be great than gasUsed(gasLimit) * gitPrice
+    // Calculate if the balance is enough to cover the fee of approveNLK
+    if (BigNumber.from(tokenBalanceWei).lt(gasFeeInWei)) {
+      const tips = `Insufficient balance ${tokenBalanceEthers} ${
+        chainConfigInfo.tokenSymbol
+      } for approveNLK ${Web3.utils.fromWei(gasFeeInWei.toString(), 'ether')} ${chainConfigInfo.tokenSymbol}`
+
+      // Message.error(tips);
+      console.error(tips)
+      throw new InsufficientBalanceError(tips)
+    }
+
+    // https://ethereum.stackexchange.com/questions/87606/ethereumjs-tx-returned-error-invalid-sender
+
+    //estimatedGas * factor
+    rawTx['gasLimit'] = web3.utils.toHex(gasLimit.toString()) // '0x2710'  The amount of gas
+
+    const signedTx = await web3.eth.accounts.signTransaction(rawTx as any, privateKeyString) // privateKeyString is the length of 64
+    const txReceipt: TransactionReceipt = await web3.eth.sendSignedTransaction(
+      signedTx.rawTransaction as string /* "0x" + serializedTx */
+    )
+    /*
+    {
+      raw: '0xf86c808504a817c800825208943535353535353535353535353535353535353535880de0b6b3a76400008025a04f4c17305743700648bc4f6cd3038ec6f6af0df73e31757007b7f59df7bee88da07e1941b264348e80c78c4027afc65a87b0a5e43e86742b8ca0823584c6788fd0',
+      tx: {
+          nonce: '0x0',
+          gasPrice: '0x4a817c800',
+          gas: '0x5208',
+          to: '0x3535353535353535353535353535353535353535',
+          value: '0xde0b6b3a7640000',
+          input: '0x',
+          v: '0x25',
+          r: '0x4f4c17305743700648bc4f6cd3038ec6f6af0df73e31757007b7f59df7bee88d',
+          s: '0x7e1941b264348e80c78c4027afc65a87b0a5e43e86742b8ca0823584c6788fd0',
+          hash: '0xda3be87732110de6c1354c83770aae630ede9ac308d9f7b399ecfba23d923384'
+      }
+    */
+
+    console.log('txReceipt:', txReceipt)
+
+    //wait txReceipt
+    console.log(
+      // eslint-disable-next-line no-extra-boolean-cast
+      !!txReceipt.transactionHash ? `In Bob pay approveNLK: no need approve` : `txHash: ${txReceipt.transactionHash}`
+    )
+
+    // eslint-disable-next-line no-extra-boolean-cast
+    if (!!txReceipt.transactionHash) {
+      let receipt: any = null
+
+      do {
+        receipt = await web3.eth.getTransactionReceipt(txReceipt.transactionHash)
+        //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
+        await sleep(2000)
+      } while (isBlank(receipt))
+    }
+
+    return txReceipt.transactionHash
+  } finally {
+    transactionNonceLock.release()
+  }
+}
 
 /**
  * Apply for subscriber user feeds, This account acts as the user(Bob).

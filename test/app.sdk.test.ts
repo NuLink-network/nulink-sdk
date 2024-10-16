@@ -253,7 +253,18 @@ export const run = async () => {
   const bobAccountId2AccountMap = {}
   const accountBobs: Account[] = []
   const accountManager: AccountManager = nuLinkHDWallet.getAccountManager()
-  const accountBob: Account = await accountManager.createAccount(`Bob_Single`)
+  let accountBob: Account  | undefined = undefined;
+  try{
+    accountBob = accountManager.getAccount(1)
+  }
+  catch(e)
+  {
+    accountBob = await accountManager.createAccount(`Bob_Single`)
+  }
+  
+  assert(!isBlank(accountBob))
+
+  accountBob = accountBob as Account
 
   for (let index = 0; index < numReqData; index++) {
     //const accountBob: Account = await accountManager.createAccount(`Bob_${index}`)

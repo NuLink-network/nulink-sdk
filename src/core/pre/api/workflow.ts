@@ -1796,7 +1796,7 @@ export const _estimatePolicysGas = async (
 
   console.log('after multi policy approveNLK txHash:', txHash);
 
-  console.log('before multi policy estimateCreatePolicyGas ');
+  console.log('before multi policy estimateCreatePolicyGas');
 
   const gasInfo: GasInfo = await resultInfo.deDuplicationInfo.multiBlockchainPolicy.estimateCreatePolicysGas(
     resultInfo.alice,

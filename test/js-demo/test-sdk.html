@@ -255,10 +255,31 @@
         const bobAccountId2AccountMap = {};
         const accountBobs /* : Account[] */ = [];
         const accountManager /* : AccountManager */ = nuLinkHDWallet.getAccountManager();
-        const _accountBob /* : Account  */ = await accountManager.createAccount(`Bob_Single`);
+
+        let _accountBob = undefined;
+        
+        // const _accountBob /* : Account  */ = await accountManager.createAccount(`Bob_Single`);
+
+        _accountBob = accountManager.getAccountByAddress("0xd587515f2ccbb3472f90d8895638a481a1e3ba9d")
+        
+        if(NUSDK.isBlank(_accountBob))
+        {
+          _accountBob = await accountManager.createAccount(`Bob_Single`)
+        }
+
+        console.assert(!NUSDK.isBlank(_accountBob), '_accountBob is undefined or null');
+
 
         for (let index = 0; index < numReqData; index++) {
-          //const accountBob: Account = await accountManager.createAccount(`Bob_${index}`)
+          //let accountBob: Account = undefined;
+          // try{
+          //   _accountBob = accountManager.getAccount(index+1)
+          // }
+          // catch(e)
+          // {
+          //   _accountBob = await accountManager.createAccount(`Bob_${index}`)
+          // }
+        
           // call the createAccountIfNotExist method for add user account to the center server for decouple
           await NUSDK.createAccountIfNotExist(_accountBob);
           accountBobs.push(_accountBob);
@@ -361,7 +382,7 @@
               'http://47.237.123.177:8083/subscribe/getOrderStatus'
             );
           } catch (e) {
-            console.log(`bob_${index} apply data/file failed`, e);
+            console.log(`bob_${index} apply data/file failed: `, e);
             // console.assert(false);
             return;
           }
