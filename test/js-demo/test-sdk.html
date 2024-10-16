@@ -98,7 +98,7 @@
 
         const mnemonic = await nuLinkHDWallet.getMnemonic(password);
         const publicKey = accountAlice.encryptedKeyPair._publicKey;
-        
+
         console.log('【账户对象】:', nuLinkHDWallet);
         console.log('【助记词】:', mnemonic);
         document.getElementById('text').textContent = mnemonic;
@@ -109,16 +109,16 @@
         console.log('accountAlice publicKey', publicKey);
         console.log('accountAlice privateKey', NUSDK.decrypt(accountAlice.encryptedKeyPair._privateKey, true));
 
-        console.log(
-          '请注意： --------------------- 运行这段代码需要账户上有至少0.1个TBNB, 至少 200个TNLK, 合约当前用的V9版本, 由于测试anroid环境代码对应的存储使用的是内存，所以每次刷新页面账户会变化，需要重新转币和TNLK-----------------'
-        );
-        console.log(
-          '请注意： --------------------- 运行这段代码需要账户上有至少0.1个TBNB, 至少 200个TNLK, 合约当前用的V9版本, 由于测试anroid环境代码对应的存储使用的是内存，所以每次刷新页面账户会变化，需要重新转币和TNLK -----------------'
-        );
-        console.log(
-          '请注意： --------------------- 运行这段代码需要账户上有至少0.1个TBNB, 至少 200个TNLK, 合约当前用的V9版本, 由于测试anroid环境代码对应的存储使用的是内存，所以每次刷新页面账户会变化，需要重新转币和TNLK -----------------'
-        );
-        console.log('请注意： --------------------- 账户地址： ', accountAlice.address);
+        //console.log(
+        //  '请注意： --------------------- 运行这段代码需要账户上有至少0.1个TBNB, 至少 200个TNLK, 合约当前用的V9版本, 由于测试anroid环境代码对应的存储使用的是内存，所以每次刷新页面账户会变化，需要重新转币和TNLK-----------------'
+        //);
+        //console.log(
+        //  '请注意： --------------------- 运行这段代码需要账户上有至少0.1个TBNB, 至少 200个TNLK, 合约当前用的V9版本, 由于测试anroid环境代码对应的存储使用的是内存，所以每次刷新页面账户会变化，需要重新转币和TNLK -----------------'
+        //);
+        //console.log(
+        //  '请注意： --------------------- 运行这段代码需要账户上有至少0.1个TBNB, 至少 200个TNLK, 合约当前用的V9版本, 由于测试anroid环境代码对应的存储使用的是内存，所以每次刷新页面账户会变化，需要重新转币和TNLK -----------------'
+        //);
+        console.log('请注意： --------------------- Alice 账户地址： ', accountAlice.address);
 
         //debugger;
       };
@@ -166,9 +166,9 @@
         //2 Upload User Dynamics: Subscribers can view. (Alice encrypt and update a data/file to the ipfs network)
         const uploadedInfos = await NUSDK.publishDataForPaidSubscriberVisible(accountAlice, dataList);
 
-        // eslint-disable-next-line no-debugger
-        debugger;
-        
+        // // eslint-disable-next-line no-debugger
+        // debugger;
+
         console.log('address: ', uploadedInfos.address);
         console.log('strategyId: ', uploadedInfos.strategyId);
         console.log('public key: ', uploadedInfos.accountPublicKey);
@@ -327,8 +327,26 @@
           //nlk v12 version
           const nlkV14Token /* : string  */ = '0x8A95eF66ef0b5bCD10cb8aB433c768f50B5822a8';
           //Simulated order id.
-          const orderId /* : bigint */ = '123456777';
+          const orderId /* : bigint */ = await NUSDK.simulateOrderGenerationForDev(
+            accountAlice.address,
+            accountBob.address,
+            'http://47.237.123.177:8083'
+          );
 
+          console.log(`--------------------- Bob address: ${accountBob.address}---------------------`);
+
+          console.log(
+            '请注意： --------------------- 运行这段代码需要Bob账户上有至少0.02个TBNB, 至少 2个TNLK, 合约当前用的V14版本, 由于测试anroid环境代码对应的存储使用的是内存，所以每次刷新页面账户会变化，需要重新转币和TNLK-----------------'
+          );
+          console.log(
+            '请注意： --------------------- 运行这段代码需要Bob账户上有至少0.02个TBNB, 至少 2个TNLK, 合约当前用的V14版本, 由于测试anroid环境代码对应的存储使用的是内存，所以每次刷新页面账户会变化，需要重新转币和TNLK -----------------'
+          );
+          console.log(
+            '请注意： --------------------- 运行这段代码需要Bob账户上有至少0.02个TBNB, 至少 2个TNLK, 合约当前用的V14版本, 由于测试anroid环境代码对应的存储使用的是内存，所以每次刷新页面账户会变化，需要重新转币和TNLK -----------------'
+          );
+          
+          debugger;
+          
           let _applyId /* : number | undefined */ = undefined;
 
           //Bob requests permission to use the data/file for 30 days
@@ -484,8 +502,8 @@
           '!aliceApprovedDataList || aliceApprovedDataList["total"] <= 0'
         );
 
-        const dataIds/* : string[] */ = [];
-        const dataIndex2s/* : number[] */ = []; //Array(numReqData).fill(-1);
+        const dataIds /* : string[] */ = [];
+        const dataIndex2s /* : number[] */ = []; //Array(numReqData).fill(-1);
         for (let index = 0; index < aliceApprovedDataList['list'].length; index++) {
           const element = aliceApprovedDataList['list'][index];
           if (element['file_id'] === applyDataId) {
@@ -525,13 +543,13 @@
 
             //Test the decryption of each piece of data separately.
             //Finally, Bob gets the contents of the data/file
-            const arrayBuffer/* : ArrayBuffer */ = await NUSDK.getDataContentByDataIdAsUser(
+            const arrayBuffer /* : ArrayBuffer */ = await NUSDK.getDataContentByDataIdAsUser(
               accountBob,
               bobBeApprovedDataInfo['file_id']
             );
 
             dataIds.push(bobBeApprovedDataInfo['file_id']);
-            const dataContent/* : string */ = NUSDK.Buffer.from(arrayBuffer).toString();
+            const dataContent /* : string */ = NUSDK.Buffer.from(arrayBuffer).toString();
             console.log('dataContent: ', dataContent);
             console.log('plainText: ', plainText);
             console.assert(dataContent === plainText);
@@ -543,13 +561,13 @@
 
           //Repeat the test: Test batch decryption of data.
           //Finally, Bob gets the contents of the data/file
-          const arrayBufferDict/* : Dictionary<ArrayBuffer> */ = await NUSDK.getDataContentListByDataIdAsUser(
+          const arrayBufferDict /* : Dictionary<ArrayBuffer> */ = await NUSDK.getDataContentListByDataIdAsUser(
             _accountBob,
             dataIds
           );
           for (let index = 0; index < dataIds.length; index++) {
-            const arrayBuffer/* : ArrayBuffer */ = arrayBufferDict[dataIds[index]];
-            const dataContent/* : string */ = NUSDK.Buffer.from(arrayBuffer).toString();
+            const arrayBuffer /* : ArrayBuffer */ = arrayBufferDict[dataIds[index]];
+            const dataContent /* : string */ = NUSDK.Buffer.from(arrayBuffer).toString();
             console.log('batch test => dataContent: ', dataContent);
             console.log('batch test => plainText: ', plainText);
             console.assert(dataContent === plainText);

@@ -388,7 +388,7 @@ export const uploadDataSpecifiedLocalPolicy = async (
  * @param {string} payCheckUrl - url to check if bob has paid enough for the subscription fee
  * @returns {Promise<string>}   NOT_PAID (not paid or Insufficient payment), PENDING, UNDER_REVIEW, APPROVED, REJECTED, EXPRIED
  */
-export const queryBobPayStatus = async (orderId: BigNumber | string, payCheckUrl: string): Promise<string> => {
+export const getBobPayStatus = async (orderId: BigNumber | string, payCheckUrl: string): Promise<string> => {
   //check the status and params
   if (typeof orderId === 'string') {
     if (!isNumeric(orderId)) {
@@ -412,8 +412,8 @@ export const queryBobPayStatus = async (orderId: BigNumber | string, payCheckUrl
  } */
 
   const data = _data?.data;
-  
-  console.log(`queryBobPayStatus _data: `, _data);
+
+  console.log(`getBobPayStatus _data: `, _data);
   if (Number(data['code']) != 200) {
     throw new Error(`${data['message']} orderId: ${orderId}`);
   }
@@ -421,6 +421,94 @@ export const queryBobPayStatus = async (orderId: BigNumber | string, payCheckUrl
   const dataStatus: string = isBlank(data['data']) ? '' : data['data'];
 
   return dataStatus.toUpperCase();
+};
+
+/**
+ * @internal
+ * Simulate order generation in the development environment.
+  
+ * @category Data User(Bob) Request Data
+ * @param {BigNumber | string} orderId - A unique string composed of numbers. 
+ * @param {string} payCheckUrl - url to check if bob has paid enough for the subscription fee
+ * @returns {Promise<string>}   orderId
+ */
+export const simulateOrderGenerationForDev = async (
+  aliceAddress: string,
+  bobAddress: string,
+  appServiceUrl: string
+): Promise<string> => {
+  const sendData = {
+    actualAmount: '100000000000000000',
+    csmAmount: '0',
+    currency: 'NLK',
+    currencyAddress: '0x8A95eF66ef0b5bCD10cb8aB433c768f50B5822a8', //V14
+    day: 30,
+    id: 0,
+    orderAmount: '100000000000000000',
+    subscribeType: '1', //1-subscribe user; 2-subscribe post
+    subscribedUserAddress: aliceAddress,
+    userAddress: bobAddress
+  };
+
+  appServiceUrl = appServiceUrl.endsWith('/') ? appServiceUrl :  appServiceUrl + "/";
+  //
+  //http://47.237.123.177:8083/subscribe/getOrderStatus
+  //payCheckUrl ==> http(s)://domain/subscribe/getOrderStatus
+  const _data: any = (await serverPost(`${appServiceUrl}subscribe/initForDev`, sendData)) as object;
+
+  const result = _data?.data;
+  
+  /*   
+      {
+      "success": true,
+      "code": 200,
+      "message": "Success",
+      "data": {
+        "id": 2,
+        "orderId": 601725579337733,
+        "userAddress": "0x5Cd0a102013321F5Bbf53dDe4EB73e59D32539B2",
+        "userNickname": "test user name",
+        "subscribeType": "1",
+        "subscribedUserAddress": "0x2c6ac09d39c5ce4450b0b900ccc386301fe62e32",
+        "subscribedUserNickname": "test_user_for_andi",
+        "postId": null,
+        "day": 30,
+        "orderAmount": "100000000000000000",
+        "currency": "NLK",
+        "currencyAddress": "0x8A95eF66ef0b5bCD10cb8aB433c768f50B5822a8",
+        "actualAmount": "100000000000000000",
+        "csmAmount": "0",
+        "subscribeTxHash": null,
+        "approveTxHash": null,
+        "refundTxHash": null,
+        "status": "0",
+        "startTime": null,
+        "endTime": null,
+        "shareProfit": false,
+        "updateTime": 1729042061019,
+        "createTime": 1729042061019
+      }
+    }
+  */
+
+
+  console.log(`getBobPayStatus _data: `, _data);
+  
+  const data = result?.data;
+
+  if (Number(result['code']) != 200) {
+    throw new Error(`${result['message']} orderId: ${isBlank(data) ? "": data?.orderId}`);
+  }
+  
+  
+  if (isBlank(data)) {
+    throw new Error(`$simulateOrderGenerationForDev response error: `, _data);
+  }
+  
+
+
+  return String(data['orderId']).toLowerCase();
+  
 };
 
 // /** @Deprecated
@@ -433,7 +521,7 @@ export const queryBobPayStatus = async (orderId: BigNumber | string, payCheckUrl
 //                                 2: Paid
 //                                 3: Payment Failed (Reset to Payment Failed status if unable to query)
 //  */
-// export const queryBobPayStatusByBackend = async (dataId: string, account: Account): Promise<number> => {
+// export const getBobPayStatusByBackend = async (dataId: string, account: Account): Promise<number> => {
 //   //get golbal time from server
 //   const sendData = {
 //     file_id: dataId,
@@ -574,7 +662,7 @@ const bobPaySubscriptionFee2 = async (
   }
 
   payAmountInWei = typeof payAmountInWei === 'string' ? BigNumber.from(payAmountInWei) : payAmountInWei;
-
+  
   //2. call contact refund function
   const provider: Web3Provider = (await getWeb3Provider(account as any)) as Web3Provider;
   /**
@@ -625,7 +713,7 @@ const bobPaySubscriptionFee2 = async (
 
   if (tokenBalanceInEther && tokenBalanceInEther < payAmountInEther) {
     throw new InsufficientBalanceError(
-      `Insufficient ${payTokenAddress} balance for pay ${payAmountInEther} subscription fee`
+      `Insufficient account ${account.address}'s balance of token: ${payTokenAddress} for pay ${payAmountInEther} subscription fee`
     );
   }
 
@@ -800,8 +888,11 @@ export const applyForSubscriptionAccess = async (
   }
 
   //check the pay status by payCheckUrl
-  const payStatus: string = await queryBobPayStatus(orderId, payCheckUrl);
+  const payStatus: string = await getBobPayStatus(orderId, payCheckUrl);
 
+  // //eslint-disable-next-line no-debugger
+  // debugger;
+  
   //NOT_PAID (not paid or Insufficient payment), PENDING, UNDER_REVIEW, APPROVED, REJECTED, EXPRIED
 
   let payInfo: any = null;
@@ -1049,7 +1140,7 @@ export const approveUserSubscription = async (
       // bob_pk: resultInfo.policyParameters.bobs[index].verifyingKey,
       bob_account_id: bobAccountId, //
       policy_label_id: policyLabelId,
-      size: preEnacted.sizes[index],
+      size: preEnacted.sizes[index]
     });
   }
 
@@ -1488,7 +1579,7 @@ export const extendPolicysValidity = async (
   const aliceAddress = applyInfo['alice_address'];
 
   //check the pay status by payCheckUrl
-  const payStatus: string = await queryBobPayStatus(orderId, payCheckUrl);
+  const payStatus: string = await getBobPayStatus(orderId, payCheckUrl);
   //NOT_PAID (not paid or Insufficient payment), PENDING, UNDER_REVIEW, APPROVED, REJECTED, EXPRIED
 
   let payInfo: any = null;

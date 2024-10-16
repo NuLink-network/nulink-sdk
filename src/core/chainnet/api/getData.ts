@@ -34,7 +34,18 @@ export const getSettingsData = async (): Promise<NetworkConfigOptions> => {
  */
 export const getCurrentNetworkKey = async (): Promise<NETWORK_LIST> => {
   const network = await storage.getItem(CHAIN_NETWORK_LABEL);
-  return network || defaultChainNetWork;
+  let currentNetwork = network || defaultChainNetWork;
+
+    //@ethersproject\networks\src.ts chain name: bnbt, bnb, maticmum
+    if (currentNetwork.toLowerCase() === 'bnbt') {
+      currentNetwork = NETWORK_LIST.Horus;
+    } else if (currentNetwork.toLowerCase() === 'bnb') {
+      currentNetwork = NETWORK_LIST.HorusMainNet;
+    } else if (currentNetwork.toLowerCase() === 'maticmum') {
+      currentNetwork = NETWORK_LIST.PolygonTestNet;
+    }
+
+    return currentNetwork;
 };
 
 /**
@@ -86,16 +97,15 @@ export const getCurrentNetworkInitialConfiguration = async () => {
  * @returns {Promise<void>}
  */
 export const setClientId = async (clientId: string) => {
-
   //note: Each digit in the clientId must be composed of numbers.
 
-  if(!isNumeric(clientId)){
+  if (!isNumeric(clientId)) {
     throw new Error('Each digit in the clientId must be composed of numbers');
   }
 
-  console.log("before setclientId: ", clientId)
+  console.log('before setclientId: ', clientId);
   await storage.setItem(CLIENT_ID_LABEL, clientId as string);
-  console.log("after setclientId: ", clientId)
+  console.log('after setclientId: ', clientId);
 };
 
 /**
@@ -104,15 +114,14 @@ export const setClientId = async (clientId: string) => {
  * @param {boolean} throwException -  Will it throw an exception if the clientId is not set
  * @returns {Promise<void>}
  */
-export const getClientId = async (throwException: boolean =false): Promise<string> => {
+export const getClientId = async (throwException: boolean = false): Promise<string> => {
   let clientId = await storage.getItem(CLIENT_ID_LABEL);
 
   if (clientId === null || clientId === undefined || clientId === '') {
-    if(throwException)
-    {
+    if (throwException) {
       throw new Error('clientId is not set');
     }
-    clientId = ''
+    clientId = '';
   }
 
   return clientId;

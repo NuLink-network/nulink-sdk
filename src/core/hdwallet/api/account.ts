@@ -1034,7 +1034,7 @@ export class Account extends IJson {
     // const account = web3.eth.accounts.privateKeyToAccount('0x2cc983ef0f52c5e430b780e53da10ee2bb5cbb5be922a63016fc39d4d52ce962');
     //web3.eth.accounts.wallet.add(account);
 
-    const tokenContractAddress = 'erc20_token_' + Web3.utils.toChecksumAddress(tokenAddress);
+    const tokenContractAddress = Web3.utils.toChecksumAddress(tokenAddress);
 
     let contractInst = SingletonService.get<Contract>(tokenContractAddress);
     if (isBlank(contractInst)) {
@@ -1052,6 +1052,7 @@ export class Account extends IJson {
         }
       ];
 
+      web3 = await getWeb3();
       const contract: Contract = new web3.eth.Contract(abi as any, tokenContractAddress);
       SingletonService.set<Contract>(tokenContractAddress, contract, true);
       contractInst = contract;

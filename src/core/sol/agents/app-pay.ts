@@ -39,20 +39,28 @@ export class AppPayAgent {
     if (isBlank(clientId)) {
       throw new Error('clientId is not set, need invoke the function initClientId first');
     }
-    
+
+    console.log(`before appPay.estimateGas.pay: 
+      \nclientId: ${clientId}
+      \norderId: ${orderId}
+      \npayAmount: ${payAmount}
+      \naliceAddress: ${aliceAddress}
+      \npayToken: ${payToken}
+      `);
+
     const gasUsedAmounts = await appPay.estimateGas.pay(
       clientId,
       orderId,
       payAmount,
       // startTimestamp, // unit: seconds
       // endTimestamp, // unit: seconds
-      // usageDays * 86400, //seconds, 
+      // usageDays * 86400, //seconds,
       aliceAddress,
       payToken,
       overrides
       //{ ...overrides, gasLimit: 30000000, gasPrice: gasPrice}
     );
-
+    
     const web3: Web3 = await getWeb3();
 
     const [GAS_PRICE_FACTOR_LEFT, GAS_PRICE_FACTOR_RIGHT] = DecimalToInteger(GAS_PRICE_FACTOR);
@@ -121,18 +129,39 @@ export class AppPayAgent {
         payToken,
         usageDays,
         aliceAddress,
-        gasPrice,
+        gasPrice
         //{ ...overrides, gasLimit: 30000000, gasPrice: gasPrice}
       );
 
-      gasUsedAmounts = gasInfo.gasLimit
+      gasUsedAmounts = gasInfo.gasLimit;
+      
+      console.log("1.before appPay.pay: gasInfo: ", gasInfo);
+      console.log("2.before appPay.pay: gasLimt: ", gasInfo.gasLimit.toHexString());
     }
 
-    const tx = await appPay.pay(clientId, orderId, payAmount, /* startTimestamp, endTimestamp *//*usageDays,*/ aliceAddress, payToken, {
-      ...overrides,
-      gasLimit: gasUsedAmounts,
-      gasPrice: gasPrice
-    });
+    console.log(`3.before appPay.pay: 
+      \nclientId: ${clientId}
+      \norderId: ${orderId}
+      \npayAmount: ${payAmount}
+      \naliceAddress: ${aliceAddress}
+      \npayToken: ${payToken}
+      \ngasPrice: ${gasPrice.toHexString()}
+      `);
+      
+    const tx = await appPay.pay(
+      clientId,
+      orderId,
+      payAmount,
+      /* startTimestamp, endTimestamp */ 
+      /*usageDays,*/ 
+      aliceAddress,
+      payToken,
+      {
+        ...overrides,
+        gasLimit: gasUsedAmounts,
+        gasPrice: gasPrice
+      }
+    );
 
     if (waitReceipt) {
       await tx.wait(DEFAULT_WAIT_N_CONFIRMATIONS);
@@ -225,11 +254,11 @@ export class AppPayAgent {
       const gasInfo = await AppPayAgent.estimateGasBybobPayCancel(
         web3Provider,
         orderId,
-        gasPrice,
+        gasPrice
         //{ ...overrides, gasLimit: 30000000, gasPrice: gasPrice}
       );
 
-      gasUsedAmounts = gasInfo.gasLimit
+      gasUsedAmounts = gasInfo.gasLimit;
     }
 
     const tx = await appPay.payCancel(clientId, orderId, {
@@ -245,38 +274,29 @@ export class AppPayAgent {
     return tx;
   }
 
-
   public static async getPayInfo(
     provider: ethers.providers.Provider,
-    orderId: BigNumber, //payId
-  ): Promise<[
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    number,
-    string,
-    string,
-    string
-  ] & {
-    payID: BigNumber;
-    payAmount: BigNumber;
-    payTime: BigNumber;
-    startTime: BigNumber;
-    endTime: BigNumber;
-    paySts: number;
-    bobAddress: string;
-    aliceAddress: string;
-    payToken: string;
-  }> {
+    orderId: BigNumber //payId
+  ): Promise<
+    [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, number, string, string, string] & {
+      payID: BigNumber;
+      payAmount: BigNumber;
+      payTime: BigNumber;
+      startTime: BigNumber;
+      endTime: BigNumber;
+      paySts: number;
+      bobAddress: string;
+      aliceAddress: string;
+      payToken: string;
+    }
+  > {
     const appPay = await this.connect(provider);
     // console.log("SubscriptionManager", SubscriptionManager);
     // console.log("provider", provider);
 
     //note: Each digit in the clientId must be composed of numbers.
-    const clientId = await getClientId(true); 
-    
+    const clientId = await getClientId(true);
+
     /**
      *     struct payInfoS{
               uint256 payID;
@@ -299,8 +319,12 @@ export class AppPayAgent {
     provider: ethers.providers.Provider,
     signer?: ethers.providers.JsonRpcSigner
   ): Promise<AppPay> {
+    
     const network = await provider.getNetwork();
-    let contractAddress = await getContracts(network.chainId)[CONTRACT_NAME.appPay].address;
+    
+    const contractInfo = await getContracts(network.chainId)
+    
+    let contractAddress = contractInfo[CONTRACT_NAME.appPay].address;
 
     // console.log("provider", provider);
     // console.log("network", network);

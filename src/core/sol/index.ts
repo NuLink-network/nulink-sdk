@@ -8,8 +8,8 @@ import AppPayABI from './abi/appPay.json';
  */
 
 export enum NETWORK_LIST {
-  Horus = 'Horus', //testnet
-  HorusMainNet = 'Horus MainNet',
+  Horus = 'Horus', //testnet    bnbt
+  HorusMainNet = 'Horus MainNet', // bnb
   ConfluxTestNet = 'ConFlux Espace TestNet',
   PolygonTestNet = 'Polygon Mumbai', //polygon testnet
   XChainTestNet = 'X-Layer TestNet',
