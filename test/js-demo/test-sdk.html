@@ -31,6 +31,14 @@
       let mnemonic;
       let accountAlice;
 
+      const assert = (condition/* : boolean */, message/* : string */)  => {
+        console.assert(condition, message);
+        if (!condition) {
+            throw new Error(message);
+        }
+        return true;
+    }
+
       const sleep = async (ms) => {
         return new Promise((resolve) => setTimeout(resolve, ms));
       };
@@ -78,20 +86,20 @@
         // console.log("--------------------- mnemonic: -------------------", mnemonic);
 
         //debugger;
-        console.assert(!NUSDK.isBlank(nuLinkHDWallet), 'nuLinkHDWallet create or load failed');
+        assert(!NUSDK.isBlank(nuLinkHDWallet), 'nuLinkHDWallet create or load failed');
 
         //also, We can verify whether the user's password is correct
         let correct = await NUSDK.verifyPassword(password);
 
-        console.assert(correct, 'password is error');
+        assert(correct, 'password is error');
 
         let hasAnAccountInLocal = await NUSDK.existDefaultAccount();
 
-        console.assert(correct, 'default account is not exist');
+        assert(correct, 'default account is not exist');
 
         accountAlice = await NUSDK.getWalletDefaultAccount(password);
 
-        console.assert(!NUSDK.isBlank(accountAlice), 'get default account Failed: accountAlice');
+        assert(!NUSDK.isBlank(accountAlice), 'get default account Failed: accountAlice');
 
         const rootExtendedPrivateKey = await nuLinkHDWallet.getRootExtendedPrivateKey(password);
         console.log('rootExtendedPrivateKey: ', rootExtendedPrivateKey);
@@ -173,8 +181,8 @@
         console.log('strategyId: ', uploadedInfos.strategyId);
         console.log('public key: ', uploadedInfos.accountPublicKey);
 
-        console.assert(uploadedInfos.address === accountAlice.address);
-        console.assert(uploadedInfos.pk === publicKey);
+        assert(uploadedInfos.address === accountAlice.address);
+        assert(uploadedInfos.pk === publicKey);
 
         console.log('uploadedInfo files list: ', uploadedInfos.filesInfo);
 
@@ -223,7 +231,7 @@
 
         console.log('resultList: ', resultList);
         console.log('resultList["total"]>0 ', resultList['total'] > 0);
-        console.assert(resultList && resultList['total'] > 0, 'default account is not exist');
+        assert(resultList && resultList['total'] > 0, 'default account is not exist');
 
         let fileIndex = -1;
         for (let index = 0; index < resultList['list'].length; index++) {
@@ -233,7 +241,7 @@
             break;
           }
         }
-        console.assert(fileIndex >= 0, "can't find the files just uploaded");
+        assert(fileIndex >= 0, "can't find the files just uploaded");
         const uploadFileInfo = resultList['list'][fileIndex];
 
         /*   console.log('uploadFileInfo["file_name"] ', uploadFileInfo["file_name"]);
@@ -243,7 +251,7 @@
         console.log('accountAlice.id ', accountAlice.id);
         console.log('equal2: ', uploadFileInfo["owner_id"] === accountAlice.id); */
 
-        console.assert(
+        assert(
           uploadFileInfo['owner_id'] === accountAlice.id,
           `uploadFileInfo["owner_id"] !== accountAlice.id: ${accountAlice.id}`
         );
@@ -267,7 +275,7 @@
           _accountBob = await accountManager.createAccount(`Bob_Single`)
         }
 
-        console.assert(!NUSDK.isBlank(_accountBob), '_accountBob is undefined or null');
+        assert(!NUSDK.isBlank(_accountBob), '_accountBob is undefined or null');
 
 
         for (let index = 0; index < numReqData; index++) {
@@ -312,7 +320,7 @@
             }
             */
 
-          console.assert(
+          assert(
             findFileResultList && findFileResultList['total'] > 0,
             '! findFileResultList || findFileResultList["total"] == 0'
           );
@@ -325,10 +333,10 @@
               break;
             }
           }
-          console.assert(dataIndex2 >= 0, 'fileIndex2 < 0');
+          assert(dataIndex2 >= 0, 'fileIndex2 < 0');
 
           const findDataInfo = findFileResultList['list'][dataIndex2];
-          console.assert(findDataInfo['owner_id'] === accountAlice.id, 'findFileInfo["owner_id"] !== accountAlice.id ');
+          assert(findDataInfo['owner_id'] === accountAlice.id, 'findFileInfo["owner_id"] !== accountAlice.id ');
 
           applyDataId = findDataInfo['file_id'];
 
@@ -341,18 +349,18 @@
                     file_ipfs_address:,policy_encrypted_pk:,encrypted_treasure_map_ipfs_address:,alice_verify_pk
             } 
         */
-          // console.assert(fileDetails["creator_id"] === accountAlice.id, 'fileDetails["creator_id"] != accountAlice.id');
-          console.assert(dataDetails['file_id'] === applyDataId, 'fileDetails["file_id"] != applyFileId');
-          console.assert(parseInt(dataDetails['status']) === 0, 'fileDetails["status"] != 0'); //Is not to apply for
+          // assert(fileDetails["creator_id"] === accountAlice.id, 'fileDetails["creator_id"] != accountAlice.id');
+          assert(dataDetails['file_id'] === applyDataId, 'fileDetails["file_id"] != applyFileId');
+          assert(parseInt(dataDetails['status']) === 0, 'fileDetails["status"] != 0'); //Is not to apply for
 
           //nlk v12 version
           const nlkV14Token /* : string  */ = '0x8A95eF66ef0b5bCD10cb8aB433c768f50B5822a8';
           //Simulated order id.
-          const orderId /* : bigint */ = await NUSDK.simulateOrderGenerationForDev(
+          const orderId /* : bigint */ =  await NUSDK.simulateOrderGenerationForDev(
             accountAlice.address,
             accountBob.address,
             'http://47.237.123.177:8083'
-          );
+          ); /*'601889332465669'; */
 
           console.log(`--------------------- Bob address: ${accountBob.address}---------------------`);
 
@@ -383,7 +391,7 @@
             );
           } catch (e) {
             console.log(`bob_${index} apply data/file failed: `, e);
-            // console.assert(false);
+            // assert(false);
             return;
           }
 
@@ -401,7 +409,7 @@
         }
         */
 
-        console.assert(
+        assert(
           dataNeedToApprovedResultList2 && dataNeedToApprovedResultList2['total'] > 0,
           `!dataNeedToApprovedResultList2 || dataNeedToApprovedResultList2["total"] <= 0`
         );
@@ -411,13 +419,13 @@
           const element = dataNeedToApprovedResultList2['list'][index];
           if (element['file_id'] === applyDataId) {
             dataIndexs.push(index);
-            console.assert(
+            assert(
               element['file_owner_id'] === accountAlice.id,
               'element["file_owner_id"] !== accountAlice.id'
             );
           }
         }
-        console.assert(
+        assert(
           dataIndexs.length >= 0 && dataIndexs.length == numReqData,
           'dataIndexs.length == 0 || dataIndexs.length !== numReqData '
         );
@@ -453,26 +461,29 @@
           applyIds.push(needToApprovedDataInfo['apply_id']);
         }
 
-        const serverFeeNLKInWei /*: BigNumber */ = await NUSDK.getPolicysTokenCost(
-          accountAlice,
-          startDates,
-          endDates,
-          ursulaShares
-        );
+        console.log("applyIds length: ", applyIds)
 
-        // const serverValue = Web3.utils.fromWei(serverFeeNLKInWei.toString(), "ether");
-        // console.log("server nlk fee  ether is:", serverValue);
+        assert(applyIds.length > 0, "applyId length must > 0")
+        // const serverFeeNLKInWei /*: BigNumber */ = await NUSDK.getPolicysTokenCost(
+        //   accountAlice,
+        //   startDates,
+        //   endDates,
+        //   ursulaShares
+        // );
 
-        //2. Alice calc gas fee (wei): the chain of bsc test token
-        const gasInfo /*: GasInfo */ = await NUSDK.getPolicysGasFee(
-          accountBobIds,
-          applyIds,
-          ursulaShares,
-          ursulaThresholds,
-          startMss.map((startMs) => startMs / 1000),
-          endMss.map((endMs) => endMs / 1000),
-          NUSDK.BigNumber.from(serverFeeNLKInWei)
-        );
+        // // const serverValue = Web3.utils.fromWei(serverFeeNLKInWei.toString(), "ether");
+        // // console.log("server nlk fee  ether is:", serverValue);
+
+        // //2. Alice calc gas fee (wei): the chain of bsc test token
+        // const gasInfo /*: GasInfo */ = await NUSDK.getPolicysGasFee(
+        //   accountBobIds,
+        //   applyIds,
+        //   ursulaShares,
+        //   ursulaThresholds,
+        //   startMss.map((startMs) => startMs / 1000),
+        //   endMss.map((endMs) => endMs / 1000),
+        //   NUSDK.BigNumber.from(serverFeeNLKInWei)
+        // );
 
         const aliceApprovedDataListLast = await NUSDK.getApprovedDataAsPublisher(accountAlice, 1, 1000);
 
@@ -518,7 +529,7 @@
         // eslint-disable-next-line no-debugger
         debugger;
 
-        console.assert(
+        assert(
           aliceApprovedDataList && aliceApprovedDataList['total'] > 0,
           '!aliceApprovedDataList || aliceApprovedDataList["total"] <= 0'
         );
@@ -529,7 +540,7 @@
           const element = aliceApprovedDataList['list'][index];
           if (element['file_id'] === applyDataId) {
             dataIndex2s.push(index);
-            console.assert(element['file_owner_id'] === accountAlice.id);
+            assert(element['file_owner_id'] === accountAlice.id);
             const policyId = element['policy_id'];
             //console.log(`index_${index} data/file policy Id: ${policyId}`)
             const accountBobId = element['proposer_id'];
@@ -545,7 +556,7 @@
                             }
       */
 
-            console.assert(bobBeApprovedDataList && bobBeApprovedDataList['total'] > 0);
+            assert(bobBeApprovedDataList && bobBeApprovedDataList['total'] > 0);
 
             let dataIndex6 = -1;
             for (let index = 0; index < bobBeApprovedDataList['list'].length; index++) {
@@ -555,12 +566,12 @@
                 break;
               }
             }
-            console.assert(dataIndex6 >= 0);
+            assert(dataIndex6 >= 0);
 
             const bobBeApprovedDataInfo = bobBeApprovedDataList['list'][dataIndex6];
-            console.assert(bobBeApprovedDataInfo['file_owner_id'] === accountAlice.id);
+            assert(bobBeApprovedDataInfo['file_owner_id'] === accountAlice.id);
             const policyId2 = bobBeApprovedDataInfo['policy_id'];
-            console.assert(policyId2 === policyId);
+            assert(policyId2 === policyId);
 
             //Test the decryption of each piece of data separately.
             //Finally, Bob gets the contents of the data/file
@@ -573,7 +584,7 @@
             const dataContent /* : string */ = NUSDK.Buffer.from(arrayBuffer).toString();
             console.log('dataContent: ', dataContent);
             console.log('plainText: ', plainText);
-            console.assert(dataContent === plainText);
+            assert(dataContent === plainText);
 
             //finish
           }
@@ -591,11 +602,11 @@
             const dataContent /* : string */ = NUSDK.Buffer.from(arrayBuffer).toString();
             console.log('batch test => dataContent: ', dataContent);
             console.log('batch test => plainText: ', plainText);
-            console.assert(dataContent === plainText);
+            assert(dataContent === plainText);
           }
         }
 
-        console.assert(dataIndex2s.length > 0, 'dataIndex2s.length <= 0');
+        assert(dataIndex2s.length > 0, 'dataIndex2s.length <= 0');
 
         // //Alice upload file to exist policy
 
@@ -623,7 +634,7 @@
         // const fileContent2 /*: string*/ = NUSDK.Buffer.from(arrayBuffer2).toString();
         // console.log('fileContent2: ', fileContent2);
         // console.log('plainText2: ', plainText2);
-        // console.assert(fileContent2 === plainText2, 'fileContent2 !== plainText2');
+        // assert(fileContent2 === plainText2, 'fileContent2 !== plainText2');
 
         // //you can get all status files for mine apply: The files I applied for
         // //status 0: all status, include:  applying，approved, rejected
@@ -638,7 +649,7 @@
         //     }
         // */
 
-        // console.assert(data && !NUSDK.isBlank(data) && data['total'] > 0, 'data is blank or total is 0');
+        // assert(data && !NUSDK.isBlank(data) && data['total'] > 0, 'data is blank or total is 0');
 
         console.log('finish');
       };

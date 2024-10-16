@@ -1155,8 +1155,8 @@ export const applyForSubscriptionAccess = async (
   //check the pay status by payCheckUrl
   const payStatus: string = await getBobPayStatus(orderId, payCheckUrl);
 
-  // //eslint-disable-next-line no-debugger
-  // debugger;
+  //eslint-disable-next-line no-debugger
+  debugger;
   
   //NOT_PAID (not paid or Insufficient payment), PENDING, UNDER_REVIEW, APPROVED, REJECTED, EXPRIED
 
