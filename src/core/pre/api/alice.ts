@@ -918,8 +918,8 @@ export const approveNLK = async (
     //wait txReceipt
     console.log(
       // eslint-disable-next-line no-extra-boolean-cast
-      !!txReceipt.transactionHash
-        ? `In approveNLK: no need approve`
+      !txReceipt.transactionHash
+        ? `In approveNLK: get transaction receipt failed`
         : `txHash: ${txReceipt.transactionHash}`
     );
     

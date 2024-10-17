@@ -3,6 +3,7 @@ import SubscriptionManagerABI from "./abi/SubscriptionManager.json";
 
 export enum NETWORK_LIST {
   Horus = "Horus",
+  HorusMainNet = "HorusMainNet",
   Conflux = "ConFlux Espace"
 }
 
