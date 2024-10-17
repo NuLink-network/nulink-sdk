@@ -1090,7 +1090,7 @@ export const bobPaySubscriptionFeeApproveNLK = async (
     //wait txReceipt
     console.log(
       // eslint-disable-next-line no-extra-boolean-cast
-      !!txReceipt.transactionHash ? `In Bob pay approveNLK: no need approve` : `txHash: ${txReceipt.transactionHash}`
+      !txReceipt.transactionHash ? `In Bob pay approveNLK: : get transaction receipt failed` : `txHash: ${txReceipt.transactionHash}`
     )
 
     // eslint-disable-next-line no-extra-boolean-cast
