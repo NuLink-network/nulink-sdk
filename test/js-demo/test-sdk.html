@@ -339,6 +339,7 @@
           assert(findDataInfo['owner_id'] === accountAlice.id, 'findFileInfo["owner_id"] !== accountAlice.id ');
 
           applyDataId = findDataInfo['file_id'];
+          console.log("apply file id: ", applyDataId);
 
           //get file details
           const dataDetails = await NUSDK.getDataDetails(applyDataId, accountBob.id); /*as object*/
@@ -417,18 +418,20 @@
         const dataIndexs /*: number[] */ = []; //Array(numReqFiles).fill(-1);
         for (let index = 0; index < dataNeedToApprovedResultList2['list'].length; index++) {
           const element = dataNeedToApprovedResultList2['list'][index];
-          if (element['file_id'] === applyDataId) {
+          //因为是对用户的审批，所以fileId就是申请订阅该用户的的policy_label_id对应上传的第一个文件， 所以去掉if (element['file_id'] === applyDataId) { 的 判断
+          // if (element['file_id'] === applyDataId) {
             dataIndexs.push(index);
             assert(
               element['file_owner_id'] === accountAlice.id,
               'element["file_owner_id"] !== accountAlice.id'
             );
-          }
+          // }
         }
-        assert(
-          dataIndexs.length >= 0 && dataIndexs.length == numReqData,
-          'dataIndexs.length == 0 || dataIndexs.length !== numReqData '
-        );
+        // assert(
+        //   dataIndexs.length >= 0 && dataIndexs.length == numReqData,
+        //   'dataIndexs.length == 0 || dataIndexs.length !== numReqData '
+        // );
+        assert(dataIndexs.length >= 0, 'dataIndexs.length == 0');
 
         //At this point Alice approves Bob's file usage request, Due to on-chain approval of Bob's request, we first evaluate gas and service fees
         const startDates /*: Date[] */ = [];

@@ -1155,8 +1155,8 @@ export const applyForSubscriptionAccess = async (
   //check the pay status by payCheckUrl
   const payStatus: string = await getBobPayStatus(orderId, payCheckUrl);
 
-  //eslint-disable-next-line no-debugger
-  debugger;
+  // //eslint-disable-next-line no-debugger
+  // debugger;
   
   //NOT_PAID (not paid or Insufficient payment), PENDING, UNDER_REVIEW, APPROVED, REJECTED, EXPRIED
 
@@ -1340,8 +1340,38 @@ export const approveUserSubscription = async (
   const userAccountIds: string[] = applyInfoList.map((applyInfo) => applyInfo['proposer_id']);
   //applyInfo["start_at"] is second,
   //new Date(startMs) //  start_at is seconds, but Date needs milliseconds
-  const startDates: Date[] = applyInfoList.map((applyInfo) => new Date(Number(applyInfo['start_at']) * 1000));
-  const endDates: Date[] = applyInfoList.map((applyInfo) => new Date(Number(applyInfo['end_at']) * 1000));
+
+  const startDates: Date[] = [];
+  const endDates: Date[] = [];
+  
+  for (let index = 0; index < applyInfoList.length; index++) {
+    const applyInfo = applyInfoList[index];
+    const days  = Number(applyInfo['days'] as number );
+    
+    const startAtSeconds = Number(applyInfo['start_at']);
+    const endAtSeconds = Number(applyInfo['end_at']);
+    
+    if(startAtSeconds == 0 || endAtSeconds == 0){ // means that it has not set the end date, too
+      const startMs: number = (Math.floor(new Date().getTime() / 1000) - new Date().getTimezoneOffset() * 60) * 1000
+      const startDate: Date = new Date(startMs) //  start_at is seconds, but Date needs milliseconds
+
+      const endMs: number = startMs + days * 24 * 60 * 60 * 1000
+      const endDate: Date = new Date(endMs) //  start_at is seconds, but Date needs milliseconds
+      
+      startDates.push(startDate);
+      endDates.push(endDate);
+    }
+    else{
+      startDates.push(new Date(startAtSeconds * 1000));
+      endDates.push(new Date(endAtSeconds * 1000));
+    }
+    
+  }
+  
+  // const startDates: Date[] = applyInfoList.map((applyInfo) => new Date(Number(applyInfo['start_at']) * 1000));
+  // const endDates: Date[] = applyInfoList.map((applyInfo) => new Date(Number(applyInfo['end_at']) * 1000));
+
+  
   const ursulaShares: number[] = Array(applyInfoList.length).fill(3);
   const ursulaThresholds: number[] = Array(applyInfoList.length).fill(1);
   const porterUri = '';
