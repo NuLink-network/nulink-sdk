@@ -114,8 +114,10 @@
         // await sleep(3000)
         bridge.postMessage(JSON.stringify({ id: "4", method: 'getAccountInfo', data: {"password": password} }), '/');
         await sleep(1000)
-        bridge.postMessage(JSON.stringify({ id: "5", method: 'restoreWallet', data: {"newPassword": password, "mnemonic": "buffalo capable tomato office riot slam finger spirit lesson lucky debate volcano"} }), '/');
-        await sleep(3000)
+        
+        // bridge.postMessage(JSON.stringify({ id: "5", method: 'restoreWallet', data: {"newPassword": password, "mnemonic": "buffalo capable tomato office riot slam finger spirit lesson lucky debate volcano"} }), '/');
+        // await sleep(3000)
+        
         bridge.postMessage(JSON.stringify({ id: "6", method: 'setRpcUrl', data: {"rpcUrl": "https://data-seed-prebsc-1-s2.bnbchain.org:8545"} }), '/');
         await sleep(1000)
         
@@ -150,6 +152,27 @@
         await sleep(3000)
         //14.Upload dynamic content (post) that requires separate payment each time.
         bridge.postMessage(JSON.stringify({ id: "6", method: 'publishDataForIndividualPaid', data: {"password": password, "dataInfoList": dataList} }), '/');
+        await sleep(3000)
+        
+        const aliceAddress = "0x2c6ac09d39c5ce4450b0b900ccc386301fe62e32";
+        const bobAddress = "0xd587515f2ccbb3472f90d8895638a481a1e3ba9d";
+        
+        const orderId /* : bigint */ =  await NUSDK.simulateOrderGenerationForDev(
+          aliceAddress,
+          bobAddress,
+          'http://47.237.123.177:8083'
+          ); /*'601889332465669'; */
+        const nlkV14Token /* : string  */ = '0x8A95eF66ef0b5bCD10cb8aB433c768f50B5822a8';
+
+        //TODO: fileId 需要先运行之前的 upload然后记下来, 然后屏蔽上传代码在运行 Bob申请订阅Alice函数
+
+        //15. Bob subscribes to Alice's updates.
+        bridge.postMessage(
+                            JSON.stringify({ id: "7", method: 'applyForSubscriptionAccess', data: {"password": password, "orderId": orderId,
+                              "fileId": "p9CMeDJ5aY_wi9z6FsNxi", "usageDays": 30, "payTokenAddress": nlkV14Token, "payAmountInWei": '100000000000000000',
+                              "payCheckUrl":'http://47.237.123.177:8083/subscribe/getOrderStatus' } }), 
+                          '/');
+        
         await sleep(3000)
         
       })();

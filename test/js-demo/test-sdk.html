@@ -10,8 +10,9 @@
     //
 
     <button id="create">第一步：创建钱包</button>
-    <button id="run_next">第二步：继续运行用例</button>
-
+    <button id="run_next1">第二步：继续运行用例1</button>
+    <button id="run_next2">第二步：继续运行用例2</button>
+    
     <div id="text" class="text-box">这是一段文本显示框</div>
 
     <script src="./nulink-sdk.js"></script>
@@ -30,6 +31,8 @@
       let nuLinkHDWallet;
       let mnemonic;
       let accountAlice;
+
+      const pageSize = 1; //1000
 
       const assert = (condition/* : boolean */, message/* : string */)  => {
         console.assert(condition, message);
@@ -131,7 +134,7 @@
         //debugger;
       };
 
-      const test2 = async () => {
+      const test2 = async (case1/* : number */) => {
         // Note: We only support one account currently.
 
         //Now we can encrypt and upload a file for others to apply for download
@@ -171,9 +174,19 @@
           }
         ];
         const publicKey = accountAlice.encryptedKeyPair._publicKey;
-        //2 Upload User Dynamics: Subscribers can view. (Alice encrypt and update a data/file to the ipfs network)
-        const uploadedInfos = await NUSDK.publishDataForPaidSubscriberVisible(accountAlice, dataList);
 
+        let uploadedInfos = null;
+        if(case1 == 1)
+        {
+          //2 Upload User Dynamics: Subscribers can view. (Alice encrypt and update a data/file to the ipfs network)
+          uploadedInfos = await NUSDK.publishDataForPaidSubscriberVisible(accountAlice, dataList);
+        }
+        else if(case1 == 2){
+          //2 Uploads require separate payments for each dynamic.
+          uploadedInfos = await NUSDK.publishDataForIndividualPaid(accountAlice, dataList)
+          
+        }
+    
         // // eslint-disable-next-line no-debugger
         // debugger;
 
@@ -185,36 +198,6 @@
         assert(uploadedInfos.pk === publicKey);
 
         console.log('uploadedInfo files list: ', uploadedInfos.filesInfo);
-
-        ////TODO: TODO: TODO:
-        ////Move the section on uploads that require separate payments to another test case.
-        ////2 Uploads require separate payments for each dynamic.
-        //const dataList2: DataInfo[] = [
-        //  {
-        //    label: `history-${nanoid()}_2.`,
-        //    dataArrayBuffer: historyContent.buffer,
-        //    mimetype: "application/pdf",
-        //  },
-        //  {
-        //    label: `history-${nanoid()}_2.pdf`,
-        //    dataArrayBuffer: historyContent.buffer,
-        //    mimetype: "application/pdf",
-        //  },
-        //]
-        //const uploadedInfos2: any = await NUSDK.publishDataForIndividualPaid(accountAlice, dataList2)
-        //
-        //
-        //console.log("address2: ", uploadedInfos2.address);
-        //console.log("strategyId2: ", uploadedInfos2.strategyId);
-        //console.log("public key2: ", uploadedInfos2.accountPublicKey);
-        //
-        //assert(uploadedInfos2.address === accountAlice.address)
-        //assert(uploadedInfos2.pk === publicKey)
-        //
-        //console.log("uploadedInfo2 files list: ", uploadedInfos2.filesInfo);
-
-        // // eslint-disable-next-line no-debugger
-        // debugger;
 
         //3. We can get the files just uploaded
         const resultList = await NUSDK.getUploadedData(accountAlice, undefined, 1, 1000);
@@ -294,6 +277,9 @@
           bobAccountId2AccountMap[_accountBob.id] = _accountBob;
         }
 
+        const orderIds = [];
+        const payCheckUrl = "http://47.237.123.177:8083/subscribe/getOrderStatus";
+
         let applyDataId /*: string */ = '';
         for (let index = 0; index < accountBobs.length; index++) {
           const accountBob = accountBobs[index];
@@ -363,6 +349,8 @@
             'http://47.237.123.177:8083'
           ); /*'601889332465669'; */
 
+          orderIds.push(orderId);
+
           console.log(`--------------------- Bob address: ${accountBob.address}---------------------`);
 
           console.log(
@@ -377,6 +365,7 @@
           
           debugger;
           
+          
           let _applyId /* : number | undefined */ = undefined;
 
           //Bob requests permission to use the data/file for 30 days
@@ -388,7 +377,7 @@
               30,
               nlkV14Token,
               '100000000000000000',
-              'http://47.237.123.177:8083/subscribe/getOrderStatus'
+              payCheckUrl
             );
           } catch (e) {
             console.log(`bob_${index} apply data/file failed: `, e);
@@ -400,7 +389,7 @@
         }
 
         //Alice receives Bob's file usage request
-        const dataNeedToApprovedResultList2 = await NUSDK.getDataPendingApprovalAsPublisher(accountAlice, 1, 1000);
+        const dataNeedToApprovedResultList2 = await NUSDK.getDataPendingApprovalAsPublisher(accountAlice, 1, pageSize/* 1000 */);
         /*return data format: {
             list: [
             { apply_id, file_id:, proposer, proposer_id, file_owner:, file_owner_id:, policy_id, hrac, start_at:, end_at, days,  created_at }
@@ -453,6 +442,9 @@
 
           const endMs /*: number */ = startMs + needToApprovedDataInfo['days'] /*as number*/ * 24 * 60 * 60 * 1000;
           const endDate /*: Date */ = new Date(endMs); //  start_at is seconds, but Date needs milliseconds
+
+          const applyId = needToApprovedDataInfo['apply_id'];
+
           const bobAccountId = needToApprovedDataInfo['proposer_id'];
           accountBobIds.push(bobAccountId);
           startDates.push(startDate);
@@ -461,7 +453,7 @@
           endMss.push(endMs);
           ursulaShares.push(2);
           ursulaThresholds.push(1);
-          applyIds.push(needToApprovedDataInfo['apply_id']);
+          applyIds.push(applyId);
         }
 
         console.log("applyIds length: ", applyIds)
@@ -488,7 +480,7 @@
         //   NUSDK.BigNumber.from(serverFeeNLKInWei)
         // );
 
-        const aliceApprovedDataListLast = await NUSDK.getApprovedDataAsPublisher(accountAlice, 1, 1000);
+        const aliceApprovedDataListLast = await NUSDK.getApprovedDataAsPublisher(accountAlice, 1, pageSize/* 1000 */);
 
         // //Note: Please make sure that the account has sufficient tnlk and bsc testnet tokens before this, otherwise the approval will fail
         // //Alice approves Bob's application for file usage. Whenever Alice approves a file request, an on-chain policy is created
@@ -504,7 +496,32 @@
         //   '', //porterUri
         //   gasInfo.gasFee
         // );
+        
+        //Note: First check if the payment was successful. Only after the payment is successful, then call the approve function.
+        let payStatus = 1 //1: In Payment (Unpaid), 2: Payment Failed, 3: Payment Successful, 4: Refunded.
+        while(payStatus !== 3)
+        {
+          for (let index = 0; index < orderIds.length; index++) {
+            
+            const orderId = orderIds[index];
+            payStatus = await NUSDK.getPreBobPayStatus(orderId);
+            
+              if(payStatus !== 3)
+              {
+                            // //eslint-disable-next-line no-debugger
+                // debugger;
 
+                //NOT_PAID (not paid or Insufficient payment), PENDING, UNDER_REVIEW, APPROVED, REJECTED, EXPRIED
+
+                await sleep(2000); //2 seconds
+              }
+          }
+          
+        }
+
+        // eslint-disable-next-line no-debugger
+        debugger;
+              
         //Alice approves Bob's application for data/file usage. Whenever Alice approves a data/file request, an on-chain policy is created
         await NUSDK.approveUserSubscription(accountAlice, applyIds);
 
@@ -518,7 +535,7 @@
         do {
           await sleep(10000); //10 seconds
           //Alice, as the publisher of the file, obtains the list of files that she has successfully approved
-          aliceApprovedDataList = await NUSDK.getApprovedDataAsPublisher(accountAlice, 1, 1000);
+          aliceApprovedDataList = await NUSDK.getApprovedDataAsPublisher(accountAlice, 1, pageSize/* 1000 */);
           /*return data format: {
             list: [
                 { apply_id, file_id:, proposer, proposer_id, file_owner:, file_owner_id:, policy_id, hrac, start_at:, end_at, created_at }
@@ -549,7 +566,7 @@
             const accountBobId = element['proposer_id'];
             const accountBob = bobAccountId2AccountMap[accountBobId];
             //Bob finds out that his application has been approved by Alice. Bob now has permission to view the contents of the file
-            const bobBeApprovedDataList = await NUSDK.getApprovedDataAsUser(accountBob, 1, 1000);
+            const bobBeApprovedDataList = await NUSDK.getApprovedDataAsUser(accountBob, 1, pageSize/* 1000 */);
             /*return data format: {
                               list: [
                                 { apply_id, file_id:, proposer, proposer_id, file_owner:, file_owner_id:, policy_id, hrac, start_at:, end_at, created_at }
@@ -559,15 +576,18 @@
                             }
       */
 
-            assert(bobBeApprovedDataList && bobBeApprovedDataList['total'] > 0);
+            debugger;
 
+            assert(bobBeApprovedDataList && bobBeApprovedDataList['total'] > 0);
+            
             let dataIndex6 = -1;
             for (let index = 0; index < bobBeApprovedDataList['list'].length; index++) {
               const element = bobBeApprovedDataList['list'][index];
-              if (element['file_id'] === applyDataId) {
+                //因为是对用户的审批，所以fileId就是申请订阅该用户的的policy_label_id对应上传的第一个文件， 所以去掉if (element['file_id'] === applyDataId) { 的 判断
+              //if (element['file_id'] === applyDataId) {
                 dataIndex6 = index;
-                break;
-              }
+              //  break;
+              //}
             }
             assert(dataIndex6 >= 0);
 
@@ -575,7 +595,8 @@
             assert(bobBeApprovedDataInfo['file_owner_id'] === accountAlice.id);
             const policyId2 = bobBeApprovedDataInfo['policy_id'];
             assert(policyId2 === policyId);
-
+            
+            debugger;
             //Test the decryption of each piece of data separately.
             //Finally, Bob gets the contents of the data/file
             const arrayBuffer /* : ArrayBuffer */ = await NUSDK.getDataContentByDataIdAsUser(
@@ -641,7 +662,7 @@
 
         // //you can get all status files for mine apply: The files I applied for
         // //status 0: all status, include:  applying，approved, rejected
-        // const data = await NUSDK.getDataByStatus(undefined, _accountBob.id, undefined, undefined, 0, 1, 1000);
+        // const data = await NUSDK.getDataByStatus(undefined, _accountBob.id, undefined, undefined, 0, 1, pageSize/* 1000 */);
         // /*
         //     return data format: {
         //     list: [
@@ -654,12 +675,15 @@
 
         // assert(data && !NUSDK.isBlank(data) && data['total'] > 0, 'data is blank or total is 0');
 
+        //TODO: TODO: TODO: test extendPolicysValidity
         console.log('finish');
       };
 
       document.querySelector('#create').addEventListener('click', test1);
-      document.querySelector('#run_next').addEventListener('click', test2);
-
+      document.querySelector('#run_next1').addEventListener('click', () => test2(2));
+      document.querySelector('#run_next2').addEventListener('click', () => test2(1));
+      
+      
       const asyncInit = async () => {
         try {
           const clientId = '593689189003333';

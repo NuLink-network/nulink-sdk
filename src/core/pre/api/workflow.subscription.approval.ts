@@ -381,6 +381,50 @@ export const uploadDataSpecifiedLocalPolicy = async (
   return retDataInfoList;
 };
 
+
+
+/**
+ * Query Bob's Payment Status from pre backend
+ 
+ * @category Data User(Bob) Request Data
+ * @param {BigNumber | string} orderId - A unique string composed of numbers. 
+ * @returns {Promise<string>}  1: In Payment (Unpaid), 2: Payment Failed, 3: Payment Successful, 4: Refunded.
+ * {
+   "code": 2000
+   "msg": "Success",
+   "data" {
+      "status": 2, // 订阅状态
+      "pay_status": 3 // 1: 支付中(未支付)， 2: 支付失败，3: 支付成功，4: 已退款 
+      "start_at": 1728736238, // 订阅开始时间戳
+      "end_at": 1728736238 // 订阅结束时间戳
+      "tx_hash": "0x..." // todo 新增 支付交易 hash
+   }
+}
+ *
+ */
+export const getPreBobPayStatus = async (orderId: BigNumber | string): Promise<number> => {
+  
+  if (typeof orderId === 'string') {
+    if (!isNumeric(orderId)) {
+      throw new Error('Each digit in the orderId must be composed of numbers');
+    }
+    orderId = BigNumber.from(orderId);
+  }
+  
+  const clientId = await getClientId(true);
+  
+  const sendData = {
+    client_id: clientId,
+    order_id: orderId.toString(),
+  };
+
+  //Add a random number to prevent browser caching
+  const data = (await serverGet(`/subscribe/status`, sendData)) as object;
+
+  return data['pay_status'] as number;
+};
+
+
 /**
  * Query Bob's Payment Status
  
@@ -1908,6 +1952,7 @@ export const extendPolicysValidity = async (
   const sendData: any = {
     account_id: account.id,
     applyIds: applyIds,
+    order_id: orderId,
     //policy_ids: crossChainHRACList.map((hracId) => hracId.toBytes()),
     end_ats: endTimestamps,
     tx_hash: isBlank(payInfo) ? '' : payInfo?.hash

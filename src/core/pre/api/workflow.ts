@@ -3188,6 +3188,10 @@ export const getDataContentByDataIdAsUser = async (userAccount: Account, dataId:
 
   // hexlify: Convert a byte array to a hexadecimal encoded string -> arrayify: Convert a hexadecimal encoded string back to a byte array
   const crossChainHrac: CrossChainHRAC = CrossChainHRAC.fromBytes(arrayify(data['hrac']));
+  
+  //算一下 hrac的0x字符串形式
+  // eslint-disable-next-line no-debugger
+  debugger;
 
   return getDataContentAsUser(
     userAccount,
