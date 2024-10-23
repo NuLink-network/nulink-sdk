@@ -16,7 +16,7 @@
     &nbsp;&nbsp;&nbsp;&nbsp;<button id="run_next1">第二步：订阅单独付费动态</button>&nbsp;&nbsp;&nbsp;&nbsp;
     &nbsp;&nbsp;&nbsp;&nbsp;<button id="run_next2">第二步：订阅指定用户动态</button><br><br>
     &nbsp;&nbsp;&nbsp;&nbsp;<button id="run_next5">第二步：Alice拒绝用户订阅动态</button><br><br>
-    &nbsp;&nbsp;&nbsp;&nbsp;<button id="run_next4">第二步：退款</button>&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;<button id="run_next4">第二步：指定订单退款</button>&nbsp;&nbsp;&nbsp;&nbsp;
     &nbsp;&nbsp;&nbsp;&nbsp;<button id="run_next3">第三步：订阅续期</button>&nbsp;&nbsp;&nbsp;&nbsp;
 
     <br><br>
@@ -548,9 +548,9 @@
           debugger;
           let aliceUnapprovedDataList /*: any */ = null;
           do {
-            await sleep(10000); //10 seconds
+            await sleep(2000); //2 seconds
             //Alice, as the publisher of the file, obtains the list of files that she has successfully approved
-            aliceUnapprovedDataList = await NUSDK.getUnapprovedDataAsUser(accountAlice, 1, pageSize/* 1000 */);
+            aliceUnapprovedDataList = await NUSDK.getDataForRefusedAsPublisher(accountAlice, 1, pageSize/* 1000 */);
             /*return data format: {
               list: [
                   { apply_id, file_id:, proposer, proposer_id, file_owner:, file_owner_id:, policy_id, hrac, start_at:, end_at, created_at }
@@ -559,7 +559,7 @@
               total: 300,
               }
           */
-          } while (!aliceUnapprovedDataList || aliceUnapprovedDataList['total'] <= aliceUnapprovedDataList['total']);
+          } while (!aliceUnapprovedDataList || aliceUnapprovedDataList['total'] <= 0);
 
           // eslint-disable-next-line no-debugger
           debugger;
@@ -570,8 +570,9 @@
           );
         
           debugger;
-          //Bob applies for a refund
-          await cancelUserSubscription(_accountBob, applyIds[0], orderIds[0], refundUrl);
+          //注意：：Bob订阅后，合约会限制 一段时间内不能申请退款. 所以此处不能立即申请退款，所以此处屏蔽
+          // //Bob applies for a refund
+          // await NUSDK.cancelUserSubscription(_accountBob, applyIds[0], orderIds[0], refundUrl);
           console.log("finish")
           return;
         }
@@ -879,8 +880,29 @@
         {
           await test1()
         }
-        throw new Error('Not implemented');
+
+        const accountManager /* : AccountManager */ = nuLinkHDWallet.getAccountManager();
+
+        let _accountBob = undefined;
+
+        // const _accountBob /* : Account  */ = await accountManager.createAccount(`Bob_Single`);
+
+        _accountBob = accountManager.getAccountByAddress("0xd587515f2ccbb3472f90d8895638a481a1e3ba9d")
+
+        if(NUSDK.isBlank(_accountBob))
+        {
+          _accountBob = await accountManager.createAccount(`Bob_Single`)
+        }
+
+        assert(!NUSDK.isBlank(_accountBob), '_accountBob is undefined or null');
+
+
+        const orderId = "604357428289541";
+        const applyId = 1208;
+        await NUSDK.cancelUserSubscription(_accountBob, applyId, orderId, refundUrl);
       }
+
+      
       
       document.querySelector('#create').addEventListener('click', test1);
       document.querySelector('#run_next1').addEventListener('click', () => test2(2));
@@ -888,7 +910,7 @@
       document.querySelector('#run_next5').addEventListener('click', () => test2(3));
       document.querySelector('#run_next3').addEventListener('click', () => test3());
       document.querySelector('#run_next4').addEventListener('click', () => test4());
-      
+
       
       const asyncInit = async () => {
         try {
