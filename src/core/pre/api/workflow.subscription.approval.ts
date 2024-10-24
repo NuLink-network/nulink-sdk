@@ -1716,14 +1716,14 @@ export const cancelUserSubscription = async (
 
   const sendData: any = {
     apply_id: Number(applyId),
-    proposer_id: account.id,
+    // proposer_id: account.id,
     account_id: account.id,
     refund_url: refundUrl,
     tx_hash: tx.hash
   };
 
   sendData['signature'] = await signUpdateServerDataMessage(account, sendData);
-  const data = await serverPost('/refund/subscribe', sendData);
+  const data: any = await serverPost('/subscribe/refund', sendData);
 
   let receipt: any = null;
 
@@ -1776,7 +1776,7 @@ export const cancelUserSubscription = async (
   const _payInfo = await AppPayAgent.getPayInfo(provider, orderId);
   console.log(`cancelUserSubscription: after send transaction, txHash is ${tx.hash}, pay status is ${_payInfo.paySts}`);
 
-  return data;
+  return Object.assign(data,  {'hash': tx.hash});
 };
 
 /**

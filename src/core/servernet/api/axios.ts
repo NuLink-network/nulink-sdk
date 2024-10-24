@@ -197,6 +197,12 @@ export const serverPostFormData = async (urlPath: string, data: FormData, config
     }
   };
 
+  const clientId = await getClientId(true);
+  //projectId
+  if (clientId) {
+    baseConfig.headers['NuClientId'] = clientId;
+  }
+
   urlPath = urlPath.startsWith('/') ? urlPath : '/' + urlPath;
 
   const bFullPathUrl = urlPath.startsWith("http") || urlPath.startsWith("https");
@@ -262,6 +268,13 @@ export const serverGet = async (
       Accept: 'application/json'
     }
   };
+
+  const clientId = await getClientId(true);
+  //projectId
+  if (clientId) {
+    baseConfig.headers['NuClientId'] = clientId;
+  }
+
 
   //note: The same key will be overwritten
   config = Object.assign({}, baseConfig, config);

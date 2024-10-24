@@ -35,7 +35,7 @@ import { Account, NuLinkHDWallet } from '../../../core/hdwallet/api';
 import { setCurrentNetworkWeb3RpcUrl } from '../../../core/chainnet/api/saveData';
 import { DataInfo } from '../types';
 import { arrayBuffer2HexString, hexString2ArrayBuffer } from '../../../core/utils/hexstring.arraybuffer';
-import { getDataContentByDataIdAsUser } from './workflow';
+import { getDataByStatus, getDataContentByDataIdAsUser } from './workflow';
 
 /**
  * @internal
@@ -66,7 +66,9 @@ export const registerMessageHandler = async () => {
   await registerOnAppMessageHandler('getDataContentListByDataIdAsUser', _getDataContentListByDataIdAsUser);
   await registerOnAppMessageHandler('getDataContentByDataIdAsUser', _getDataContentByDataIdAsUser);
   await registerOnAppMessageHandler('extendPolicysValidity', _extendPolicysValidity);
-
+  await registerOnAppMessageHandler('getApplyListAsUser', _getApplyListAsUser);
+  await registerOnAppMessageHandler('getApplyListAsPublisher', _getApplyListAsPublisher);
+  
   //TODO: Add messages that can be actively called by Android here.
 };
 
@@ -648,4 +650,103 @@ const _extendPolicysValidity = async (data: any) => {
 
   //Note that all registered functions must return a JSON object.
   return {};
+};
+
+/**
+ * @internal
+ * get apply list as user
+ * @returns {Promise<object>} - {
+                "list": [
+                  {
+                    "file_id": "8feS-wp5lYhGOCtOLTKZH",
+                    "file_name": "1.jpg",
+                    "address": " file/data ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
+                    "category": "file/data type category",
+                    "format": "image",
+                    "suffix": "jpg",
+                    "owner": "account name",
+                    "owner_id": "1b79f5def27bebcc71a71058a7771cc476769fc5dba32f45bcdc1b8c6e353917",
+                    "owner_avatar": "Profile picture",
+                    "thumbnail": "thumbnail mimetype and ipfs address: image/jpeg|QmUmCdMxu2MnnCmodc5VvnLqqoJn21s2M2LQqV9T5zDgYy",
+                    "created_at": 1684116370
+                  },
+                  ...
+              ],
+              "total": total count
+            }
+ */
+const _getApplyListAsUser = async (data: any) => {
+  
+  const password: string = data['password'];
+  //const proposerAccountId: string = data['proposerAccountId'];
+  
+  const dataId: string | undefined = data['dataId'] || undefined;
+  const dataOwnerAccountId: string | undefined = data['dataOwnerAccountId'] || undefined;
+  const applyId: string | undefined = data['applyId'] || undefined;
+  const status: number | undefined= Number(data['status'])  || undefined;
+  const pageIndex: number = Number(data['pageIndex'] || 1);
+  const pageSize: number = Number(data['pageSize']  || 10);
+
+  const account: Account = (await getWalletDefaultAccount(password)) as Account;
+
+  if (isBlank(account)) {
+    //Note that all registered functions must return a JSON object.
+    return { code: -1, msg: 'The wallet does not exist or password error. Please import or create a new wallet.' };
+  }
+
+  const proposerAccountId: string = account.id;
+  
+  const returnData = await getDataByStatus(dataId, proposerAccountId, dataOwnerAccountId, applyId, status, pageIndex, pageSize);
+
+  //Note that all registered functions must return a JSON object.
+  return returnData || {};
+};
+
+
+/**
+ * @internal
+ * get apply list as publisher
+ * @returns {Promise<object>} - {
+                "list": [
+                  {
+                    "file_id": "8feS-wp5lYhGOCtOLTKZH",
+                    "file_name": "1.jpg",
+                    "address": " file/data ipfs address: QmV16aK1Ayn5XELdw9oBKK9YEoEDPb9mraPNnJL8XGbZAz",
+                    "category": "file/data type category",
+                    "format": "image",
+                    "suffix": "jpg",
+                    "owner": "account name",
+                    "owner_id": "1b79f5def27bebcc71a71058a7771cc476769fc5dba32f45bcdc1b8c6e353917",
+                    "owner_avatar": "Profile picture",
+                    "thumbnail": "thumbnail mimetype and ipfs address: image/jpeg|QmUmCdMxu2MnnCmodc5VvnLqqoJn21s2M2LQqV9T5zDgYy",
+                    "created_at": 1684116370
+                  },
+                  ...
+              ],
+              "total": total count
+            }
+ */
+const _getApplyListAsPublisher = async (data: any) => {
+  const password: string = data['password'];
+  const proposerAccountId: string | undefined = data['proposerAccountId'] || undefined;
+  const dataId: string | undefined = data['dataId'] || undefined;
+  //const dataOwnerAccountId: string  = data['dataOwnerAccountId'] ;
+  const applyId: string | undefined = data['applyId'] || undefined;
+  const status: number | undefined= Number(data['status'])  || undefined;
+  const pageIndex: number = Number(data['pageIndex'] || 1);
+  const pageSize: number = Number(data['pageSize']  || 10);
+
+  const account: Account = (await getWalletDefaultAccount(password)) as Account;
+
+  if (isBlank(account)) {
+    //Note that all registered functions must return a JSON object.
+    return { code: -1, msg: 'The wallet does not exist or password error. Please import or create a new wallet.' };
+  }
+  
+  const dataOwnerAccountId: string = account.id;
+
+  const returnData = await getDataByStatus(dataId, proposerAccountId, dataOwnerAccountId, applyId, status, pageIndex, pageSize);
+
+  //Note that all registered functions must return a JSON object.
+  return returnData || {};
 };

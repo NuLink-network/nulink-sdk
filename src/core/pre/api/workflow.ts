@@ -1208,13 +1208,17 @@ export const getDataByStatus = async (
   }
 
   const sendData = {
-    status: status,
+    //status: status,
     paginate: {
       page: pageIndex,
       page_size: pageSize
     }
   };
 
+  if(!isBlank(status)){
+    sendData['status'] = status;
+  }
+  
   if (!isBlank(dataId)) {
     sendData['file_id'] = dataId;
   }
