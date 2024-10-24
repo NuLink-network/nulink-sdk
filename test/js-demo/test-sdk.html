@@ -569,6 +569,8 @@
             '!aliceUnapprovedDataList || aliceUnapprovedDataList["total"] <= 0'
           );
         
+          await sleep(15000); //15 seconds
+          
           debugger;
           //注意：：Bob订阅后，合约会限制 一段时间内不能申请退款. 所以此处不能立即申请退款，所以此处屏蔽
           // //Bob applies for a refund

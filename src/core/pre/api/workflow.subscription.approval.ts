@@ -1866,7 +1866,10 @@ export const extendPolicysValidity = async (
   const crossChainHRACList: CrossChainHRAC[] = [];
 
   const applyInfo = policyData;
-  if (applyInfo['status'] != 5) {
+  
+  const currentUtcTimestampInSeconds = Math.floor(Date.now() / 1000);  // Get the current UTC timestamp (seconds)
+  
+  if (/* applyInfo['status'] != 5 */applyInfo['end_at'] > currentUtcTimestampInSeconds) {
     //status: "apply status: 1 - In progress, 2 - Approved, 3 - Rejected, 4 - Under review, 5 - Expired"
     throw new PolicyNotExpired(
       `apply: ${applyId} is not Expired, status is ${convertApplyIdStatusToString(applyInfo['status'])}`
@@ -1878,13 +1881,6 @@ export const extendPolicysValidity = async (
   if (proposerAccountId.toLowerCase() != account.id.toLowerCase()) {
     throw new Error(
       `The applicant(account id) ${proposerAccountId} corresponding to the application ID ${applyId} is not yourself (account id ${account.id}). `
-    );
-  }
-
-  if (applyInfo['status'] != 5) {
-    //status: "apply status: 1 - In progress, 2 - Approved, 3 - Rejected, 4 - Under review, 5 - Expired"
-    throw new PolicyNotExpired(
-      `apply: ${applyId} is not Expired, status is ${convertApplyIdStatusToString(applyInfo['status'])}`
     );
   }
 
@@ -1915,7 +1911,13 @@ export const extendPolicysValidity = async (
   const endTimestamp = toEpoch(new Date()) + extendedDays * 86400;
   endTimestamps.push(endTimestamp);
 
-  const aliceAddress = applyInfo['alice_address'];
+  // const dataDetails = (await getDataDetails(dataId, userAccount.id)) as object;
+
+  // assert(dataDetails && !isBlank(dataDetails));
+
+  // const policyEncryptingKey = dataDetails['policy_encrypted_pk'];
+  
+  const aliceAddress = applyInfo['file_owner_address'];
 
   //check the pay status by payCheckUrl
   const payStatus: string = await getBobPayStatus(orderId, payCheckUrl);
@@ -1951,10 +1953,12 @@ export const extendPolicysValidity = async (
 
   const sendData: any = {
     account_id: account.id,
-    applyIds: applyIds,
+    applyId: applyIds[0],
+    //applyIds: applyIds,
     order_id: orderId,
     //policy_ids: crossChainHRACList.map((hracId) => hracId.toBytes()),
-    end_ats: endTimestamps,
+    //end_ats: endTimestamps,
+    end_at: endTimestamps[0],
     tx_hash: isBlank(payInfo) ? '' : payInfo?.hash
   };
   sendData['signature'] = await signUpdateServerDataMessage(account, sendData);
