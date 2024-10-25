@@ -16,6 +16,10 @@ export const AndroidMessage = {
     _value = '_inter_encode_' + encodeURIComponent(_value);
 
     const bridge = AndroidBridge.getInstance();
-    await bridge.sendMessage('message', { en: messageInfo});
+    try {
+      await bridge.sendMessage('message', { en: messageInfo});
+    } catch (error) {
+      console.error("AndroidMessage.info error: ", error);
+    }
   }
 }

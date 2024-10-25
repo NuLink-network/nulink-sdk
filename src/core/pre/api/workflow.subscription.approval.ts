@@ -841,6 +841,8 @@ const bobPaySubscriptionFee2 = async (
    * it may cause issues later if there are other functions that need to be executed (for example, calling the backend interface to upload the status).
    */
   if (waitforReceipt) {
+    const web3 = await getWeb3();
+    
     let receipt: any = null;
 
     let retryTimes = 130;
@@ -1229,6 +1231,8 @@ export const applyForSubscriptionAccess = async (
     /* payCheckUrl,  */ usageDays
   );
 
+  const web3 = await getWeb3();
+  
   if (!isBlank(payInfo) && !isBlank(payInfo?.hash)) {
     //wait for receipt
     let receipt: any = null;
@@ -1642,6 +1646,7 @@ export const cancelUserSubscription = async (
 
   //enum payStatus{PayNull,PaySucc,PayCancel,SettlementSucc} PayNull：0， PaySucc：1， PayCancel：2， SettlementSucc：3
   if ((!isBlank(payInfo) && payInfo.paySts == 2) || payInfo.paySts == 0) {
+    console.log("The refund has already been processed, finish")
     return;
   }
 
@@ -1725,6 +1730,8 @@ export const cancelUserSubscription = async (
   sendData['signature'] = await signUpdateServerDataMessage(account, sendData);
   const data: any = await serverPost('/subscribe/refund', sendData);
 
+  const web3 = await getWeb3();
+  
   let receipt: any = null;
 
   let retryTimes = 130;
@@ -1977,6 +1984,8 @@ export const extendPolicysValidity = async (
 
   console.log('sended the request: /policy/extend-times');
 
+  const web3 = await getWeb3();
+  
   if (!isBlank(payInfo) && !isBlank(payInfo?.hash)) {
     //wait for receipt
     let receipt: any = null;

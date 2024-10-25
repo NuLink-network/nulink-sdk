@@ -25,6 +25,10 @@
     <script src="./nulink-sdk.js"></script>
 
     <script>
+
+      // //mock the android bridge
+      // const bridge = (window.__JSHOST = window);
+      
       console.log('【---NUSDK----】', NUSDK);
       document.getElementById('text').textContent = NUSDK;
       // console.log('【---NUSDK.getPolicysGasFee----】', NUSDK.getPolicysGasFee)
@@ -829,7 +833,6 @@
           
         //Decrypt the file
 
-      
         //Apply for an extension of the policy validity period
         await NUSDK.extendPolicysValidity(_accountBob, 
         applyId, 
@@ -857,20 +860,32 @@
             }
         }
 
-              //Repeat the test: Test batch decryption of data.
-              //Finally, Bob gets the contents of the data/file
-              const arrayBufferDict /* : Dictionary<ArrayBuffer> */ = await NUSDK.getDataContentListByDataIdAsUser(
-                _accountBob,
-                dataIds
-              );
-              
-              for (let index = 0; index < dataIds.length; index++) {
-                const arrayBuffer /* : ArrayBuffer */ = arrayBufferDict[dataIds[index]];
-                const dataContent /* : string */ = NUSDK.Buffer.from(arrayBuffer).toString();
-                console.log('batch test => dataContent: ', dataContent);
-                console.log('batch test => plainText: ', plainText);
-                assert(dataContent === plainText);
-              }
+        //Waiting for the apply status to be approved
+        
+        let data/*: any */ = null;
+
+        do {
+          await sleep(5000); //5 seconds
+          //get file/data info
+          data = (await NUSDK.getDataDetails(dataIds[0], _accountBob.id));
+          
+        } while (!data || data['status'] != 2);
+
+        
+        //Repeat the test: Test batch decryption of data.
+        //Finally, Bob gets the contents of the data/file
+        const arrayBufferDict /* : Dictionary<ArrayBuffer> */ = await NUSDK.getDataContentListByDataIdAsUser(
+          _accountBob,
+          dataIds
+        );
+        
+        for (let index = 0; index < dataIds.length; index++) {
+          const arrayBuffer /* : ArrayBuffer */ = arrayBufferDict[dataIds[index]];
+          const dataContent /* : string */ = NUSDK.Buffer.from(arrayBuffer).toString();
+          console.log('batch test => dataContent: ', dataContent);
+          console.log('batch test => plainText: ', plainText);
+          assert(dataContent === plainText);
+        }
 
 
         console.log('finish');
@@ -899,9 +914,10 @@
         assert(!NUSDK.isBlank(_accountBob), '_accountBob is undefined or null');
 
 
-        const orderId = "604357428289541";
-        const applyId = 1208;
+        const orderId = "604958157594629";
+        const applyId = 1212;
         await NUSDK.cancelUserSubscription(_accountBob, applyId, orderId, refundUrl);
+        console.log("finish");
       }
 
       
