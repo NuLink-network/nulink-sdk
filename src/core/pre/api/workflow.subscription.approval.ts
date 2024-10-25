@@ -394,7 +394,7 @@ export const uploadDataSpecifiedLocalPolicy = async (
    "msg": "Success",
    "data" {
       "status": 2, // 订阅状态
-      "pay_status": 3 // 1: 支付中(未支付)， 2: 支付失败，3: 支付成功，4: 已退款 
+      "pay_status": 3 // 1: 支付中(未支付)， 2: 支付失败，3: 支付成功，4: 退款中，5: 退款失败，6: 退款成功
       "start_at": 1728736238, // 订阅开始时间戳
       "end_at": 1728736238 // 订阅结束时间戳
       "tx_hash": "0x..." // todo 新增 支付交易 hash
@@ -1710,7 +1710,7 @@ export const cancelUserSubscription = async (
     throw new TransactionError(`send Bob Pay Cancel transaction failed!`);
   }
 
-  console.log(`Bob pay Cancel txHash: tx.hash`);
+  console.log(`Bob pay Cancel txHash: ${tx.hash}`);
 
   //3. call pre backend API, and backend API needs to change payment status
 
@@ -1953,9 +1953,9 @@ export const extendPolicysValidity = async (
 
   const sendData: any = {
     account_id: account.id,
-    applyId: applyIds[0],
-    //applyIds: applyIds,
-    order_id: orderId,
+    apply_id: applyIds[0],
+    //apply_ids: applyIds,
+    order_id: orderId.toString(),
     //policy_ids: crossChainHRACList.map((hracId) => hracId.toBytes()),
     //end_ats: endTimestamps,
     end_at: endTimestamps[0],
