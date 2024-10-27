@@ -57,7 +57,6 @@ import {
   makeAlice,
   getBalance,
   getUrsulas,
-  approveNLK,
   estimateApproveNLKGas
 } from './alice';
 
@@ -434,19 +433,19 @@ export const getPreBobPayStatus = async (orderId: BigNumber | string): Promise<n
  * @returns {Promise<string>}   NOT_PAID (not paid or Insufficient payment), PENDING, UNDER_REVIEW, APPROVED, REJECTED, EXPRIED
  */
 export const getBobPayStatus = async (orderId: BigNumber | string, payCheckUrl: string): Promise<string> => {
-  //check the status and params
+ /*  //check the status and params
   if (typeof orderId === 'string') {
     if (!isNumeric(orderId)) {
       throw new Error('Each digit in the orderId must be composed of numbers');
     }
     orderId = BigNumber.from(orderId);
   }
-
+ */
   const sendData = {
-    orderId: orderId.toString()
+    //orderId: orderId.toString()
   };
 
-  //payCheckUrl ==> http(s)://domain/subscribe/getOrderStatus
+  //payCheckUrl include orderId params: ==> http(s)://domain/subscribe/getOrderStatus?orderId=123456789
   const _data: any = (await serverGet(payCheckUrl, sendData)) as object;
 
   /*   {
@@ -762,23 +761,25 @@ const bobPaySubscriptionFee2 = async (
     );
   }
 
-  console.log('before bob pay approveNLK estimateGas');
-  const approveGasInfo: GasInfo = await bobPaySubscriptionFeeApproveNLKEstimateGas(
+  console.log(`before bob pay approveErc20Token ${payTokenAddress} estimateGas`);
+  const approveGasInfo: GasInfo = await bobPaySubscriptionFeeApproveErc20TokenEstimateGas(
     account,
     BigNumber.from('10000000000000000000000000'),
+    payTokenAddress,
     gasPrice
   );
 
-  console.log('before bob pay approveNLK approveGasInfo', approveGasInfo);
+  console.log(`before bob pay approveErc20Token ${payTokenAddress} approveGasInfo ${approveGasInfo}`);
   //Note that it takes time to evaluate gas, and since the transfer nlk function is called, it must be approved first
-  const txHash: string = (await bobPaySubscriptionFeeApproveNLK(
+  const txHash: string = (await bobPaySubscriptionFeeApproveErc20Token(
     account,
     BigNumber.from('10000000000000000000000000'),
+    payTokenAddress,
     false,
     gasPrice
   )) as string;
 
-  console.log('after bob pay approveNLK txHash:', txHash);
+  console.log(`after bob pay approveErc20Token ${payTokenAddress} txHash: ${txHash}`);
   
 
   //Check if the gas fee is sufficient.
@@ -797,7 +798,7 @@ const bobPaySubscriptionFee2 = async (
   const balance: BigNumber = await getBalance(account.address);
   const chainConfigInfo = await getSettingsData();
 
-  console.log(`the account token balance is: ${balance.toString()} wei ${chainConfigInfo.tokenSymbol}`);
+  console.log(`the account mainnet token balance is: ${balance.toString()} wei ${chainConfigInfo.tokenSymbol}`);
   console.log(`the bob pay gas fee is: ${gasFeeInWei.toString()} wei ${chainConfigInfo.tokenSymbol}`);
 
   if (!gasFeeInWei.lte(BigNumber.from('0')) && balance.lt(gasFeeInWei)) {
@@ -919,31 +920,32 @@ const bobPaySubscriptionFee2 = async (
  * @innernal
  * @returns 
  */
-export const bobPaySubscriptionFeeApproveNLKEstimateGas = async (
+export const bobPaySubscriptionFeeApproveErc20TokenEstimateGas = async (
   account: Account,
-  nlkInWei: BigNumber,
+  approveErc20TokenInWei: BigNumber,
+  approveErc20TokenAddress: string,
   gasPrice: BigNumber = BigNumber.from('0') //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
 ): Promise<GasInfo> => {
   //approveNLKEstimateGas
 
   // const serverFeeNlkInWei: BigNumber = BigNumber.from("0")
-  const gasInfo = await bobPaySubscriptionFeeApproveNLK(account, nlkInWei, true, gasPrice)
+  const gasInfo = await bobPaySubscriptionFeeApproveErc20Token(account, approveErc20TokenInWei, approveErc20TokenAddress, true, gasPrice)
   return gasInfo as GasInfo
 }
 
 /**
  * @innernal
  * @param account
- * @param approveNlkInWei
-// * @param serverFeeNlkInWei
+ * @param approveErc20TokenInWei
+ * @param approveErc20TokenAddress
  * @param estimateGas
  * @param gasPrice
  * @returns when estimateGas is true, return GasInfo. else return transaction Hash
  */
-export const bobPaySubscriptionFeeApproveNLK = async (
+export const bobPaySubscriptionFeeApproveErc20Token = async (
   account: Account,
-  approveNlkInWei: BigNumber,
-  // serverFeeNlkInWei: BigNumber, //nlk
+  approveErc20TokenInWei: BigNumber,
+  approveErc20TokenAddress: string,
   estimateGas = false,
   gasPrice: BigNumber = BigNumber.from('0') //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
 ): Promise<string | GasInfo> => {
@@ -979,51 +981,38 @@ export const bobPaySubscriptionFeeApproveNLK = async (
     return ''
   }
 
-  const nlkBalanceEthers = (await account.getNLKBalance()) as string
+  const tokenBalanceInEther = (await account.getERC20TokenBalance(approveErc20TokenAddress)) as string
 
-  const nlkBalanceWei = BigNumber.from(Web3.utils.toWei(nlkBalanceEthers))
+  const tokenBalanceInWei = BigNumber.from(Web3.utils.toWei(tokenBalanceInEther))
 
-  console.log('nlkBalanceWei is ', nlkBalanceWei.toString())
-  // console.log('serverFeeInWei is ', serverFeeNlkInWei.toString())
+  console.log(`token address: ${approveErc20TokenAddress}, tokenBalanceInWei is ${tokenBalanceInWei.toString()}`)
 
-  // const serverFeeNlkInEthers = Web3.utils.fromWei(serverFeeNlkInWei.toString(), 'ether')
 
-  console.log('nlkBalanceEthers is ', nlkBalanceEthers)
-  // console.log('serverFeeNlkInEthers is ', serverFeeNlkInEthers)
+  console.log(`token address: ${approveErc20TokenAddress}, tokenBalanceInEther is ${tokenBalanceInEther}`)
 
   const chainConfigInfo = await getSettingsData()
 
-  //if (serverFeeNlkInWei.gt(nlkBalanceWei)) {
-  //  // Message.error(
-  //  //   `Insufficient balance ${nlkBalance} ${chainConfigInfo.nlkTokenSymbol} for pay ${nlkInWei} ${chainConfigInfo.nlkTokenSymbol}`,
-  //  // );
-  //  console.log(
-  //    `approveNLK - Insufficient balance ${nlkBalanceEthers} ${chainConfigInfo.nlkTokenSymbol} to cover payment ${serverFeeNlkInEthers} ${chainConfigInfo.nlkTokenSymbol}`
-  //  )
-  //  throw new InsufficientBalanceError(
-  //    `approveNLK - Insufficient balance ${nlkBalanceEthers} ${chainConfigInfo.nlkTokenSymbol} to cover payment ${serverFeeNlkInEthers} ${chainConfigInfo.nlkTokenSymbol}`
-  //  )
-  //}
 
-  const nuLinkTokenContractInfo: any = contractList[curNetwork][CONTRACT_NAME.nuLinkToken]
+  //
+  // const erc20TokenContractInfo: any = contractList[curNetwork][CONTRACT_NAME.erc20Token]
   const appPayContractInfo: any = contractList[curNetwork][CONTRACT_NAME.appPay]
 
-  const nuLinkTokenContract: Contract = await getContractInst(CONTRACT_NAME.nuLinkToken)
+  const erc20TokenContract: Contract = await getContractInst(CONTRACT_NAME.erc20Token, approveErc20TokenAddress)
 
   const aliceBob = Web3.utils.toChecksumAddress(
     account.address //"0xDCf049D1a3770f17a64E622D88BFb67c67Ee0e01"
   )
 
   const appPayAddress = Web3.utils.toChecksumAddress(appPayContractInfo.address)
-  const nuLinkTokenAddress = Web3.utils.toChecksumAddress(nuLinkTokenContractInfo.address)
+  const erc20TokenAddress = Web3.utils.toChecksumAddress(approveErc20TokenAddress)
 
   //owner, spender,
-  const allowanceWei: string = await nuLinkTokenContract.methods
+  const allowanceWei: string = await erc20TokenContract.methods
     .allowance(aliceBob, appPayAddress)
     .call()
 
-  if (BigNumber.from(allowanceWei).gte(approveNlkInWei)) {
-    console.log(`allowance is ${allowanceWei}, to approve is ${approveNlkInWei}`)
+  if (BigNumber.from(allowanceWei).gte(approveErc20TokenInWei)) {
+    console.log(`allowance is ${allowanceWei}, to approve is ${approveErc20TokenInWei}`)
     return ''
   }
 
@@ -1032,8 +1021,8 @@ export const bobPaySubscriptionFeeApproveNLK = async (
   const privateKeyString = privateKeyStringHex.substring(2, 66)
   // console.log(privateKeyString);
 
-  const _encodedABI = nuLinkTokenContract.methods
-    .approve(appPayAddress, web3.utils.toBN(approveNlkInWei.toHexString()))
+  const _encodedABI = erc20TokenContract.methods
+    .approve(appPayAddress, web3.utils.toBN(approveErc20TokenInWei.toHexString()))
     .encodeABI()
 
   const transactionNonceLock: AwaitLock = await getTransactionNonceLock(aliceBob)
@@ -1047,7 +1036,7 @@ export const bobPaySubscriptionFeeApproveNLK = async (
     const rawTx = {
       nonce: web3.utils.toHex(txCount),
       from: aliceBob,
-      to: nuLinkTokenAddress,
+      to: erc20TokenAddress,
       data: _encodedABI,
       gasPrice: gasPriceHex, //'0x09184e72a000',
       value: '0x0'
@@ -1071,7 +1060,7 @@ export const bobPaySubscriptionFeeApproveNLK = async (
 
     // gasUsed => estimateGas return gasUsed is the gasLimit (How many gas were used,that is the amount of gas), not the gasFee (gasLimit * gasPrice)
     const gasUsed: number = await web3.eth.estimateGas(rawTx as any)
-    console.log(`approveNLK estimateGas Used is ${gasUsed} wei`)
+    console.log(`approve erc20 token ${erc20TokenAddress} estimateGas Used is ${gasUsed} wei`)
 
     const [GAS_LIMIT_FACTOR_LEFT, GAS_LIMIT_FACTOR_RIGHT] = DecimalToInteger(GAS_LIMIT_FACTOR)
 
@@ -1079,7 +1068,7 @@ export const bobPaySubscriptionFeeApproveNLK = async (
     const gasLimit = BigNumber.from(gasUsed).mul(GAS_LIMIT_FACTOR_LEFT).div(GAS_LIMIT_FACTOR_RIGHT)
     const gasFeeInWei = gasLimit.mul(BigNumber.from(gasPrice))
 
-    console.log(`approveNLK estimate GasFee is ${gasFeeInWei} wei`)
+    console.log(`approve erc20 token ${erc20TokenAddress} estimate GasFee is ${gasFeeInWei} wei`)
     // eslint-disable-next-line no-extra-boolean-cast
     if (!!estimateGas) {
       const gasInfo: GasInfo = {
@@ -1094,11 +1083,11 @@ export const bobPaySubscriptionFeeApproveNLK = async (
     const tokenBalanceWei = Web3.utils.toWei(tokenBalanceEthers)
 
     // tokenBalanceWei must be great than gasUsed(gasLimit) * gitPrice
-    // Calculate if the balance is enough to cover the fee of approveNLK
+    // Calculate if the balance is enough to cover the fee for the transaction of approve(Erc20Token)
     if (BigNumber.from(tokenBalanceWei).lt(gasFeeInWei)) {
       const tips = `Insufficient balance ${tokenBalanceEthers} ${
         chainConfigInfo.tokenSymbol
-      } for approveNLK ${Web3.utils.fromWei(gasFeeInWei.toString(), 'ether')} ${chainConfigInfo.tokenSymbol}`
+      } for erc20 token ${erc20TokenAddress} ${Web3.utils.fromWei(gasFeeInWei.toString(), 'ether')} ${chainConfigInfo.tokenSymbol}`
 
       // Message.error(tips);
       console.error(tips)
@@ -1136,7 +1125,7 @@ export const bobPaySubscriptionFeeApproveNLK = async (
     //wait txReceipt
     console.log(
       // eslint-disable-next-line no-extra-boolean-cast
-      !txReceipt.transactionHash ? `In Bob pay approveNLK: : get transaction receipt failed` : `txHash: ${txReceipt.transactionHash}`
+      !txReceipt.transactionHash ? `In Bob pay approve erc20 token ${erc20TokenAddress} : get transaction receipt failed` : `txHash: ${txReceipt.transactionHash}`
     )
 
     // eslint-disable-next-line no-extra-boolean-cast

@@ -50,7 +50,7 @@
 
       //nlk v12 version
       const nlkV14Token /* : string  */ = '0x8A95eF66ef0b5bCD10cb8aB433c768f50B5822a8';
-      const payCheckUrl = "http://47.237.123.177:8083/subscribe/getOrderStatus";
+      const payCheckUrlPrefix = "http://47.237.123.177:8083/subscribe/getOrderStatus?orderId=";
       const refundUrl = "http://47.237.123.177:8083/refundUrl";
       
       
@@ -372,6 +372,7 @@
             'http://47.237.123.177:8083'
           ); /*'601889332465669'; */
 
+
           orderIds.push(orderId);
 
           console.log(`--------------------- Bob address: ${accountBob.address}---------------------`);
@@ -400,7 +401,7 @@
               days,
               nlkV14Token,
               '100000000000000000',
-              payCheckUrl
+              payCheckUrlPrefix+orderId
             );
           } catch (e) {
             console.log(`bob_${index} apply data/file failed: `, e);
@@ -840,7 +841,7 @@
         orderId, 
         nlkV14Token,  
         '100000000000000000',
-        payCheckUrl)
+        payCheckUrlPrefix+orderId)
 
 
         //Note: First check if the payment was successful. Only after the payment is successful, then call the approve function.

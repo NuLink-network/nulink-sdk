@@ -11,26 +11,29 @@ import { Contract, ContractOptions } from "web3-eth-contract";
 const CONTRACT_INSTANCE_NAME_PREFIX = "contract_name";
 const CONTRACT_INSTANCE_NAME = (
   networkName: NETWORK_LIST,
-  contractName: CONTRACT_NAME
-) => `${CONTRACT_INSTANCE_NAME_PREFIX}_${networkName}_${contractName}`;
+  contractName: CONTRACT_NAME,
+  contractAddress ?: string
+) => `${CONTRACT_INSTANCE_NAME_PREFIX}_${networkName}_${contractName}${ !isBlank(contractAddress) ? "_" + contractAddress?.toLowerCase(): ""}`;
 
 export const getContractInst = async (
-  contractName: CONTRACT_NAME
+  contractName: CONTRACT_NAME,
+  contractAddress ?: string
 ): Promise<Contract> => {
   const  { getCurrentNetworkKey } = await import("../chainnet");
   // for get instance with saved key
   const curNetwork: NETWORK_LIST = await getCurrentNetworkKey();
   let contractInst = SingletonService.get<Contract>(
-    CONTRACT_INSTANCE_NAME(curNetwork, contractName)
+    CONTRACT_INSTANCE_NAME(curNetwork, contractName, contractAddress)
   );
   if (isBlank(contractInst)) {
-    contractInst = await initContractInst(contractName);
+    contractInst = await initContractInst(contractName, contractAddress);
   }
   return contractInst;
 };
 
 export const setContractInst = async (
-  contractName: CONTRACT_NAME | string
+  contractName: CONTRACT_NAME | string,
+  contractAddress ?: string
 ): Promise<Contract> => {
   //https://github.com/ChainSafe/web3.js
 
@@ -43,11 +46,11 @@ export const setContractInst = async (
   const contractInfo: any = contractList[curNetwork][contractName];
   const contract = new web3.eth.Contract(
     contractInfo.abi,
-    contractInfo.address
+    isBlank(contractAddress) ? contractInfo.address: contractAddress
   );
 
   SingletonService.set<Contract>(
-    CONTRACT_INSTANCE_NAME(curNetwork, enumContractName),
+    CONTRACT_INSTANCE_NAME(curNetwork, enumContractName, contractAddress),
     contract,
     true
   );
@@ -56,9 +59,10 @@ export const setContractInst = async (
 };
 
 export const initContractInst = async (
-  contractName: CONTRACT_NAME
+  contractName: CONTRACT_NAME,
+  contractAddress ?: string
 ): Promise<Contract> => {
-  const contractInst = await setContractInst(contractName);
+  const contractInst = await setContractInst(contractName, contractAddress);
   return contractInst;
 };
 
@@ -66,7 +70,11 @@ export const reInitCurrentContractInst = async () => {
   const  { getCurrentNetworkKey } = await import("../chainnet");
   const curNetwork: NETWORK_LIST = await getCurrentNetworkKey();
   for (const key in contractList[curNetwork]) {
-    await setContractInst(key);
+    //erc20 token: It needs to be set dynamically during use
+    if(key != CONTRACT_NAME.erc20Token)
+    {
+      await setContractInst(key);
+    }
   }
 };
 

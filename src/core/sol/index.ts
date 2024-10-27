@@ -1,7 +1,7 @@
 import NuLinkTokenABI from './abi/NuLinkToken.json';
 import SubscriptionManagerABI from './abi/SubscriptionManager.json';
 import AppPayABI from './abi/appPay.json';
-
+import ERC20ABI from './abi/Erc20.json';
 
 /**
  * @internal
@@ -23,6 +23,7 @@ export enum CONTRACT_NAME {
   nuLinkToken = 'nuLinkToken',
   subScriptManager = 'subScriptManager',
   appPay = 'appPay',
+  erc20Token = 'erc20Token',
 }
 /**
  * @internal
@@ -31,6 +32,14 @@ const networkContractList = {
   // [NETWORK_LIST.HorusMainNet]: {
   //   [CONTRACT_NAME.nuLinkToken]: { address:  process.env.REACT_APP_BSC_TESTNET_CONTRACT_NULINKTOKEN_ADDRESS as string, abi: NuLinkTokenABI },
   //   [CONTRACT_NAME.subScriptManager]: { address: process.env.REACT_APP_BSC_TESTNET_CONTRACT_SUBSCRIPTMANAGER_ADDRESS as string, abi: SubscriptionManagerABI },
+      // [CONTRACT_NAME.appPay]: {
+      //   address: process.env.REACT_APP_BSC_TESTNET_CONTRACT_APP_PAY_ADDRESS as string,
+      //   abi: AppPayABI
+      // },
+      // [CONTRACT_NAME.erc20Token]: {
+      //   address: '', //Set dynamically during use
+      //   abi: ERC20ABI
+      // },
   // },
   [NETWORK_LIST.Horus]: {
     [CONTRACT_NAME.nuLinkToken]: {
@@ -45,6 +54,11 @@ const networkContractList = {
     [CONTRACT_NAME.appPay]: {
       address: process.env.REACT_APP_BSC_TESTNET_CONTRACT_APP_PAY_ADDRESS as string,
       abi: AppPayABI
+    },
+
+    [CONTRACT_NAME.erc20Token]: {
+      address: '', //Set dynamically during use
+      abi: ERC20ABI
     },
   },
   // [NETWORK_LIST.Horus]: {
@@ -64,6 +78,11 @@ const networkContractList = {
       address: process.env.REACT_APP_CONFLUX_ESPACE_TESTNET_CONTRACT_APP_PAY_ADDRESS as string,
       abi: AppPayABI
     },
+    
+    [CONTRACT_NAME.erc20Token]: {
+      address: '', //Set dynamically during use
+      abi: ERC20ABI
+    },
   },
   [NETWORK_LIST.PolygonTestNet]: {
     [CONTRACT_NAME.nuLinkToken]: {
@@ -77,6 +96,11 @@ const networkContractList = {
     [CONTRACT_NAME.appPay]: {
       address: process.env.REACT_APP_POLYGON_TESTNET_CONTRACT_APP_PAY_ADDRESS as string,
       abi: AppPayABI
+    },
+    
+    [CONTRACT_NAME.erc20Token]: {
+      address: '', //Set dynamically during use
+      abi: ERC20ABI
     },
   },
 
@@ -93,6 +117,12 @@ const networkContractList = {
       address: process.env.REACT_APP_XCHAIN_TESTNET_CONTRACT_APP_PAY_ADDRESS as string,
       abi: AppPayABI
     },
+    
+    [CONTRACT_NAME.erc20Token]: {
+      address: '', //Set dynamically during use
+      abi: ERC20ABI
+    },
+    
   },
 
   [NETWORK_LIST.ETHHoleSkyTestNet]: {
@@ -108,6 +138,12 @@ const networkContractList = {
       address: process.env.REACT_APP_HOLESKY_TESTNET_CONTRACT_APP_PAY_ADDRESS as string,
       abi: AppPayABI
     },
+
+    [CONTRACT_NAME.erc20Token]: {
+      address: '', //Set dynamically during use
+      abi: ERC20ABI
+    },
+    
   }
 };
 /**
