@@ -76,7 +76,7 @@ export class AndroidBridge {
       globalThis.__JSHOST.postMessage(JSON.stringify(messageData));
 
       //(window as any).__JSHOST.postMessage(JSON.stringify(messageData));
-      console.log(`SDK Sended [${method}]: message {JSON.stringify(messageData)}`);
+      console.log(`SDK Sended [${method}]: message ${JSON.stringify(messageData)}`);
     });
   }
 
