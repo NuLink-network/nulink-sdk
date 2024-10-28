@@ -116,6 +116,8 @@ import { toBytes } from '../../sol/agents/utils';
 import { registerMessageHandler } from './app.sdk';
 import AwaitLock from 'await-lock';
 
+export const initWasm = NucypherCore.initWasm;
+
 /**
  * SDK initialization. You need to call this initialization function before invoking any APIs.
  * @category initialization
@@ -132,7 +134,10 @@ export const init = async (clientId: string = '') => {
   }
 
   console.log('initClientId get clientId', await getClientId(false));
+
+  NucypherCore.initWasm();
   await registerMessageHandler();
+
 };
 
 /**

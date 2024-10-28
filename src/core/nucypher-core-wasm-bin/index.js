@@ -46,4 +46,5 @@ export {
   VerifiedCapsuleFrag,
   VerifiedKeyFrag,
   VerifiedRevocationOrder,
+  initWasm
 } from "./nucypher_core_wasm.js";

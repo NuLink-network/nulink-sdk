@@ -3636,6 +3636,7 @@ exportsObj.__wbindgen_throw = __wbindgen_throw
 exportsObj.__wbindgen_memory = __wbindgen_memory
 
 export const initWasm = () => {
+  console.log("before init wasm");
   const bufferRes = Buffer.from(nucypherCoreWasm.data);
   var uint8Array = new Uint8Array(bufferRes);
   const arraybuffer = uint8Array.buffer;
@@ -3643,6 +3644,7 @@ export const initWasm = () => {
   const wasmModule = new WebAssembly.Module(arraybuffer);
   const wasmInstance = new WebAssembly.Instance(wasmModule, imports);
   wasm = wasmInstance.exports
+  console.log("after init wasm: ", wasm);
   return wasm
 };
 

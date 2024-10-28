@@ -1,5 +1,7 @@
 /* tslint:disable */
 /* eslint-disable */
+
+export function initWasm(): any;
 /**
 * @param {PublicKey} delegating_pk
 * @param {Uint8Array} plaintext
