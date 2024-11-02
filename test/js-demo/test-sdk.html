@@ -225,6 +225,25 @@
 
         console.log('uploadedInfo files list: ', uploadedInfos.filesInfo);
 
+        const _dataIds = uploadedInfos.filesInfo.map((filesInfo) => filesInfo.id)
+        
+        //Alice batch decrypts the files she uploaded
+        const arrayBufferDict /* : Dictionary<ArrayBuffer> */ = await NUSDK.getDataContentListByDataIdAsPublisher(
+          accountAlice,
+          _dataIds
+        );
+        
+        for (let index = 0; index < _dataIds.length; index++) {
+          const fileId = _dataIds[index]
+          const arrayBuffer /* : ArrayBuffer */ = arrayBufferDict[fileId];
+          const dataContent /* : string */ = NUSDK.Buffer.from(arrayBuffer).toString();
+          console.log('batch test Alice download file => dataContent: ', dataContent);
+          console.log('batch test Alice download file => plainText: ', plainText);
+          assert(dataContent === plainText);
+        }
+
+        debugger;
+
         //3. We can get the files just uploaded
         const resultList = await NUSDK.getUploadedData(accountAlice, undefined, 1, 1000);
 

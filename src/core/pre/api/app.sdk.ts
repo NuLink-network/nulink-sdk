@@ -14,6 +14,7 @@ import {
   approveUserSubscription,
   cancelUserSubscription,
   extendPolicysValidity,
+  getDataContentListByDataIdAsPublisher,
   getDataContentListByDataIdAsUser,
   initClientId,
   publishDataForIndividualPaid,
@@ -35,7 +36,7 @@ import { Account, NuLinkHDWallet } from '../../../core/hdwallet/api';
 import { setCurrentNetworkWeb3RpcUrl } from '../../../core/chainnet/api/saveData';
 import { DataInfo } from '../types';
 import { arrayBuffer2HexString, hexString2ArrayBuffer } from '../../../core/utils/hexstring.arraybuffer';
-import { getDataByStatus, getDataContentByDataIdAsUser } from './workflow';
+import { getDataByStatus, getDataContentByDataIdAsPublisher, getDataContentByDataIdAsUser } from './workflow';
 
 /**
  * @internal
@@ -65,6 +66,8 @@ export const registerMessageHandler = async () => {
   await registerOnAppMessageHandler('cancelUserSubscription', _cancelUserSubscription);
   await registerOnAppMessageHandler('getDataContentListByDataIdAsUser', _getDataContentListByDataIdAsUser);
   await registerOnAppMessageHandler('getDataContentByDataIdAsUser', _getDataContentByDataIdAsUser);
+  await registerOnAppMessageHandler('getDataContentListByDataIdAsPublisher', _getDataContentListByDataIdAsPublisher);
+  await registerOnAppMessageHandler('getDataContentByDataIdAsPublisher', _getDataContentByDataIdAsPublisher);
   await registerOnAppMessageHandler('extendPolicysValidity', _extendPolicysValidity);
   await registerOnAppMessageHandler('getApplyListAsUser', _getApplyListAsUser);
   await registerOnAppMessageHandler('getApplyListAsPublisher', _getApplyListAsPublisher);
@@ -622,6 +625,63 @@ const _getDataContentByDataIdAsUser = async (data: any) => {
   //Note that all registered functions must return a JSON object.
   return { dataId: dataHexString };
 };
+
+/**
+ * @internal
+ * Alice batch decrypts the files she uploaded
+ */
+const _getDataContentListByDataIdAsPublisher = async (data: any) => {
+  const password: string = data['password'];
+  const dataIds: string[] = data['fileIds'];
+
+  const account: Account = (await getWalletDefaultAccount(password)) as Account;
+
+  if (isBlank(account)) {
+    //Note that all registered functions must return a JSON object.
+    return { code: -1, msg: 'The wallet does not exist or password error. Please import or create a new wallet.' };
+  }
+
+  //format: {fileId1: dataContent1, fileId2: dataContent2, ....}
+  //dataContent is the type of ArrayBuffer
+  const dataDict = await getDataContentListByDataIdAsPublisher(account, dataIds);
+
+  const dataDictReturn = {};
+
+  Object.keys(dataDict).forEach((dataId) => {
+    const dataContent: ArrayBuffer = dataDict[dataId];
+
+    dataDictReturn[dataId] = arrayBuffer2HexString(dataContent);
+  });
+
+  //Note that all registered functions must return a JSON object.
+  return Object.assign({}, dataDictReturn);
+};
+
+/**
+ * @internal
+ * Alice batch decrypt a single file she uploaded
+ */
+const _getDataContentByDataIdAsPublisher = async (data: any) => {
+  const password: string = data['password'];
+  const dataId: string = data['fileId'];
+
+  const account: Account = (await getWalletDefaultAccount(password)) as Account;
+
+  if (isBlank(account)) {
+    //Note that all registered functions must return a JSON object.
+    return { code: -1, msg: 'The wallet does not exist or password error. Please import or create a new wallet.' };
+  }
+
+  //format: {fileId1: dataContent1, fileId2: dataContent2, ....}
+  //dataContent is the type of ArrayBuffer
+
+  const dataContent: ArrayBuffer = await getDataContentByDataIdAsPublisher(account, dataId);
+  const dataHexString = arrayBuffer2HexString(dataContent);
+
+  //Note that all registered functions must return a JSON object.
+  return { dataId: dataHexString };
+};
+
 
 /**
  * @internal

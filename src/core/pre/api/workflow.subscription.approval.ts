@@ -105,7 +105,8 @@ import {
   getMultiApplyDetails,
   getApplyDetails,
   getPolicysTokenCost,
-  signUpdateServerDataMessage
+  signUpdateServerDataMessage,
+  getDataContentByDataIdAsPublisher
 } from './workflow';
 import { sendRawTransaction } from './transaction';
 import { getContractInst } from '../../sol/contract';
@@ -1798,6 +1799,31 @@ export const getDataContentListByDataIdAsUser = async (
   for (let index = 0; index < dataIds.length; index++) {
     const dataId = dataIds[index];
     const dataContent: ArrayBuffer = await getDataContentByDataIdAsUser(userAccount, dataId);
+    dataDict[dataId] = dataContent;
+  }
+
+  return dataDict;
+};
+
+
+/**
+ * The file/data publisher obtains the content of the file/data
+ * @category Data Publisher(Alice) Download Data
+ * @param {Account} userAccount - Account the current account object
+ * @param {string []} dataIds - file/data's id list
+ * @returns {Promise<Dictionary<ArrayBuffer>>} - {fileId1: dataContent1, fileId2: dataContent2, ....}
+ */
+export const getDataContentListByDataIdAsPublisher = async (
+  userAccount: Account,
+  dataIds: string[]
+): Promise<Dictionary<ArrayBuffer>> => {
+  //get file/data info
+
+  const dataDict: Dictionary<ArrayBuffer> = {};
+
+  for (let index = 0; index < dataIds.length; index++) {
+    const dataId = dataIds[index];
+    const dataContent: ArrayBuffer = await getDataContentByDataIdAsPublisher(userAccount, dataId);
     dataDict[dataId] = dataContent;
   }
 
