@@ -767,6 +767,23 @@ const bobPaySubscriptionFee2 = async (
     );
   }
 
+  const chainConfigInfo = await getSettingsData();
+  //Ensure that the BNB balance is greater than 0
+  const balance1: BigNumber = await getBalance(account.address);
+
+  console.log(`the account mainnet token balance is: ${balance1.toString()} wei ${chainConfigInfo.tokenSymbol}`);
+
+  if ( balance1.lt(BigNumber.from("0"))) {
+    const balanceValue = Web3.utils.fromWei(balance1.toString(), 'ether');
+
+    console.log(
+      `The account (${account.address}) balance of ${balanceValue} ether in [token] ${chainConfigInfo.tokenSymbol} is equal 0`
+    );
+    throw new InsufficientBalanceError(
+      `The account (${account.address}) balance of ${balanceValue} ether in [token] ${chainConfigInfo.tokenSymbol} is equal 0`
+    );
+  }
+
   console.log(`before bob pay approveErc20Token ${payTokenAddress} estimateGas`);
   const approveGasInfo: GasInfo = await bobPaySubscriptionFeeApproveErc20TokenEstimateGas(
     account,
@@ -802,7 +819,7 @@ const bobPaySubscriptionFee2 = async (
   const gasFeeInWei: BigNumber = gasInfo.gasFee;
   //Ensure that the BNB balance is greater than the GAS fee balance
   const balance: BigNumber = await getBalance(account.address);
-  const chainConfigInfo = await getSettingsData();
+
 
   console.log(`the account mainnet token balance is: ${balance.toString()} wei ${chainConfigInfo.tokenSymbol}`);
   console.log(`the bob pay gas fee is: ${gasFeeInWei.toString()} wei ${chainConfigInfo.tokenSymbol}`);
@@ -1018,7 +1035,7 @@ export const bobPaySubscriptionFeeApproveErc20Token = async (
     .call()
 
   if (BigNumber.from(allowanceWei).gte(approveErc20TokenInWei)) {
-    console.log(`allowance is ${allowanceWei}, to approve is ${approveErc20TokenInWei}`)
+    console.log(`allowance is ${allowanceWei}, to approve is ${approveErc20TokenInWei}, so no need approve token: ${approveErc20TokenAddress}`)
     return ''
   }
 

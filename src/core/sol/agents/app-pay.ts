@@ -59,6 +59,7 @@ export class AppPayAgent {
       payToken,
       overrides
       //{ ...overrides, gasLimit: 30000000, gasPrice: gasPrice}
+      //{ ...overrides, gasLimit: 30000000, gasPrice:  await web3Provider.provider.getGasPrice()}
     );
     
     const web3: Web3 = await getWeb3();
