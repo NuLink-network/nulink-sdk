@@ -672,11 +672,26 @@ export class Account extends IJson {
    * @memberof Account
    */
   public static async restoreByStrategyInfos(): Promise<Account> {
-    const account = new Account('', 0);
+    const account = new Account('account0', 0);
 
-    //get strategys from backend db
-    const strategyInfos: any = await Account.getStrategyInfosFromServerByAddr(account.address);
+    let strategyInfos: any = [];
+    try {
+      //get strategys from backend db
+      strategyInfos  = await Account.getStrategyInfosFromServerByAddr(account.address);
+    } catch (error: any) {
+      
+      if(error?.data?.code == 4007)
+      {
+          //fix bug: account does not exist
 
+          //Continue executing the process without doing anything
+          console.log(`getStrategyInfosFromServerByAddr: account ${account.address} is not exist`);
+      }
+      else{
+        throw error
+      }
+    }
+    
     for (const strategyInfo of strategyInfos) {
       // We don’t escape the key '__proto__'
       // which can cause problems on older engines

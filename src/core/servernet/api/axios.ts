@@ -58,7 +58,8 @@ const excludeList = [
   'file/upload',
   'file/batch-upload',
   '/file/create-or-specified-policy-and-upload',
-  'apply/detail'
+  'apply/detail',
+  '/label',
 ];
 
 // Configure common request headers
@@ -121,7 +122,7 @@ axios.interceptors.response.use(
       //4000 Invalid Parameter
       //5000 Internal Server Error
       const resmsg = Object.prototype.hasOwnProperty.call(response_msg, 'msg') ? response_msg.msg : response_msg;
-      console.error(resmsg);
+      console.error("network message: ", resmsg);
 
       let showErrorMessage = true;
       const resUrl = response.config.url as string;

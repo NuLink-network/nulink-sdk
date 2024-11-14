@@ -3483,7 +3483,23 @@ export const getPolicyLabelInfos = async (publisherAccount: Account, pageIndex =
                           ]                 
 */
 export const getPolicyLabelInfosByAddr = async (accountAddress: string) => {
-  return Account.getStrategyInfosFromServerByAddr(accountAddress);
+  // try {
+  //   //get strategys from backend db
+    return await Account.getStrategyInfosFromServerByAddr(accountAddress);
+  // } catch (error: any) {
+    
+  //   if(error?.data?.code == 4007)
+  //   {
+  //       //fix bug: account does not exist
+        
+  //       //Continue executing the process without doing anything
+  //       console.log(`getStrategyInfosFromServerByAddr: account ${accountAddress} is not exist`);
+  //   }
+  //   else{
+  //     throw error
+  //   }
+  // }
+
 };
 
 /**
