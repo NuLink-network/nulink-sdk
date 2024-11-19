@@ -2092,8 +2092,8 @@ export class NuLinkHDWallet {
 
       this.accountManager = await AccountManager.restoreDefaultAccount()
 
-      this.savePassword(newPassword)
-      this.saveEncryptedKeyIv(newPassword)
+      await this.savePassword(newPassword)
+      await this.saveEncryptedKeyIv(newPassword)
     } catch (error) {
       console.error(error)
       throw new Error('Data recovery has failed') // data recovery failed
@@ -2141,11 +2141,11 @@ export class NuLinkHDWallet {
 
       const cryptoBroker = await this.getCryptoBroker(encryptedSymmetricKeyIv, true)
       const nulinkHDWallet = await NuLinkHDWallet.load(await cryptoBroker.decryptData(dataJson.data), true, false)
-      nulinkHDWallet.savePassword(newPassword)
+      await nulinkHDWallet.savePassword(newPassword)
       // update the current object
       this.copyConstructor(nulinkHDWallet, newPassword)
 
-      this.saveEncryptedKeyIv(newPassword)
+      await this.saveEncryptedKeyIv(newPassword)
     } catch (error) {
       console.error(error)
       throw new Error('Data recovery has failed') // data recovery failed
