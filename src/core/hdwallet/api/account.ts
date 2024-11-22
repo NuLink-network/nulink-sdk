@@ -80,7 +80,9 @@ const setHDWalletInstance = async (hdWallet: NuLinkHDWallet | null, persist = tr
     console.log('setHDWallet failed cause by the NuLinkHDWallet is null');
     return;
   }
+  console.log('before setHDWalletInstance NuLinkHDWallet', hdWallet);
   assert(hdWallet != null);
+  console.log('after setHDWalletInstance');
 
   SingletonService.set<NuLinkHDWallet>(HDWALLET_INSTANCE_NAME, hdWallet, true);
   // if (persist) {
@@ -1758,7 +1760,7 @@ export class NuLinkHDWallet {
    * @memberof NuLinkHDWallet
    */
   public static async loadHDWallet(password = ''): Promise<NuLinkHDWallet | null> {
-    // console.log("loadHDWallet in .....................");
+    console.log("loadHDWallet in .....................");
     const nuLinkHDWallet = getHDWalletInstance();
     // console.log("loadHDWallet getHDWallet: ", nuLinkHDWallet);
     if (!util.isBlank(nuLinkHDWallet)) {
@@ -1766,7 +1768,7 @@ export class NuLinkHDWallet {
       // if (!(await existHDWalletPersistData())) {
       //   await persistHDWallet(nuLinkHDWallet as NuLinkHDWallet)
       // }
-      // console.log("loadHDWallet get persistHDWallet: ", nuLinkHDWallet);
+      console.log("loadHDWallet get persistHDWallet: ", nuLinkHDWallet);
       return nuLinkHDWallet as NuLinkHDWallet;
     }
 
@@ -2187,8 +2189,8 @@ export class NuLinkHDWallet {
 
       this.accountManager = await AccountManager.restoreDefaultAccount();
 
-      this.savePassword(newPassword);
-      this.saveEncryptedKeyIv(newPassword);
+      await this.savePassword(newPassword);
+      await this.saveEncryptedKeyIv(newPassword);
     } catch (error) {
       console.error(error);
       throw new Error('Data recovery has failed'); // data recovery failed
@@ -2236,11 +2238,11 @@ export class NuLinkHDWallet {
 
       const cryptoBroker = await this.getCryptoBroker(encryptedSymmetricKeyIv, true);
       const nulinkHDWallet = await NuLinkHDWallet.load(await cryptoBroker.decryptData(dataJson.data), true, false);
-      nulinkHDWallet.savePassword(newPassword);
+      await nulinkHDWallet.savePassword(newPassword);
       // update the current object
       this.copyConstructor(nulinkHDWallet, newPassword);
 
-      this.saveEncryptedKeyIv(newPassword);
+      await this.saveEncryptedKeyIv(newPassword);
     } catch (error) {
       console.error(error);
       throw new Error('Data recovery has failed'); // data recovery failed
@@ -2352,8 +2354,9 @@ export class NuLinkHDWallet {
    * @memberof NuLinkHDWallet
    */
   public async getRootExtendedPrivateKey(password: string): Promise<string | null> {
+    console.log("before getRootExtendedPrivateKey password:", password);
     assert(!!this.hdWallet);
-
+    console.log("after getRootExtendedPrivateKey ");
     if (await this.verifyPassword(password)) {
       const buffer: Buffer = this.hdWallet.privateExtendedKey();
       return buffer.toString();
@@ -2393,8 +2396,9 @@ export class NuLinkHDWallet {
    * @memberof NuLinkHDWallet
    */
   public async verifyPassword(password: string): Promise<boolean> {
+    console.log("before verifyPassword hdWallet:", this.hdWallet)
     assert(!util.isBlank(this.hdWallet));
-
+    console.log("after verifyPassword hdWallet")
     // Compare local storage for the same
     if (util.isBlank(this._passwordHash)) {
       this._passwordHash = await this.decryptSavedData(macro.passwordHash);
@@ -2402,8 +2406,9 @@ export class NuLinkHDWallet {
         //debugger;
       }
     }
-
+    console.log("before verifyPassword _passwordHash")
     assert(!util.isBlank(this._passwordHash));
+    console.log("after verifyPassword _passwordHash")
 
     const salt = this._passwordHash.slice(-21);
 

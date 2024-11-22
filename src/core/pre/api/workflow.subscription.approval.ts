@@ -1916,7 +1916,7 @@ export const extendPolicysValidity = async (
   if (/* applyInfo['status'] != 5 */applyInfo['end_at'] > currentUtcTimestampInSeconds) {
     //status: "apply status: 1 - In progress, 2 - Approved, 3 - Rejected, 4 - Under review, 5 - Expired"
     throw new PolicyNotExpired(
-      `apply: ${applyId} is not Expired, status is ${convertApplyIdStatusToString(applyInfo['status'])}`
+      `apply: ${applyId} is not Expired, it can't be extended time! current apply status is ${convertApplyIdStatusToString(applyInfo['status'])}`
     );
   }
 
@@ -1997,13 +1997,13 @@ export const extendPolicysValidity = async (
 
   const sendData: any = {
     account_id: account.id,
-    apply_id: applyIds[0],
+    apply_id: Number(applyIds[0]),
     //apply_ids: applyIds,
     order_id: orderId.toString(),
     //policy_ids: crossChainHRACList.map((hracId) => hracId.toBytes()),
     //end_ats: endTimestamps,
     end_at: endTimestamps[0],
-    tx_hash: isBlank(payInfo) ? '' : payInfo?.hash
+    tx_hash: isBlank(payInfo?.hash) ? '' : payInfo?.hash
   };
   sendData['signature'] = await signUpdateServerDataMessage(account, sendData);
 

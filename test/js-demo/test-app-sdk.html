@@ -115,8 +115,8 @@
 //         bridge.postMessage(JSON.stringify({ id: "4", method: 'getAccountInfo', data: {"password": password} }), '/');
 //         await sleep(1000)
         
-//         // bridge.postMessage(JSON.stringify({ id: "5", method: 'restoreWallet', data: {"newPassword": password, "mnemonic": "buffalo capable tomato office riot slam finger spirit lesson lucky debate volcano"} }), '/');
-//         // await sleep(3000)
+         bridge.postMessage(JSON.stringify({ id: "5", method: 'restoreWallet', data: {"newPassword": password, "mnemonic": "kiwi possible inner october unit casual first verb extend neglect wolf alien"} }), '/');
+         await sleep(3000)
         
 //         bridge.postMessage(JSON.stringify({ id: "6", method: 'setRpcUrl', data: {"rpcUrl": "https://data-seed-prebsc-1-s2.bnbchain.org:8545"} }), '/');
 //         await sleep(1000)
@@ -181,14 +181,17 @@
 
         //TODO: fileId 需要先运行之前的 upload然后记下来, 然后屏蔽上传代码在运行 Bob申请订阅Alice函数
 
-         //15. Bob subscribes to Alice's updates.
-         bridge.postMessage(
-                             JSON.stringify({ id: "7", method: 'applyForSubscriptionAccess', data: {"password": password, "orderId": orderId,
-                               "fileId": "s-XJ8OSoLzsY6GYY6bZOe", "usageDays": 30, "payTokenAddress": nlkV14Token, "payAmountInWei": '10000000000000000000',
-                               "payCheckUrl":`http://47.237.123.177:8083/subscribe/getOrderStatus?orderId=${orderId}` } }), 
-                           '/');
+        //  //15. Bob subscribes to Alice's updates.
+        //  bridge.postMessage(
+        //                      JSON.stringify({ id: "7", method: 'applyForSubscriptionAccess', data: {"password": password, "orderId": orderId,
+        //                        "fileId": "s-XJ8OSoLzsY6GYY6bZOe", "usageDays": 30, "payTokenAddress": nlkV14Token, "payAmountInWei": '10000000000000000000',
+        //                        "payCheckUrl":`http://47.237.123.177:8083/subscribe/getOrderStatus?orderId=${orderId}` } }), 
+        //                    '/');
         
         // await sleep(3000)
+        bridge.postMessage(
+                             JSON.stringify({ id: "7", method: 'extendPolicysValidity', data: {"password": password, "applyId":"1247","orderId":"615033352777733","fileId":"5DUcv694lSLfXdt-oKdr5","extendedDays":1,"payTokenAddress":"0x8A95eF66ef0b5bCD10cb8aB433c768f50B5822a8","payAmountInWei":"1","payCheckUrl":"http://47.237.123.177:8083/subscribe/getOrderStatus?orderId=615033352777733"} }), 
+                           '/');
         
       })();
       

@@ -941,12 +941,60 @@
       }
 
       
+      const test7 = async () => {
+
+        const dataCallback = {
+          setData: NUSDK.setIPFSData,
+          getData: NUSDK.getIPFSData
+        };
+
+        //Set the external storage used by the Pre process to IPFS (for example, encrypted files uploaded by users will be stored in this storage, and users can customize the storage).
+        NUSDK.StorageManager.setDataCallback(dataCallback);
+
+        //we need set Project ID: differentiate the sources of data from different applications.
+        // which requires application to Nulink official.
+        const clientId = '593689189003333';
+
+        console.log('in test1 function before init clientId');
+        await NUSDK.init(clientId);
+
+        nuLinkHDWallet = await NUSDK.restoreWalletDataByMnemonic(password, "kiwi possible inner october unit casual first verb extend neglect wolf alien");
+
+        let _accountBob = await NUSDK.getWalletDefaultAccount(password);
+
+        debugger
+
+        //file id list
+        const dataIds /* : string[] */ = ["5DUcv694lSLfXdt-oKdr5"];
+        const applyId = 1247;
+        //Simulated order id.
+
+        const orderId /* : bigint */ =  "615033352777733"
+
+
+
+        //Apply for an extension of the policy validity period
+        await NUSDK.extendPolicysValidity(_accountBob, 
+        applyId, 
+        1, 
+        orderId, 
+        nlkV14Token,  
+        '1',
+        "http://47.237.123.177:8083/subscribe/getOrderStatus?orderId=615033352777733")
+
+
       
+
+
+        console.log('finish');
+      };
+
+
       document.querySelector('#create').addEventListener('click', test1);
       document.querySelector('#run_next1').addEventListener('click', () => test2(2));
       document.querySelector('#run_next2').addEventListener('click', () => test2(1));
       document.querySelector('#run_next5').addEventListener('click', () => test2(3));
-      document.querySelector('#run_next3').addEventListener('click', () => test3());
+      document.querySelector('#run_next3').addEventListener('click', () => test3()/*test7()*/);
       document.querySelector('#run_next4').addEventListener('click', () => test4());
 
       

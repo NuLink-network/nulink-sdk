@@ -155,7 +155,7 @@ export class AndroidBridge {
                 const messageData = {
                   id: id,
                   method,
-                  data: { code: -500, msg: error?.message?.toString() || error?.toString() || error?.stack?.toString()  }
+                  data: { code: -500, msg: error?.data?.msg.toString() ? (error?.data?.msg.toString() + " url: " + error?.request?.responseURL) : (error?.message?.toString() ||  error?.stack?.toString() || error?.toString())}
                 };
 
                 const globalThis = getGlobalThis();
