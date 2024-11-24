@@ -391,7 +391,7 @@ export const run = async () => {
     //    For the main chain TBSC/BSC, the token is TNLK/NLK. 
     //    For the side chains, they use the native currency of the respective chain (e.g., Mumbai uses TMATIC/MATIC, OKX X1 Chain uses TOKB/OKB).
 
-    const startMs: number = (Math.floor(new Date().getTime() / 1000) - new Date().getTimezoneOffset() * 60) * 1000
+    const startMs: number = new Date().getTime()
     const startDate: Date = new Date(startMs) //  start_at is seconds, but Date needs milliseconds
 
     const endMs: number = startMs + (needToApprovedDataInfo['days'] as number) * 24 * 60 * 60 * 1000

@@ -1412,7 +1412,7 @@ export const approveUserSubscription = async (
     const endAtSeconds = Number(applyInfo['end_at']);
     
     if(startAtSeconds == 0 || endAtSeconds == 0){ // means that it has not set the end date, too
-      const startMs: number = (Math.floor(new Date().getTime() / 1000) - new Date().getTimezoneOffset() * 60) * 1000
+      const startMs: number = new Date().getTime()
       const startDate: Date = new Date(startMs) //  start_at is seconds, but Date needs milliseconds
 
       const endMs: number = startMs + days * 24 * 60 * 60 * 1000
@@ -1486,8 +1486,8 @@ export const approveUserSubscription = async (
     //Note: Since all applyIds may have duplicates, and applyIds should correspond one-to-one with policies, pass all duplicate policy information to the backend (deduplicating based on HRAC on the backend).
     policy_list.push({
       hrac: hexlify(crossChainHrac.toBytes() /* Uint8Array[]*/), //fromBytesByEncoding(crossChainHrac.toBytes(), 'binary'),
-      end_timestamp: (endTimeDate.getTime() / 1000) | 0,
-      start_timestamp: (startTimeDate.getTime() / 1000) | 0,
+      end_timestamp: toEpoch(endTimeDate),
+      start_timestamp: toEpoch(startTimeDate),
       encrypted_address: encryptedTreasureMapIPFSs[index],
       encrypted_pk: resultInfo.strategys[index].strategyKeyPair._publicKey, //policy_encrypted_pk
       apply_id: Number(applyIds[index]),

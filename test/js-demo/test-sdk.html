@@ -479,8 +479,7 @@
           const needToApprovedDataInfo = dataNeedToApprovedResultList2['list'][dataIndex];
           //1. Alice calc server fee (wei): the nulink token tnlk/nlk
 
-          const startMs /*: number */ =
-            (Math.floor(new Date().getTime() / 1000) - new Date().getTimezoneOffset() * 60) * 1000;
+          const startMs /*: number */ = new Date().getTime();
           const startDate /*: Date */ = new Date(startMs); //  start_at is seconds, but Date needs milliseconds
 
           const endMs /*: number */ = startMs + needToApprovedDataInfo['days'] /*as number*/ * 24 * 60 * 60 * 1000;
@@ -797,8 +796,7 @@
 
 
         //At this point Alice approves Bob's file usage request, Due to on-chain approval of Bob's request, we first evaluate gas and service fees
-        const startMs /*: number */ =
-          (Math.floor(new Date().getTime() / 1000) - new Date().getTimezoneOffset() * 60) * 1000;
+        const startMs /*: number */ = new Date().getTime();
         const startDate /*: Date */ = new Date(startMs); //  start_at is seconds, but Date needs milliseconds
         
         const endMs /*: number */ = startMs + days  * 24 * 60 * 60 * 1000;
