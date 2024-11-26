@@ -18,7 +18,7 @@
     &nbsp;&nbsp;&nbsp;&nbsp;<button id="run_next5">第二步：Alice拒绝用户订阅动态</button><br><br>
     &nbsp;&nbsp;&nbsp;&nbsp;<button id="run_next4">第二步：指定订单退款</button>&nbsp;&nbsp;&nbsp;&nbsp;
     &nbsp;&nbsp;&nbsp;&nbsp;<button id="run_next3">第三步：订阅续期</button>&nbsp;&nbsp;&nbsp;&nbsp;
-
+    &nbsp;&nbsp;&nbsp;&nbsp;<button id="run_next7">单独测试解密</button>&nbsp;&nbsp;&nbsp;&nbsp;
     <br><br>
 
 
@@ -96,7 +96,7 @@
 
         const bExistAccount = await NUSDK.existDefaultAccount();
         console.log('existDefaultAccount: ', bExistAccount);
-        //nuLinkHDWallet = await NUSDK.restoreHDWallet(mnemonic, password);
+        //nuLinkHDWallet = await NUSDK.restoreWalletDataByMnemonic(password, mnemonic);
         try {
           nuLinkHDWallet = await NUSDK.loadWallet(password);
           console.log(`existDefaultAccount: ${bExistAccount} and can load wallet`);
@@ -987,6 +987,50 @@
         console.log('finish');
       };
 
+      const test8 = async () => {
+        //decrypt
+
+        const dataCallback = {
+          setData: NUSDK.setIPFSData,
+          getData: NUSDK.getIPFSData
+        };
+
+        //Set the external storage used by the Pre process to IPFS (for example, encrypted files uploaded by users will be stored in this storage, and users can customize the storage).
+        NUSDK.StorageManager.setDataCallback(dataCallback);
+
+        //we need set Project ID: differentiate the sources of data from different applications.
+        // which requires application to Nulink official.
+        const clientId = '593689189003333';
+
+        console.log('in test1 function before init clientId');
+        await NUSDK.init(clientId);
+
+
+        debugger;
+        const mnemonic = "run cram web theme library accuse size truth pumpkin embark square increase";
+        //const mnemonic = "knee viable spring region random danger crane despair explain patrol awful before";
+        nuLinkHDWallet = await NUSDK.restoreWalletDataByMnemonic(password, mnemonic);
+        let _accountBob = await NUSDK.getWalletDefaultAccount(password);
+
+        //file_id = "IXPmdYf0xxnHNTRkvpbBn"
+        file_id = "vO8myZAVwxvaHRfjbF8iT"
+        //file_id = "3qSbl5CuDrhm0u3zl7QdQ"
+        //file_id = "5DUcv694lSLfXdt-oKdr5"
+
+         //Test the decryption of each piece of data separately.
+            //Finally, Bob gets the contents of the data/file
+            const arrayBuffer /* : ArrayBuffer */ = await NUSDK.getDataContentByDataIdAsUser(
+              _accountBob,
+              file_id
+            );
+
+            const dataContent /* : string */ = NUSDK.Buffer.from(arrayBuffer).toString();
+            console.log('dataContent: ', dataContent);
+            console.log('plainText: ', plainText);
+            assert(dataContent === plainText);
+
+
+      }
 
       document.querySelector('#create').addEventListener('click', test1);
       document.querySelector('#run_next1').addEventListener('click', () => test2(2));
@@ -994,6 +1038,8 @@
       document.querySelector('#run_next5').addEventListener('click', () => test2(3));
       document.querySelector('#run_next3').addEventListener('click', () => test3()/*test7()*/);
       document.querySelector('#run_next4').addEventListener('click', () => test4());
+      document.querySelector('#run_next7').addEventListener('click', () => test8());
+      
 
       
       const asyncInit = async () => {

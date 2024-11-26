@@ -82,7 +82,8 @@ import {
   GetTransactionReceiptError,
   TransactionError,
   ApplyNotExist,
-  PolicyApproving
+  PolicyApproving,
+  PolicyExpired
 } from '../../utils/exception';
 import { getWeb3 } from '../../hdwallet/api';
 import { getRandomElementsFromArray } from '../../../core/utils';
@@ -3119,6 +3120,9 @@ export const getDataContentAsUser = async (
     );
   }
 
+  //Note: Error: Not enough cFrags retrieved to open capsule Capsule:026db902fff67d89. Was the policy revoked? => may be the policy is expired, please check the file/detail's api's apply_end_at field
+
+
   porterUri = porterUri || (await getPorterUrl());
 
   const bob: Bob = await makeBob(userAccount, porterUri);
@@ -3189,6 +3193,26 @@ export const getDataContentByDataIdAsUser = async (userAccount: Account, dataId:
   const aliceVerifyingKey = data['alice_verify_pk'];
   const dataIPFSAddress = data['file_ipfs_address'];
   const encryptedTreasureMapIPFSAddress = data['encrypted_treasure_map_ipfs_address'];
+
+  const applyId = data["apply_id"];
+
+  if(isBlank(policyEncryptingKey) || isBlank(aliceVerifyingKey) || isBlank(dataIPFSAddress) || isBlank(encryptedTreasureMapIPFSAddress) )
+  {
+    throw new Error(`policy_encrypted_pk or aliceVerifyingKey or dataIPFSAddress or encryptedTreasureMapIPFSAddress is null !, \ndataId: ${dataId} \naccountId: ${userAccount.id} \napplyId: ${applyId}`)
+  }
+
+  //Note: Error: Not enough cFrags retrieved to open capsule Capsule:026db902fff67d89. Was the policy revoked? => may be the policy is expired, please check the file/detail's api's apply_end_at field
+
+  //Determine whether the application has expired
+  const endTimestampSeconds = data['apply_end_at']
+
+  const currentUtcTimestampInSeconds = Math.floor(Date.now() / 1000);  // Get the current UTC timestamp (seconds)
+  
+  if (endTimestampSeconds <= currentUtcTimestampInSeconds) {
+    //status: "apply status: 1 - In progress, 2 - Approved, 3 - Rejected, 4 - Under review, 5 - Expired"
+    throw new PolicyExpired(
+      `policy is Expired, it can't be decrypted! current applyId: ${applyId} \ndataId: ${dataId} \naccountId: ${userAccount.id} \n`);
+  }
 
   // hexlify: Convert a byte array to a hexadecimal encoded string -> arrayify: Convert a hexadecimal encoded string back to a byte array
   const crossChainHrac: CrossChainHRAC = CrossChainHRAC.fromBytes(arrayify(data['hrac']));
