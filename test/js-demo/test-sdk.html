@@ -169,15 +169,21 @@
         
         //1. read a file
         const enc = new TextEncoder(); // always utf-8
-        const historyContent /* : Uint8Array */ = enc.encode(plainText);
+        //5M
+        const historyContent /* : Uint8Array */ = enc.encode(plainText/*.repeat(1024)*/);
 
         //1.Alice upload file
         const dataList /*: DataInfo[]*/ = [
+         // {
+         //   label: `image-${NUSDK.nanoid()}.pdf`,
+         //   dataArrayBuffer: historyContent.buffer,
+         //   mimetype: 'image/png'
+         // },
           {
-            label: `history-${NUSDK.nanoid()}.pdf`,
-            dataArrayBuffer: historyContent.buffer,
-            mimetype: 'application/pdf'
-          },
+             label: `history-${NUSDK.nanoid()}.pdf`,
+             dataArrayBuffer: historyContent.buffer,
+             mimetype: 'application/pdf'
+           },
           {
             label: `history1-${NUSDK.nanoid()}.pdf`,
             dataArrayBuffer: historyContent.buffer,
@@ -200,6 +206,8 @@
           }
         ];
         const publicKey = accountAlice.encryptedKeyPair._publicKey;
+        
+        // const start = new Date().getTime()
 
         let uploadedInfos = null;
         if(case1 == 1)
@@ -212,8 +220,11 @@
           uploadedInfos = await NUSDK.publishDataForIndividualPaid(accountAlice, dataList)
           
         }
-    
-        // // eslint-disable-next-line no-debugger
+        // const end = new Date().getTime()
+        // console.log('upload file time:', `${end - start}ms`)
+        // // // eslint-disable-next-line no-debugger
+        // // debugger;
+
         // debugger;
 
         console.log('address: ', uploadedInfos.address);

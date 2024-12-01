@@ -758,12 +758,14 @@ const bobPaySubscriptionFee2 = async (
   //on chain transaction
 
   //Determine if the token balance is sufficient.
-  const tokenBalanceInEther = await account.getERC20TokenBalance(payTokenAddress);
-  const payAmountInEther = ethers.utils.formatEther(payAmountInWei); //Web3.utils.fromWei(payAmountInWei, 'ether');
+  console.log(`bobPaySubscriptionFee2 -> account address: ${account.address} `);
 
-  if (tokenBalanceInEther && tokenBalanceInEther < payAmountInEther) {
+  const tokenBalanceInEther: string | undefined = await account.getERC20TokenBalance(payTokenAddress);
+  const payAmountInEther: string = ethers.utils.formatEther(payAmountInWei); //Web3.utils.fromWei(payAmountInWei, 'ether');
+  
+  if (isNaN(parseFloat(tokenBalanceInEther as string)) || isNaN(parseFloat(payAmountInEther))  || parseFloat(tokenBalanceInEther as string) < parseFloat(payAmountInEther)) {
     throw new InsufficientBalanceError(
-      `Insufficient account ${account.address}'s balance of token: ${payTokenAddress} for pay ${payAmountInEther} subscription fee`
+      `Insufficient account ${account.address}'s balance of token: ${payTokenAddress} for pay ${payAmountInEther}ether subscription fee, balance: ${tokenBalanceInEther}ether`
     );
   }
 

@@ -1076,9 +1076,11 @@ export class Account extends IJson {
     }
 
     const address = Web3.utils.toChecksumAddress(this.address);
+    console.log(`getERC20TokenBalance user address: ${address}`);
 
     let i = 0;
     while (i < 3)
+    {
       try {
         const result = await contractInst.methods.balanceOf(address).call(); // 29803630997051883414242659
         // Convert the value from Wei to Ether
@@ -1088,10 +1090,16 @@ export class Account extends IJson {
 
         // }
         i++;
-        // Message.error(((e as any)?.message || e) as string);
+
+        if(i >= 3)
+        {
+          // Message.error(((e as any)?.message || e) as string);
+          throw e;
+        }
+        
         await sleep(1000);
-        throw e;
       }
+    }
   }
 }
 
