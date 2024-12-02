@@ -242,11 +242,11 @@ export const logoutWallet = async () => {
  *  Note: If no password is passed to the getWalletDefaultAccount function, it will attempt to obtain the wallet object from memory.
  *  If it cannot be obtained, null is returned. In this case, the function needs to be called again with the user's password to retrieve the wallet object.
  * @category Wallet Account 
- * @throws {@link PasswordDecryptError}
+ * @throws {@link Error}
  * @param {string} [password='']
  * @return {Promise<Account | null>}
  */
-export const getWalletDefaultAccount = async (password?: string): Promise<Account | null> => {
+export const getWalletDefaultAccount = async (password?: string, throwError: boolean=false): Promise<Account | null> => {
   try {
     const nuLinkHDWallet = await NuLinkHDWallet.loadHDWallet(password)
 
@@ -259,6 +259,10 @@ export const getWalletDefaultAccount = async (password?: string): Promise<Accoun
   } catch (error) {
     console.log('getWalletDefaultAccount error:', (error as string).toString())
     //   if (e instanceof exception.PasswordDecryptError) {}
+    if(throwError)
+    {
+      throw error;
+    }
   }
   return null
 }

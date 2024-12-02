@@ -150,7 +150,7 @@ const _createWallet = async (data: any) => {
   console.log('privateKey: ', privateKey);
 
   // we can get the account by user password that we have created
-  const account: Account = (await getWalletDefaultAccount(password)) as Account;
+  const account: Account = (await getWalletDefaultAccount(password, true)) as Account;
   console.log('account: ', account);
 
   const publicKey = account.encryptedKeyPair._publicKey;
@@ -177,8 +177,14 @@ const _loadWallet = async (data: any) => {
   let nuLinkHDWallet: NuLinkHDWallet | null = await loadWallet(password);
 
   if (isBlank(nuLinkHDWallet)) {
+
+    if(isBlank(password))
+    {
+      return { code: -8, msg: 'loadWallet error: Password is empty' };
+    }
+
     //Note that all registered functions must return a JSON object.
-    return { code: -1, msg: 'The wallet does not exist or password error. Please import or create a new wallet.' };
+    return { code: -1, msg: 'loadWallet error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.' };
   }
 
   console.log('load wallet success nuLinkHDWallet: ', nuLinkHDWallet);
@@ -191,7 +197,7 @@ const _loadWallet = async (data: any) => {
   console.log('privateKey: ', privateKey);
 
   // we can get the account by user password that we have created
-  const account: Account = (await getWalletDefaultAccount(password)) as Account;
+  const account: Account = (await getWalletDefaultAccount(password, true)) as Account;
   console.log('account: ', account);
 
   const publicKey = account.encryptedKeyPair._publicKey;
@@ -216,11 +222,21 @@ const _restoreWallet = async (data: any) => {
   const newPassword: string = data['newPassword'];
   const mnemonic: string = data['mnemonic'];
 
+  if(isBlank(newPassword))
+  {
+    return { code: -8, msg: 'restoreWallet error: New password is empty' };
+  }
+
+  if(isBlank(mnemonic))
+  {
+    return { code: -9, msg: 'restoreWallet error: Mnemonic is empty' };
+  }
+    
   let nuLinkHDWallet = await restoreWalletDataByMnemonic(newPassword, mnemonic);
 
   if (isBlank(nuLinkHDWallet)) {
     //Note that all registered functions must return a JSON object.
-    return { code: -1, msg: 'The wallet restore failed. Please import or create a new wallet or retry it.' };
+    return { code: -1, msg: 'restoreWallet error: The wallet restore failed. Please import or create a new wallet or retry it.' };
   }
 
   console.log('The wallet restore success nuLinkHDWallet: ', nuLinkHDWallet);
@@ -261,8 +277,14 @@ const _verifyPassword = async (data: any) => {
   let nuLinkHDWallet: NuLinkHDWallet | null = await loadWallet(password);
 
   if (isBlank(nuLinkHDWallet)) {
-    //Note that all registered functions must return a JSON object.
-    return { code: -1, msg: 'The wallet does not exist or password error. Please import or create a new wallet.' };
+
+    if(isBlank(password))
+      {
+        return { code: -8, msg: 'verifyPassword error: Password is empty' };
+      }
+  
+      //Note that all registered functions must return a JSON object.
+      return { code: -1, msg: 'verifyPassword error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.' };
   }
 
   nuLinkHDWallet = nuLinkHDWallet as NuLinkHDWallet;
@@ -292,8 +314,9 @@ const _getMnemonic = async (data: any) => {
 
   const mnemonic: string | null | undefined = await getMnemonic(password);
 
-  if (isBlank(mnemonic)) {
-    return { code: -1, msg: 'The wallet does not exist or password error. Please import or create a new wallet.' };
+  if(isBlank(mnemonic) && isBlank(password))
+  {
+    return { code: -8, msg: 'getMnemonic error: Password is empty' };
   }
 
   //Note that all registered functions must return a JSON object.
@@ -309,7 +332,13 @@ const _getPrivateKey = async (data: any) => {
   const privateKey = await getDefaultAccountPrivateKey(password);
 
   if (isBlank(privateKey)) {
-    return { code: -1, msg: 'The wallet does not exist or password error. Please import or create a new wallet.' };
+
+    if(isBlank(password))
+    {
+      return { code: -8, msg: 'getPrivateKey error: Password is empty' };
+    }
+      
+    return { code: -1, msg: 'getPrivateKey error' };
   }
 
   //Note that all registered functions must return a JSON object.
@@ -323,11 +352,17 @@ const _getPublicKey = async (data: any) => {
   const password: string = data['password'];
 
   // we can get the account by user password that we have created
-  const account: Account = (await getWalletDefaultAccount(password)) as Account;
+  const account: Account = (await getWalletDefaultAccount(password, true)) as Account;
 
   if (isBlank(account)) {
+
+    if(isBlank(password))
+    {
+      return { code: -8, msg: 'getPublicKey error: Password is empty' };
+    }
+
     //Note that all registered functions must return a JSON object.
-    return { code: -1, msg: 'The wallet does not exist or password error. Please import or create a new wallet.' };
+    return { code: -1, msg: 'getPublicKey error: getWalletDefaultAccount failed! Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.' };
   }
 
   console.log('account: ', account);
@@ -348,8 +383,14 @@ const _getRootExtendedPrivateKey = async (data: any) => {
   let nuLinkHDWallet: NuLinkHDWallet | null = await loadWallet(password);
 
   if (isBlank(nuLinkHDWallet)) {
+    
+    if(isBlank(password))
+    {
+      return { code: -8, msg: 'getRootExtendedPrivateKey error: Password is empty' };
+    }
+
     //Note that all registered functions must return a JSON object.
-    return { code: -1, msg: 'The wallet does not exist or password error. Please import or create a new wallet.' };
+    return { code: -1, msg: 'getRootExtendedPrivateKey error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.' };
   }
 
   console.log('load wallet success nuLinkHDWallet: ', nuLinkHDWallet);
@@ -381,11 +422,17 @@ const _publishDataForPaidSubscriberVisible = async (data: any) => {
   const _dataInfoList: AndroidDataInfo[] = data['dataInfoList'];
 
   // we can get the account by user password that we have created
-  const account: Account = (await getWalletDefaultAccount(password)) as Account;
+  const account: Account = (await getWalletDefaultAccount(password, true)) as Account;
 
   if (isBlank(account)) {
+
+    if(isBlank(password))
+    {
+      return { code: -8, msg: 'publishDataForPaidSubscriberVisible error: Password is empty' };
+    }
+
     //Note that all registered functions must return a JSON object.
-    return { code: -1, msg: 'The wallet does not exist or password error. Please import or create a new wallet.' };
+    return { code: -1, msg: 'publishDataForPaidSubscriberVisible error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.' };
   }
 
   const dataInfos: DataInfo[] = [];
@@ -426,11 +473,17 @@ const _publishDataForIndividualPaid = async (data: any) => {
   const _dataInfoList: AndroidDataInfo[] = data['dataInfoList'];
 
   // we can get the account by user password that we have created
-  const account: Account = (await getWalletDefaultAccount(password)) as Account;
+  const account: Account = (await getWalletDefaultAccount(password, true)) as Account;
 
   if (isBlank(account)) {
+
+    if(isBlank(password))
+    {
+      return { code: -8, msg: 'publishDataForIndividualPaid error: Password is empty' };
+    }
+
     //Note that all registered functions must return a JSON object.
-    return { code: -1, msg: 'The wallet does not exist or password error. Please import or create a new wallet.' };
+    return { code: -1, msg: 'publishDataForIndividualPaid error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.' };
   }
 
   const dataInfos: DataInfo[] = [];
@@ -484,11 +537,17 @@ const _applyForSubscriptionAccess = async (data: any) => {
   const payAmountInWei: string = data['payAmountInWei'];
   const payCheckUrl: string = data['payCheckUrl'];
 
-  const account: Account = (await getWalletDefaultAccount(password)) as Account;
+  const account: Account = (await getWalletDefaultAccount(password, true)) as Account;
 
   if (isBlank(account)) {
+
+    if(isBlank(password))
+    {
+      return { code: -8, msg: 'applyForSubscriptionAccess error: Password is empty' };
+    }
+
     //Note that all registered functions must return a JSON object.
-    return { code: -1, msg: 'The wallet does not exist or password error. Please import or create a new wallet.' };
+    return { code: -1, msg: 'applyForSubscriptionAccess error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.' };
   }
 
   const applyId = await applyForSubscriptionAccess(
@@ -513,11 +572,17 @@ const _approveUserSubscription = async (data: any) => {
   const password: string = data['password'];
   const applyIds: string[] = data['applyIds'];
 
-  const account: Account = (await getWalletDefaultAccount(password)) as Account;
+  const account: Account = (await getWalletDefaultAccount(password, true)) as Account;
 
   if (isBlank(account)) {
+
+    if(isBlank(password))
+    {
+        return { code: -8, msg: 'approveUserSubscription error: Password is empty' };
+    }
+
     //Note that all registered functions must return a JSON object.
-    return { code: -1, msg: 'The wallet does not exist or password error. Please import or create a new wallet.' };
+    return { code: -1, msg: 'approveUserSubscription error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.' };
   }
 
   await approveUserSubscription(account, applyIds);
@@ -534,12 +599,19 @@ const _refusalUserSubscription = async (data: any) => {
   const password: string = data['password'];
   const applyIds: string[] = data['applyIds'];
 
-  const account: Account = (await getWalletDefaultAccount(password)) as Account;
+  const account: Account = (await getWalletDefaultAccount(password, true)) as Account;
 
   if (isBlank(account)) {
+
+    if(isBlank(password))
+    {
+      return { code: -8, msg: 'refusalUserSubscription error: Password is empty' };
+    }
+
     //Note that all registered functions must return a JSON object.
-    return { code: -1, msg: 'The wallet does not exist or password error. Please import or create a new wallet.' };
+    return { code: -1, msg: 'refusalUserSubscription error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.' };
   }
+
 
   await refusalUserSubscription(account, applyIds);
 
@@ -557,11 +629,17 @@ const _cancelUserSubscription = async (data: any) => {
   const orderId: string = data['orderId'];
   const refundUrl: string = data['refundUrl'];
 
-  const account: Account = (await getWalletDefaultAccount(password)) as Account;
+  const account: Account = (await getWalletDefaultAccount(password, true)) as Account;
 
   if (isBlank(account)) {
+
+    if(isBlank(password))
+    {
+      return { code: -8, msg: 'cancelUserSubscription error: Password is empty' };
+    }
+
     //Note that all registered functions must return a JSON object.
-    return { code: -1, msg: 'The wallet does not exist or password error. Please import or create a new wallet.' };
+    return { code: -1, msg: 'cancelUserSubscription error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.' };
   }
 
   await cancelUserSubscription(account, applyId, orderId, refundUrl);
@@ -578,11 +656,17 @@ const _getDataContentListByDataIdAsUser = async (data: any) => {
   const password: string = data['password'];
   const dataIds: string[] = data['fileIds'];
 
-  const account: Account = (await getWalletDefaultAccount(password)) as Account;
+  const account: Account = (await getWalletDefaultAccount(password, true)) as Account;
+  
+  if(isBlank(account)) {
+        
+    if(isBlank(password))
+    {
+      return { code: -8, msg: 'getDataContentListByDataIdAsUser error: Password is empty' };
+    }
 
-  if (isBlank(account)) {
     //Note that all registered functions must return a JSON object.
-    return { code: -1, msg: 'The wallet does not exist or password error. Please import or create a new wallet.' };
+    return { code: -1, msg: 'getDataContentListByDataIdAsUser error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.' };
   }
 
   //format: {fileId1: dataContent1, fileId2: dataContent2, ....}
@@ -609,11 +693,17 @@ const _getDataContentByDataIdAsUser = async (data: any) => {
   const password: string = data['password'];
   const dataId: string = data['fileId'];
 
-  const account: Account = (await getWalletDefaultAccount(password)) as Account;
+  const account: Account = (await getWalletDefaultAccount(password, true)) as Account;
 
-  if (isBlank(account)) {
+  if(isBlank(account)) {
+
+    if(isBlank(password))
+    {
+      return { code: -8, msg: 'getDataContentByDataIdAsUser error: Password is empty' };
+    }
+
     //Note that all registered functions must return a JSON object.
-    return { code: -1, msg: 'The wallet does not exist or password error. Please import or create a new wallet.' };
+    return { code: -1, msg: 'getDataContentByDataIdAsUser error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.' };
   }
 
   //format: {fileId1: dataContent1, fileId2: dataContent2, ....}
@@ -634,11 +724,17 @@ const _getDataContentListByDataIdAsPublisher = async (data: any) => {
   const password: string = data['password'];
   const dataIds: string[] = data['fileIds'];
 
-  const account: Account = (await getWalletDefaultAccount(password)) as Account;
+  const account: Account = (await getWalletDefaultAccount(password, true)) as Account;
 
-  if (isBlank(account)) {
+  if(isBlank(account)) {
+
+    if(isBlank(password))
+    {
+      return { code: -8, msg: 'getDataContentListByDataIdAsPublisher error: Password is empty' };
+    }
+
     //Note that all registered functions must return a JSON object.
-    return { code: -1, msg: 'The wallet does not exist or password error. Please import or create a new wallet.' };
+    return { code: -1, msg: 'getDataContentListByDataIdAsPublisher error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.' };
   }
 
   //format: {fileId1: dataContent1, fileId2: dataContent2, ....}
@@ -665,13 +761,19 @@ const _getDataContentByDataIdAsPublisher = async (data: any) => {
   const password: string = data['password'];
   const dataId: string = data['fileId'];
 
-  const account: Account = (await getWalletDefaultAccount(password)) as Account;
+  const account: Account = (await getWalletDefaultAccount(password, true)) as Account;
 
-  if (isBlank(account)) {
+  if(isBlank(account)) {
+
+    if(isBlank(password))
+    {
+      return { code: -8, msg: 'getDataContentByDataIdAsPublisher error: Password is empty' };
+    }
+
     //Note that all registered functions must return a JSON object.
-    return { code: -1, msg: 'The wallet does not exist or password error. Please import or create a new wallet.' };
+    return { code: -1, msg: 'getDataContentByDataIdAsPublisher error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.' };
   }
-
+    
   //format: {fileId1: dataContent1, fileId2: dataContent2, ....}
   //dataContent is the type of ArrayBuffer
 
@@ -696,13 +798,19 @@ const _extendPolicysValidity = async (data: any) => {
   const payAmountInWei: string = data['payAmountInWei'];
   const payCheckUrl: string = data['payCheckUrl'];
 
-  const account: Account = (await getWalletDefaultAccount(password)) as Account;
+  const account: Account = (await getWalletDefaultAccount(password, true)) as Account;
 
-  if (isBlank(account)) {
+  if(isBlank(account)) {
+
+    if(isBlank(password))
+    {
+      return { code: -8, msg: 'extendPolicysValidity error: Password is empty' };
+    }
+
     //Note that all registered functions must return a JSON object.
-    return { code: -1, msg: 'The wallet does not exist or password error. Please import or create a new wallet.' };
+    return { code: -1, msg: 'extendPolicysValidity error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.' };
   }
-
+  
   //format: {fileId1: dataContent1, fileId2: dataContent2, ....}
   //dataContent is the type of ArrayBuffer
 
@@ -747,11 +855,17 @@ const _getApplyListAsUser = async (data: any) => {
   const pageIndex: number = Number(data['pageIndex'] || 1);
   const pageSize: number = Number(data['pageSize']  || 10);
 
-  const account: Account = (await getWalletDefaultAccount(password)) as Account;
+  const account: Account = (await getWalletDefaultAccount(password, true)) as Account;
 
-  if (isBlank(account)) {
+  if(isBlank(account)) {
+
+    if(isBlank(password))
+    {
+      return { code: -8, msg: 'getApplyListAsUser error: Password is empty' };
+    }
+    
     //Note that all registered functions must return a JSON object.
-    return { code: -1, msg: 'The wallet does not exist or password error. Please import or create a new wallet.' };
+    return { code: -1, msg: 'getApplyListAsUser error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.' };
   }
 
   const proposerAccountId: string = account.id;
@@ -796,11 +910,17 @@ const _getApplyListAsPublisher = async (data: any) => {
   const pageIndex: number = Number(data['pageIndex'] || 1);
   const pageSize: number = Number(data['pageSize']  || 10);
 
-  const account: Account = (await getWalletDefaultAccount(password)) as Account;
+  const account: Account = (await getWalletDefaultAccount(password, true)) as Account;
 
   if (isBlank(account)) {
+
+    if(isBlank(password))
+      {
+        return { code: -8, msg: 'getApplyListAsPublisher error: Password is empty' };
+      }
+
     //Note that all registered functions must return a JSON object.
-    return { code: -1, msg: 'The wallet does not exist or password error. Please import or create a new wallet.' };
+    return { code: -1, msg: 'getApplyListAsPublisher error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.' };
   }
   
   const dataOwnerAccountId: string = account.id;

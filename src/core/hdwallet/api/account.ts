@@ -1807,6 +1807,7 @@ export class NuLinkHDWallet {
         //   "Password verification failed" /* t("verify_password_error") */
         // );
         console.error('Password verification failed');
+        throw new Error('Password verification failed')
       }
       throw e;
     }
@@ -2200,8 +2201,10 @@ export class NuLinkHDWallet {
       await this.savePassword(newPassword);
       await this.saveEncryptedKeyIv(newPassword);
     } catch (error) {
+      console.error('Data recovery has failed restoreDataByStrategyInfos');
       console.error(error);
-      throw new Error('Data recovery has failed'); // data recovery failed
+      //throw new Error('Data recovery has failed '); // data recovery failed
+      throw error;
     }
 
     //Note: The method of calling this function needs to save the account-related data after the call (decentralized storage)
@@ -2252,8 +2255,10 @@ export class NuLinkHDWallet {
 
       await this.saveEncryptedKeyIv(newPassword);
     } catch (error) {
+      console.error('Data recovery has failed recoverUserData');
       console.error(error);
-      throw new Error('Data recovery has failed'); // data recovery failed
+      //throw new Error('Data recovery has failed '); // data recovery failed
+      throw error;
     }
 
     //Note: The method of calling this function needs to save the account-related data after the call (decentralized storage)
