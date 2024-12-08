@@ -7,17 +7,14 @@ Only exposed messages are exported here, and functions that are directly called 
 
 import { androidStore } from './androidstorage'
 import { localStore } from './localstorage'
-import { iosStore } from './iosstorage'
 
 export { androidStore } from './androidstorage'
 export { localStore } from './localstorage'
-export { iosStore } from './iosstorage'
 
-const bandroidStore = process.env.REACT_APP_STORAGE === 'android'
-const biosStore = process.env.REACT_APP_STORAGE === 'ios'
-// const blocalStore = process.env.REACT_APP_STORAGE === 'localstorage'
+const bAppStore = process.env.REACT_APP_STORAGE === 'android' || process.env.REACT_APP_STORAGE === 'ios'
+// const bLocalStore = process.env.REACT_APP_STORAGE === 'localstorage'
 
 /**
  * @internal
  */
-export const store = bandroidStore ? androidStore : biosStore ? iosStore : localStore;
+export const store = bAppStore ? androidStore  : localStore;
