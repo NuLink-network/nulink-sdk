@@ -236,7 +236,7 @@ const _restoreWallet = async (data: any) => {
 
   if (isBlank(nuLinkHDWallet)) {
     //Note that all registered functions must return a JSON object.
-    return { code: -1, msg: 'restoreWallet error: The wallet restore failed. Please import or create a new wallet or retry it.' };
+    return { code: -1, msg: 'restoreWallet error: The wallet restore failed. Please check whether the password is empty or mnemonic is entered correctly or retry it.' };
   }
 
   console.log('The wallet restore success nuLinkHDWallet: ', nuLinkHDWallet);
