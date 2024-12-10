@@ -2,6 +2,8 @@
  *  Encapsulate the entire pre file sharing process
  * Note: Anything with an Account parameter is placed in the first parameter of the function. It is convenient to unify the calling format when interacting with the browser page
  */
+// eslint-disable-next-line import/no-extraneous-dependencies
+import VConsole from 'vconsole';
 import sleep from 'await-sleep';
 import { signMessage } from '../../utils/sign.message';
 
@@ -3571,3 +3573,5 @@ export const getPolicyLabelIdsByAccountId = async (accountId: string) => {
   const data = await serverPost('/label/label-ids', sendData);
   return data;
 };
+
+export {VConsole};

@@ -29,6 +29,8 @@
       // //mock the android bridge
       // const bridge = (window.__JSHOST = window);
       
+      const vConsole = new NUSDK.VConsole();
+      
       console.log('【---NUSDK----】', NUSDK);
       document.getElementById('text').textContent = NUSDK;
       // console.log('【---NUSDK.getPolicysGasFee----】', NUSDK.getPolicysGasFee)
@@ -37,6 +39,7 @@
       // //console.log('【---Web3----】', Web3)
 
       // ----------------------Global variable area start ------------------------
+      
       const password = '1';
       let nuLinkHDWallet;
       let mnemonic;

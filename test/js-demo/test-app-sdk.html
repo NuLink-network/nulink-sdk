@@ -15,6 +15,7 @@
     <script src="./nulink-sdk.js"></script>
 
     <script>
+      const vConsole = new NUSDK.VConsole();
       // Note: 
       //need .env* change config to: REACT_APP_STORAGE=localstorage
       console.log("need .env* change config to: REACT_APP_STORAGE=localstorage");
@@ -24,6 +25,7 @@
 
       console.log('【---NUSDK----】', NUSDK);
       document.getElementById('text').textContent = NUSDK;
+
       // console.log('【---NUSDK.getPolicysGasFee----】', NUSDK.getPolicysGasFee)
       // console.log('【---NUSDK.Buffer----】', NUSDK.Buffer)
       // console.log('【---NUSDK.BigNumber----】', NUSDK.BigNumber)

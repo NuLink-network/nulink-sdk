@@ -15,16 +15,17 @@
     &nbsp;&nbsp;&nbsp;&nbsp;<button id="run_next1">订阅动态</button>&nbsp;&nbsp;&nbsp;&nbsp;
     <br><br>
 
-
     <script src="./nulink-sdk.js"></script>
 
     <script>
-
       // //mock the android bridge
       // const bridge = (window.__JSHOST = window);
+      const vConsole = new NUSDK.VConsole();
       
       console.log('【---NUSDK----】', NUSDK);
       document.getElementById('text').textContent = NUSDK;
+      
+
       // console.log('【---NUSDK.getPolicysGasFee----】', NUSDK.getPolicysGasFee)
       // console.log('【---NUSDK.Buffer----】', NUSDK.Buffer)
       // console.log('【---NUSDK.BigNumber----】', NUSDK.BigNumber)
@@ -82,7 +83,7 @@
         const nuLinkHDWallet = await NUSDK.restoreWalletDataByMnemonic(password,"deliver virus way mandate then story knock involve invite blade cancel spray")
         let accountBob = await NUSDK.getWalletDefaultAccount(password);
 
-          const orderId = "621385919840261"
+          const orderId = "621399348154373"
           let _applyId /* : number | undefined */ = "";
           const applyDataId = "spm3NG91e2qUqaQWRRGQI"
           //Bob requests permission to use the data/file for 1 days
