@@ -11,7 +11,7 @@ import { localStore } from './localstorage'
 export { androidStore } from './androidstorage'
 export { localStore } from './localstorage'
 
-const bAppStore = process.env.REACT_APP_STORAGE === 'android' || process.env.REACT_APP_STORAGE === 'ios'
+const bAppStore = process.env.REACT_APP_STORAGE === 'app'
 // const bLocalStore = process.env.REACT_APP_STORAGE === 'localstorage'
 
 /**

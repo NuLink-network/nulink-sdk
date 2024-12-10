@@ -2,21 +2,22 @@
  *  nucypher ts parameter need Web3Provider object
  */
 
-import { getSettingsData } from "./getData";
-import { registerOnChangeCallBackFunction } from "./saveData";
-import { isBlank } from "../../utils/null";
-import SingletonService from "singleton-service";
+import { getSettingsData } from './getData';
+import { registerOnChangeCallBackFunction } from './saveData';
+import { isBlank } from '../../utils/null';
+import SingletonService from 'singleton-service';
 // Remove interdependence
 // import { Account } from "../../hdwallet/api/account";
-import { Web3Provider } from "@ethersproject/providers";
-import { BigNumber, ethers } from "ethers";
-import md5 from 'md5'
-import { Wallet } from "@ethersproject/wallet";
-import toWeb3Provider from "ethers-to-web3";
-import { decrypt as pwdDecrypt } from "../../utils/password.encryption";
+import { Web3Provider } from '@ethersproject/providers';
+import { BigNumber, ethers } from 'ethers';
+import md5 from 'md5';
+import { Wallet } from '@ethersproject/wallet';
+import toWeb3Provider from 'ethers-to-web3';
+import { decrypt as pwdDecrypt } from '../../utils/password.encryption';
 
-const RPC_WEB3PROVIDER_INSTANCE_NAME_PREFIX = "rpcWeb3provider";
-const PRIVODER_NAME = (account: 'Account', ethUrl?: string) => `${RPC_WEB3PROVIDER_INSTANCE_NAME_PREFIX}_${(account as any).address}_${md5(ethUrl ?? '', { encoding: 'string' })}`;
+const RPC_WEB3PROVIDER_INSTANCE_NAME_PREFIX = 'rpcWeb3provider';
+const PRIVODER_NAME = (account: 'Account', ethUrl?: string) =>
+  `${RPC_WEB3PROVIDER_INSTANCE_NAME_PREFIX}_${(account as any).address}_${md5(ethUrl ?? '', { encoding: 'string' })}`;
 
 export const getWeb3Provider = async (account: 'Account', ethUrl?: string): Promise<ethers.providers.Web3Provider> => {
   // for get instance with saved key
@@ -31,7 +32,7 @@ export const initWeb3Provider = async (account: 'Account', ethUrl?: string): Pro
   console.log(`-----------------  initWeb3Provider ethUrl: ${ethUrl} -----------------------`);
   const web3Provider = await setWeb3Provider(account, ethUrl);
 
-  registerOnChangeCallBackFunction("web3RpcUrl", onProviderChangedClosure(account));
+  registerOnChangeCallBackFunction('web3RpcUrl', onProviderChangedClosure(account));
   return web3Provider;
 };
 
@@ -62,9 +63,10 @@ export const setWeb3Provider = async (account: 'Account', ethUrl?: string): Prom
 
   // Using ethers.js
   const _web3Provider = new ethers.providers.JsonRpcProvider(ethUrl) as Web3Provider;
-
+  
   //below codes is bind account to provider start
   const signer = new Wallet(pwdDecrypt((account as any).encryptedKeyPair._privateKey, true)).connect(_web3Provider);
+
   //https://npm.io/package/ethers-to-web3
   //https://github.com/raymondpulver/ethers-to-web3
   const web3Provider = new ethers.providers.Web3Provider(toWeb3Provider(signer));

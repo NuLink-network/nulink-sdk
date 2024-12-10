@@ -211,14 +211,18 @@
         //                    '/');
         
         // await sleep(3000)
+
+        bridge.postMessage(
+                             JSON.stringify({ id: "7", method: 'applyForSubscriptionAccess', data: {"password":"11111111","orderId":"621264362090501","fileId":"5T4VYuXW4fFYKN78mR_uX","usageDays":30,"payTokenAddress":"0x8A95eF66ef0b5bCD10cb8aB433c768f50B5822a8","payAmountInWei":"10000000000000000000","payCheckUrl":"http://47.237.123.177:8083/subscribe/getOrderStatus?orderId=621264362090501"} }), 
+                           '/');
         // bridge.postMessage(
         //                      JSON.stringify({ id: "7", method: 'extendPolicysValidity', data: {"password": password, "applyId":"1247","orderId":"615033352777733","fileId":"5DUcv694lSLfXdt-oKdr5","extendedDays":1,"payTokenAddress":"0x8A95eF66ef0b5bCD10cb8aB433c768f50B5822a8","payAmountInWei":"1","payCheckUrl":"http://47.237.123.177:8083/subscribe/getOrderStatus?orderId=615033352777733"} }), 
         //                    '/');
 
-        bridge.postMessage(
-                           JSON.stringify({ id: "7", method: 'approveUserSubscription', data: {"password": password, "applyIds":["1327","1326","1325","1324","1323","1322","1321","1320","1319","1318", "1317"]} }), 
-                           '/');
-        await sleep(3000)
+        // bridge.postMessage(
+        //                    JSON.stringify({ id: "7", method: 'approveUserSubscription', data: {"password": password, "applyIds":["1327","1326","1325","1324","1323","1322","1321","1320","1319","1318", "1317"]} }), 
+        //                    '/');
+        // await sleep(3000)
         
       })();
       
