@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>sdk test case</title>
+    <style>
+      .text-box {
+          margin-left: 23px;
+      }
+  </style>
+  </head>
+    <div id="text" class="text-box">这是一段文本显示框</div>
+    <br><br><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<button id="run_next1">订阅动态</button>&nbsp;&nbsp;&nbsp;&nbsp;
+    <br><br>
+
+    <script src="./nulink-sdk.js"></script>
+
+    <script>
+      // //mock the android bridge
+      // const bridge = (window.__JSHOST = window);
+      const vConsole = new NUSDK.VConsole();
+      
+      console.log('【---NUSDK----】', NUSDK);
+      document.getElementById('text').textContent = NUSDK;
+      
+
+      // console.log('【---NUSDK.getPolicysGasFee----】', NUSDK.getPolicysGasFee)
+      // console.log('【---NUSDK.Buffer----】', NUSDK.Buffer)
+      // console.log('【---NUSDK.BigNumber----】', NUSDK.BigNumber)
+      // //console.log('【---Web3----】', Web3)
+
+      // ----------------------Global variable area start ------------------------
+      const password = '1';
+      let nuLinkHDWallet;
+      let mnemonic;
+      let accountAlice;
+
+      const pageSize = 1; //1000
+
+      //nlk v12 version
+      const nlkV14Token /* : string  */ = '0x8A95eF66ef0b5bCD10cb8aB433c768f50B5822a8';
+      const payCheckUrlPrefix = "http://47.237.123.177:8083/subscribe/getOrderStatus?orderId=";
+      const refundUrl = "http://47.237.123.177:8083/refundUrl";
+      
+      
+      const days = 1;
+      
+      const assert = (condition/* : boolean */, message/* : string */)  => {
+        console.assert(condition, message);
+        if (!condition) {
+            throw new Error(message);
+        }
+        return true;
+    }
+
+      const sleep = async (ms) => {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      };
+
+      // ----------------------Global variable area end ------------------------
+
+
+      const test2 = async (case1/* : number */) => {
+
+        const dataCallback = {
+          setData: NUSDK.setIPFSData,
+          getData: NUSDK.getIPFSData
+        };
+
+        //Set the external storage used by the Pre process to IPFS (for example, encrypted files uploaded by users will be stored in this storage, and users can customize the storage).
+        NUSDK.StorageManager.setDataCallback(dataCallback);
+
+        //we need set Project ID: differentiate the sources of data from different applications.
+        // which requires application to Nulink official.
+        const clientId = '593689189003333';
+
+        console.log('in test1 function before init clientId');
+        await NUSDK.init(clientId);
+
+        // Note: We only support one account currently.
+        const nuLinkHDWallet = await NUSDK.restoreWalletDataByMnemonic(password,"deliver virus way mandate then story knock involve invite blade cancel spray")
+        let accountBob = await NUSDK.getWalletDefaultAccount(password);
+        await accountBob.getERC20TokenBalance(nlkV14Token);
+
+        console.log('finish');
+      };
+
+    
+      document.querySelector('#run_next1').addEventListener('click', () => test2());
+      
+
+      
+      const asyncInit = async () => {
+        try {
+          const clientId = '593689189003333';
+          await NUSDK.init(clientId);
+          console.log('init finish');
+          document.getElementById('text').textContent = 'Component initialization complete';
+          return true;
+        } catch (error) {
+          document.getElementById('text').textContent = 'Component initialization failed';
+          throw error;
+        }
+        return false;
+      };
+      // ----------------------Global variable area end ------------------------
+
+      // document.addEventListener('DOMContentLoaded', () => {
+      //   //async function: init
+      //   asyncInit();  // Call after the DOM has fully loaded
+      //   });
+      (async () => {
+        const result = await asyncInit();
+        console.log('init result:', result);
+      })();
+    </script>
+  </body>
+</html>
