@@ -21,7 +21,7 @@
       // //mock the android bridge
       // const bridge = (window.__JSHOST = window);
       const vConsole = new NUSDK.VConsole();
-      
+
       console.log('【---NUSDK----】', NUSDK);
       document.getElementById('text').textContent = NUSDK;
       
@@ -74,7 +74,7 @@
 
         //we need set Project ID: differentiate the sources of data from different applications.
         // which requires application to Nulink official.
-        const clientId = '593689189003333';
+        const clientId = '';
 
         console.log('in test1 function before init clientId');
         await NUSDK.init(clientId);
@@ -83,7 +83,7 @@
         const nuLinkHDWallet = await NUSDK.restoreWalletDataByMnemonic(password,"deliver virus way mandate then story knock involve invite blade cancel spray")
         let accountBob = await NUSDK.getWalletDefaultAccount(password);
 
-          const orderId = "621399348154373"
+          const orderId = "621690264854533"
           let _applyId /* : number | undefined */ = "";
           const applyDataId = "spm3NG91e2qUqaQWRRGQI"
           //Bob requests permission to use the data/file for 1 days

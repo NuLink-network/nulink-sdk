@@ -62,8 +62,27 @@ export const setWeb3Provider = async (account: 'Account', ethUrl?: string): Prom
   }
 
   // Using ethers.js
-  const _web3Provider = new ethers.providers.JsonRpcProvider(ethUrl) as Web3Provider;
-  
+  const _web3Provider = new ethers.providers.JsonRpcProvider({url: ethUrl as string,
+    timeout: 50000, //50000ms
+    // headers:{
+    //   "accept": "*/*",
+    //   "accept-language": "zh-CN,zh;q=0.9,en;q=0.8",
+    //   "cache-control": "no-cache",
+    //   "content-type": "application/json",
+    //   "pragma": "no-cache",
+    //   "priority": "u=1, i",
+    //   "sec-fetch-dest": "empty",
+    //   "sec-fetch-mode": "cors",
+    //   "sec-fetch-site": "cross-site"
+    // },
+    
+    // fetchOptions : {
+    //   "mode": "cors",
+    //   "credentials": "omit"
+    // }
+  }
+  ) as Web3Provider;
+
   //below codes is bind account to provider start
   const signer = new Wallet(pwdDecrypt((account as any).encryptedKeyPair._privateKey, true)).connect(_web3Provider);
 
