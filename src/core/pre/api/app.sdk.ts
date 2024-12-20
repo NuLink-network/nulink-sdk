@@ -579,8 +579,8 @@ const _approveUserSubscription = async (data: any) => {
     applyIds = [applyIds];
   }
 
-  if (isBlank(applyIds) || applyIds.length > 10 || applyIds.length === 0) {
-    throw new Error('approveUserSubscription: applyIds length must be >0 and <=10');
+  if (isBlank(applyIds) || applyIds.length > 100 || applyIds.length === 0) {
+    throw new Error('approveUserSubscription: applyIds length must be >0 and <=100');
   }
 
   const account: Account = (await getWalletDefaultAccount(password, true)) as Account;
