@@ -51,11 +51,15 @@
           
       const pageSize = 1; //1000
 
-      //nlk v12 version
-      const nlkV14Token /* : string  */ = '0x8A95eF66ef0b5bCD10cb8aB433c768f50B5822a8';
-      const payCheckUrlPrefix = "http://47.237.123.177:8083/subscribe/getOrderStatus?orderId=";
-      const refundUrl = "http://47.237.123.177:8083/refundUrl";
-      
+      //nlk v14 or v15 version
+      //const nlkV14Token /* : string  */ = '0x8A95eF66ef0b5bCD10cb8aB433c768f50B5822a8';
+      //const nlkV15Token /* : string  */ = '0x3DE51dBD8737d8Fc3332F34fA1D2401F1E620f60';
+      const nlkV14Token = '0x3DE51dBD8737d8Fc3332F34fA1D2401F1E620f60';
+      // const payCheckUrlPrefix = "http://47.237.123.177:8083/subscribe/getOrderStatus?orderId=";
+      // const refundUrl = "http://47.237.123.177:8083/refundUrl";
+
+      const payCheckUrlPrefix = "http://47.237.106.59:8083/subscribe/getOrderStatus?orderId="; //v15 contract mapping app backend url
+      const refundUrl = "http://47.237.106.59:8083/refundUrl"; //v15 contract mapping app backend url
       
       const days = 1;
       
@@ -314,6 +318,13 @@
         
         if(NUSDK.isBlank(_accountBob))
         {
+          
+          _accountBob = accountManager.getAccountByAddress("0xe2748f3d08586f228e24bcf48b65a6241a782b0b")
+        }
+
+        if(NUSDK.isBlank(_accountBob))
+        {
+          
           _accountBob = await accountManager.createAccount(`Bob_Single`)
         }
 
@@ -402,7 +413,9 @@
           const orderId /* : bigint */ =  await NUSDK.simulateOrderGenerationForDev(
             accountAlice.address,
             accountBob.address,
-            'http://47.237.123.177:8083'
+           // 'http://47.237.123.177:8083'
+           'http://47.237.106.59:8083', //v15 contract mapping app backend url
+            nlkV14Token,
           ); /*'601889332465669'; */
 
 
@@ -825,7 +838,8 @@
         const orderId /* : bigint */ =  await NUSDK.simulateOrderGenerationForDev(
             accountAlice.address,
             _accountBob.address,
-            'http://47.237.123.177:8083'
+            //'http://47.237.123.177:8083'
+            'http://47.237.106.59:8083' //v15 contract mapping app backend url
           ); /*'601889332465669'; */
 
         assert(!NUSDK.isBlank(orderId), 'orderId is undefined or null');
@@ -992,7 +1006,9 @@
         orderId, 
         nlkV14Token,  
         '1',
-        "http://47.237.123.177:8083/subscribe/getOrderStatus?orderId=615033352777733")
+        // "http://47.237.123.177:8083/subscribe/getOrderStatus?orderId=615033352777733"
+        'http://47.237.106.59:8083/subscribe/getOrderStatus?orderId=615033352777733' //v15 contract mapping app backend url
+        )
 
 
       

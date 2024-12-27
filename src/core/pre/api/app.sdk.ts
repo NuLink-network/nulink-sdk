@@ -19,7 +19,10 @@ import {
   initClientId,
   publishDataForIndividualPaid,
   publishDataForPaidSubscriberVisible,
-  refusalUserSubscription
+  uploadChunkedDataStartForPaidSubscriberVisible,
+  refusalUserSubscription,
+  uploadChunkedDataForPaidSubscriberVisible,
+  uploadChunkedDataOverForPaidSubscriberVisible
 } from './workflow.subscription.approval';
 // import { GetStorageDataError, StorageManager } from '../../utils/external-storage';
 import {
@@ -34,9 +37,14 @@ import {
 import { generateMnemonic } from '../../../core/hdwallet/api/common';
 import { Account, NuLinkHDWallet } from '../../../core/hdwallet/api';
 import { setCurrentNetworkWeb3RpcUrl } from '../../../core/chainnet/api/saveData';
-import { DataInfo } from '../types';
+import { ChunkDataInfoForPaidSubscriberVisible, ChunkDataTaskInfo, ChunkStartMetaInfo, DataInfo } from '../types';
 import { arrayBuffer2HexString, hexString2ArrayBuffer } from '../../../core/utils/hexstring.arraybuffer';
-import { getDataByStatus, getDataContentByDataIdAsPublisher, getDataContentByDataIdAsUser } from './workflow';
+import {
+  getDataByStatus,
+  getDataContentByDataIdAsPublisher,
+  getDataContentByDataIdAsUser,
+  IsExistAccount
+} from './workflow';
 
 /**
  * @internal
@@ -60,6 +68,9 @@ export const registerMessageHandler = async () => {
   await registerOnAppMessageHandler('getRootExtendedPrivateKey', _getRootExtendedPrivateKey);
   await registerOnAppMessageHandler('publishDataForPaidSubscriberVisible', _publishDataForPaidSubscriberVisible);
   await registerOnAppMessageHandler('publishDataForIndividualPaid', _publishDataForIndividualPaid);
+  await registerOnAppMessageHandler('startChunkedUploadDataForPaidSubscriberVisible', _startChunkedUploadDataForPaidSubscriberVisible);
+  await registerOnAppMessageHandler('uploadChunkedDataForPaidSubscriberVisible',_uploadChunkedDataForPaidSubscriberVisible);
+  await registerOnAppMessageHandler('uploadChunkedDataOverForPaidSubscriberVisible',_uploadChunkedDataOverForPaidSubscriberVisible);
   await registerOnAppMessageHandler('applyForSubscriptionAccess', _applyForSubscriptionAccess);
   await registerOnAppMessageHandler('approveUserSubscription', _approveUserSubscription);
   await registerOnAppMessageHandler('refusalUserSubscription', _refusalUserSubscription);
@@ -68,7 +79,7 @@ export const registerMessageHandler = async () => {
   await registerOnAppMessageHandler('getDataContentByDataIdAsUser', _getDataContentByDataIdAsUser);
   await registerOnAppMessageHandler('getDataContentListByDataIdAsPublisher', _getDataContentListByDataIdAsPublisher);
   await registerOnAppMessageHandler('getDataContentByDataIdAsPublisher', _getDataContentByDataIdAsPublisher);
-  await registerOnAppMessageHandler('extendPolicysValidity', _extendPolicysValidity);
+  await registerOnAppMessageHandler('extendPolicysValidity', _extendPoliciesValidity);
   await registerOnAppMessageHandler('getApplyListAsUser', _getApplyListAsUser);
   await registerOnAppMessageHandler('getApplyListAsPublisher', _getApplyListAsPublisher);
 
@@ -113,7 +124,17 @@ const sdkInit = async (data: any) => {
 const _existDefaultAccount = async (unUsedData: any) => {
   const bExistAccount = await existDefaultAccount();
 
+  // if(!bExistAccount)
+  // {
+  //   return { exist: bExistAccount };
+  // }
+
+  // const exist: boolean = await IsExistAccount(account);
+  //   if (!exist) {
+  //     return false;
+  //   }
   //Note that all registered functions must return a JSON object.
+  // return { exist: exist };
   return { exist: bExistAccount };
 };
 
@@ -413,6 +434,12 @@ type AndroidDataInfo = {
   thumbnail?: string; //unique identifier for thumbnails, can be understood as a unique file name or url link, note that this is not the data itself, but an identifier that can be used to locate the corresponding stored content.
 };
 
+type AndroidChunkDataInfoForPaidSubscriberVisible = {
+  task_id: number; //the id of this task
+  chunk_index: number; //Chunk index, starting from 0, with the maximum index being file_chunk_count - 1.
+  chunkDataHexString: string; //The binary representation of the contents of files/data By invoke 'FileReader.ReadAsArrayBuffer(file)' callback return the value: e.target.result
+};
+
 /**
  * @internal
  * Upload dynamic content that subscribed users can view.
@@ -463,6 +490,122 @@ const _publishDataForPaidSubscriberVisible = async (data: any) => {
 
   //Note that all registered functions must return a JSON object.
   return { uploadFileInfos: uploadFileInfos };
+};
+
+/**
+ * @internal
+ * Start Chunked Upload For Large content that subscribed users can view.
+ * Only one large file can be uploaded."
+ *
+ */
+const _startChunkedUploadDataForPaidSubscriberVisible = async (data: any) => {
+  const password: string = data['password'];
+  const _dataInfo: ChunkStartMetaInfo = data['dataInfo'];
+
+  // we can get the account by user password that we have created
+  const account: Account = (await getWalletDefaultAccount(password, true)) as Account;
+
+  if (isBlank(account)) {
+    if (isBlank(password)) {
+      return { code: -8, msg: 'startChunkedUploadDataForPaidSubscriberVisible error: Password is empty' };
+    }
+
+    //Note that all registered functions must return a JSON object.
+    return {
+      code: -1,
+      msg: 'startChunkedUploadDataForPaidSubscriberVisible error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.'
+    };
+  }
+
+  const dataInfo: ChunkStartMetaInfo = {
+    label: _dataInfo.label,
+    md5: _dataInfo.md5,
+    chunkSizeInByte: _dataInfo.chunkSizeInByte,
+    chunkCount: _dataInfo.chunkCount
+  };
+
+  if (!isBlank(_dataInfo?.category)) {
+    dataInfo['category'] = _dataInfo?.category;
+  }
+
+  if (!isBlank(_dataInfo?.mimetype)) {
+    dataInfo['mimetype'] = _dataInfo?.mimetype;
+  }
+
+  if (!isBlank(_dataInfo?.thumbnail)) {
+    dataInfo['thumbnail'] = _dataInfo?.thumbnail;
+  }
+
+  const dataOverview = await uploadChunkedDataStartForPaidSubscriberVisible(account, dataInfo);
+
+  //Note that all registered functions must return a JSON object.
+  return { dataOverview: dataOverview };
+
+  return {};
+};
+
+/**
+ * @internal
+ * Upload Chunked Data For Large content that subscribed users can view.
+ */
+
+const _uploadChunkedDataForPaidSubscriberVisible = async (data: any) => {
+  const password: string = data['password'];
+  const androidChunkDataInfo: AndroidChunkDataInfoForPaidSubscriberVisible = data['dataInfo'];
+
+  // we can get the account by user password that we have created
+  const account: Account = (await getWalletDefaultAccount(password, true)) as Account;
+
+  if (isBlank(account)) {
+    if (isBlank(password)) {
+      return { code: -8, msg: '_uploadChunkedDataForPaidSubscriberVisible error: Password is empty' };
+    }
+
+    //Note that all registered functions must return a JSON object.
+    return {
+      code: -1,
+      msg: '_uploadChunkedDataForPaidSubscriberVisible error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.'
+    };
+  }
+
+  const chunkDataInfo: ChunkDataInfoForPaidSubscriberVisible = {
+    task_id: androidChunkDataInfo.task_id,
+    chunk_index: androidChunkDataInfo.chunk_index,
+    chunkDataArrayBuffer: hexString2ArrayBuffer(androidChunkDataInfo.chunkDataHexString)
+  };
+
+  await uploadChunkedDataForPaidSubscriberVisible(account, chunkDataInfo);
+
+  return {};
+};
+
+/**
+ * @internal
+ * Upload all chunked Data finish for Large content that subscribed users can view.
+ */
+
+const _uploadChunkedDataOverForPaidSubscriberVisible = async (data: any) => {
+  const password: string = data['password'];
+  const task_id: number = Number(data['task_id']);
+
+  // we can get the account by user password that we have created
+  const account: Account = (await getWalletDefaultAccount(password, true)) as Account;
+
+  if (isBlank(account)) {
+    if (isBlank(password)) {
+      return { code: -8, msg: '_uploadChunkedDataForPaidSubscriberVisible error: Password is empty' };
+    }
+
+    //Note that all registered functions must return a JSON object.
+    return {
+      code: -1,
+      msg: '_uploadChunkedDataForPaidSubscriberVisible error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.'
+    };
+  }
+
+  await uploadChunkedDataOverForPaidSubscriberVisible(account, task_id);
+
+  return {};
 };
 
 /**
@@ -805,7 +948,7 @@ const _getDataContentByDataIdAsPublisher = async (data: any) => {
  * @internal
  * After Bob's subscribed content expires, he reaffirms payment to request an extension for the dynamic content published by the subscribed user Alice.
  */
-const _extendPolicysValidity = async (data: any) => {
+const _extendPoliciesValidity = async (data: any) => {
   const password: string = data['password'];
   const applyId: string = data['applyId'];
   const extendedDays: number = Number(data['extendedDays']);

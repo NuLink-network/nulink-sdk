@@ -41,7 +41,17 @@ import { PublicKey, SecretKey as NucypherTsSecretKey, CrossChainHRAC } from '@nu
 
 import { encryptMessage } from './enrico';
 import { isBlank } from '../../utils/null';
-import { DataCategory, DataInfo, DataType, Dictionary, GasInfo } from '../types';
+import {
+  ChunkDataInfoForPaidSubscriberVisible,
+  ChunkDataMetaInfo,
+  ChunkDataReturnInfoForPaidSubscriberVisible,
+  ChunkStartMetaInfo,
+  DataCategory,
+  DataInfo,
+  DataType,
+  Dictionary,
+  GasInfo
+} from '../types';
 //import { message as Message } from "antd";
 import assert from 'assert-ts';
 import { getCurrentNetworkKey, getSettingsData } from '../../chainnet';
@@ -116,6 +126,13 @@ import { AndroidMessage as Message } from '../../utils/androidmessage';
 import { toBytes } from '../../sol/agents/utils';
 import { registerMessageHandler } from './app.sdk';
 import AwaitLock from 'await-lock';
+import {
+  getDataTaskInfo,
+  getUploadedChunkInfo,
+  uploadChunkData,
+  uploadChunkOver,
+  uploadChunkStart
+} from './piece.upload';
 
 export const initWasm = NucypherCore.initWasm;
 
@@ -138,7 +155,6 @@ export const init = async (clientId: string = '') => {
 
   NucypherCore.initWasm();
   await registerMessageHandler();
-
 };
 
 /**
@@ -149,6 +165,224 @@ export const init = async (clientId: string = '') => {
  */
 export const initClientId = async (clientId: string) => {
   return setClientId(String(clientId));
+};
+
+/**
+ * Start Chunked Uploads Large files/data for paid subscriber-only visible user.
+ * The user needs to pass the strategy.id to invoke the `uploadChunkedDataForPaidSubscriberVisible` function
+ * @category Data Publisher(Alice) Upload Data
+ * @param {Account} account - The account to use to create the policy and upload the files/data.
+ * @param {ChunkStartMetaInfo} dataInfo - Metadata of the chunk upload data.
+ * @returns {Promise<object>} - Returns account, strategy id and taskId
+ * {    address: accountAddress,
+ *      strategyId: strategyId,
+ *      pk: accountPublicKey,
+ *      taskId: data?.task_id
+ * }
+ */
+
+export const uploadChunkedDataStartForPaidSubscriberVisible = async (
+  account: Account,
+  dataInfo: ChunkStartMetaInfo
+): Promise<object> => {
+  console.log('uploadChunkedDataStartForPaidSubscriberVisible account', account);
+
+  const strategyIndex = 0;
+  let strategy: Strategy | undefined = account.getStrategy(strategyIndex);
+
+  if (isBlank(strategy)) {
+    const clientId = await getClientId(true);
+
+    if (isBlank(clientId)) {
+      throw new Error('clientId is not set, need invoke the function initClientId first');
+    }
+
+    /**
+     * 1. Labels cannot use random nanoid, otherwise account recovery will be difficult if the account is lost.
+     * 2. Paid subscriptions can only be used within the same project, cross-project subscriptions require re-payment.
+     */
+    const label =
+      'pair_for_subscriber_visible_' +
+      clientId.toLowerCase() +
+      '_' +
+      account.address.toLowerCase() +
+      '_' +
+      strategyIndex; //nanoid();
+    strategy = await account.createStrategyByLabel(label);
+  }
+  strategy = strategy as Strategy;
+
+  const data = await uploadChunkStart(account, strategy, dataInfo);
+
+  return {
+    address: account.address,
+    strategyId: strategy.id,
+    pk: account.encryptedKeyPair._publicKey,
+    taskId: data?.task_id
+  };
+};
+
+/**
+ * Uploads chunk data of the file/data for paid subscriber-only visible user
+ * @category Data Publisher(Alice) Upload Data
+ * @param {Account} account - The account to use to create the policy and upload the files/data.
+ * @param {ChunkDataInfoForPaidSubscriberVisible} chunkDataInfo - The list of files/data to upload. Each element of the array must be an object with properties 'label' and 'dataArrayBuffer'.
+ * @returns {Promise<object>} - Returns
+ * {    address: accountAddress,
+ *      strategyId: strategyId,
+ *      pk: accountPublicKey,
+ *      filesInfo:
+ *      [
+ *       {
+ *         id: fileId,
+ *         label: fileName,
+ *         thumbnail: fileThumbnail,  //return only if the input parameters include the specified parameters （thumbnail url or unique identifier ）
+ *         mimtype: fileMimetype,   //return only if the input parameters include the specified parameters
+ *       }
+ *      ]
+ * }
+ */
+export const uploadChunkedDataForPaidSubscriberVisible = async (
+  account: Account,
+  chunkDataInfo: ChunkDataInfoForPaidSubscriberVisible
+): Promise<void> => {
+  console.log('uploadChunkedDataForPaidSubscriberVisible account', account);
+
+  const strategyIndex = 0;
+  let strategy: Strategy | undefined = account.getStrategy(strategyIndex);
+
+  if (isBlank(strategy)) {
+    const clientId = await getClientId(true);
+
+    if (isBlank(clientId)) {
+      throw new Error('clientId is not set, need invoke the function initClientId first');
+    }
+
+    /**
+     * 1. Labels cannot use random nanoid, otherwise account recovery will be difficult if the account is lost.
+     * 2. Paid subscriptions can only be used within the same project, cross-project subscriptions require re-payment.
+     */
+    const label =
+      'pair_for_subscriber_visible_' +
+      clientId.toLowerCase() +
+      '_' +
+      account.address.toLowerCase() +
+      '_' +
+      strategyIndex; //nanoid();
+    strategy = await account.createStrategyByLabel(label);
+  }
+  strategy = strategy as Strategy;
+
+  console.log('uploadChunkedDataForPaidSubscriberVisible task id: ', chunkDataInfo.task_id);
+
+  // const taskInfo = await getDataTaskInfo(chunkDataInfo.task_id);
+
+  // if (isBlank(taskInfo)) {
+  //   throw new Error(`get task info failed task id ${chunkDataInfo.task_id}`);
+  // }
+
+  await uploadChunkDataBySpecifiedLocalPolicy(account, strategy, chunkDataInfo);
+};
+
+/**
+ * Uploads chunk data of the file/data for paid subscriber-only visible user
+ * @category Data Publisher(Alice) Upload Data
+ * @param {Account} account - The account to use to create the policy and upload the files/data.
+ * @param {number} task_id - The id of
+ * @returns {Promise<object>} - Returns
+ *  {
+ *    "chunk_missing_indexes": [0, 1, 8], // If the number of uploaded chunks is insufficient, return a list of the missing chunk indexes.
+ *    "file_label": "",
+ *    "file_md5": "",
+ *    "file_category": "",
+ *    "file_thumbnail": "",
+ *    "file_mimetype": "",
+ *    "file_chunk_size": 0,
+ *    "file_chunk_count": 0
+ *  }
+ */
+export const uploadChunkedDataOverForPaidSubscriberVisible = async (
+  account: Account,
+  task_id: number
+): Promise<any> => {
+  console.log('uploadChunkedDataOverForPaidSubscriberVisible account', account);
+
+  const strategyIndex = 0;
+  let strategy: Strategy | undefined = account.getStrategy(strategyIndex);
+
+  if (isBlank(strategy)) {
+    const clientId = await getClientId(true);
+
+    if (isBlank(clientId)) {
+      throw new Error('clientId is not set, need invoke the function initClientId first');
+    }
+
+    /**
+     * 1. Labels cannot use random nanoid, otherwise account recovery will be difficult if the account is lost.
+     * 2. Paid subscriptions can only be used within the same project, cross-project subscriptions require re-payment.
+     */
+    const label =
+      'pair_for_subscriber_visible_' +
+      clientId.toLowerCase() +
+      '_' +
+      account.address.toLowerCase() +
+      '_' +
+      strategyIndex; //nanoid();
+    strategy = await account.createStrategyByLabel(label);
+  }
+  strategy = strategy as Strategy;
+
+  console.log('uploadChunkedDataOverForPaidSubscriberVisible task id: ', task_id);
+
+  const checkOverDataInfo = await uploadChunkOver(account, task_id);
+
+  const chunkMissingIndexList = checkOverDataInfo.chunk_missing_indexes;
+  if (!isBlank(chunkMissingIndexList)) {
+    throw new Error(
+      `The chunk data has not been fully uploaded! task id ${task_id}, The missing chunk data indexes are: ${JSON.stringify(
+        chunkMissingIndexList
+      )}`
+    );
+  }
+  // const taskInfo = await getDataTaskInfo(task_id);
+
+  // if (isBlank(taskInfo)) {
+  //   throw new Error(`get task info failed task id ${task_id}`);
+  // }
+
+  const uploadedDataInfo = await getUploadedChunkInfo(task_id);
+  if (
+    isBlank(uploadedDataInfo) ||
+    isBlank(uploadedDataInfo?.uploaded_chunk_list?.length) ||
+    uploadedDataInfo?.uploaded_chunk_list?.length < uploadedDataInfo.file_chunk_count
+  ) {
+    throw new Error(`Get chunked data failed! task id ${task_id}`);
+  }
+
+
+
+  const uploadChunkMetaInfoList =  uploadedDataInfo.uploaded_chunk_list;
+
+  // sort in ascending order based on chunk_index
+  uploadChunkMetaInfoList.sort((a, b) => a.chunk_index - b.chunk_index);
+
+  const allChunkedPlainText = "CHUNK_JSON_DATA::" + JSON.stringify(uploadChunkMetaInfoList);
+  const enc = new TextEncoder(); // always utf-8
+  const allChunkedContent: Uint8Array = enc.encode(allChunkedPlainText);
+
+  const dataInfoList: DataInfo[] = [];
+  dataInfoList.push({
+    label: checkOverDataInfo.file_label,
+    dataArrayBuffer: allChunkedContent.buffer as ArrayBuffer,
+    category: checkOverDataInfo?.file_category || '',
+    mimetype: checkOverDataInfo?.file_mimetype || '',
+    thumbnail: checkOverDataInfo?.file_thumbnail || '',
+    chunked: 1
+  });
+
+  const filesInfo = await uploadDataSpecifiedLocalPolicy(account, strategy, dataInfoList);
+
+  return checkOverDataInfo;
 };
 
 /**
@@ -260,6 +494,68 @@ export const publishDataForIndividualPaid = async (
 
 /**
  * @internal
+ * Uploads chunk file/data to the server by exist local policy (note: policy may not yet be on-chain) and uploading the file/data encrypted with the policy's public key to IPFS.
+ * @category Data Publisher(Alice) Upload Data
+ * @param {Account} account - The account to use to create the policy and upload the chunk file/data.
+ * @param {DataInfo} chunkDataInfo - The chunk file/data to upload. It must be an object with properties 'label' and 'dataArrayBuffer'.
+ * @returns {Promise<string>} - Returns the chunk ipfs address
+ *
+ */
+export const uploadChunkDataBySpecifiedLocalPolicy = async (
+  account: Account,
+  strategy: Strategy,
+  chunkDataInfo: ChunkDataInfoForPaidSubscriberVisible //chunk data information
+): Promise<void> => {
+  const dataContentList: ArrayBuffer[] = [];
+
+  dataContentList.push(chunkDataInfo.chunkDataArrayBuffer);
+
+  // console.log("uploadChunkDataBySpecifiedLocalPolicy dataContentList", dataContentList);
+
+  const _encryptMessages: MessageKit[] = encryptMessage(strategy.strategyKeyPair._publicKey, dataContentList);
+  // console.log("uploadDataByCreatePolicy _encryptMessages", _encryptMessages);
+
+  const data: Uint8Array[] = _encryptMessages.map((encryptMessage) => encryptMessage.toBytes() /*Uint8Array*/);
+  const cids: string[] = await StorageManager.setData(data, account);
+  const mockIPFSAddress: string = cids[0];
+
+  // console.log("uploadChunkDataBySpecifiedLocalPolicy mockIPFSAddress", mockIPFSAddress);
+
+  //The generation of thumbnail logic should be handled by a third-party DApp, rather than implemented in the pre-process. Therefore, it needs to be moved to the third-party DApp, and this part should be blocked
+  //generate and upload thumbnail files to IPFS
+  // eslint-disable-next-line prefer-const
+  // let thumbnail = '';
+  // try {
+  //  const result = await getBlurThumbnail(
+  //    dataInfo.dataArrayBuffer,
+  //    dataInfo.label
+  //  );
+  //  if (isBlank(result)) {
+  //    thumbnail = "";
+  //  } else {
+  //    const { buffer: thumbnailBuffer, mimeType }: ThumbailResult =
+  //      result as ThumbailResult;
+  //    const cid: string = await StorageManager.setData([thumbnailBuffer.buffer], account)[0];
+  //    thumbnail = mimeType + "|" + cid;
+  //  }
+  // } catch (error) {
+  //  thumbnail = "";
+  //  console.error(
+  //    `generate or upload thumbail failed data label: ${dataInfo.label}, data id:${dataId}`,
+  //    error
+  //  );
+  // }
+
+  // console.log("uploadChunkDataBySpecifiedLocalPolicy dataInfos", dataInfos);
+
+  await uploadChunkData(account, {
+    ...chunkDataInfo,
+    chunk_address: mockIPFSAddress
+  });
+};
+
+/**
+ * @internal
  * Uploads files/data to the server by exist local policy (note: policy may not yet be on-chain) and uploading the files/data encrypted with the policy's public key to IPFS.
  * @category Data Publisher(Alice) Upload Data
  * @param {Account} account - The account to use to create the policy and upload the files/data.
@@ -334,9 +630,10 @@ export const uploadDataSpecifiedLocalPolicy = async (
         encoding: 'binary'
       }),
       suffix: dataSuffix(dataInfo.label),
-      category: dataInfo.category || 'unkown',
+      category: dataInfo.category || 'unknown',
       thumbnail: dataInfo.thumbnail || '', //thumbnail || '',
-      mimtype: dataInfo.mimetype || ''
+      mimtype: dataInfo.mimetype || '',
+      chunked: dataInfo.chunked || 0
     };
     dataInfos.push(_data);
 
@@ -344,7 +641,8 @@ export const uploadDataSpecifiedLocalPolicy = async (
       id: _data.id,
       label: _data.name,
       thumbnail: _data.thumbnail,
-      mimtype: _data.mimtype
+      mimtype: _data.mimtype,
+      address: _data.address
     });
   }
   // console.log("uploadDataByCreatePolicy dataInfos", dataInfos);
@@ -386,8 +684,6 @@ export const uploadDataSpecifiedLocalPolicy = async (
   return retDataInfoList;
 };
 
-
-
 /**
  * Query Bob's Payment Status from pre backend
  
@@ -408,19 +704,18 @@ export const uploadDataSpecifiedLocalPolicy = async (
  *
  */
 export const getPreBobPayStatus = async (orderId: BigNumber | string): Promise<number> => {
-  
   if (typeof orderId === 'string') {
     if (!isNumeric(orderId)) {
       throw new Error('Each digit in the orderId must be composed of numbers');
     }
     orderId = BigNumber.from(orderId);
   }
-  
+
   const clientId = await getClientId(true);
-  
+
   const sendData = {
     client_id: clientId,
-    order_id: orderId.toString(),
+    order_id: orderId.toString()
   };
 
   //Add a random number to prevent browser caching
@@ -428,7 +723,6 @@ export const getPreBobPayStatus = async (orderId: BigNumber | string): Promise<n
 
   return data['pay_status'] as number;
 };
-
 
 /**
  * Query Bob's Payment Status
@@ -439,7 +733,7 @@ export const getPreBobPayStatus = async (orderId: BigNumber | string): Promise<n
  * @returns {Promise<string>}   NOT_PAID (not paid or Insufficient payment), PENDING, UNDER_REVIEW, APPROVED, REJECTED, EXPRIED
  */
 export const getBobPayStatus = async (orderId: BigNumber | string, payCheckUrl: string): Promise<string> => {
- /*  //check the status and params
+  /*  //check the status and params
   if (typeof orderId === 'string') {
     if (!isNumeric(orderId)) {
       throw new Error('Each digit in the orderId must be composed of numbers');
@@ -485,13 +779,14 @@ export const getBobPayStatus = async (orderId: BigNumber | string, payCheckUrl: 
 export const simulateOrderGenerationForDev = async (
   aliceAddress: string,
   bobAddress: string,
-  appServiceUrl: string
+  appServiceUrl: string,
+  tokenAddress: string
 ): Promise<string> => {
   const sendData = {
     actualAmount: '100000000000000000',
     csmAmount: '0',
     currency: 'NLK',
-    currencyAddress: '0x8A95eF66ef0b5bCD10cb8aB433c768f50B5822a8', //V14
+    currencyAddress: tokenAddress, //V14
     day: 30,
     id: 0,
     orderAmount: '100000000000000000',
@@ -500,14 +795,14 @@ export const simulateOrderGenerationForDev = async (
     userAddress: bobAddress
   };
 
-  appServiceUrl = appServiceUrl.endsWith('/') ? appServiceUrl :  appServiceUrl + "/";
+  appServiceUrl = appServiceUrl.endsWith('/') ? appServiceUrl : appServiceUrl + '/';
   //
   //http://47.237.123.177:8083/subscribe/getOrderStatus
   //payCheckUrl ==> http(s)://domain/subscribe/getOrderStatus
   const _data: any = (await serverPost(`${appServiceUrl}subscribe/initForDev`, sendData)) as object;
 
   const result = _data?.data;
-  
+
   /*   
       {
       "success": true,
@@ -541,24 +836,19 @@ export const simulateOrderGenerationForDev = async (
     }
   */
 
-
   console.log(`getBobPayStatus _data: `, _data);
-  
+
   const data = result?.data;
 
   if (Number(result['code']) != 200) {
-    throw new Error(`${result['message']} orderId: ${isBlank(data) ? "": data?.orderId}`);
+    throw new Error(`${result['message']} orderId: ${isBlank(data) ? '' : data?.orderId}`);
   }
-  
-  
+
   if (isBlank(data)) {
     throw new Error(`$simulateOrderGenerationForDev response error: `, _data);
   }
-  
-
 
   return String(data['orderId']).toLowerCase();
-  
 };
 
 // /** @Deprecated
@@ -712,7 +1002,7 @@ const bobPaySubscriptionFee2 = async (
   }
 
   payAmountInWei = typeof payAmountInWei === 'string' ? BigNumber.from(payAmountInWei) : payAmountInWei;
-  
+
   //2. call contact refund function
   const provider: Web3Provider = (await getWeb3Provider(account as any)) as Web3Provider;
   /**
@@ -762,8 +1052,12 @@ const bobPaySubscriptionFee2 = async (
 
   const tokenBalanceInEther: string | undefined = await account.getERC20TokenBalance(payTokenAddress);
   const payAmountInEther: string = ethers.utils.formatEther(payAmountInWei); //Web3.utils.fromWei(payAmountInWei, 'ether');
-  
-  if (isNaN(parseFloat(tokenBalanceInEther as string)) || isNaN(parseFloat(payAmountInEther))  || parseFloat(tokenBalanceInEther as string) < parseFloat(payAmountInEther)) {
+
+  if (
+    isNaN(parseFloat(tokenBalanceInEther as string)) ||
+    isNaN(parseFloat(payAmountInEther)) ||
+    parseFloat(tokenBalanceInEther as string) < parseFloat(payAmountInEther)
+  ) {
     throw new InsufficientBalanceError(
       `Insufficient account ${account.address}'s balance of token: ${payTokenAddress} for pay ${payAmountInEther}ether subscription fee, balance: ${tokenBalanceInEther}ether`
     );
@@ -775,7 +1069,7 @@ const bobPaySubscriptionFee2 = async (
 
   console.log(`the account mainnet token balance is: ${balance1.toString()} wei ${chainConfigInfo.tokenSymbol}`);
 
-  if ( balance1.lt(BigNumber.from("0"))) {
+  if (balance1.lt(BigNumber.from('0'))) {
     const balanceValue = Web3.utils.fromWei(balance1.toString(), 'ether');
 
     console.log(
@@ -805,7 +1099,6 @@ const bobPaySubscriptionFee2 = async (
   )) as string;
 
   console.log(`after bob pay approveErc20Token ${payTokenAddress} txHash: ${txHash}`);
-  
 
   //Check if the gas fee is sufficient.
   const gasInfo: GasInfo = await AppPayAgent.estimateGasByBobPay(
@@ -821,7 +1114,6 @@ const bobPaySubscriptionFee2 = async (
   const gasFeeInWei: BigNumber = gasInfo.gasFee;
   //Ensure that the BNB balance is greater than the GAS fee balance
   const balance: BigNumber = await getBalance(account.address);
-
 
   console.log(`the account mainnet token balance is: ${balance.toString()} wei ${chainConfigInfo.tokenSymbol}`);
   console.log(`the bob pay gas fee is: ${gasFeeInWei.toString()} wei ${chainConfigInfo.tokenSymbol}`);
@@ -840,8 +1132,8 @@ const bobPaySubscriptionFee2 = async (
     );
   }
 
-  console.log("Bob address: ", account.address);
-  
+  console.log('Bob address: ', account.address);
+
   const tx: ContractTransaction = await AppPayAgent.bobPay(
     _Web3Provider.fromEthersWeb3Provider(provider),
     orderId,
@@ -868,7 +1160,7 @@ const bobPaySubscriptionFee2 = async (
    */
   if (waitforReceipt) {
     const web3 = await getWeb3();
-    
+
     let receipt: any = null;
 
     let retryTimes = 130;
@@ -939,11 +1231,9 @@ const bobPaySubscriptionFee2 = async (
   ////return { status: payStatus };
 };
 
-
-
 /**
  * @innernal
- * @returns 
+ * @returns
  */
 export const bobPaySubscriptionFeeApproveErc20TokenEstimateGas = async (
   account: Account,
@@ -954,9 +1244,15 @@ export const bobPaySubscriptionFeeApproveErc20TokenEstimateGas = async (
   //approveNLKEstimateGas
 
   // const serverFeeNlkInWei: BigNumber = BigNumber.from("0")
-  const gasInfo = await bobPaySubscriptionFeeApproveErc20Token(account, approveErc20TokenInWei, approveErc20TokenAddress, true, gasPrice)
-  return gasInfo as GasInfo
-}
+  const gasInfo = await bobPaySubscriptionFeeApproveErc20Token(
+    account,
+    approveErc20TokenInWei,
+    approveErc20TokenAddress,
+    true,
+    gasPrice
+  );
+  return gasInfo as GasInfo;
+};
 
 /**
  * @innernal
@@ -976,21 +1272,21 @@ export const bobPaySubscriptionFeeApproveErc20Token = async (
 ): Promise<string | GasInfo> => {
   // Allow my nlk to be deducted from the subscriptManager contract
 
-  const web3: Web3 = await getWeb3()
+  const web3: Web3 = await getWeb3();
   // const account = web3.eth.accounts.privateKeyToAccount('0x2cc983ef0f52c5e430b780e53da10ee2bb5cbb5be922a63016fc39d4d52ce962');
   //web3.eth.accounts.wallet.add(account);
 
-  const [GAS_PRICE_FACTOR_LEFT, GAS_PRICE_FACTOR_RIGHT] = DecimalToInteger(GAS_PRICE_FACTOR)
+  const [GAS_PRICE_FACTOR_LEFT, GAS_PRICE_FACTOR_RIGHT] = DecimalToInteger(GAS_PRICE_FACTOR);
 
   if (gasPrice.lte(BigNumber.from('0'))) {
     // the gasPrice is obtained in real time
-    gasPrice = BigNumber.from(await web3.eth.getGasPrice())
-    gasPrice = gasPrice.mul(GAS_PRICE_FACTOR_LEFT).div(GAS_PRICE_FACTOR_RIGHT)
+    gasPrice = BigNumber.from(await web3.eth.getGasPrice());
+    gasPrice = gasPrice.mul(GAS_PRICE_FACTOR_LEFT).div(GAS_PRICE_FACTOR_RIGHT);
   } else {
     //If the gasPrice is manually set, the GAS_PRICE_FACTOR is not set
   }
 
-  const curNetwork: NETWORK_LIST = await getCurrentNetworkKey()
+  const curNetwork: NETWORK_LIST = await getCurrentNetworkKey();
 
   if (![NETWORK_LIST.Horus, NETWORK_LIST.HorusMainNet].includes(curNetwork)) {
     //if (curNetwork !== NETWORK_LIST.Horus) {
@@ -1000,63 +1296,61 @@ export const bobPaySubscriptionFeeApproveErc20Token = async (
         gasPrice: gasPrice,
         gasLimit: BigNumber.from('0'),
         gasFee: BigNumber.from('0')
-      }
-      return gasInfo
+      };
+      return gasInfo;
     }
-    return ''
+    return '';
   }
 
-  const tokenBalanceInEther = (await account.getERC20TokenBalance(approveErc20TokenAddress)) as string
+  const tokenBalanceInEther = (await account.getERC20TokenBalance(approveErc20TokenAddress)) as string;
 
-  const tokenBalanceInWei = BigNumber.from(Web3.utils.toWei(tokenBalanceInEther))
+  const tokenBalanceInWei = BigNumber.from(Web3.utils.toWei(tokenBalanceInEther));
 
-  console.log(`token address: ${approveErc20TokenAddress}, tokenBalanceInWei is ${tokenBalanceInWei.toString()}`)
+  console.log(`token address: ${approveErc20TokenAddress}, tokenBalanceInWei is ${tokenBalanceInWei.toString()}`);
 
+  console.log(`token address: ${approveErc20TokenAddress}, tokenBalanceInEther is ${tokenBalanceInEther}`);
 
-  console.log(`token address: ${approveErc20TokenAddress}, tokenBalanceInEther is ${tokenBalanceInEther}`)
-
-  const chainConfigInfo = await getSettingsData()
-
+  const chainConfigInfo = await getSettingsData();
 
   //
   // const erc20TokenContractInfo: any = contractList[curNetwork][CONTRACT_NAME.erc20Token]
-  const appPayContractInfo: any = contractList[curNetwork][CONTRACT_NAME.appPay]
+  const appPayContractInfo: any = contractList[curNetwork][CONTRACT_NAME.appPay];
 
-  const erc20TokenContract: Contract = await getContractInst(CONTRACT_NAME.erc20Token, approveErc20TokenAddress)
+  const erc20TokenContract: Contract = await getContractInst(CONTRACT_NAME.erc20Token, approveErc20TokenAddress);
 
   const aliceBob = Web3.utils.toChecksumAddress(
     account.address //"0xDCf049D1a3770f17a64E622D88BFb67c67Ee0e01"
-  )
+  );
 
-  const appPayAddress = Web3.utils.toChecksumAddress(appPayContractInfo.address)
-  const erc20TokenAddress = Web3.utils.toChecksumAddress(approveErc20TokenAddress)
+  const appPayAddress = Web3.utils.toChecksumAddress(appPayContractInfo.address);
+  const erc20TokenAddress = Web3.utils.toChecksumAddress(approveErc20TokenAddress);
 
   //owner, spender,
-  const allowanceWei: string = await erc20TokenContract.methods
-    .allowance(aliceBob, appPayAddress)
-    .call()
+  const allowanceWei: string = await erc20TokenContract.methods.allowance(aliceBob, appPayAddress).call();
 
   if (BigNumber.from(allowanceWei).gte(approveErc20TokenInWei)) {
-    console.log(`allowance is ${allowanceWei}, to approve is ${approveErc20TokenInWei}, so no need approve token: ${approveErc20TokenAddress}`)
-    return ''
+    console.log(
+      `allowance is ${allowanceWei}, to approve is ${approveErc20TokenInWei}, so no need approve token: ${approveErc20TokenAddress}`
+    );
+    return '';
   }
 
   //privateKeyString startwith 0x and total length is 66( include the length of 0x)
-  const privateKeyStringHex = pwdDecrypt(account.encryptedKeyPair._privateKey, true)
-  const privateKeyString = privateKeyStringHex.substring(2, 66)
+  const privateKeyStringHex = pwdDecrypt(account.encryptedKeyPair._privateKey, true);
+  const privateKeyString = privateKeyStringHex.substring(2, 66);
   // console.log(privateKeyString);
 
   const _encodedABI = erc20TokenContract.methods
     .approve(appPayAddress, web3.utils.toBN(approveErc20TokenInWei.toHexString()))
-    .encodeABI()
+    .encodeABI();
 
-  const transactionNonceLock: AwaitLock = await getTransactionNonceLock(aliceBob)
-  await transactionNonceLock.acquireAsync()
+  const transactionNonceLock: AwaitLock = await getTransactionNonceLock(aliceBob);
+  await transactionNonceLock.acquireAsync();
 
   try {
-    const txCount = await web3.eth.getTransactionCount(aliceBob)
+    const txCount = await web3.eth.getTransactionCount(aliceBob);
 
-    const gasPriceHex = web3.utils.toHex(gasPrice.toString())
+    const gasPriceHex = web3.utils.toHex(gasPrice.toString());
 
     const rawTx = {
       nonce: web3.utils.toHex(txCount),
@@ -1065,7 +1359,7 @@ export const bobPaySubscriptionFeeApproveErc20Token = async (
       data: _encodedABI,
       gasPrice: gasPriceHex, //'0x09184e72a000',
       value: '0x0'
-    }
+    };
 
     // const networkId = await web3.eth.net.getId();
 
@@ -1084,50 +1378,52 @@ export const bobPaySubscriptionFeeApproveErc20Token = async (
     // }
 
     // gasUsed => estimateGas return gasUsed is the gasLimit (How many gas were used,that is the amount of gas), not the gasFee (gasLimit * gasPrice)
-    const gasUsed: number = await web3.eth.estimateGas(rawTx as any)
-    console.log(`approve erc20 token ${erc20TokenAddress} estimateGas Used is ${gasUsed} wei`)
+    const gasUsed: number = await web3.eth.estimateGas(rawTx as any);
+    console.log(`approve erc20 token ${erc20TokenAddress} estimateGas Used is ${gasUsed} wei`);
 
-    const [GAS_LIMIT_FACTOR_LEFT, GAS_LIMIT_FACTOR_RIGHT] = DecimalToInteger(GAS_LIMIT_FACTOR)
+    const [GAS_LIMIT_FACTOR_LEFT, GAS_LIMIT_FACTOR_RIGHT] = DecimalToInteger(GAS_LIMIT_FACTOR);
 
     //estimatedGas * gasPrice * factor
-    const gasLimit = BigNumber.from(gasUsed).mul(GAS_LIMIT_FACTOR_LEFT).div(GAS_LIMIT_FACTOR_RIGHT)
-    const gasFeeInWei = gasLimit.mul(BigNumber.from(gasPrice))
+    const gasLimit = BigNumber.from(gasUsed).mul(GAS_LIMIT_FACTOR_LEFT).div(GAS_LIMIT_FACTOR_RIGHT);
+    const gasFeeInWei = gasLimit.mul(BigNumber.from(gasPrice));
 
-    console.log(`approve erc20 token ${erc20TokenAddress} estimate GasFee is ${gasFeeInWei} wei`)
+    console.log(`approve erc20 token ${erc20TokenAddress} estimate GasFee is ${gasFeeInWei} wei`);
     // eslint-disable-next-line no-extra-boolean-cast
     if (!!estimateGas) {
       const gasInfo: GasInfo = {
         gasPrice: gasPrice,
         gasLimit: gasLimit,
         gasFee: gasFeeInWei
-      }
-      return gasInfo
+      };
+      return gasInfo;
     }
 
-    const tokenBalanceEthers = (await account.balance()) as string //tbnb
-    const tokenBalanceWei = Web3.utils.toWei(tokenBalanceEthers)
+    const tokenBalanceEthers = (await account.balance()) as string; //tbnb
+    const tokenBalanceWei = Web3.utils.toWei(tokenBalanceEthers);
 
     // tokenBalanceWei must be great than gasUsed(gasLimit) * gitPrice
     // Calculate if the balance is enough to cover the fee for the transaction of approve(Erc20Token)
     if (BigNumber.from(tokenBalanceWei).lt(gasFeeInWei)) {
       const tips = `Insufficient balance ${tokenBalanceEthers} ${
         chainConfigInfo.tokenSymbol
-      } for erc20 token ${erc20TokenAddress} ${Web3.utils.fromWei(gasFeeInWei.toString(), 'ether')} ${chainConfigInfo.tokenSymbol}`
+      } for erc20 token ${erc20TokenAddress} ${Web3.utils.fromWei(gasFeeInWei.toString(), 'ether')} ${
+        chainConfigInfo.tokenSymbol
+      }`;
 
       // Message.error(tips);
-      console.error(tips)
-      throw new InsufficientBalanceError(tips)
+      console.error(tips);
+      throw new InsufficientBalanceError(tips);
     }
 
     // https://ethereum.stackexchange.com/questions/87606/ethereumjs-tx-returned-error-invalid-sender
 
     //estimatedGas * factor
-    rawTx['gasLimit'] = web3.utils.toHex(gasLimit.toString()) // '0x2710'  The amount of gas
+    rawTx['gasLimit'] = web3.utils.toHex(gasLimit.toString()); // '0x2710'  The amount of gas
 
-    const signedTx = await web3.eth.accounts.signTransaction(rawTx as any, privateKeyString) // privateKeyString is the length of 64
+    const signedTx = await web3.eth.accounts.signTransaction(rawTx as any, privateKeyString); // privateKeyString is the length of 64
     const txReceipt: TransactionReceipt = await web3.eth.sendSignedTransaction(
       signedTx.rawTransaction as string /* "0x" + serializedTx */
-    )
+    );
     /*
     {
       raw: '0xf86c808504a817c800825208943535353535353535353535353535353535353535880de0b6b3a76400008025a04f4c17305743700648bc4f6cd3038ec6f6af0df73e31757007b7f59df7bee88da07e1941b264348e80c78c4027afc65a87b0a5e43e86742b8ca0823584c6788fd0',
@@ -1145,30 +1441,32 @@ export const bobPaySubscriptionFeeApproveErc20Token = async (
       }
     */
 
-    console.log('txReceipt:', txReceipt)
+    console.log('txReceipt:', txReceipt);
 
     //wait txReceipt
     console.log(
       // eslint-disable-next-line no-extra-boolean-cast
-      !txReceipt.transactionHash ? `In Bob pay approve erc20 token ${erc20TokenAddress} : get transaction receipt failed` : `txHash: ${txReceipt.transactionHash}`
-    )
+      !txReceipt.transactionHash
+        ? `In Bob pay approve erc20 token ${erc20TokenAddress} : get transaction receipt failed`
+        : `txHash: ${txReceipt.transactionHash}`
+    );
 
     // eslint-disable-next-line no-extra-boolean-cast
     if (!!txReceipt.transactionHash) {
-      let receipt: any = null
+      let receipt: any = null;
 
       do {
-        receipt = await web3.eth.getTransactionReceipt(txReceipt.transactionHash)
+        receipt = await web3.eth.getTransactionReceipt(txReceipt.transactionHash);
         //status - Boolean: TRUE if the transaction was successful, FALSE if the EVM reverted the
-        await sleep(2000)
-      } while (isBlank(receipt))
+        await sleep(2000);
+      } while (isBlank(receipt));
     }
 
-    return txReceipt.transactionHash
+    return txReceipt.transactionHash;
   } finally {
-    transactionNonceLock.release()
+    transactionNonceLock.release();
   }
-}
+};
 
 /**
  * Apply for subscriber user feeds, This account acts as the user(Bob).
@@ -1217,7 +1515,7 @@ export const applyForSubscriptionAccess = async (
 
   // //eslint-disable-next-line no-debugger
   // debugger;
-  
+
   //NOT_PAID (not paid or Insufficient payment), PENDING, UNDER_REVIEW, APPROVED, REJECTED, EXPRIED
 
   let payInfo: any = null;
@@ -1246,7 +1544,7 @@ export const applyForSubscriptionAccess = async (
   );
 
   const web3 = await getWeb3();
-  
+
   if (!isBlank(payInfo) && !isBlank(payInfo?.hash)) {
     //wait for receipt
     let receipt: any = null;
@@ -1405,35 +1703,33 @@ export const approveUserSubscription = async (
 
   const startDates: Date[] = [];
   const endDates: Date[] = [];
-  
+
   for (let index = 0; index < applyInfoList.length; index++) {
     const applyInfo = applyInfoList[index];
-    const days  = Number(applyInfo['days'] as number );
-    
+    const days = Number(applyInfo['days'] as number);
+
     const startAtSeconds = Number(applyInfo['start_at']);
     const endAtSeconds = Number(applyInfo['end_at']);
-    
-    if(startAtSeconds == 0 || endAtSeconds == 0){ // means that it has not set the end date, too
-      const startMs: number = new Date().getTime()
-      const startDate: Date = new Date(startMs) //  start_at is seconds, but Date needs milliseconds
 
-      const endMs: number = startMs + days * 24 * 60 * 60 * 1000
-      const endDate: Date = new Date(endMs) //  start_at is seconds, but Date needs milliseconds
-      
+    if (startAtSeconds == 0 || endAtSeconds == 0) {
+      // means that it has not set the end date, too
+      const startMs: number = new Date().getTime();
+      const startDate: Date = new Date(startMs); //  start_at is seconds, but Date needs milliseconds
+
+      const endMs: number = startMs + days * 24 * 60 * 60 * 1000;
+      const endDate: Date = new Date(endMs); //  start_at is seconds, but Date needs milliseconds
+
       startDates.push(startDate);
       endDates.push(endDate);
-    }
-    else{
+    } else {
       startDates.push(new Date(startAtSeconds * 1000));
       endDates.push(new Date(endAtSeconds * 1000));
     }
-    
   }
-  
+
   // const startDates: Date[] = applyInfoList.map((applyInfo) => new Date(Number(applyInfo['start_at']) * 1000));
   // const endDates: Date[] = applyInfoList.map((applyInfo) => new Date(Number(applyInfo['end_at']) * 1000));
 
-  
   const ursulaShares: number[] = Array(applyInfoList.length).fill(3);
   const ursulaThresholds: number[] = Array(applyInfoList.length).fill(1);
   const porterUri = '';
@@ -1660,7 +1956,7 @@ export const cancelUserSubscription = async (
 
   //enum payStatus{PayNull,PaySucc,PayCancel,SettlementSucc} PayNull：0， PaySucc：1， PayCancel：2， SettlementSucc：3
   if ((!isBlank(payInfo) && payInfo.paySts == 2) || payInfo.paySts == 0) {
-    console.log("The refund has already been processed, finish")
+    console.log('The refund has already been processed, finish');
     return;
   }
 
@@ -1745,7 +2041,7 @@ export const cancelUserSubscription = async (
   const data: any = await serverPost('/subscribe/refund', sendData);
 
   const web3 = await getWeb3();
-  
+
   let receipt: any = null;
 
   let retryTimes = 130;
@@ -1797,7 +2093,7 @@ export const cancelUserSubscription = async (
   const _payInfo = await AppPayAgent.getPayInfo(provider, orderId);
   console.log(`cancelUserSubscription: after send transaction, txHash is ${tx.hash}, pay status is ${_payInfo.paySts}`);
 
-  return Object.assign(data,  {'hash': tx.hash});
+  return Object.assign(data, { hash: tx.hash });
 };
 
 /**
@@ -1823,7 +2119,6 @@ export const getDataContentListByDataIdAsUser = async (
 
   return dataDict;
 };
-
 
 /**
  * The file/data publisher obtains the content of the file/data
@@ -1912,13 +2207,15 @@ export const extendPolicysValidity = async (
   const crossChainHRACList: CrossChainHRAC[] = [];
 
   const applyInfo = policyData;
-  
-  const currentUtcTimestampInSeconds = Math.floor(Date.now() / 1000);  // Get the current UTC timestamp (seconds)
-  
-  if (/* applyInfo['status'] != 5 */applyInfo['end_at'] > currentUtcTimestampInSeconds) {
+
+  const currentUtcTimestampInSeconds = Math.floor(Date.now() / 1000); // Get the current UTC timestamp (seconds)
+
+  if (/* applyInfo['status'] != 5 */ applyInfo['end_at'] > currentUtcTimestampInSeconds) {
     //status: "apply status: 1 - In progress, 2 - Approved, 3 - Rejected, 4 - Under review, 5 - Expired"
     throw new PolicyNotExpired(
-      `apply: ${applyId} is not Expired, it can't be extended time! current apply status is ${convertApplyIdStatusToString(applyInfo['status'])}`
+      `apply: ${applyId} is not Expired, it can't be extended time! current apply status is ${convertApplyIdStatusToString(
+        applyInfo['status']
+      )}`
     );
   }
 
@@ -1962,7 +2259,7 @@ export const extendPolicysValidity = async (
   // assert(dataDetails && !isBlank(dataDetails));
 
   // const policyEncryptingKey = dataDetails['policy_encrypted_pk'];
-  
+
   const aliceAddress = applyInfo['file_owner_address'];
 
   //check the pay status by payCheckUrl
@@ -2024,7 +2321,7 @@ export const extendPolicysValidity = async (
   console.log('sended the request: /policy/extend-times');
 
   const web3 = await getWeb3();
-  
+
   if (!isBlank(payInfo) && !isBlank(payInfo?.hash)) {
     //wait for receipt
     let receipt: any = null;

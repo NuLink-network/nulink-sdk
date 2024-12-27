@@ -11,7 +11,7 @@ import FormData from "form-data";
         "address": "QmentiTZ2dPhaqSrDvqw82S35iMHavuGS5mfyjvhDgoCWy",
         "md5": "1c96e271a85ae57487fba344fdc17130",
         "suffix": "png",
-        "category": "unkown",
+        "category": "unknown",
         "thumbnail": "image/png|QmNMmuowY1T6NsW2SFkw2GJLrxEXdUGD7gaWk7AL7QwnZV"
       }
     ],

@@ -422,9 +422,10 @@ export const uploadDataByCreatePolicy = async (
         encoding: 'binary'
       }),
       suffix: dataSuffix(dataInfo.label),
-      category: dataInfo.category || 'unkown',
+      category: dataInfo.category || 'unknown',
       thumbnail: dataInfo.thumbnail || '', //thumbnail || '',
-      mimtype: dataInfo.mimetype || ''
+      mimtype: dataInfo.mimetype || '',
+      chunked: dataInfo.chunked || 0,
     };
     dataInfos.push(_data);
   }
@@ -541,9 +542,10 @@ export const uploadDataBySelectPolicy = async (
         encoding: 'binary'
       }),
       suffix: dataSuffix(dataInfo.label),
-      category: dataInfo.category || 'unkown',
+      category: dataInfo.category || 'unknown',
       thumbnail: dataInfo.thumbnail || '', //thumbnail || '',
-      mimtype: dataInfo.mimetype || ''
+      mimtype: dataInfo.mimetype || '',
+      chunked: dataInfo.chunked || 0,
     };
 
     dataInfos.push(_data);
