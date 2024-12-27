@@ -663,10 +663,11 @@ export type ChunkDataTaskInfo = {
 
 export type ChunkDataMetaInfo = ChunkDataTaskInfo & {
   chunk_index: number; //Chunk index, starting from 0, with the maximum index being file_chunk_count - 1.
+  strategyIndex: number;
 };
 
 //Information about the chunk data that needs to be uploaded for paid subscriber visible
-export type ChunkDataInfoForPaidSubscriberVisible = ChunkDataMetaInfo & {
+export type ChunkDataInfo = ChunkDataMetaInfo & {
   chunkDataArrayBuffer: ArrayBuffer; //The binary representation of the contents of files/data By invoke 'FileReader.ReadAsArrayBuffer(file)' callback return the value: e.target.result
 };
 

@@ -78,7 +78,8 @@ export const uploadChunkData = async (account: Account, chunkMetaData: ChunkData
     account_id: account.id,
     task_id: chunkMetaData.task_id,
     chunk_address: chunkMetaData.chunk_address,
-    chunk_index: chunkMetaData.chunk_index
+    chunk_index: chunkMetaData.chunk_index,
+    policy_label_index: String(chunkMetaData.strategyIndex),
   };
 
   sendData['signature'] = await signUpdateServerDataMessage(account, sendData);

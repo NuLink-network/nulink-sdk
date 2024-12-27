@@ -42,9 +42,8 @@ import { PublicKey, SecretKey as NucypherTsSecretKey, CrossChainHRAC } from '@nu
 import { encryptMessage } from './enrico';
 import { isBlank } from '../../utils/null';
 import {
-  ChunkDataInfoForPaidSubscriberVisible,
+  ChunkDataInfo,
   ChunkDataMetaInfo,
-  ChunkDataReturnInfoForPaidSubscriberVisible,
   ChunkStartMetaInfo,
   DataCategory,
   DataInfo,
@@ -177,7 +176,8 @@ export const initClientId = async (clientId: string) => {
  * {    address: accountAddress,
  *      strategyId: strategyId,
  *      pk: accountPublicKey,
- *      taskId: data?.task_id
+ *      taskId: data?.task_id,
+ *      strategyIndex: strategyIndex,
  * }
  */
 
@@ -218,7 +218,8 @@ export const uploadChunkedDataStartForPaidSubscriberVisible = async (
     address: account.address,
     strategyId: strategy.id,
     pk: account.encryptedKeyPair._publicKey,
-    taskId: data?.task_id
+    taskId: data?.task_id,
+    strategyIndex: strategyIndex
   };
 };
 
@@ -226,29 +227,18 @@ export const uploadChunkedDataStartForPaidSubscriberVisible = async (
  * Uploads chunk data of the file/data for paid subscriber-only visible user
  * @category Data Publisher(Alice) Upload Data
  * @param {Account} account - The account to use to create the policy and upload the files/data.
- * @param {ChunkDataInfoForPaidSubscriberVisible} chunkDataInfo - The list of files/data to upload. Each element of the array must be an object with properties 'label' and 'dataArrayBuffer'.
- * @returns {Promise<object>} - Returns
- * {    address: accountAddress,
- *      strategyId: strategyId,
- *      pk: accountPublicKey,
- *      filesInfo:
- *      [
- *       {
- *         id: fileId,
- *         label: fileName,
- *         thumbnail: fileThumbnail,  //return only if the input parameters include the specified parameters （thumbnail url or unique identifier ）
- *         mimtype: fileMimetype,   //return only if the input parameters include the specified parameters
- *       }
- *      ]
- * }
+ * @param {ChunkDataInfo} chunkDataInfo - The list of files/data to upload. Each element of the array must be an object with properties 'label' and 'dataArrayBuffer'.
+ * @returns {Promise<string>} - Returns the chunk ipfs address
  */
 export const uploadChunkedDataForPaidSubscriberVisible = async (
   account: Account,
-  chunkDataInfo: ChunkDataInfoForPaidSubscriberVisible
-): Promise<void> => {
+  chunkDataInfo: ChunkDataInfo
+): Promise<string> => {
   console.log('uploadChunkedDataForPaidSubscriberVisible account', account);
 
   const strategyIndex = 0;
+  chunkDataInfo.strategyIndex = strategyIndex;
+
   let strategy: Strategy | undefined = account.getStrategy(strategyIndex);
 
   if (isBlank(strategy)) {
@@ -281,14 +271,14 @@ export const uploadChunkedDataForPaidSubscriberVisible = async (
   //   throw new Error(`get task info failed task id ${chunkDataInfo.task_id}`);
   // }
 
-  await uploadChunkDataBySpecifiedLocalPolicy(account, strategy, chunkDataInfo);
+  return await uploadChunkDataBySpecifiedLocalPolicy(account, strategy, chunkDataInfo);
 };
 
 /**
  * Uploads chunk data of the file/data for paid subscriber-only visible user
  * @category Data Publisher(Alice) Upload Data
  * @param {Account} account - The account to use to create the policy and upload the files/data.
- * @param {number} task_id - The id of
+ * @param {number} taskId - The id of
  * @returns {Promise<object>} - Returns
  *  {
  *    "chunk_missing_indexes": [0, 1, 8], // If the number of uploaded chunks is insufficient, return a list of the missing chunk indexes.
@@ -301,10 +291,7 @@ export const uploadChunkedDataForPaidSubscriberVisible = async (
  *    "file_chunk_count": 0
  *  }
  */
-export const uploadChunkedDataOverForPaidSubscriberVisible = async (
-  account: Account,
-  task_id: number
-): Promise<any> => {
+export const uploadChunkedDataOverForPaidSubscriberVisible = async (account: Account, taskId: number): Promise<any> => {
   console.log('uploadChunkedDataOverForPaidSubscriberVisible account', account);
 
   const strategyIndex = 0;
@@ -332,16 +319,16 @@ export const uploadChunkedDataOverForPaidSubscriberVisible = async (
   }
   strategy = strategy as Strategy;
 
-  console.log('uploadChunkedDataOverForPaidSubscriberVisible task id: ', task_id);
+  console.log('uploadChunkedDataOverForPaidSubscriberVisible task id: ', taskId);
 
-  const checkOverDataInfo = await uploadChunkOver(account, task_id);
+  const checkOverDataInfo = await uploadChunkOver(account, taskId);
 
   const chunkMissingIndexList = checkOverDataInfo.chunk_missing_indexes;
   if (!isBlank(chunkMissingIndexList)) {
     throw new Error(
-      `The chunk data has not been fully uploaded! task id ${task_id}, The missing chunk data indexes are: ${JSON.stringify(
+      `The chunk data has not been fully uploaded! task id ${taskId}, The missing chunk data indexes are: ${JSON.stringify(
         chunkMissingIndexList
-      )}`
+      )} function: uploadChunkedDataOverForPaidSubscriberVisible`
     );
   }
   // const taskInfo = await getDataTaskInfo(task_id);
@@ -350,23 +337,21 @@ export const uploadChunkedDataOverForPaidSubscriberVisible = async (
   //   throw new Error(`get task info failed task id ${task_id}`);
   // }
 
-  const uploadedDataInfo = await getUploadedChunkInfo(task_id);
+  const uploadedDataInfo = await getUploadedChunkInfo(taskId);
   if (
     isBlank(uploadedDataInfo) ||
     isBlank(uploadedDataInfo?.uploaded_chunk_list?.length) ||
     uploadedDataInfo?.uploaded_chunk_list?.length < uploadedDataInfo.file_chunk_count
   ) {
-    throw new Error(`Get chunked data failed! task id ${task_id}`);
+    throw new Error(`Get chunked data failed! task id ${taskId}`);
   }
 
-
-
-  const uploadChunkMetaInfoList =  uploadedDataInfo.uploaded_chunk_list;
+  const uploadChunkMetaInfoList = uploadedDataInfo.uploaded_chunk_list;
 
   // sort in ascending order based on chunk_index
   uploadChunkMetaInfoList.sort((a, b) => a.chunk_index - b.chunk_index);
 
-  const allChunkedPlainText = "CHUNK_JSON_DATA::" + JSON.stringify(uploadChunkMetaInfoList);
+  const allChunkedPlainText = 'CHUNK_JSON_DATA::' + JSON.stringify(uploadChunkMetaInfoList);
   const enc = new TextEncoder(); // always utf-8
   const allChunkedContent: Uint8Array = enc.encode(allChunkedPlainText);
 
@@ -380,6 +365,7 @@ export const uploadChunkedDataOverForPaidSubscriberVisible = async (
     chunked: 1
   });
 
+  //TODO: Actually, encryption is not necessary here. Increase the decryption speed
   const filesInfo = await uploadDataSpecifiedLocalPolicy(account, strategy, dataInfoList);
 
   return checkOverDataInfo;
@@ -435,6 +421,7 @@ export const publishDataForPaidSubscriberVisible = async (
     strategy = await account.createStrategyByLabel(label);
   }
   strategy = strategy as Strategy;
+
   const filesInfo = await uploadDataSpecifiedLocalPolicy(account, strategy, dataInfoList);
 
   return {
@@ -443,6 +430,194 @@ export const publishDataForPaidSubscriberVisible = async (
     pk: account.encryptedKeyPair._publicKey,
     filesInfo: filesInfo
   };
+};
+
+/**
+ * Start Chunked Uploads Large files/data for paid subscriber-only visible user.
+ * The user needs to pass the strategy.id to invoke the `uploadChunkedDataForPaidSubscriberVisible` function
+ * @category Data Publisher(Alice) Upload Data
+ * @param {Account} account - The account to use to create the policy and upload the files/data.
+ * @param {ChunkStartMetaInfo} dataInfo - Metadata of the chunk upload data.
+ * @returns {Promise<object>} - Returns account, strategy id and taskId
+ * {    address: accountAddress,
+ *      strategyId: strategyId,
+ *      pk: accountPublicKey,
+ *      taskId: data?.task_id,
+ *      strategyIndex: strategyIndex,
+ * }
+ */
+
+export const uploadChunkedDataStartForIndividualPaid = async (
+  account: Account,
+  dataInfo: ChunkStartMetaInfo
+): Promise<object> => {
+  console.log('uploadChunkedDataStartForIndividualPaid account', account);
+
+  const clientId = await getClientId(true);
+
+  if (isBlank(clientId)) {
+    throw new Error('clientId is not set, need invoke the function initClientId first');
+  }
+  //Note: In the createStrategyWithLabelPrefixAndStrategyIndex function, the label will also add the strategy's index to the base prefix, in order to increase the uniqueness.
+  const labelPrefix = 'pair_for_individual_visible_' + clientId.toLowerCase() + account.address.toLowerCase() + '_'; //'_' + strategyIndex; //nanoid();
+  const strategy: Strategy = await account.createStrategyWithLabelPrefixAndStrategyIndex(`${labelPrefix}`, '');
+  const strategyAddressIndex = strategy.addressIndex;
+
+  const data = await uploadChunkStart(account, strategy, dataInfo);
+
+  return {
+    address: account.address,
+    strategyId: strategy.id,
+    pk: account.encryptedKeyPair._publicKey,
+    taskId: data?.task_id,
+    strategyIndex: strategyAddressIndex
+  };
+};
+
+/**
+ * Uploads chunk data of the file/data for paid subscriber-only visible user
+ * @category Data Publisher(Alice) Upload Data
+ * @param {Account} account - The account to use to create the policy and upload the files/data.
+ * @param {ChunkDataInfo} chunkDataInfo - The file/data to upload. Each element of the array must be an object with properties 'label' and 'dataArrayBuffer'.
+ * @returns {Promise<string>} - Returns the chunk ipfs address
+ */
+export const uploadChunkedDataForIndividualPaid = async (
+  account: Account,
+  chunkDataInfo: ChunkDataInfo
+): Promise<string> => {
+  console.log('uploadChunkedDataForIndividualPaid account', account);
+
+  const strategyIndex = chunkDataInfo.strategyIndex;
+  let strategy: Strategy | undefined = account.getStrategy(strategyIndex);
+
+  if (isBlank(strategy)) {
+    // const clientId = await getClientId(true);
+
+    // if (isBlank(clientId)) {
+    //   throw new Error('clientId is not set, need invoke the function initClientId first');
+    // }
+
+    // //Note: In the createStrategyWithLabelPrefixAndStrategyIndex function, the label will also add the strategy's index to the base prefix, in order to increase the uniqueness.
+    // const labelPrefix = 'pair_for_individual_visible_' + clientId.toLowerCase() + account.address.toLowerCase() + '_'; //'_' + strategyIndex; //nanoid();
+    // strategy = await account.createStrategyWithLabelPrefixAndStrategyIndex(`${labelPrefix}`, '');
+    // strategyIndex = chunkDataInfo.strategyIndex = strategy.addressIndex;
+    //Because the user needs to pass the strategyIndex parameter, we cannot create strategy information temporarily; once the strategyIndex is created, it will definitely be different
+    throw new Error(
+      `uploadChunkedDataOverForIndividualPaid get strategy info failed, strategy index ${
+        strategy?.addressIndex
+      } account: ${account.dump()}`
+    );
+  }
+  strategy = strategy as Strategy;
+
+  console.log('uploadChunkedDataForIndividualPaid task id: ', chunkDataInfo.task_id);
+
+  // const taskInfo = await getDataTaskInfo(chunkDataInfo.task_id);
+
+  // if (isBlank(taskInfo)) {
+  //   throw new Error(`get task info failed task id ${chunkDataInfo.task_id}`);
+  // }
+
+  return await uploadChunkDataBySpecifiedLocalPolicy(account, strategy, chunkDataInfo);
+};
+
+/**
+ * Uploads chunk data of the file/data for paid subscriber-only visible user
+ * @category Data Publisher(Alice) Upload Data
+ * @param {Account} account - The account to use to create the policy and upload the files/data.
+ * @param {number} taskId - The id of
+ * @returns {Promise<object>} - Returns
+ *  {
+ *    "chunk_missing_indexes": [0, 1, 8], // If the number of uploaded chunks is insufficient, return a list of the missing chunk indexes.
+ *    "file_label": "",
+ *    "file_md5": "",
+ *    "file_category": "",
+ *    "file_thumbnail": "",
+ *    "file_mimetype": "",
+ *    "file_chunk_size": 0,
+ *    "file_chunk_count": 0
+ *  }
+ */
+export const uploadChunkedDataOverForIndividualPaid = async (
+  account: Account,
+  taskId: number,
+  strategyIndex: number
+): Promise<any> => {
+  console.log('uploadChunkedDataOverForIndividualPaid account', account);
+
+  let strategy: Strategy | undefined = account.getStrategy(strategyIndex);
+
+  if (isBlank(strategy)) {
+    /* const clientId = await getClientId(true);
+
+    if (isBlank(clientId)) {
+      throw new Error('clientId is not set, need invoke the function initClientId first');
+    }
+
+    //Note: In the createStrategyWithLabelPrefixAndStrategyIndex function, the label will also add the strategy's index to the base prefix, in order to increase the uniqueness.
+    const labelPrefix = 'pair_for_individual_visible_' + clientId.toLowerCase() + account.address.toLowerCase() + '_'; //'_' + strategyIndex; //nanoid();
+    strategy = await account.createStrategyWithLabelPrefixAndStrategyIndex(`${labelPrefix}`, '');
+    strategyIndex = strategy.addressIndex; */
+
+    //Because the user needs to pass the strategyIndex parameter, we cannot create strategy information temporarily; once the strategyIndex is created, it will definitely be different
+    throw new Error(
+      `uploadChunkedDataOverForIndividualPaid get strategy info failed, strategy index ${
+        strategy?.addressIndex
+      } account: ${account.dump()}`
+    );
+  }
+  strategy = strategy as Strategy;
+
+  console.log('uploadChunkedDataOverForIndividualPaid task id: ', taskId);
+
+  const checkOverDataInfo = await uploadChunkOver(account, taskId);
+
+  const chunkMissingIndexList = checkOverDataInfo.chunk_missing_indexes;
+  if (!isBlank(chunkMissingIndexList)) {
+    throw new Error(
+      `The chunk data has not been fully uploaded! task id ${taskId}, The missing chunk data indexes are: ${JSON.stringify(
+        chunkMissingIndexList
+      )} function: uploadChunkedDataOverForIndividualPaid`
+    );
+  }
+  // const taskInfo = await getDataTaskInfo(task_id);
+
+  // if (isBlank(taskInfo)) {
+  //   throw new Error(`get task info failed task id ${task_id}`);
+  // }
+
+  const uploadedDataInfo = await getUploadedChunkInfo(taskId);
+  if (
+    isBlank(uploadedDataInfo) ||
+    isBlank(uploadedDataInfo?.uploaded_chunk_list?.length) ||
+    uploadedDataInfo?.uploaded_chunk_list?.length < uploadedDataInfo.file_chunk_count
+  ) {
+    throw new Error(`Get chunked data failed! task id ${taskId}`);
+  }
+
+  const uploadChunkMetaInfoList = uploadedDataInfo.uploaded_chunk_list;
+
+  // sort in ascending order based on chunk_index
+  uploadChunkMetaInfoList.sort((a, b) => a.chunk_index - b.chunk_index);
+
+  const allChunkedPlainText = 'CHUNK_JSON_DATA::' + JSON.stringify(uploadChunkMetaInfoList);
+  const enc = new TextEncoder(); // always utf-8
+  const allChunkedContent: Uint8Array = enc.encode(allChunkedPlainText);
+
+  const dataInfoList: DataInfo[] = [];
+  dataInfoList.push({
+    label: checkOverDataInfo.file_label,
+    dataArrayBuffer: allChunkedContent.buffer as ArrayBuffer,
+    category: checkOverDataInfo?.file_category || '',
+    mimetype: checkOverDataInfo?.file_mimetype || '',
+    thumbnail: checkOverDataInfo?.file_thumbnail || '',
+    chunked: 1
+  });
+
+  //TODO: Actually, encryption is not necessary here. Increase the decryption speed
+  const filesInfo = await uploadDataSpecifiedLocalPolicy(account, strategy, dataInfoList);
+
+  return checkOverDataInfo;
 };
 
 /** 
@@ -504,8 +679,8 @@ export const publishDataForIndividualPaid = async (
 export const uploadChunkDataBySpecifiedLocalPolicy = async (
   account: Account,
   strategy: Strategy,
-  chunkDataInfo: ChunkDataInfoForPaidSubscriberVisible //chunk data information
-): Promise<void> => {
+  chunkDataInfo: ChunkDataInfo //chunk data information
+): Promise<string> => {
   const dataContentList: ArrayBuffer[] = [];
 
   dataContentList.push(chunkDataInfo.chunkDataArrayBuffer);
@@ -552,6 +727,8 @@ export const uploadChunkDataBySpecifiedLocalPolicy = async (
     ...chunkDataInfo,
     chunk_address: mockIPFSAddress
   });
+
+  return mockIPFSAddress;
 };
 
 /**

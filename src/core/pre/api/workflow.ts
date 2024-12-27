@@ -1955,7 +1955,7 @@ const getBlockchainPolicy = async (
     // console.log("ursulas:",ursulas);
   }
 
-  const strategy: Strategy | undefined = publisher.getAccountStrategyByStategyId(
+  const strategy: Strategy | undefined = publisher.getAccountStrategyByStrategyId(
     policyData['policy_label_id'] as string
   );
   // console.log("ApprovalUseData strategy", strategy);
@@ -2151,7 +2151,7 @@ export const getBlockchainPolicys = async (
     const policy_label_id = _policyData['policy_label_id'] as string;
     //note: important
     const label = policy_label_id; //_policyData["policy_label"]; //for hrac, so can't use the label, show use the policy_label_id
-    const strategy: Strategy | undefined = publisher.getAccountStrategyByStategyId(policy_label_id);
+    const strategy: Strategy | undefined = publisher.getAccountStrategyByStrategyId(policy_label_id);
 
     console.log('policy_label_id: ', policy_label_id);
     console.log('policy address index: ', strategy?.addressIndex);

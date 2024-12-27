@@ -22,7 +22,10 @@ import {
   uploadChunkedDataStartForPaidSubscriberVisible,
   refusalUserSubscription,
   uploadChunkedDataForPaidSubscriberVisible,
-  uploadChunkedDataOverForPaidSubscriberVisible
+  uploadChunkedDataOverForPaidSubscriberVisible,
+  uploadChunkedDataStartForIndividualPaid,
+  uploadChunkedDataForIndividualPaid,
+  uploadChunkedDataOverForIndividualPaid
 } from './workflow.subscription.approval';
 // import { GetStorageDataError, StorageManager } from '../../utils/external-storage';
 import {
@@ -37,7 +40,7 @@ import {
 import { generateMnemonic } from '../../../core/hdwallet/api/common';
 import { Account, NuLinkHDWallet } from '../../../core/hdwallet/api';
 import { setCurrentNetworkWeb3RpcUrl } from '../../../core/chainnet/api/saveData';
-import { ChunkDataInfoForPaidSubscriberVisible, ChunkDataTaskInfo, ChunkStartMetaInfo, DataInfo } from '../types';
+import { ChunkDataInfo, ChunkDataTaskInfo, ChunkStartMetaInfo, DataInfo } from '../types';
 import { arrayBuffer2HexString, hexString2ArrayBuffer } from '../../../core/utils/hexstring.arraybuffer';
 import {
   getDataByStatus,
@@ -68,9 +71,12 @@ export const registerMessageHandler = async () => {
   await registerOnAppMessageHandler('getRootExtendedPrivateKey', _getRootExtendedPrivateKey);
   await registerOnAppMessageHandler('publishDataForPaidSubscriberVisible', _publishDataForPaidSubscriberVisible);
   await registerOnAppMessageHandler('publishDataForIndividualPaid', _publishDataForIndividualPaid);
-  await registerOnAppMessageHandler('startChunkedUploadDataForPaidSubscriberVisible', _startChunkedUploadDataForPaidSubscriberVisible);
+  await registerOnAppMessageHandler('uploadChunkedDataStartForPaidSubscriberVisible', _uploadChunkedDataStartForPaidSubscriberVisible);
   await registerOnAppMessageHandler('uploadChunkedDataForPaidSubscriberVisible',_uploadChunkedDataForPaidSubscriberVisible);
   await registerOnAppMessageHandler('uploadChunkedDataOverForPaidSubscriberVisible',_uploadChunkedDataOverForPaidSubscriberVisible);
+  await registerOnAppMessageHandler('uploadChunkedDataStartForIndividualPaid', _uploadChunkedDataStartForIndividualPaid);
+  await registerOnAppMessageHandler('uploadChunkedDataForIndividualPaid',_uploadChunkedDataForIndividualPaid);
+  await registerOnAppMessageHandler('uploadChunkedDataOverForIndividualPaid',_uploadChunkedDataOverForIndividualPaid);
   await registerOnAppMessageHandler('applyForSubscriptionAccess', _applyForSubscriptionAccess);
   await registerOnAppMessageHandler('approveUserSubscription', _approveUserSubscription);
   await registerOnAppMessageHandler('refusalUserSubscription', _refusalUserSubscription);
@@ -440,6 +446,10 @@ type AndroidChunkDataInfoForPaidSubscriberVisible = {
   chunkDataHexString: string; //The binary representation of the contents of files/data By invoke 'FileReader.ReadAsArrayBuffer(file)' callback return the value: e.target.result
 };
 
+export type AndroidChunkDataInfoForIndividualPaid = AndroidChunkDataInfoForPaidSubscriberVisible & {
+  strategyIndex: number; // the strategy index
+};
+
 /**
  * @internal
  * Upload dynamic content that subscribed users can view.
@@ -498,7 +508,7 @@ const _publishDataForPaidSubscriberVisible = async (data: any) => {
  * Only one large file can be uploaded."
  *
  */
-const _startChunkedUploadDataForPaidSubscriberVisible = async (data: any) => {
+const _uploadChunkedDataStartForPaidSubscriberVisible = async (data: any) => {
   const password: string = data['password'];
   const _dataInfo: ChunkStartMetaInfo = data['dataInfo'];
 
@@ -507,13 +517,13 @@ const _startChunkedUploadDataForPaidSubscriberVisible = async (data: any) => {
 
   if (isBlank(account)) {
     if (isBlank(password)) {
-      return { code: -8, msg: 'startChunkedUploadDataForPaidSubscriberVisible error: Password is empty' };
+      return { code: -8, msg: 'uploadChunkedDataStartForPaidSubscriberVisible error: Password is empty' };
     }
 
     //Note that all registered functions must return a JSON object.
     return {
       code: -1,
-      msg: 'startChunkedUploadDataForPaidSubscriberVisible error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.'
+      msg: 'uploadChunkedDataStartForPaidSubscriberVisible error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.'
     };
   }
 
@@ -541,7 +551,6 @@ const _startChunkedUploadDataForPaidSubscriberVisible = async (data: any) => {
   //Note that all registered functions must return a JSON object.
   return { dataOverview: dataOverview };
 
-  return {};
 };
 
 /**
@@ -568,15 +577,14 @@ const _uploadChunkedDataForPaidSubscriberVisible = async (data: any) => {
     };
   }
 
-  const chunkDataInfo: ChunkDataInfoForPaidSubscriberVisible = {
+  const chunkDataInfo: ChunkDataInfo = {
     task_id: androidChunkDataInfo.task_id,
     chunk_index: androidChunkDataInfo.chunk_index,
-    chunkDataArrayBuffer: hexString2ArrayBuffer(androidChunkDataInfo.chunkDataHexString)
+    chunkDataArrayBuffer: hexString2ArrayBuffer(androidChunkDataInfo.chunkDataHexString),
+    strategyIndex: 0,
   };
 
-  await uploadChunkedDataForPaidSubscriberVisible(account, chunkDataInfo);
-
-  return {};
+  return await uploadChunkedDataForPaidSubscriberVisible(account, chunkDataInfo);
 };
 
 /**
@@ -603,9 +611,121 @@ const _uploadChunkedDataOverForPaidSubscriberVisible = async (data: any) => {
     };
   }
 
-  await uploadChunkedDataOverForPaidSubscriberVisible(account, task_id);
+  return await uploadChunkedDataOverForPaidSubscriberVisible(account, task_id);
 
-  return {};
+};
+
+/**
+ * @internal
+ * Start Chunked Upload For Large content that subscribed users can view.
+ * Only one large file can be uploaded."
+ *
+ */
+const _uploadChunkedDataStartForIndividualPaid = async (data: any) => {
+  const password: string = data['password'];
+  const _dataInfo: ChunkStartMetaInfo = data['dataInfo'];
+
+  // we can get the account by user password that we have created
+  const account: Account = (await getWalletDefaultAccount(password, true)) as Account;
+
+  if (isBlank(account)) {
+    if (isBlank(password)) {
+      return { code: -8, msg: 'uploadChunkedDataStartForIndividualPaid error: Password is empty' };
+    }
+
+    //Note that all registered functions must return a JSON object.
+    return {
+      code: -1,
+      msg: 'uploadChunkedDataStartForIndividualPaid error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.'
+    };
+  }
+
+  const dataInfo: ChunkStartMetaInfo = {
+    label: _dataInfo.label,
+    md5: _dataInfo.md5,
+    chunkSizeInByte: _dataInfo.chunkSizeInByte,
+    chunkCount: _dataInfo.chunkCount
+  };
+
+  if (!isBlank(_dataInfo?.category)) {
+    dataInfo['category'] = _dataInfo?.category;
+  }
+
+  if (!isBlank(_dataInfo?.mimetype)) {
+    dataInfo['mimetype'] = _dataInfo?.mimetype;
+  }
+
+  if (!isBlank(_dataInfo?.thumbnail)) {
+    dataInfo['thumbnail'] = _dataInfo?.thumbnail;
+  }
+
+  const dataOverview = await uploadChunkedDataStartForIndividualPaid(account, dataInfo);
+
+  //Note that all registered functions must return a JSON object.
+  return { dataOverview: dataOverview };
+};
+
+/**
+ * @internal
+ * Upload Chunked Data For Large content that subscribed users can view.
+ */
+
+const _uploadChunkedDataForIndividualPaid = async (data: any) => {
+  const password: string = data['password'];
+  const androidChunkDataInfo: AndroidChunkDataInfoForIndividualPaid = data['dataInfo'];
+
+  // we can get the account by user password that we have created
+  const account: Account = (await getWalletDefaultAccount(password, true)) as Account;
+
+  if (isBlank(account)) {
+    if (isBlank(password)) {
+      return { code: -8, msg: '_uploadChunkedDataForIndividualPaid error: Password is empty' };
+    }
+
+    //Note that all registered functions must return a JSON object.
+    return {
+      code: -1,
+      msg: '_uploadChunkedDataForIndividualPaid error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.'
+    };
+  }
+
+  const chunkDataInfo: ChunkDataInfo = {
+    task_id: androidChunkDataInfo.task_id,
+    chunk_index: androidChunkDataInfo.chunk_index,
+    chunkDataArrayBuffer: hexString2ArrayBuffer(androidChunkDataInfo.chunkDataHexString),
+    strategyIndex: androidChunkDataInfo.strategyIndex,
+  };
+
+  return await uploadChunkedDataForIndividualPaid(account, chunkDataInfo);
+
+};
+
+/**
+ * @internal
+ * Upload all chunked Data finish for Large content that subscribed users can view.
+ */
+
+const _uploadChunkedDataOverForIndividualPaid = async (data: any) => {
+  const password: string = data['password'];
+  const taskId: number = Number(data['taskId']);
+  const strategyIndex: number = Number(data['strategyIndex']);
+  
+  // we can get the account by user password that we have created
+  const account: Account = (await getWalletDefaultAccount(password, true)) as Account;
+
+  if (isBlank(account)) {
+    if (isBlank(password)) {
+      return { code: -8, msg: '_uploadChunkedDataForIndividualPaid error: Password is empty' };
+    }
+
+    //Note that all registered functions must return a JSON object.
+    return {
+      code: -1,
+      msg: '_uploadChunkedDataForIndividualPaid error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.'
+    };
+  }
+
+  return await uploadChunkedDataOverForIndividualPaid(account, taskId, strategyIndex);
 };
 
 /**

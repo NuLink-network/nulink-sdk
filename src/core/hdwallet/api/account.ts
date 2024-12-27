@@ -546,7 +546,7 @@ export class Account extends IJson {
    * @returns {Strategy[]} - Returns an array of all policy objects in the policy mapping.
    * @memberof Account
    */
-  public getAllStrategySortByStategyId(): Strategy[] {
+  public getAllStrategySortByStrategyId(): Strategy[] {
     const sortStrategyArray: Strategy[] = Array.from(this.strategyMapping.values()).sort((strategy1, strategy2) =>
       strategy1.id < strategy2.id ? -1 : strategy1.id > strategy2.id ? 1 : 0
     );
@@ -559,7 +559,7 @@ export class Account extends IJson {
    * @returns {Strategy|undefined} - Returns the policy object associated with the specified ID, or undefined if the ID is not found in the policy mapping.
    * @memberof Account
    */
-  public getAccountStrategyByStategyId = (strategyId: string): Strategy | undefined => {
+  public getAccountStrategyByStrategyId = (strategyId: string): Strategy | undefined => {
     const strategys: Strategy[] = this.getAllStrategy();
     for (const strategy of strategys) {
       if (strategy.id === strategyId) {
@@ -621,13 +621,13 @@ export class Account extends IJson {
    * @memberof Account
    */
   public dump(): string {
-    const strategys: string[] = [];
+    const strategies: string[] = [];
 
     // for (const [k, v] of Array.from(this.strategyMapping)) {
     for (const strategy of Array.from(this.strategyMapping.values())) {
       // We don’t escape the key '__proto__'
       // which can cause problems on older engines
-      strategys.push(strategy.dump());
+      strategies.push(strategy.dump());
     }
 
     return JSON.stringify({
@@ -635,7 +635,7 @@ export class Account extends IJson {
       //'address': this.address, ////Dump is not required, the 'address' can be recovered from the account
       addressIndex: this.addressIndex,
       id: this.id,
-      strategys: strategys
+      strategys: strategies
       //'encryptedKeyPair': this.encryptedKeyPair.dump() //Dump is not required,，It can be recovered through the account, because the mnemonic (or root extended private key), account index is determined, pk is generated, sk is certain
       //'verifyKeyPair': this.encryptedKeyPair.dump() //Dump is not required,，It can be recovered through the account, because the mnemonic (or root extended private key), account index is determined, pk is generated, sk is certain
     });
@@ -678,7 +678,7 @@ export class Account extends IJson {
 
     let strategyInfos: any = [];
     try {
-      //get strategys from backend db
+      //get strategies from backend db
       strategyInfos  = await Account.getStrategyInfosFromServerByAddr(account.address);
     } catch (error: any) {
       
@@ -782,9 +782,9 @@ export class Account extends IJson {
 
       const account = new Account(accountItselfInfo.name, accountItselfInfo.addressIndex, accountItselfInfo.id);
 
-      const strategyIndexs: number[] = await account.getSavedAccountAllStrategyIndexInfo();
+      const strategyIndexes: number[] = await account.getSavedAccountAllStrategyIndexInfo();
 
-      for (const strategyIndex of strategyIndexs) {
+      for (const strategyIndex of strategyIndexes) {
         // We don’t escape the key '__proto__'
         // which can cause problems on older engines
         const strategy = await Strategy.loadSaved(account.addressIndex, strategyIndex);
