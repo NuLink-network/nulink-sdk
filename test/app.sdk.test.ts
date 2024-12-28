@@ -329,7 +329,8 @@ export const run = async () => {
     // assert(dataDetails["creator_id"] === accountAlice.id);
     assert(dataDetails['file_id'] === applyDataId)
     assert(parseInt(dataDetails['status']) === 0) //Is not to apply for
-
+    const chunked = dataDetails['chunked'];
+    
     //nlk v12 version
     const nlkV12Token: string = "0x55F68F1561759551c1B723847060d0A74F16f0b5"; 
     //Simulated order id.

@@ -48,6 +48,7 @@ import {
   getDataContentByDataIdAsUser,
   IsExistAccount
 } from './workflow';
+import { getDataTaskInfo, getUploadedChunkInfo } from './piece.upload';
 
 /**
  * @internal
@@ -72,11 +73,13 @@ export const registerMessageHandler = async () => {
   await registerOnAppMessageHandler('publishDataForPaidSubscriberVisible', _publishDataForPaidSubscriberVisible);
   await registerOnAppMessageHandler('publishDataForIndividualPaid', _publishDataForIndividualPaid);
   await registerOnAppMessageHandler('uploadChunkedDataStartForPaidSubscriberVisible', _uploadChunkedDataStartForPaidSubscriberVisible);
-  await registerOnAppMessageHandler('uploadChunkedDataForPaidSubscriberVisible',_uploadChunkedDataForPaidSubscriberVisible);
-  await registerOnAppMessageHandler('uploadChunkedDataOverForPaidSubscriberVisible',_uploadChunkedDataOverForPaidSubscriberVisible);
+  await registerOnAppMessageHandler('uploadChunkedDataForPaidSubscriberVisible', _uploadChunkedDataForPaidSubscriberVisible);
+  await registerOnAppMessageHandler('uploadChunkedDataOverForPaidSubscriberVisible', _uploadChunkedDataOverForPaidSubscriberVisible);
   await registerOnAppMessageHandler('uploadChunkedDataStartForIndividualPaid', _uploadChunkedDataStartForIndividualPaid);
-  await registerOnAppMessageHandler('uploadChunkedDataForIndividualPaid',_uploadChunkedDataForIndividualPaid);
-  await registerOnAppMessageHandler('uploadChunkedDataOverForIndividualPaid',_uploadChunkedDataOverForIndividualPaid);
+  await registerOnAppMessageHandler('uploadChunkedDataForIndividualPaid', _uploadChunkedDataForIndividualPaid);
+  await registerOnAppMessageHandler('uploadChunkedDataOverForIndividualPaid', _uploadChunkedDataOverForIndividualPaid);
+  await registerOnAppMessageHandler('getChunkDataTaskInfo', _getChunkDataTaskInfo);
+  await registerOnAppMessageHandler('getUploadedChunkInfo', _getUploadedChunkInfo);
   await registerOnAppMessageHandler('applyForSubscriptionAccess', _applyForSubscriptionAccess);
   await registerOnAppMessageHandler('approveUserSubscription', _approveUserSubscription);
   await registerOnAppMessageHandler('refusalUserSubscription', _refusalUserSubscription);
@@ -550,7 +553,6 @@ const _uploadChunkedDataStartForPaidSubscriberVisible = async (data: any) => {
 
   //Note that all registered functions must return a JSON object.
   return { dataOverview: dataOverview };
-
 };
 
 /**
@@ -581,7 +583,7 @@ const _uploadChunkedDataForPaidSubscriberVisible = async (data: any) => {
     task_id: androidChunkDataInfo.task_id,
     chunk_index: androidChunkDataInfo.chunk_index,
     chunkDataArrayBuffer: hexString2ArrayBuffer(androidChunkDataInfo.chunkDataHexString),
-    strategyIndex: 0,
+    strategyIndex: 0
   };
 
   return await uploadChunkedDataForPaidSubscriberVisible(account, chunkDataInfo);
@@ -612,7 +614,6 @@ const _uploadChunkedDataOverForPaidSubscriberVisible = async (data: any) => {
   }
 
   return await uploadChunkedDataOverForPaidSubscriberVisible(account, task_id);
-
 };
 
 /**
@@ -693,11 +694,10 @@ const _uploadChunkedDataForIndividualPaid = async (data: any) => {
     task_id: androidChunkDataInfo.task_id,
     chunk_index: androidChunkDataInfo.chunk_index,
     chunkDataArrayBuffer: hexString2ArrayBuffer(androidChunkDataInfo.chunkDataHexString),
-    strategyIndex: androidChunkDataInfo.strategyIndex,
+    strategyIndex: androidChunkDataInfo.strategyIndex
   };
 
   return await uploadChunkedDataForIndividualPaid(account, chunkDataInfo);
-
 };
 
 /**
@@ -709,7 +709,7 @@ const _uploadChunkedDataOverForIndividualPaid = async (data: any) => {
   const password: string = data['password'];
   const taskId: number = Number(data['taskId']);
   const strategyIndex: number = Number(data['strategyIndex']);
-  
+
   // we can get the account by user password that we have created
   const account: Account = (await getWalletDefaultAccount(password, true)) as Account;
 
@@ -1222,6 +1222,92 @@ const _getApplyListAsPublisher = async (data: any) => {
     pageIndex,
     pageSize
   );
+
+  //Note that all registered functions must return a JSON object.
+  return returnData || {};
+};
+
+/**
+ * @internal
+ * Query the uploaded data metadata based on task_id.
+ * @category upload chunked data 
+ * @param {number} task_id
+ * @returns Returns 
+    * {
+          "account_id":
+          "policy_label_id": 
+          "policy_label": 
+          "policy_label_index": 
+          "file_label": 
+          "file_md5":
+          "file_category": 
+          "file_thumbnail": 
+          "file_mimetype": 
+          "file_chunk_count": 
+          "file_chunk_size":
+          "upload_finished": true //Indicates whether to upload all pieces
+      }
+      on success, throws an exception on failure (The code does not return 2000; it returns 3xxx or 4xxx.)
+ *
+ */
+const _getChunkDataTaskInfo = async (data: any) => {
+  const taskId: number = Number(data['task_id']);
+
+  const returnData = await getDataTaskInfo(taskId);
+
+  //Note that all registered functions must return a JSON object.
+  return returnData || {};
+};
+
+/**
+ * @internal
+ * Get all uploaded chunk information for task_id.
+ * @category upload chunked data 
+ * @param {number} task_id
+ * @param {number} chunk_index - (Optional) If this parameter is not passed, it is the information that gets all the uploaded chunk of task_id. If the transfer is to get a single uploaded chunk information
+ * @returns Returns 
+ * 
+ *    If the chunk_index parameter has a value, return:
+ * 
+ *    {
+        chunk_address: The ipfs address of the file
+        chunk_index: The chunk index, starting from 0, with the maximum index being file_chunk_count - 1."
+      }
+
+      Otherwise, return:
+
+      {
+				uploaded_chunk_list:[  //All uploaded chunk information, sorted in ascending order by chunk_index. If the queried chunk index has not been uploaded, return an empty list
+					{
+						chunk_address: The ipfs address of the file
+            chunk_index: The chunk index, starting from 0, with the maximum index being file_chunk_count - 1."
+					}
+				]
+        account_id
+        policy_label_id
+        policy_label
+        policy_label_index
+        file_label:
+        file_md5
+        file_category
+        file_thumbnail
+        file_mimetype
+        file_chunk_size
+        file_chunk_count
+			}
+      on success, throws an exception on failure (The code does not return 2000; it returns 3xxx or 4xxx.)
+ *
+ */
+const _getUploadedChunkInfo = async (data: any) => {
+  const taskId: number = Number(data['task_id']);
+
+  //chunkIndex is Optional
+  let chunkIndex: number = -1;
+  try {
+    chunkIndex = Number(data['chunk_index']);
+  } catch (error) {}
+
+  const returnData = await getUploadedChunkInfo(taskId, chunkIndex);
 
   //Note that all registered functions must return a JSON object.
   return returnData || {};

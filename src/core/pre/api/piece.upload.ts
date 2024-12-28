@@ -234,8 +234,8 @@ export const getUploadedChunkInfo = async (task_id: number, chunk_index?: number
     task_id: Number(task_id)
   };
 
-  if (!isBlank(chunk_index)) {
-    sendData['chunk_index'] = chunk_index;
+  if (!isBlank(chunk_index) && Number(chunk_index) >= 0) {
+    sendData['chunk_index'] = Number(chunk_index);
   }
 
   //Add a random number to prevent browser caching

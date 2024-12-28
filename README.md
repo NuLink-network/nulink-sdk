@@ -341,6 +341,7 @@ const dataDetails = (await getDataDetails(applyDataId, _accountBob.id)) as objec
 //assert(dataDetails["creator_id"] === accountAlice.id);
 assert(dataDetails["file_id"] === applyDataId);
 assert(parseInt(dataDetails["status"]) === 0); //Is not to apply for
+const chunked = dataDetails['chunked'];
 ```
 
 3.Bob is particularly interested in the data uploaded by Alice. So, Bob requests to use the data that Alice has just uploaded.

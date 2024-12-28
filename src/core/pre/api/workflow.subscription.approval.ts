@@ -355,18 +355,17 @@ export const uploadChunkedDataOverForPaidSubscriberVisible = async (account: Acc
   const enc = new TextEncoder(); // always utf-8
   const allChunkedContent: Uint8Array = enc.encode(allChunkedPlainText);
 
-  const dataInfoList: DataInfo[] = [];
-  dataInfoList.push({
+  const dataInfo: DataInfo = {
     label: checkOverDataInfo.file_label,
     dataArrayBuffer: allChunkedContent.buffer as ArrayBuffer,
     category: checkOverDataInfo?.file_category || '',
     mimetype: checkOverDataInfo?.file_mimetype || '',
     thumbnail: checkOverDataInfo?.file_thumbnail || '',
     chunked: 1
-  });
+  };
 
-  //TODO: Actually, encryption is not necessary here. Increase the decryption speed
-  const filesInfo = await uploadDataSpecifiedLocalPolicy(account, strategy, dataInfoList);
+  //The content of the overall index file for chunked uploads is not encrypted. Increase the decryption speed
+  const fileInfo = await uploadChunkDataOverSpecifiedLocalPolicy(account, strategy, dataInfo);
 
   return checkOverDataInfo;
 };
@@ -395,7 +394,7 @@ export const publishDataForPaidSubscriberVisible = async (
   account: Account,
   dataInfoList: DataInfo[] //data information list
 ): Promise<object> => {
-  console.log('uploadDataByCreatePolicy account', account);
+  console.log('publishDataForPaidSubscriberVisible account', account);
 
   const strategyIndex = 0;
   let strategy: Strategy | undefined = account.getStrategy(strategyIndex);
@@ -604,18 +603,17 @@ export const uploadChunkedDataOverForIndividualPaid = async (
   const enc = new TextEncoder(); // always utf-8
   const allChunkedContent: Uint8Array = enc.encode(allChunkedPlainText);
 
-  const dataInfoList: DataInfo[] = [];
-  dataInfoList.push({
+  const dataInfo: DataInfo = {
     label: checkOverDataInfo.file_label,
     dataArrayBuffer: allChunkedContent.buffer as ArrayBuffer,
     category: checkOverDataInfo?.file_category || '',
     mimetype: checkOverDataInfo?.file_mimetype || '',
     thumbnail: checkOverDataInfo?.file_thumbnail || '',
     chunked: 1
-  });
+  };
 
-  //TODO: Actually, encryption is not necessary here. Increase the decryption speed
-  const filesInfo = await uploadDataSpecifiedLocalPolicy(account, strategy, dataInfoList);
+  //The content of the overall index file for chunked uploads is not encrypted. Increase the decryption speed
+  const file = await uploadChunkDataOverSpecifiedLocalPolicy(account, strategy, dataInfo);
 
   return checkOverDataInfo;
 };
@@ -645,7 +643,7 @@ export const publishDataForIndividualPaid = async (
   account: Account,
   dataInfoList: DataInfo[] //data information list //just allow upload one file
 ): Promise<object> => {
-  console.log('uploadDataByCreatePolicy account', account);
+  console.log('publishDataForIndividualPaid account', account);
 
   const clientId = await getClientId(true);
 
@@ -688,7 +686,7 @@ export const uploadChunkDataBySpecifiedLocalPolicy = async (
   // console.log("uploadChunkDataBySpecifiedLocalPolicy dataContentList", dataContentList);
 
   const _encryptMessages: MessageKit[] = encryptMessage(strategy.strategyKeyPair._publicKey, dataContentList);
-  // console.log("uploadDataByCreatePolicy _encryptMessages", _encryptMessages);
+  // console.log("uploadChunkDataBySpecifiedLocalPolicy _encryptMessages", _encryptMessages);
 
   const data: Uint8Array[] = _encryptMessages.map((encryptMessage) => encryptMessage.toBytes() /*Uint8Array*/);
   const cids: string[] = await StorageManager.setData(data, account);
@@ -733,6 +731,130 @@ export const uploadChunkDataBySpecifiedLocalPolicy = async (
 
 /**
  * @internal
+ * Uploads chunk index file/data to the server by exist local policy (note: policy may not yet be on-chain) and uploading the files/data encrypted with the policy's public key to IPFS.
+ * @category Data Publisher(Alice) Upload Data
+ * @param {Account} account - The account to use to create the policy and upload the files/data.
+ * @param {DataInfo} dataInfo - The list of files/data to upload. Each element of the array must be an object with properties 'label' and 'dataArrayBuffer'.
+ * @returns {Promise<object>} - Returns the fileInfo list:
+ * [
+ *  {
+ *    id: fileId,
+ *    label: fileName,
+ *    thumbnail: fileThumbnail,  //return only if the input parameters include the specified parameters
+ *    mimtype: fileMimtype,   //return only if the input parameters include the specified parameters
+ *  }
+ * ]
+ */
+export const uploadChunkDataOverSpecifiedLocalPolicy = async (
+  account: Account,
+  strategy: Strategy,
+  dataInfo: DataInfo //data information
+): Promise<object> => {
+  // console.log("uploadDataOverSpecifiedLocalPolicy dataContentList", dataInfo);
+
+  const dataInfoUint8Array = new Uint8Array(dataInfo.dataArrayBuffer);
+
+  const mockIPFSAddressList: string[] = [];
+
+  const data: Uint8Array[] = [dataInfoUint8Array];
+
+  //The content of the overall index file for chunked uploads is not encrypted. Increase the decryption speed
+  const cids: string[] = await StorageManager.setData(data, account);
+  mockIPFSAddressList.push(...cids);
+
+  const retDataInfoList: object[] = [];
+  // console.log("uploadDataOverSpecifiedLocalPolicy mockIPFSAddressList", mockIPFSAddressList);
+  const dataInfos: object[] = [];
+
+  const dataId = nanoid();
+
+  //The generation of thumbnail logic should be handled by a third-party DApp, rather than implemented in the pre-process. Therefore, it needs to be moved to the third-party DApp, and this part should be blocked
+  //generate and upload thumbnail files to IPFS
+  // eslint-disable-next-line prefer-const
+  let thumbnail = '';
+  // try {
+  //  const result = await getBlurThumbnail(
+  //    dataInfo.dataArrayBuffer,
+  //    dataInfo.label
+  //  );
+  //  if (isBlank(result)) {
+  //    thumbnail = "";
+  //  } else {
+  //    const { buffer: thumbnailBuffer, mimeType }: ThumbailResult =
+  //      result as ThumbailResult;
+  //    const cid: string = await StorageManager.setData([thumbnailBuffer.buffer], account)[0];
+  //    thumbnail = mimeType + "|" + cid;
+  //  }
+  // } catch (error) {
+  //  thumbnail = "";
+  //  console.error(
+  //    `generate or upload thumbail failed data label: ${dataInfo.label}, data id:${dataId}`,
+  //    error
+  //  );
+  // }
+
+  const _data = {
+    id: dataId,
+    name: dataInfo.label,
+    address: mockIPFSAddressList[0],
+    md5: md5(dataInfoUint8Array, { encoding: 'binary' }),
+    suffix: dataSuffix(dataInfo.label),
+    category: dataInfo.category || 'unknown',
+    thumbnail: dataInfo.thumbnail || '',
+    mimtype: dataInfo.mimetype || '',
+    chunked: dataInfo.chunked || 1
+  };
+  dataInfos.push(_data);
+
+  retDataInfoList.push({
+    id: _data.id,
+    label: _data.name,
+    thumbnail: _data.thumbnail,
+    mimtype: _data.mimtype,
+    address: _data.address
+  });
+
+  // console.log("uploadDataOverSpecifiedLocalPolicy dataInfos", dataInfos);
+  try {
+    const sendData: any = {
+      files: dataInfos,
+      account_id: account.id,
+      policy_label_id: strategy.id,
+      policy_label: strategy.label,
+      policy_label_index: String(strategy.addressIndex),
+      encrypted_pk: strategy.strategyKeyPair._publicKey
+    };
+
+    sendData['signature'] = await signUpdateServerDataMessage(account, sendData);
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const data = await serverPost('/file/create-or-specified-policy-and-upload', sendData);
+  } catch (error: any) {
+    // Message.error("upload file failed!");
+    console.error('upload data failed!: ', error);
+
+    if (error?.data?.code != 4011) {
+      //Error code 4011(error?.data?.msg is policy label already exists) does not require deleting the policy.
+
+      //clear this failed strategy info
+      await account.deleteStrategy(strategy.addressIndex);
+    } else {
+      //4011
+      if (!isBlank(error?.data?.msg)) {
+        error.data.msg = error.data.msg + ' ' + 'Please refresh the file upload page and upload again';
+      }
+    }
+
+    throw error;
+  }
+
+  // console.log("uploadDataOverSpecifiedLocalPolicy after serverPost", data);
+
+  return retDataInfoList[0];
+};
+
+/**
+ * @internal
  * Uploads files/data to the server by exist local policy (note: policy may not yet be on-chain) and uploading the files/data encrypted with the policy's public key to IPFS.
  * @category Data Publisher(Alice) Upload Data
  * @param {Account} account - The account to use to create the policy and upload the files/data.
@@ -756,10 +878,10 @@ export const uploadDataSpecifiedLocalPolicy = async (
   for (const dataInfo of dataInfoList) {
     dataContentList.push(dataInfo.dataArrayBuffer);
   }
-  // console.log("uploadDataByCreatePolicy dataContentList", dataContentList);
+  // console.log("uploadDataSpecifiedLocalPolicy dataContentList", dataContentList);
 
   const _encryptMessages: MessageKit[] = encryptMessage(strategy.strategyKeyPair._publicKey, dataContentList);
-  // console.log("uploadDataByCreatePolicy _encryptMessages", _encryptMessages);
+  // console.log("uploadDataSpecifiedLocalPolicy _encryptMessages", _encryptMessages);
   const mockIPFSAddressList: string[] = [];
 
   const data: Uint8Array[] = _encryptMessages.map((encryptMessage) => encryptMessage.toBytes() /*Uint8Array*/);
@@ -767,7 +889,7 @@ export const uploadDataSpecifiedLocalPolicy = async (
   mockIPFSAddressList.push(...cids);
 
   const retDataInfoList: object[] = [];
-  // console.log("uploadDataByCreatePolicy mockIPFSAddressList", mockIPFSAddressList);
+  // console.log("uploadDataSpecifiedLocalPolicy mockIPFSAddressList", mockIPFSAddressList);
   const dataInfos: object[] = [];
   for (let index = 0; index < dataInfoList.length; index++) {
     const dataInfo = dataInfoList[index];
@@ -822,7 +944,7 @@ export const uploadDataSpecifiedLocalPolicy = async (
       address: _data.address
     });
   }
-  // console.log("uploadDataByCreatePolicy dataInfos", dataInfos);
+  // console.log("uploadDataSpecifiedLocalPolicy dataInfos", dataInfos);
   try {
     const sendData: any = {
       files: dataInfos,
@@ -856,7 +978,7 @@ export const uploadDataSpecifiedLocalPolicy = async (
     throw error;
   }
 
-  // console.log("uploadDataByCreatePolicy after serverPost", data);
+  // console.log("uploadDataSpecifiedLocalPolicy after serverPost", data);
 
   return retDataInfoList;
 };

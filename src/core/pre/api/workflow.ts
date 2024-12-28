@@ -100,7 +100,7 @@ export const getServerTimeStamp = async (): Promise<string> => {
   const sendData = {};
 
   //Add a random number to prevent browser caching
-  const data = (await serverGet('/timestamp?t='+new Date().getTime(), sendData)) as object;
+  const data = (await serverGet('/timestamp?t=' + new Date().getTime(), sendData)) as object;
 
   return data['timestamp'] as string;
 };
@@ -425,7 +425,7 @@ export const uploadDataByCreatePolicy = async (
       category: dataInfo.category || 'unknown',
       thumbnail: dataInfo.thumbnail || '', //thumbnail || '',
       mimtype: dataInfo.mimetype || '',
-      chunked: dataInfo.chunked || 0,
+      chunked: dataInfo.chunked || 0
     };
     dataInfos.push(_data);
   }
@@ -545,7 +545,7 @@ export const uploadDataBySelectPolicy = async (
       category: dataInfo.category || 'unknown',
       thumbnail: dataInfo.thumbnail || '', //thumbnail || '',
       mimtype: dataInfo.mimetype || '',
-      chunked: dataInfo.chunked || 0,
+      chunked: dataInfo.chunked || 0
     };
 
     dataInfos.push(_data);
@@ -1220,10 +1220,10 @@ export const getDataByStatus = async (
     }
   };
 
-  if(!isBlank(status)){
+  if (!isBlank(status)) {
     sendData['status'] = status;
   }
-  
+
   if (!isBlank(dataId)) {
     sendData['file_id'] = dataId;
   }
@@ -1625,7 +1625,6 @@ export const estimatePolicyGas = async (
   return gasInfo;
 };
 
-
 /**
  * @internal
  * estimate service gas fees for sharing data/files. The batch version of the getPolicyGasFee function.
@@ -1654,28 +1653,21 @@ export const estimatePolicysGasFee = async (
   startSeconds: number[], //policy usage start
   endSeconds: number[], //policy usage start
   serverFee: BigNumber, // nlk fee in wei
-  gasPrice: BigNumber = BigNumber.from("0") //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
+  gasPrice: BigNumber = BigNumber.from('0') //the user can set the gas rate manually, and if it is set to 0, the gasPrice is obtained in real time
 ): Promise<GasInfo> => {
   try {
-
     // console.log(account, applyId, ursulaShares, ursulaThreshold);
-    const startDates : Date [] = [];
-    const endDates : Date [] = [];
+    const startDates: Date[] = [];
+    const endDates: Date[] = [];
     for (let index = 0; index < startSeconds.length; index++) {
       const _startSeconds = startSeconds[index];
       const _endSeconds = endSeconds[index];
-      const startDate: Date = new Date(_startSeconds * 1000) //  start_at is seconds, but Date needs milliseconds
-      const endDate: Date = new Date(_endSeconds * 1000) //  end_at is seconds, but Date needs milliseconds
+      const startDate: Date = new Date(_startSeconds * 1000); //  start_at is seconds, but Date needs milliseconds
+      const endDate: Date = new Date(_endSeconds * 1000); //  end_at is seconds, but Date needs milliseconds
       startDates.push(startDate);
       endDates.push(endDate);
 
-      console.log(
-        "getPolicysGasFee: ",
-        index,
-        _startSeconds,
-        _endSeconds,
-        ursulaShares[index]
-      );
+      console.log('getPolicysGasFee: ', index, _startSeconds, _endSeconds, ursulaShares[index]);
     }
 
     const gasInfo: GasInfo = await _estimatePolicysGas(
@@ -1692,22 +1684,19 @@ export const estimatePolicysGasFee = async (
     // const gasValue = Web3.utils.fromWei(gasInfo.gasFee.toString(), "ether");
     return gasInfo;
   } catch (error: any) {
-    const error_info: string = error?.message || error
+    const error_info: string = error?.message || error;
 
-    if (
-      typeof error_info === "string" &&
-      error_info?.toLowerCase()?.includes("policy is currently active")
-    ) {
+    if (typeof error_info === 'string' && error_info?.toLowerCase()?.includes('policy is currently active')) {
       console.error(error_info, error);
       //The policy has been created successfully, and there is no need to created again
-      throw new PolicyHasBeenActivedOnChain('Policy is currently active')
+      throw new PolicyHasBeenActivedOnChain('Policy is currently active');
     }
 
-    console.error(error_info, error)
+    console.error(error_info, error);
     // Message.error(`Failed to get gas fee!! reason: ${error_info}`);
-    throw error
+    throw error;
   }
-}
+};
 
 /**
  * @internal
@@ -2009,7 +1998,7 @@ export const getBlockchainPolicys = async (
   publisherAccount: Account;
   policyLabelIds: string[];
   bobAccountIds: string[];
-  bobAddresses:  string[];
+  bobAddresses: string[];
   deDuplicationInfo: {
     multiBlockchainPolicy: MultiBlockchainPolicy;
     strategys: Strategy[];
@@ -2017,7 +2006,7 @@ export const getBlockchainPolicys = async (
     ursulasArray: Array<Ursula[]>;
     policyLabelIds: string[];
     bobAccountIds: string[];
-    bobAddresses:  string[];
+    bobAddresses: string[];
   };
 }> => {
   //https://github.com/NuLink-network/nulink-node/blob/main/API.md#%E6%89%B9%E5%87%86%E6%96%87%E4%BB%B6%E4%BD%BF%E7%94%A8%E7%94%B3%E8%AF%B7
@@ -2121,7 +2110,6 @@ export const getBlockchainPolicys = async (
   const retPolicyLabelId: string[] = [];
   const retBobAddresses: string[] = [];
   const retBobAccountIds: string[] = [];
-  
 
   const deDuplicationBobs: RemoteBob[] = [];
   const deDuplicationLabels: string[] = [];
@@ -2134,7 +2122,6 @@ export const getBlockchainPolicys = async (
   const deDuplicationPolicyLabelIds: string[] = [];
   const deDuplicationBobAddresses: string[] = [];
   const deDuplicationBobAccountIds: string[] = [];
-  
 
   //2. create policy to block chain
   // const config = await getSettingsData();
@@ -2194,8 +2181,8 @@ export const getBlockchainPolicys = async (
       deDuplicationRetStartDates.push(startDates[index]);
       deDuplicationRetEndDates.push(endDates[index]);
       deDuplicationPolicyLabelIds.push(policy_label_id);
-      deDuplicationBobAddresses.push(userInfo["ethereum_addr"]);
-      deDuplicationBobAccountIds.push(userInfo["account_id"]);
+      deDuplicationBobAddresses.push(userInfo['ethereum_addr']);
+      deDuplicationBobAccountIds.push(userInfo['account_id']);
 
       publisherUserPolicyIds.add(pulisherUserPolicyId);
     }
@@ -2209,8 +2196,8 @@ export const getBlockchainPolicys = async (
     retStartDates.push(startDates[index]);
     retEndDates.push(endDates[index]);
     retPolicyLabelId.push(policy_label_id);
-    retBobAddresses.push(userInfo["ethereum_addr"]);
-    retBobAccountIds.push(userInfo["account_id"]);
+    retBobAddresses.push(userInfo['ethereum_addr']);
+    retBobAccountIds.push(userInfo['account_id']);
   }
 
   //const multiBlockchainPolicyParameters: MultiBlockchainPolicyParameters = {
@@ -2266,7 +2253,7 @@ export const getBlockchainPolicys = async (
       ursulasArray: deDuplicationUrsulasArray,
       policyLabelIds: deDuplicationPolicyLabelIds,
       bobAccountIds: deDuplicationBobAccountIds,
-      bobAddresses: deDuplicationBobAddresses,
+      bobAddresses: deDuplicationBobAddresses
     }
   };
 };
@@ -3126,7 +3113,6 @@ export const getDataContentAsUser = async (
 
   //Note: Error: Not enough cFrags retrieved to open capsule Capsule:026db902fff67d89. Was the policy revoked? => may be the policy is expired, please check the file/detail's api's apply_end_at field
 
-
   porterUri = porterUri || (await getPorterUrl());
 
   const bob: Bob = await makeBob(userAccount, porterUri);
@@ -3173,7 +3159,7 @@ export const getDataContentAsUser = async (
 
   // console.log("retrievedMessage: ", retrievedMessage);
 
-  return retrievedMessage[0].buffer;
+  return retrievedMessage[0].buffer as ArrayBuffer;
 
   //const bobPlaintext = Buffer.from(retrievedMessage[0].buffer).toString('binary');
   // const bobPlaintext = fromBytes(retrievedMessage[0]);
@@ -3193,42 +3179,66 @@ export const getDataContentByDataIdAsUser = async (userAccount: Account, dataId:
 
   assert(data && !isBlank(data));
 
-  const policyEncryptingKey = data['policy_encrypted_pk'];
-  const aliceVerifyingKey = data['alice_verify_pk'];
+  const chunked: number = Number(data['chunked']);
+
   const dataIPFSAddress = data['file_ipfs_address'];
-  const encryptedTreasureMapIPFSAddress = data['encrypted_treasure_map_ipfs_address'];
 
-  const applyId = data["apply_id"];
+  if (chunked == 1) {
+    const dataIpfsData: Uint8Array | null | undefined /*| Buffer*/ = await StorageManager.getData(dataIPFSAddress);
 
-  if(isBlank(policyEncryptingKey) || isBlank(aliceVerifyingKey) || isBlank(dataIPFSAddress) || isBlank(encryptedTreasureMapIPFSAddress) )
-  {
-    throw new Error(`policy_encrypted_pk or aliceVerifyingKey or dataIPFSAddress or encryptedTreasureMapIPFSAddress is null !, \ndataId: ${dataId} \naccountId: ${userAccount.id} \napplyId: ${applyId}`)
+    // console.log("dataIpfsData: ", dataIpfsData);
+
+    if (isBlank(dataIpfsData)) {
+      throw new GetStorageDataError(`get chunk index ipfs data error! ipfs: ${dataIPFSAddress}`);
+    }
+
+    return (dataIpfsData as Uint8Array).buffer as ArrayBuffer;
+  } else {
+    const policyEncryptingKey = data['policy_encrypted_pk'];
+    const aliceVerifyingKey = data['alice_verify_pk'];
+    const encryptedTreasureMapIPFSAddress = data['encrypted_treasure_map_ipfs_address'];
+
+    const applyId = data['apply_id'];
+
+    if (
+      isBlank(policyEncryptingKey) ||
+      isBlank(aliceVerifyingKey) ||
+      isBlank(dataIPFSAddress) ||
+      isBlank(encryptedTreasureMapIPFSAddress)
+    ) {
+      throw new Error(
+        `policy_encrypted_pk or aliceVerifyingKey or dataIPFSAddress or encryptedTreasureMapIPFSAddress is null !, \ndataId: ${dataId} \naccountId: ${userAccount.id} \napplyId: ${applyId}`
+      );
+    }
+
+    //Note: Error: Not enough cFrags retrieved to open capsule Capsule:026db902fff67d89. Was the policy revoked? => may be the policy is expired, please check the file/detail's api's apply_end_at field
+
+    //Determine whether the application has expired
+    const endTimestampSeconds = data['apply_end_at'];
+
+    const currentUtcTimestampInSeconds = Math.floor(Date.now() / 1000); // Get the current UTC timestamp (seconds)
+
+    if (endTimestampSeconds <= currentUtcTimestampInSeconds) {
+      //status: "apply status: 1 - In progress, 2 - Approved, 3 - Rejected, 4 - Under review, 5 - Expired"
+      throw new PolicyExpired(
+        `policy is Expired, it can't be decrypted! current applyId: ${applyId} \ndataId: ${dataId} \naccountId: ${userAccount.id} \n`
+      );
+    }
+
+    // hexlify: Convert a byte array to a hexadecimal encoded string -> arrayify: Convert a hexadecimal encoded string back to a byte array
+    const crossChainHrac: CrossChainHRAC = CrossChainHRAC.fromBytes(arrayify(data['hrac']));
+
+    const contentArrayBuffer: ArrayBuffer = await getDataContentAsUser(
+      userAccount,
+      policyEncryptingKey,
+      aliceVerifyingKey,
+      dataIPFSAddress,
+      encryptedTreasureMapIPFSAddress,
+      crossChainHrac
+    );
+
+    return contentArrayBuffer;
   }
-
-  //Note: Error: Not enough cFrags retrieved to open capsule Capsule:026db902fff67d89. Was the policy revoked? => may be the policy is expired, please check the file/detail's api's apply_end_at field
-
-  //Determine whether the application has expired
-  const endTimestampSeconds = data['apply_end_at']
-
-  const currentUtcTimestampInSeconds = Math.floor(Date.now() / 1000);  // Get the current UTC timestamp (seconds)
-  
-  if (endTimestampSeconds <= currentUtcTimestampInSeconds) {
-    //status: "apply status: 1 - In progress, 2 - Approved, 3 - Rejected, 4 - Under review, 5 - Expired"
-    throw new PolicyExpired(
-      `policy is Expired, it can't be decrypted! current applyId: ${applyId} \ndataId: ${dataId} \naccountId: ${userAccount.id} \n`);
-  }
-
-  // hexlify: Convert a byte array to a hexadecimal encoded string -> arrayify: Convert a hexadecimal encoded string back to a byte array
-  const crossChainHrac: CrossChainHRAC = CrossChainHRAC.fromBytes(arrayify(data['hrac']));
-  
-  return getDataContentAsUser(
-    userAccount,
-    policyEncryptingKey,
-    aliceVerifyingKey,
-    dataIPFSAddress,
-    encryptedTreasureMapIPFSAddress,
-    crossChainHrac
-  );
 };
 
 /**
@@ -3244,49 +3254,62 @@ export const getDataContentByDataIdAsPublisher = async (userAccount: Account, da
 
   assert(data && !isBlank(data));
 
-  const policyEncryptingKey = data['policy_encrypted_pk'] || '';
-  const aliceVerifyingKey = data['alice_verify_pk'] || ''; //account.encryptedKeyPair._publicKey
+  const chunked: number = Number(data['chunked']);
   const dataIPFSAddress = data['file_ipfs_address'];
+  if (chunked == 1) {
+    const dataIpfsData: Uint8Array | null | undefined /*| Buffer*/ = await StorageManager.getData(dataIPFSAddress);
 
-  //Firstcheck whether the file/data belongs to the user
-  if (userAccount.encryptedKeyPair._publicKey.toLowerCase() !== aliceVerifyingKey.toLowerCase()) {
-    throw new Error('Illegal request: you must be the file/data uploader to decrypt'); // data recovery failed
-  }
+    // console.log("dataIpfsData: ", dataIpfsData);
 
-  let strategyPrivatekey: string | null = null;
-  //find the strategy private key for decrypt
-  const strategys: Strategy[] = userAccount.getAllStrategy();
-  for (let index = 0; index < strategys.length; index++) {
-    const strategy = strategys[index];
-    if (strategy.strategyKeyPair._publicKey.toLowerCase() === policyEncryptingKey.toLowerCase()) {
-      strategyPrivatekey = strategy.strategyKeyPair._privateKey;
-      break;
+    if (isBlank(dataIpfsData)) {
+      throw new GetStorageDataError(`get chunk index ipfs data error! ipfs: ${dataIPFSAddress}`);
     }
+
+    return (dataIpfsData as Uint8Array).buffer as ArrayBuffer;
+  } else {
+    const policyEncryptingKey = data['policy_encrypted_pk'] || '';
+    const aliceVerifyingKey = data['alice_verify_pk'] || ''; //account.encryptedKeyPair._publicKey
+
+    //Firstcheck whether the file/data belongs to the user
+    if (userAccount.encryptedKeyPair._publicKey.toLowerCase() !== aliceVerifyingKey.toLowerCase()) {
+      throw new Error('Illegal request: you must be the file/data uploader to decrypt'); // data recovery failed
+    }
+
+    let strategyPrivatekey: string | null = null;
+    //find the strategy private key for decrypt
+    const strategys: Strategy[] = userAccount.getAllStrategy();
+    for (let index = 0; index < strategys.length; index++) {
+      const strategy = strategys[index];
+      if (strategy.strategyKeyPair._publicKey.toLowerCase() === policyEncryptingKey.toLowerCase()) {
+        strategyPrivatekey = strategy.strategyKeyPair._privateKey;
+        break;
+      }
+    }
+
+    if (!strategyPrivatekey) {
+      throw new Error('Failed to obtain strategy information'); // data recovery failed
+    }
+
+    //getDataContent from IPFS
+    const dataIpfsData: Uint8Array | null | undefined /*| Buffer*/ = await StorageManager.getData(dataIPFSAddress);
+
+    if (isBlank(dataIpfsData)) {
+      throw new GetStorageDataError(`publisher get encrypted data error! key: ${dataIpfsData}`);
+    }
+
+    // console.log("dataIpfsData: ", dataIpfsData);
+    const encryptedMessage: MessageKit = MessageKit.fromBytes(dataIpfsData as Uint8Array);
+
+    const privateKeyString = pwdDecrypt(strategyPrivatekey as string, true);
+    // console.log("makeBob BobEncrypedPrivateKey: ",privateKeyString);
+
+    // notice: bacause the encryptedMessage.decrypt( get by MessageKit) use the SecretKey import from nucypher-ts, so you  must be use the nucypher-ts's SecretKey PublicKey , not use the nucypher-core's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
+
+    const secretKey = NucypherTsSecretKey.fromBytes(privateKeyBuffer(privateKeyString));
+    const plainText: Uint8Array = encryptedMessage.decrypt(secretKey);
+
+    return plainText.buffer as ArrayBuffer;
   }
-
-  if (!strategyPrivatekey) {
-    throw new Error('Failed to obtain strategy information'); // data recovery failed
-  }
-
-  //getDataContent from IPFS
-  const dataIpfsData: Uint8Array | null | undefined /*| Buffer*/ = await StorageManager.getData(dataIPFSAddress);
-
-  if (isBlank(dataIpfsData)) {
-    throw new GetStorageDataError(`publisher get encrypted data error! key: ${dataIpfsData}`);
-  }
-
-  // console.log("dataIpfsData: ", dataIpfsData);
-  const encryptedMessage: MessageKit = MessageKit.fromBytes(dataIpfsData as Uint8Array);
-
-  const privateKeyString = pwdDecrypt(strategyPrivatekey as string, true);
-  // console.log("makeBob BobEncrypedPrivateKey: ",privateKeyString);
-
-  // notice: bacause the encryptedMessage.decrypt( get by MessageKit) use the SecretKey import from nucypher-ts, so you  must be use the nucypher-ts's SecretKey PublicKey , not use the nucypher-core's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
-
-  const secretKey = NucypherTsSecretKey.fromBytes(privateKeyBuffer(privateKeyString));
-  const plainText: Uint8Array = encryptedMessage.decrypt(secretKey);
-
-  return plainText.buffer;
 };
 
 /**
@@ -3383,32 +3406,21 @@ export const getMultiApplyDetails = async (applyIds: string[]): Promise<object[]
  *                status: "apply status: 1 - In progress, 2 - Approved, 3 - Rejected, 4 - Under review, 5 - Expired"
  *              }
  */
-export const convertApplyIdStatusToString = (applyIdStatus: number): string =>
-{
-  if(applyIdStatus === 1)
-  {
-    return "In progress";
+export const convertApplyIdStatusToString = (applyIdStatus: number): string => {
+  if (applyIdStatus === 1) {
+    return 'In progress';
+  } else if (applyIdStatus === 2) {
+    return 'Approved';
+  } else if (applyIdStatus === 3) {
+    return 'Rejected';
+  } else if (applyIdStatus === 4) {
+    return 'Under review';
+  } else if (applyIdStatus === 5) {
+    return 'Expired';
+  } else {
+    return 'Unknown';
   }
-  else if(applyIdStatus === 2)
-  {
-    return "Approved";
-  }
-  else if(applyIdStatus === 3)
-  {
-    return "Rejected";
-  }
-  else if(applyIdStatus === 4)
-  {
-    return "Under review";
-  }
-  else if(applyIdStatus === 5)
-  {
-    return "Expired";
-  }
-  else{
-    return "Unknown";
-  }
-}
+};
 
 /**
   * Retrieves the details of a file/data (include apply file/data info, file/data info, about policy info) by its ID and user account ID.
@@ -3513,13 +3525,13 @@ export const getPolicyLabelInfos = async (publisherAccount: Account, pageIndex =
 export const getPolicyLabelInfosByAddr = async (accountAddress: string) => {
   // try {
   //   //get strategys from backend db
-    return await Account.getStrategyInfosFromServerByAddr(accountAddress);
+  return await Account.getStrategyInfosFromServerByAddr(accountAddress);
   // } catch (error: any) {
-    
+
   //   if(error?.data?.code == 4007)
   //   {
   //       //fix bug: account does not exist
-        
+
   //       //Continue executing the process without doing anything
   //       console.log(`getStrategyInfosFromServerByAddr: account ${accountAddress} is not exist`);
   //   }
@@ -3527,7 +3539,6 @@ export const getPolicyLabelInfosByAddr = async (accountAddress: string) => {
   //     throw error
   //   }
   // }
-
 };
 
 /**
@@ -3576,4 +3587,4 @@ export const getPolicyLabelIdsByAccountId = async (accountId: string) => {
   return data;
 };
 
-export {VConsole};
+export { VConsole };
