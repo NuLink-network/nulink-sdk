@@ -190,12 +190,15 @@
       };
 
       const test2 = async (fileArrayBuffer) => {
+        
         // Note: We only support one account currently.
 
       if(NUSDK.isBlank(accountAlice))
       {
         await test1()
       }
+
+      const testModel = 1;
 
       console.log('data arrayBuffer Length:', fileArrayBuffer.byteLength);
 
@@ -248,7 +251,8 @@
           *      strategyIndex: strategyIndex,
           * }
           */
-        const dataMetaInfo = await NUSDK.uploadChunkedDataStartForIndividualPaid(accountAlice, dataInfo);
+        const dataMetaInfo = testModel == 1 ? await NUSDK.uploadChunkedDataStartForIndividualPaid(accountAlice, dataInfo) :
+                                              await NUSDK.uploadChunkedDataStartForPaidSubscriberVisible(accountAlice, dataInfo);
         
         const taskId/* : number */ = dataMetaInfo["taskId"];
         const strategyIndex/* : number */ =  dataMetaInfo["strategyIndex"];
@@ -276,7 +280,8 @@
           strategyIndex: androidChunkDataInfo.strategyIndex
         };
 
-        const dataChunkInfo = await NUSDK.uploadChunkedDataForIndividualPaid(accountAlice, chunkDataInfo);
+        const dataChunkInfo = testModel == 1 ?  await NUSDK.uploadChunkedDataForIndividualPaid(accountAlice, chunkDataInfo):
+                                                await NUSDK.uploadChunkedDataForPaidSubscriberVisible(accountAlice, chunkDataInfo);
 
         console.log(`uploaded chunk data chunkIndex: ${chunkIndex} `, dataChunkInfo);
 
@@ -305,7 +310,9 @@
        *    "file_id": the id of this file
        *  }
        */
-      const returnUploadDataInfo = await NUSDK.uploadChunkedDataOverForIndividualPaid(account, taskId, strategyIndex);
+      const returnUploadDataInfo = testModel == 1 ? await NUSDK.uploadChunkedDataOverForIndividualPaid(account, taskId, strategyIndex):
+                                                    await NUSDK.uploadChunkedDataOverForPaidSubscriberVisible(account, taskId);
+      
 
       const fileId/* : string */ = returnUploadDataInfo.file_id;
         
@@ -758,7 +765,7 @@
             debugger;
             //Test the decryption of each piece of data separately.
             //Finally, Bob gets the contents of the data/file
-            const arrayBuffer /* : ArrayBuffer */ = await NUSDK.getDataContentByDataIdAsUser(
+            const arrayBuffer /* : ArrayBuffer */ = await NUSDK.getChunkDataContentByDataIdAsUser(
               accountBob,
               bobBeApprovedDataInfo['file_id']
             );

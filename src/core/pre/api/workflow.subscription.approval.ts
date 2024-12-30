@@ -181,11 +181,11 @@ export const initClientId = async (clientId: string) => {
  * }
  */
 
-export const uploadChunkedDataStartForPaidSubscriberVisible = async (
+export const uploadChunkedDataStartForSubscriberVisiblePaid = async (
   account: Account,
   dataInfo: ChunkStartMetaInfo
 ): Promise<object> => {
-  console.log('uploadChunkedDataStartForPaidSubscriberVisible account', account);
+  console.log('uploadChunkedDataStartForSubscriberVisiblePaid account', account);
 
   const strategyIndex = 0;
   let strategy: Strategy | undefined = account.getStrategy(strategyIndex);
@@ -230,11 +230,11 @@ export const uploadChunkedDataStartForPaidSubscriberVisible = async (
  * @param {ChunkDataInfo} chunkDataInfo - The list of files/data to upload. Each element of the array must be an object with properties 'label' and 'dataArrayBuffer'.
  * @returns {Promise<string>} - Returns the chunk ipfs address
  */
-export const uploadChunkedDataForPaidSubscriberVisible = async (
+export const uploadChunkedDataForSubscriberVisiblePaid = async (
   account: Account,
   chunkDataInfo: ChunkDataInfo
 ): Promise<string> => {
-  console.log('uploadChunkedDataForPaidSubscriberVisible account', account);
+  console.log('uploadChunkedDataForSubscriberVisiblePaid account', account);
 
   const strategyIndex = 0;
   chunkDataInfo.strategyIndex = strategyIndex;
@@ -263,7 +263,7 @@ export const uploadChunkedDataForPaidSubscriberVisible = async (
   }
   strategy = strategy as Strategy;
 
-  console.log('uploadChunkedDataForPaidSubscriberVisible task id: ', chunkDataInfo.taskId);
+  console.log('uploadChunkedDataForSubscriberVisiblePaid task id: ', chunkDataInfo.taskId);
 
   // const taskInfo = await getDataTaskInfo(chunkDataInfo.taskId);
 
@@ -292,8 +292,8 @@ export const uploadChunkedDataForPaidSubscriberVisible = async (
  *    "file_id": the id of this file,
  *  }
  */
-export const uploadChunkedDataOverForPaidSubscriberVisible = async (account: Account, taskId: number): Promise<any> => {
-  console.log('uploadChunkedDataOverForPaidSubscriberVisible account', account);
+export const uploadChunkedDataOverForSubscriberVisiblePaid = async (account: Account, taskId: number): Promise<any> => {
+  console.log('uploadChunkedDataOverForSubscriberVisiblePaid account', account);
 
   const strategyIndex = 0;
   let strategy: Strategy | undefined = account.getStrategy(strategyIndex);
@@ -320,7 +320,7 @@ export const uploadChunkedDataOverForPaidSubscriberVisible = async (account: Acc
   }
   strategy = strategy as Strategy;
 
-  console.log('uploadChunkedDataOverForPaidSubscriberVisible task id: ', taskId);
+  console.log('uploadChunkedDataOverForSubscriberVisiblePaid task id: ', taskId);
 
   const checkOverDataInfo = await uploadChunkOver(account, taskId);
 
@@ -329,7 +329,7 @@ export const uploadChunkedDataOverForPaidSubscriberVisible = async (account: Acc
     throw new Error(
       `The chunk data has not been fully uploaded! task id ${taskId}, The missing chunk data indexes are: ${JSON.stringify(
         chunkMissingIndexList
-      )} function: uploadChunkedDataOverForPaidSubscriberVisible`
+      )} function: uploadChunkedDataOverForSubscriberVisiblePaid`
     );
   }
   // const taskInfo = await getDataTaskInfo(taskId);
@@ -391,11 +391,11 @@ export const uploadChunkedDataOverForPaidSubscriberVisible = async (account: Acc
  *      ]
  * }
  */
-export const publishDataForPaidSubscriberVisible = async (
+export const publishDataForSubscriberVisiblePaid = async (
   account: Account,
   dataInfoList: DataInfo[] //data information list
 ): Promise<object> => {
-  console.log('publishDataForPaidSubscriberVisible account', account);
+  console.log('publishDataForSubscriberVisiblePaid account', account);
 
   const strategyIndex = 0;
   let strategy: Strategy | undefined = account.getStrategy(strategyIndex);

@@ -18,11 +18,11 @@ import {
   getDataContentListByDataIdAsUser,
   initClientId,
   publishDataForIndividualPaid,
-  publishDataForPaidSubscriberVisible,
-  uploadChunkedDataStartForPaidSubscriberVisible,
+  publishDataForSubscriberVisiblePaid,
+  uploadChunkedDataStartForSubscriberVisiblePaid,
   refusalUserSubscription,
-  uploadChunkedDataForPaidSubscriberVisible,
-  uploadChunkedDataOverForPaidSubscriberVisible,
+  uploadChunkedDataForSubscriberVisiblePaid,
+  uploadChunkedDataOverForSubscriberVisiblePaid,
   uploadChunkedDataStartForIndividualPaid,
   uploadChunkedDataForIndividualPaid,
   uploadChunkedDataOverForIndividualPaid
@@ -72,11 +72,11 @@ export const registerMessageHandler = async () => {
   await registerOnAppMessageHandler('getPrivateKey', _getPrivateKey);
   await registerOnAppMessageHandler('getPublicKey', _getPublicKey);
   await registerOnAppMessageHandler('getRootExtendedPrivateKey', _getRootExtendedPrivateKey);
-  await registerOnAppMessageHandler('publishDataForPaidSubscriberVisible', _publishDataForPaidSubscriberVisible);
+  await registerOnAppMessageHandler('publishDataForPaidSubscriberVisible', _publishDataForSubscriberVisiblePaid);
   await registerOnAppMessageHandler('publishDataForIndividualPaid', _publishDataForIndividualPaid);
-  await registerOnAppMessageHandler('uploadChunkedDataStartForPaidSubscriberVisible', _uploadChunkedDataStartForPaidSubscriberVisible);
-  await registerOnAppMessageHandler('uploadChunkedDataForPaidSubscriberVisible', _uploadChunkedDataForPaidSubscriberVisible);
-  await registerOnAppMessageHandler('uploadChunkedDataOverForPaidSubscriberVisible', _uploadChunkedDataOverForPaidSubscriberVisible);
+  await registerOnAppMessageHandler('uploadChunkedDataStartForSubscriberVisiblePaid', _uploadChunkedDataStartForSubscriberVisiblePaid);
+  await registerOnAppMessageHandler('uploadChunkedDataForSubscriberVisiblePaid', _uploadChunkedDataForSubscriberVisiblePaid);
+  await registerOnAppMessageHandler('uploadChunkedDataOverForSubscriberVisiblePaid', _uploadChunkedDataOverForSubscriberVisiblePaid);
   await registerOnAppMessageHandler('uploadChunkedDataStartForIndividualPaid', _uploadChunkedDataStartForIndividualPaid);
   await registerOnAppMessageHandler('uploadChunkedDataForIndividualPaid', _uploadChunkedDataForIndividualPaid);
   await registerOnAppMessageHandler('uploadChunkedDataOverForIndividualPaid', _uploadChunkedDataOverForIndividualPaid);
@@ -447,13 +447,13 @@ type AndroidDataInfo = {
   thumbnail?: string; //unique identifier for thumbnails, can be understood as a unique file name or url link, note that this is not the data itself, but an identifier that can be used to locate the corresponding stored content.
 };
 
-type AndroidChunkDataInfoForPaidSubscriberVisible = {
+type AndroidChunkDataInfoForSubscriberVisiblePaid = {
   taskId: number; //the id of this task
   chunkIndex: number; //Chunk index, starting from 0, with the maximum index being file_chunk_count - 1.
   chunkDataHexString: string; //The binary representation of the contents of files/data By invoke 'FileReader.ReadAsArrayBuffer(file)' callback return the value: e.target.result
 };
 
-export type AndroidChunkDataInfoForIndividualPaid = AndroidChunkDataInfoForPaidSubscriberVisible & {
+export type AndroidChunkDataInfoForIndividualPaid = AndroidChunkDataInfoForSubscriberVisiblePaid & {
   strategyIndex: number; // the strategy index
 };
 
@@ -461,7 +461,7 @@ export type AndroidChunkDataInfoForIndividualPaid = AndroidChunkDataInfoForPaidS
  * @internal
  * Upload dynamic content that subscribed users can view.
  */
-const _publishDataForPaidSubscriberVisible = async (data: any) => {
+const _publishDataForSubscriberVisiblePaid = async (data: any) => {
   const password: string = data['password'];
   const _dataInfoList: AndroidDataInfo[] = data['dataInfoList'];
 
@@ -470,13 +470,13 @@ const _publishDataForPaidSubscriberVisible = async (data: any) => {
 
   if (isBlank(account)) {
     if (isBlank(password)) {
-      return { code: -8, msg: 'publishDataForPaidSubscriberVisible error: Password is empty' };
+      return { code: -8, msg: 'publishDataForSubscriberVisiblePaid error: Password is empty' };
     }
 
     //Note that all registered functions must return a JSON object.
     return {
       code: -1,
-      msg: 'publishDataForPaidSubscriberVisible error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.'
+      msg: 'publishDataForSubscriberVisiblePaid error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.'
     };
   }
 
@@ -503,7 +503,7 @@ const _publishDataForPaidSubscriberVisible = async (data: any) => {
     dataInfos.push(dataInfo);
   }
 
-  const uploadFileInfos = await publishDataForPaidSubscriberVisible(account, dataInfos);
+  const uploadFileInfos = await publishDataForSubscriberVisiblePaid(account, dataInfos);
 
   //Note that all registered functions must return a JSON object.
   return { uploadFileInfos: uploadFileInfos };
@@ -521,7 +521,7 @@ const _publishDataForPaidSubscriberVisible = async (data: any) => {
  *      strategyIndex: strategyIndex,
  * }
  */
-const _uploadChunkedDataStartForPaidSubscriberVisible = async (data: any) => {
+const _uploadChunkedDataStartForSubscriberVisiblePaid = async (data: any) => {
   const password: string = data['password'];
   const _dataInfo: ChunkStartMetaInfo = data['dataInfo'];
 
@@ -530,13 +530,13 @@ const _uploadChunkedDataStartForPaidSubscriberVisible = async (data: any) => {
 
   if (isBlank(account)) {
     if (isBlank(password)) {
-      return { code: -8, msg: 'uploadChunkedDataStartForPaidSubscriberVisible error: Password is empty' };
+      return { code: -8, msg: 'uploadChunkedDataStartForSubscriberVisiblePaid error: Password is empty' };
     }
 
     //Note that all registered functions must return a JSON object.
     return {
       code: -1,
-      msg: 'uploadChunkedDataStartForPaidSubscriberVisible error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.'
+      msg: 'uploadChunkedDataStartForSubscriberVisiblePaid error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.'
     };
   }
 
@@ -559,7 +559,7 @@ const _uploadChunkedDataStartForPaidSubscriberVisible = async (data: any) => {
     dataInfo['thumbnail'] = _dataInfo?.thumbnail;
   }
 
-  const dataOverview = await uploadChunkedDataStartForPaidSubscriberVisible(account, dataInfo);
+  const dataOverview = await uploadChunkedDataStartForSubscriberVisiblePaid(account, dataInfo);
 
   //Note that all registered functions must return a JSON object.
   return dataOverview || {};
@@ -574,9 +574,9 @@ const _uploadChunkedDataStartForPaidSubscriberVisible = async (data: any) => {
  * }
  */
 
-const _uploadChunkedDataForPaidSubscriberVisible = async (data: any) => {
+const _uploadChunkedDataForSubscriberVisiblePaid = async (data: any) => {
   const password: string = data['password'];
-  const androidChunkDataInfo: AndroidChunkDataInfoForPaidSubscriberVisible = data['dataInfo'];
+  const androidChunkDataInfo: AndroidChunkDataInfoForSubscriberVisiblePaid = data['dataInfo'];
 
   // we can get the account by user password that we have created
   const account: Account = (await getWalletDefaultAccount(password, true)) as Account;
@@ -600,7 +600,7 @@ const _uploadChunkedDataForPaidSubscriberVisible = async (data: any) => {
     strategyIndex: 0
   };
 
-  const chunk_address: string = await uploadChunkedDataForPaidSubscriberVisible(account, chunkDataInfo);
+  const chunk_address: string = await uploadChunkedDataForSubscriberVisiblePaid(account, chunkDataInfo);
   return {chunk_address: chunk_address};
 };
 
@@ -621,7 +621,7 @@ const _uploadChunkedDataForPaidSubscriberVisible = async (data: any) => {
  *  }
  */
 
-const _uploadChunkedDataOverForPaidSubscriberVisible = async (data: any) => {
+const _uploadChunkedDataOverForSubscriberVisiblePaid = async (data: any) => {
   const password: string = data['password'];
   const taskId: number = Number(data['taskId']);
 
@@ -640,7 +640,7 @@ const _uploadChunkedDataOverForPaidSubscriberVisible = async (data: any) => {
     };
   }
 
-  return await uploadChunkedDataOverForPaidSubscriberVisible(account, taskId);
+  return await uploadChunkedDataOverForSubscriberVisiblePaid(account, taskId);
 };
 
 /**
