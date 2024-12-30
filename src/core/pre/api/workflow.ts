@@ -607,6 +607,7 @@ export const getUploadedData = async (account: Account, dataLabel?: string, page
                 list: [
                   {
                     {string} file_id - Data ID
+                    {number} chunked - Is it a file uploaded in chunks (large file)
                     {string} file_name - Data name
                     {string} owner - Data owner
                     {string} owner_id - Data owner account ID
@@ -3179,9 +3180,39 @@ export const getDataContentByDataIdAsUser = async (userAccount: Account, dataId:
 
   assert(data && !isBlank(data));
 
-  const chunked: number = Number(data['chunked']);
-
   const dataIPFSAddress = data['file_ipfs_address'];
+  const policyEncryptingKey = data['policy_encrypted_pk'];
+  const aliceVerifyingKey = data['alice_verify_pk'];
+  const encryptedTreasureMapIPFSAddress = data['encrypted_treasure_map_ipfs_address'];
+
+  const applyId = data['apply_id'];
+
+  if (
+    isBlank(policyEncryptingKey) ||
+    isBlank(aliceVerifyingKey) ||
+    isBlank(dataIPFSAddress) ||
+    isBlank(encryptedTreasureMapIPFSAddress)
+  ) {
+    throw new Error(
+      `policy_encrypted_pk or aliceVerifyingKey or dataIPFSAddress or encryptedTreasureMapIPFSAddress is null !, \ndataId: ${dataId} \naccountId: ${userAccount.id} \napplyId: ${applyId}`
+    );
+  }
+
+  //Note: Error: Not enough cFrags retrieved to open capsule Capsule:026db902fff67d89. Was the policy revoked? => may be the policy is expired, please check the file/detail's api's apply_end_at field
+
+  //Determine whether the application has expired
+  const endTimestampSeconds = data['apply_end_at'];
+
+  const currentUtcTimestampInSeconds = Math.floor(Date.now() / 1000); // Get the current UTC timestamp (seconds)
+
+  if (endTimestampSeconds <= currentUtcTimestampInSeconds) {
+    //status: "apply status: 1 - In progress, 2 - Approved, 3 - Rejected, 4 - Under review, 5 - Expired"
+    throw new PolicyExpired(
+      `policy is Expired, it can't be decrypted! current applyId: ${applyId} \ndataId: ${dataId} \naccountId: ${userAccount.id} \n`
+    );
+  }
+
+  const chunked: number = Number(data['chunked']);
 
   if (chunked == 1) {
     const dataIpfsData: Uint8Array | null | undefined /*| Buffer*/ = await StorageManager.getData(dataIPFSAddress);
@@ -3194,11 +3225,98 @@ export const getDataContentByDataIdAsUser = async (userAccount: Account, dataId:
 
     return (dataIpfsData as Uint8Array).buffer as ArrayBuffer;
   } else {
-    const policyEncryptingKey = data['policy_encrypted_pk'];
-    const aliceVerifyingKey = data['alice_verify_pk'];
-    const encryptedTreasureMapIPFSAddress = data['encrypted_treasure_map_ipfs_address'];
+    // hexlify: Convert a byte array to a hexadecimal encoded string -> arrayify: Convert a hexadecimal encoded string back to a byte array
+    const crossChainHrac: CrossChainHRAC = CrossChainHRAC.fromBytes(arrayify(data['hrac']));
 
-    const applyId = data['apply_id'];
+    const contentArrayBuffer: ArrayBuffer = await getDataContentAsUser(
+      userAccount,
+      policyEncryptingKey,
+      aliceVerifyingKey,
+      dataIPFSAddress,
+      encryptedTreasureMapIPFSAddress,
+      crossChainHrac
+    );
+
+    return contentArrayBuffer;
+  }
+};
+
+/**
+ * Get chunk data of approved document content (downloadable). The file/data applicant retrieves the content of a file/data that has been approved for their usage.
+ * @category Data User(Bob) Download Data
+ * @param {Account} userAccount - Account the current account object
+ * @param {string} dataId - file/data's id
+ * @param {string} chunkAddress -(Optional) the (ipfs) address of the chunk data/file
+ *                               Note: If this parameter is not provided, the content of the index file will be retrieved (which records the addresses of all chunk files). If this parameter is provided, the content of a single chunk file will be retrieved
+ * @returns {Promise<ArrayBuffer>}
+ */
+export const getChunkDataContentByDataIdAsUser = async (
+  userAccount: Account,
+  dataId: string,
+  chunkAddress?: string
+): Promise<ArrayBuffer> => {
+  //这里增加缓存
+  //get file/data info
+  const data = (await getDataDetails(dataId, userAccount.id)) as object;
+
+  assert(data && !isBlank(data));
+
+  const policyEncryptingKey = data['policy_encrypted_pk'];
+  const aliceVerifyingKey = data['alice_verify_pk'];
+  const encryptedTreasureMapIPFSAddress = data['encrypted_treasure_map_ipfs_address'];
+
+  const applyId = data['apply_id'];
+
+  let dataIPFSAddress = data['file_ipfs_address'];
+
+  const chunked: number = Number(data['chunked']);
+
+  if (chunked == 1 && isBlank(chunkAddress)) {
+    //If the parameter of `chunkAddress` is not provided, the content of the index file will be retrieved (which records the addresses of all chunk files).
+
+    if (
+      isBlank(policyEncryptingKey) ||
+      isBlank(aliceVerifyingKey) ||
+      isBlank(dataIPFSAddress) ||
+      isBlank(encryptedTreasureMapIPFSAddress)
+    ) {
+      throw new Error(
+        `policy_encrypted_pk or aliceVerifyingKey or dataIPFSAddress or encryptedTreasureMapIPFSAddress is null !, \ndataId: ${dataId} \naccountId: ${userAccount.id} \napplyId: ${applyId}`
+      );
+    }
+
+    //Note: Error: Not enough cFrags retrieved to open capsule Capsule:026db902fff67d89. Was the policy revoked? => may be the policy is expired, please check the file/detail's api's apply_end_at field
+
+    //Determine whether the application has expired
+    const endTimestampSeconds = data['apply_end_at'];
+
+    const currentUtcTimestampInSeconds = Math.floor(Date.now() / 1000); // Get the current UTC timestamp (seconds)
+
+    if (endTimestampSeconds <= currentUtcTimestampInSeconds) {
+      //status: "apply status: 1 - In progress, 2 - Approved, 3 - Rejected, 4 - Under review, 5 - Expired"
+      throw new PolicyExpired(
+        `policy is Expired, it can't be decrypted! current applyId: ${applyId} \ndataId: ${dataId} \naccountId: ${userAccount.id} \n`
+      );
+    }
+
+    const dataIpfsData: Uint8Array | null | undefined /*| Buffer*/ = await StorageManager.getData(dataIPFSAddress);
+
+    // console.log("dataIpfsData: ", dataIpfsData);
+
+    if (isBlank(dataIpfsData)) {
+      throw new GetStorageDataError(`get chunk index ipfs data error! ipfs: ${dataIPFSAddress}`);
+    }
+
+    return (dataIpfsData as Uint8Array).buffer as ArrayBuffer;
+  } else {
+    //If the parameter of `chunkAddress` is provided, the content of a single chunk file will be retrieved.
+
+    if (chunked == 0) {
+      dataIPFSAddress = data['file_ipfs_address'];
+    } else {
+      //get the content of chunk data
+      dataIPFSAddress = chunkAddress;
+    }
 
     if (
       isBlank(policyEncryptingKey) ||
@@ -3256,6 +3374,7 @@ export const getDataContentByDataIdAsPublisher = async (userAccount: Account, da
 
   const chunked: number = Number(data['chunked']);
   const dataIPFSAddress = data['file_ipfs_address'];
+
   if (chunked == 1) {
     const dataIpfsData: Uint8Array | null | undefined /*| Buffer*/ = await StorageManager.getData(dataIPFSAddress);
 
@@ -3273,6 +3392,96 @@ export const getDataContentByDataIdAsPublisher = async (userAccount: Account, da
     //Firstcheck whether the file/data belongs to the user
     if (userAccount.encryptedKeyPair._publicKey.toLowerCase() !== aliceVerifyingKey.toLowerCase()) {
       throw new Error('Illegal request: you must be the file/data uploader to decrypt'); // data recovery failed
+    }
+
+    let strategyPrivatekey: string | null = null;
+    //find the strategy private key for decrypt
+    const strategys: Strategy[] = userAccount.getAllStrategy();
+    for (let index = 0; index < strategys.length; index++) {
+      const strategy = strategys[index];
+      if (strategy.strategyKeyPair._publicKey.toLowerCase() === policyEncryptingKey.toLowerCase()) {
+        strategyPrivatekey = strategy.strategyKeyPair._privateKey;
+        break;
+      }
+    }
+
+    if (!strategyPrivatekey) {
+      throw new Error('Failed to obtain strategy information'); // data recovery failed
+    }
+
+    //getDataContent from IPFS
+    const dataIpfsData: Uint8Array | null | undefined /*| Buffer*/ = await StorageManager.getData(dataIPFSAddress);
+
+    if (isBlank(dataIpfsData)) {
+      throw new GetStorageDataError(`publisher get encrypted data error! key: ${dataIpfsData}`);
+    }
+
+    // console.log("dataIpfsData: ", dataIpfsData);
+    const encryptedMessage: MessageKit = MessageKit.fromBytes(dataIpfsData as Uint8Array);
+
+    const privateKeyString = pwdDecrypt(strategyPrivatekey as string, true);
+    // console.log("makeBob BobEncrypedPrivateKey: ",privateKeyString);
+
+    // notice: bacause the encryptedMessage.decrypt( get by MessageKit) use the SecretKey import from nucypher-ts, so you  must be use the nucypher-ts's SecretKey PublicKey , not use the nucypher-core's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
+
+    const secretKey = NucypherTsSecretKey.fromBytes(privateKeyBuffer(privateKeyString));
+    const plainText: Uint8Array = encryptedMessage.decrypt(secretKey);
+
+    return plainText.buffer as ArrayBuffer;
+  }
+};
+
+/**
+ * The file/data publisher obtains the content of the file/data
+ * @category Data Publisher(Alice) Download Data
+ * @param {Account} userAccount - Account the current account object
+ * @param {string} dataId - data/file's id
+ * @param {string} chunkAddress -(Optional) the (ipfs) address of the chunk data/file
+ *                               Note: If this parameter is not provided, the content of the index file will be retrieved (which records the addresses of all chunk files). If this parameter is provided, the content of a single chunk file will be retrieved
+ * @returns {Promise<ArrayBuffer>}
+ */
+export const getChunkDataContentByDataIdAsPublisher = async (
+  userAccount: Account,
+  dataId: string,
+  chunkAddress?: string
+): Promise<ArrayBuffer> => {
+  //这里增加缓存
+  //get data info
+  const data = (await getDataDetails(dataId, userAccount.id)) as object;
+
+  assert(data && !isBlank(data));
+
+  const chunked: number = Number(data['chunked']);
+  let dataIPFSAddress = data['file_ipfs_address'];
+
+  if (chunked == 1 && isBlank(chunkAddress)) {
+    //If the parameter of `chunkAddress` is not provided, the content of the index file will be retrieved (which records the addresses of all chunk files).
+
+    const dataIpfsData: Uint8Array | null | undefined /*| Buffer*/ = await StorageManager.getData(dataIPFSAddress);
+
+    // console.log("dataIpfsData: ", dataIpfsData);
+
+    if (isBlank(dataIpfsData)) {
+      throw new GetStorageDataError(`get chunk index ipfs data error! ipfs: ${dataIPFSAddress}`);
+    }
+
+    return (dataIpfsData as Uint8Array).buffer as ArrayBuffer;
+  } else {
+    //If the parameter of `chunkAddress` is provided, the content of a single chunk file will be retrieved.
+
+    const policyEncryptingKey = data['policy_encrypted_pk'] || '';
+    const aliceVerifyingKey = data['alice_verify_pk'] || ''; //account.encryptedKeyPair._publicKey
+
+    //Firstcheck whether the file/data belongs to the user
+    if (userAccount.encryptedKeyPair._publicKey.toLowerCase() !== aliceVerifyingKey.toLowerCase()) {
+      throw new Error('Illegal request: you must be the file/data uploader to decrypt'); // data recovery failed
+    }
+
+    if (chunked == 0) {
+      dataIPFSAddress = data['file_ipfs_address'];
+    } else {
+      //get the content of chunk data
+      dataIPFSAddress = chunkAddress;
     }
 
     let strategyPrivatekey: string | null = null;

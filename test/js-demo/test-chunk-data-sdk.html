@@ -12,15 +12,9 @@
   </head>
     <div id="text" class="text-box">这是一段文本显示框</div>
     <br><br><br>
-    &nbsp;&nbsp;&nbsp;&nbsp;<button id="create">第一步：创建[或恢复]钱包</button><br><br>
-    &nbsp;&nbsp;&nbsp;&nbsp;<button id="run_next1">第二步：订阅单独付费动态</button>&nbsp;&nbsp;&nbsp;&nbsp;
-    &nbsp;&nbsp;&nbsp;&nbsp;<button id="run_next2">第二步：订阅指定用户动态</button><br><br>
-    &nbsp;&nbsp;&nbsp;&nbsp;<button id="run_next5">第二步：Alice拒绝用户订阅动态</button><br><br>
-    &nbsp;&nbsp;&nbsp;&nbsp;<button id="run_next4">第二步：指定订单退款</button>&nbsp;&nbsp;&nbsp;&nbsp;
-    &nbsp;&nbsp;&nbsp;&nbsp;<button id="run_next3">第三步：订阅续期</button>&nbsp;&nbsp;&nbsp;&nbsp;
-    &nbsp;&nbsp;&nbsp;&nbsp;<button id="run_next7">单独测试解密</button>&nbsp;&nbsp;&nbsp;&nbsp;
+    <!-- &nbsp;&nbsp;&nbsp;&nbsp;<button id="run_next1">订阅单独付费动态</button>&nbsp;&nbsp;&nbsp;&nbsp; -->
     <br><br>
-
+    <input type="file" id="fileInput" accept="application/pdf" text="读取文件"/>
 
     <script src="./nulink-sdk.js"></script>
 
@@ -51,7 +45,6 @@
           
       const pageSize = 1; //1000
 
-
       //nlk v14 or v15 version
       const nlkV14Token /* : string  */ = '0x8A95eF66ef0b5bCD10cb8aB433c768f50B5822a8';
       const nlkV15Token /* : string  */ = '0x3DE51dBD8737d8Fc3332F34fA1D2401F1E620f60';
@@ -62,7 +55,7 @@
       const appBackendUrl = v15AppBackendUrl;
       const payCheckUrlPrefix = appBackendUrl+ "/subscribe/getOrderStatus?orderId=";
       const refundUrl = appBackendUrl+ "/refundUrl";
-
+      
       const days = 1;
       
       const assert = (condition/* : boolean */, message/* : string */)  => {
@@ -86,6 +79,37 @@
         }
       };
       // ----------------------Global variable area end ------------------------
+
+    const concatArrayBuffers = (...buffers/* : ArrayBuffer[] */)/* : ArrayBuffer */ => {
+        // 计算总大小
+        const totalLength = buffers.reduce((sum, buffer) => sum + buffer.byteLength, 0);
+        
+        // 创建一个新的 ArrayBuffer
+        const result = new Uint8Array(totalLength);
+        
+        let offset = 0;
+        for (const buffer of buffers) {
+            result.set(new Uint8Array(buffer), offset);
+            offset += buffer.byteLength;
+        }
+
+        return result.buffer;
+    }
+
+    const areArrayBuffersEqual = (buffer1/* : ArrayBuffer */, buffer2/* : ArrayBuffer */)/* : boolean */  => {
+    // 检查长度是否相同
+    if (buffer1.byteLength !== buffer2.byteLength) {
+        return false;
+    }
+
+    // 创建 Uint8Array 视图并比较
+    const view1 = new Uint8Array(buffer1);
+    const view2 = new Uint8Array(buffer2);
+
+    // 使用 every 方法比较字节
+    return view1.every((byte, index) => byte === view2[index]);
+}
+
 
       const test1 = async () => {
         const dataCallback = {
@@ -165,104 +189,169 @@
         //debugger;
       };
 
-      const test2 = async (case1/* : number */) => {
+      const test2 = async (fileArrayBuffer) => {
         // Note: We only support one account currently.
 
       if(NUSDK.isBlank(accountAlice))
       {
         await test1()
       }
-      
+
+      console.log('data arrayBuffer Length:', fileArrayBuffer.byteLength);
+
+      // 划分 ArrayBuffer 为多个 10K 大小的块
+      const chunkSize = 1024 * 10; // 10K
+      const chunksData/* : ArrayBuffer[] */ = [];
+      const minFileSizeInByte = chunkSize * 2;
+
+      if(fileArrayBuffer.byteLength <= minFileSizeInByte)
+      {
+        throw new Error(`文件必须大于 ${minFileSizeInByte} 字节`);
+      }
+
+
+      for (let offset = 0; offset < fileArrayBuffer.byteLength; offset += chunkSize) {
+          const chunk = fileArrayBuffer.slice(offset, offset + chunkSize);
+          chunksData.push(chunk);
+      }
+
+      console.log('Number of Chunks:', chunksData.length);
+      console.log('data arraybuffer chunks array:', chunksData);
+
+      const dataUint8Array = new Uint8Array(fileArrayBuffer);
+      const dataBinaryString = String.fromCharCode(...dataUint8Array);
+
+      const publicKey = accountAlice.encryptedKeyPair._publicKey;
+        
         //Now we can encrypt and upload a file for others to apply for download
 
-        
-        //1. read a file
-        const enc = new TextEncoder(); // always utf-8
-        //5M
-        const historyContent /* : Uint8Array */ = enc.encode(plainText/*.repeat(1024)*/);
-
         //1.Alice upload file
-        const dataList /*: DataInfo[]*/ = [
-         // {
-         //   label: `image-${NUSDK.nanoid()}.pdf`,
-         //   dataArrayBuffer: historyContent.buffer,
-         //   mimetype: 'image/png'
-         // },
-          {
-             label: `history-${NUSDK.nanoid()}.pdf`,
-             dataArrayBuffer: historyContent.buffer,
-             mimetype: 'application/pdf'
-           },
-          {
-            label: `history1-${NUSDK.nanoid()}.pdf`,
-            dataArrayBuffer: historyContent.buffer,
-            mimetype: 'application/pdf'
-          },
-          {
-            label: `history2-${NUSDK.nanoid()}.pdf`,
-            dataArrayBuffer: historyContent.buffer,
-            mimetype: 'application/pdf'
-          },
-          {
-            label: `history3-${NUSDK.nanoid()}.pdf`,
-            dataArrayBuffer: historyContent.buffer,
-            mimetype: 'application/pdf'
-          },
-          {
-            label: `history4-${NUSDK.nanoid()}.pdf`,
-            dataArrayBuffer: historyContent.buffer,
-            mimetype: 'application/pdf'
-          }
-        ];
-        const publicKey = accountAlice.encryptedKeyPair._publicKey;
+        const dataInfo/* : ChunkStartMetaInfo */ = {
+          label: `data-${NUSDK.nanoid()}.pdf`,
+          md5: NUSDK.fileMD5(dataBinaryString, { encoding: "string" }),
+          chunkSizeInByte: chunkSize,
+          chunkCount: chunksData.length,
+          category: 'unknown',
+          mimetype: 'application/pdf',
+          thumbnail: "",
+        };
         
+
         // const start = new Date().getTime()
 
-        let uploadedInfos = null;
-        if(case1 == 1)
-        {
-          //2 Upload User Dynamics: Subscribers can view. (Alice encrypt and update a data/file to the ipfs network)
-          uploadedInfos = await NUSDK.publishDataForPaidSubscriberVisible(accountAlice, dataList);
-        }
-        else if(case1 == 2 || case1 == 3){
-          //2 Uploads require separate payments for each dynamic.
-          uploadedInfos = await NUSDK.publishDataForIndividualPaid(accountAlice, dataList)
-          
-        }
+        //2 Uploads require separate payments for each dynamic.
+        /**
+          * {    address: accountAddress,
+          *      strategyId: strategyId,
+          *      pk: accountPublicKey,
+          *      taskId: data?.task_id,
+          *      strategyIndex: strategyIndex,
+          * }
+          */
+        const dataMetaInfo = await NUSDK.uploadChunkedDataStartForIndividualPaid(accountAlice, dataInfo);
+        
+        const taskId/* : number */ = dataMetaInfo["taskId"];
+        const strategyIndex/* : number */ =  dataMetaInfo["strategyIndex"];
+
         // const end = new Date().getTime()
         // console.log('upload file time:', `${end - start}ms`)
         // // // eslint-disable-next-line no-debugger
         // // debugger;
 
-        // debugger;
+        console.log('address: ', dataMetaInfo.address);
+        console.log('strategyId: ', dataMetaInfo.strategyId);
+        console.log('public key: ', dataMetaInfo.accountPublicKey);
 
-        console.log('address: ', uploadedInfos.address);
-        console.log('strategyId: ', uploadedInfos.strategyId);
-        console.log('public key: ', uploadedInfos.accountPublicKey);
+        assert(dataMetaInfo.address === accountAlice.address);
+        assert(dataMetaInfo.pk === publicKey);
 
-        assert(uploadedInfos.address === accountAlice.address);
-        assert(uploadedInfos.pk === publicKey);
+      const uploadedChunkInfos = [];
+      for (let chunkIndex = 0; chunkIndex <chunksData.length; chunkIndex += 1) {
+        const chunkDataArrayBuffer = chunksData[chunkIndex];
 
-        console.log('uploadedInfo files list: ', uploadedInfos.filesInfo);
+        const chunkDataInfo/* : ChunkDataInfo */ = {
+          taskId: taskId,
+          chunkIndex: chunkIndex,
+          chunkDataArrayBuffer: hexString2ArrayBuffer(androidChunkDataInfo.chunkDataHexString),
+          strategyIndex: androidChunkDataInfo.strategyIndex
+        };
 
-        const _dataIds = uploadedInfos.filesInfo.map((filesInfo) => filesInfo.id)
+        const dataChunkInfo = await NUSDK.uploadChunkedDataForIndividualPaid(accountAlice, chunkDataInfo);
+
+        console.log(`uploaded chunk data chunkIndex: ${chunkIndex} `, dataChunkInfo);
+
+        uploadedChunkInfos.push(dataChunkInfo);
+
+      }
+
+      const _uploadedChunkInfo = await NUSDK.getUploadedChunkInfo(taskId, chunkIndex);
+      //查看是否这里上传成功的文件是否正确，与 uploadedChunkInfos比较
+      debugger;
+      
+      //查看任务信息
+      const dataTaskInfo = await NUSDK.getDataTaskInfo(taskId);
+      debugger;
+
+      /**
+       *  {
+       *    "chunk_missing_indexes": [0, 1, 8], // If the number of uploaded chunks is insufficient, return a list of the missing chunk indexes.
+       *    "file_label": "",
+       *    "file_md5": "",
+       *    "file_category": "",
+       *    "file_thumbnail": "",
+       *    "file_mimetype": "",
+       *    "file_chunk_size": 0,
+       *    "file_chunk_count": 0
+       *    "file_id": the id of this file
+       *  }
+       */
+      const returnUploadDataInfo = await NUSDK.uploadChunkedDataOverForIndividualPaid(account, taskId, strategyIndex);
+
+      const fileId/* : string */ = returnUploadDataInfo.file_id;
         
-        //Alice batch decrypts the files she uploaded
-        const arrayBufferDict /* : Dictionary<ArrayBuffer> */ = await NUSDK.getDataContentListByDataIdAsPublisher(
+      
+      //Alice batch decrypts the chunk data of file she uploaded
+      const _arrayBuffer/* : ArrayBuffer */ = await NUSDK.getChunkDataContentByDataIdAsPublisher(accountAlice, fileId);
+
+      const _dataMetaListJsonString /* : string */ = NUSDK.Buffer.from(_arrayBuffer).toString();
+      /**
+       *    
+          [  
+            //All uploaded chunk information, sorted in ascending order by chunk_index. If the queried chunk index has not been uploaded, return an empty list
+            {
+              chunk_address: The ipfs address of the file
+              chunk_index: The chunk index, starting from 0, with the maximum index being file_chunk_count - 1."
+            }
+          ]
+
+      */
+      const _dataMetaList = JSON.parse(_dataMetaListJsonString);
+      
+      //按照chunk_index的升序排列
+      _dataMetaList.sort((a, b) => a.chunk_index - b.chunk_index);
+      console.log('dataMetaList: ', _dataMetaList);
+      
+      const _dataChunkArrayBufferList/* : ArrayBuffer[] */ = [];
+
+      for (let index = 0; index < _dataMetaList.length; index++) {
+          const dataMeta = _dataMetaList[index];
+          const chunkAddress = dataMeta['chunk_address'];
+          const chunkIndex = dataMeta['chunk_index'];
+
+          const chunkDataArrayBuffer /* : ArrayBuffer */ = await NUSDK.getChunkDataContentByDataIdAsPublisher(
           accountAlice,
-          _dataIds
+          fileId,
+          chunkAddress
         );
-        
-        for (let index = 0; index < _dataIds.length; index++) {
-          const fileId = _dataIds[index]
-          const arrayBuffer /* : ArrayBuffer */ = arrayBufferDict[fileId];
-          const dataContent /* : string */ = NUSDK.Buffer.from(arrayBuffer).toString();
-          console.log('batch test Alice download file => dataContent: ', dataContent);
-          console.log('batch test Alice download file => plainText: ', plainText);
-          assert(dataContent === plainText);
-        }
+        _dataChunkArrayBufferList.push(chunkDataArrayBuffer);
 
-        debugger;
+      }
+      
+      const _dataContentArrayBuffer/* : ArrayBuffer */ = concatArrayBuffers(_dataChunkArrayBufferList)
+
+      const bEqual = areArrayBuffersEqual(fileArrayBuffer, _dataContentArrayBuffer);
+      debugger
+      assert(bEqual);
 
         //3. We can get the files just uploaded
         const resultList = await NUSDK.getUploadedData(accountAlice, undefined, 1, 1000);
@@ -284,7 +373,7 @@
         let fileIndex = -1;
         for (let index = 0; index < resultList['list'].length; index++) {
           const element = resultList['list'][index];
-          if (element['file_name'] === dataList[0]['label']) {
+          if (element['file_name'] === dataInfo['label']) {
             fileIndex = index;
             break;
           }
@@ -385,7 +474,7 @@
           let dataIndex2 = -1;
           for (let index = 0; index < findFileResultList['list'].length; index++) {
             const element = findFileResultList['list'][index];
-            if (element['file_name'] === dataList[0]['label']) {
+            if (element['file_name'] === dataInfo['label']) {
               dataIndex2 = index;
               break;
             }
@@ -417,7 +506,7 @@
             accountBob.address,
             appBackendUrl,
             nlkToken,
-           ); /*'601889332465669'; */
+          ); /*'601889332465669'; */
 
 
           orderIds.push(orderId);
@@ -446,7 +535,7 @@
               orderId,
               applyDataId,
               days,
-              nlkV14Token,
+              nlkToken,
               '100000000000000000',
               payCheckUrlPrefix+orderId
             );
@@ -578,7 +667,7 @@
             
               if(payStatus !== 3)
               {
-                            // //eslint-disable-next-line no-debugger
+                // //eslint-disable-next-line no-debugger
                 // debugger;
 
                 //NOT_PAID (not paid or Insufficient payment), PENDING, UNDER_REVIEW, APPROVED, REJECTED, EXPRIED
@@ -592,47 +681,8 @@
         // eslint-disable-next-line no-debugger
         debugger;
               
-        if(case1 == 3)
-        {
-          await NUSDK.refusalUserSubscription(accountAlice, applyIds);
-
-          debugger;
-          let aliceUnapprovedDataList /*: any */ = null;
-          do {
-            await sleep(2000); //2 seconds
-            //Alice, as the publisher of the file, obtains the list of files that she has successfully approved
-            aliceUnapprovedDataList = await NUSDK.getDataForRefusedAsPublisher(accountAlice, 1, pageSize/* 1000 */);
-            /*return data format: {
-              list: [
-                  { apply_id, file_id:, proposer, proposer_id, file_owner:, file_owner_id:, policy_id, hrac, start_at:, end_at, created_at }
-                  ...
-              ],
-              total: 300,
-              }
-          */
-          } while (!aliceUnapprovedDataList || aliceUnapprovedDataList['total'] <= 0);
-
-          // eslint-disable-next-line no-debugger
-          debugger;
-
-          assert(
-            aliceUnapprovedDataList && aliceUnapprovedDataList['total'] > 0,
-            '!aliceUnapprovedDataList || aliceUnapprovedDataList["total"] <= 0'
-          );
-        
-          await sleep(15000); //15 seconds
-          
-          debugger;
-          //注意：：Bob订阅后，合约会限制 一段时间内不能申请退款. 所以此处不能立即申请退款，所以此处屏蔽
-          // //Bob applies for a refund
-          // await NUSDK.cancelUserSubscription(_accountBob, applyIds[0], orderIds[0], refundUrl);
-          console.log("finish")
-          return;
-        }
-        else{
-          //Alice approves Bob's application for data/file usage. Whenever Alice approves a data/file request, an on-chain policy is created
-          await NUSDK.approveUserSubscription(accountAlice, applyIds);
-        }
+        //Alice approves Bob's application for data/file usage. Whenever Alice approves a data/file request, an on-chain policy is created
+        await NUSDK.approveUserSubscription(accountAlice, applyIds);
 
         // eslint-disable-next-line no-debugger
         debugger;
@@ -714,365 +764,63 @@
             );
 
             dataIds.push(bobBeApprovedDataInfo['file_id']);
-            const dataContent /* : string */ = NUSDK.Buffer.from(arrayBuffer).toString();
-            console.log('dataContent: ', dataContent);
-            console.log('plainText: ', plainText);
-            assert(dataContent === plainText);
+
+            //是否是分片上传的文件
+            const bChunkFile = String(bobBeApprovedDataInfo['chunked']) === '1';
+            if(!bChunkFile)
+            {
+              debugger;
+              throw new Error("not chunked file", bobBeApprovedDataInfo['file_id']);
+            }
+
+            const dataMetaListJsonString /* : string */ = NUSDK.Buffer.from(arrayBuffer).toString();
+
+            /**
+             *    
+                [  
+                  //All uploaded chunk information, sorted in ascending order by chunk_index. If the queried chunk index has not been uploaded, return an empty list
+                  {
+                    chunk_address: The ipfs address of the file
+                    chunk_index: The chunk index, starting from 0, with the maximum index being file_chunk_count - 1."
+                  }
+                ]
+
+             */
+            const dataMetaList = JSON.parse(dataMetaListJsonString);
+            
+            //按照chunk_index的升序排列
+            dataMetaList.sort((a, b) => a.chunk_index - b.chunk_index);
+            console.log('dataMetaList: ', dataMetaList);
+            
+            const dataChunkArrayBufferList/* : ArrayBuffer[] */ = [];
+
+            for (let index = 0; index < dataMetaList.length; index++) {
+                const dataMeta = dataMetaList[index];
+                const chunkAddress = dataMeta['chunk_address'];
+                const chunkIndex = dataMeta['chunk_index'];
+
+                const chunkDataArrayBuffer /* : ArrayBuffer */ = await NUSDK.getChunkDataContentByDataIdAsUser(
+                accountBob,
+                bobBeApprovedDataInfo['file_id'],
+                chunkAddress
+              );
+              dataChunkArrayBufferList.push(chunkDataArrayBuffer);
+
+            }
+            
+            const dataContentArrayBuffer/* : ArrayBuffer */ = concatArrayBuffers(dataChunkArrayBufferList)
+      
+
+            const bEqual = areArrayBuffersEqual(fileArrayBuffer, dataContentArrayBuffer);
+            debugger
+            assert(bEqual);
 
             //finish
           }
 
-          console.log('Repeat the test: Test batch decryption of data.');
-
-          //Repeat the test: Test batch decryption of data.
-          //Finally, Bob gets the contents of the data/file
-          const arrayBufferDict /* : Dictionary<ArrayBuffer> */ = await NUSDK.getDataContentListByDataIdAsUser(
-            _accountBob,
-            dataIds
-          );
-          for (let index = 0; index < dataIds.length; index++) {
-            const arrayBuffer /* : ArrayBuffer */ = arrayBufferDict[dataIds[index]];
-            const dataContent /* : string */ = NUSDK.Buffer.from(arrayBuffer).toString();
-            console.log('batch test => dataContent: ', dataContent);
-            console.log('batch test => plainText: ', plainText);
-            assert(dataContent === plainText);
-          }
-        }
-
-        assert(dataIndex2s.length > 0, 'dataIndex2s.length <= 0');
-
-        // //Alice upload file to exist policy
-
-        // const plainText2 = 'This is a philosophy book content';
-        // const historyContent2 /*: Uint8Array */ = enc.encode(plainText2);
-
-        // //1.upload file by create policy
-        // const fileList2 /*: DataInfo[] */ = [
-        //   {
-        //     label: `philosophy-${NUSDK.nanoid()}.pdf`,
-        //     dataArrayBuffer: historyContent2.buffer,
-        //     mimetype: 'application/pdf'
-        //   }
-        // ];
-
-        // const fileIds = await NUSDK.uploadDataBySelectPolicy(
-        //   accountAlice,
-        //   NUSDK.DataCategory.Philosophy,
-        //   fileList2,
-        //   policyId
-        // );
-
-        // //Bob get new upload file content
-        // const arrayBuffer2 /*: ArrayBuffer */ = await NUSDK.getDataContentByDataIdAsUser(_accountBob, fileIds[0]);
-        // const fileContent2 /*: string*/ = NUSDK.Buffer.from(arrayBuffer2).toString();
-        // console.log('fileContent2: ', fileContent2);
-        // console.log('plainText2: ', plainText2);
-        // assert(fileContent2 === plainText2, 'fileContent2 !== plainText2');
-
-        // //you can get all status files for mine apply: The files I applied for
-        // //status 0: all status, include:  applying，approved, rejected
-        // const data = await NUSDK.getDataByStatus(undefined, _accountBob.id, undefined, undefined, 0, 1, pageSize/* 1000 */);
-        // /*
-        //     return data format: {
-        //     list: [
-        //         { apply_id, file_id:, proposer, proposer_id, file_owner:, file_owner_id:, policy_id, hrac, start_at:, end_at, days, created_at, status }
-        //         ...
-        //     ],
-        //     total: 300,
-        //     }
-        // */
-
-        // assert(data && !NUSDK.isBlank(data) && data['total'] > 0, 'data is blank or total is 0');
-
         console.log('finish');
       };
 
-      const test3 = async () => {
-        // Note: We only support one account currently.
-        if(NUSDK.isBlank(accountAlice))
-        {
-          await test1()
-        }
-      
-        //Now we can encrypt and upload a file for others to apply for download
-
-        //1. read a file
-        const enc = new TextEncoder(); // always utf-8
-        const historyContent /* : Uint8Array */ = enc.encode(plainText);
-
-        
-        const numReqData = 1;
-        // ............................................
-        //
-        //Bob find the data/file on Internet
-        const bobAccountId2AccountMap = {};
-        const accountBobs /* : Account[] */ = [];
-        const accountManager /* : AccountManager */ = nuLinkHDWallet.getAccountManager();
-
-        let _accountBob = undefined;
-        
-        // const _accountBob /* : Account  */ = await accountManager.createAccount(`Bob_Single`);
-
-        _accountBob = accountManager.getAccountByAddress("0xd587515f2ccbb3472f90d8895638a481a1e3ba9d")
-        
-        if(NUSDK.isBlank(_accountBob))
-        {
-          _accountBob = await accountManager.createAccount(`Bob_Single`)
-        }
-
-        assert(!NUSDK.isBlank(_accountBob), '_accountBob is undefined or null');
-
-
-        //At this point Alice approves Bob's file usage request, Due to on-chain approval of Bob's request, we first evaluate gas and service fees
-        const startMs /*: number */ = new Date().getTime();
-        const startDate /*: Date */ = new Date(startMs); //  start_at is seconds, but Date needs milliseconds
-        
-        const endMs /*: number */ = startMs + days  * 24 * 60 * 60 * 1000;
-        const endDate /*: Date */ = new Date(endMs); //  start_at is seconds, but Date needs milliseconds
-
-        //policy_label_id:  "91b4d0b95d09b18f603a1d96bde47e133d9d8892f28f465b97816576e19568d4"
-        //hrac: "0x576f34b544e91fa4c19b3d8d0de4b047434841494e49443937"
-        //file id list
-        const dataIds /* : string[] */ = ["a6nafqsXOv_k4pYIOHgIh"];
-        const applyId = 1203;
-        //Simulated order id.
-        const orderId /* : bigint */ =  await NUSDK.simulateOrderGenerationForDev(
-            accountAlice.address,
-            _accountBob.address,
-            //'http://47.237.123.177:8083'
-            'http://47.237.106.59:8083' //v15 contract mapping app backend url
-          ); /*'601889332465669'; */
-
-        assert(!NUSDK.isBlank(orderId), 'orderId is undefined or null');
-        assert(!NUSDK.isBlank(dataIds[0]), 'file is undefined or null');
-        assert(applyId!=0, 'applyId is undefined or null');
-        
-        console.log('Test batch decryption of data.');
-        
-        let bExtendPolicysValidity = true;
-        try {
-              //Repeat the test: Test batch decryption of data.
-              //Finally, Bob gets the contents of the data/file
-              const arrayBufferDict /* : Dictionary<ArrayBuffer> */ = await NUSDK.getDataContentListByDataIdAsUser(
-                _accountBob,
-                dataIds
-              );
-              
-              for (let index = 0; index < dataIds.length; index++) {
-                const arrayBuffer /* : ArrayBuffer */ = arrayBufferDict[dataIds[index]];
-                const dataContent /* : string */ = NUSDK.Buffer.from(arrayBuffer).toString();
-                console.log('batch test => dataContent: ', dataContent);
-                console.log('batch test => plainText: ', plainText);
-                assert(dataContent === plainText);
-              }
-              bExtendPolicysValidity = false;
-
-              
-          } catch (error) {
-            
-            console.log("The file has expired, decryption failed, as expected. Let's apply for an extension of the file's usage period.");
-          }
-        
-          if(!bExtendPolicysValidity)
-          {
-            throw new Error('The document has not expired, no extension of the policy validity period is needed, the process ends.');
-          }
-          
-        //Decrypt the file
-
-        //Apply for an extension of the policy validity period
-        await NUSDK.extendPolicysValidity(_accountBob, 
-        applyId, 
-        days, 
-        orderId, 
-        nlkV14Token,  
-        '100000000000000000',
-        payCheckUrlPrefix+orderId)
-
-
-        //Note: First check if the payment was successful. Only after the payment is successful, then call the approve function.
-        let payStatus = 1 //1: In Payment (Unpaid), 2: Payment Failed, 3: Payment Successful, 4: Refunded.
-        while(payStatus !== 3)
-        {
-            payStatus = await NUSDK.getPreBobPayStatus(orderId);
-            
-            if(payStatus !== 3)
-            {
-              // //eslint-disable-next-line no-debugger
-              // debugger;
-
-              //NOT_PAID (not paid or Insufficient payment), PENDING, UNDER_REVIEW, APPROVED, REJECTED, EXPRIED
-
-              await sleep(2000); //2 seconds
-            }
-        }
-
-        //Waiting for the apply status to be approved
-        
-        let data/*: any */ = null;
-
-        do {
-          await sleep(5000); //5 seconds
-          //get file/data info
-          data = (await NUSDK.getDataDetails(dataIds[0], _accountBob.id));
-          
-        } while (!data || data['status'] != 2);
-
-        
-        //Repeat the test: Test batch decryption of data.
-        //Finally, Bob gets the contents of the data/file
-        const arrayBufferDict /* : Dictionary<ArrayBuffer> */ = await NUSDK.getDataContentListByDataIdAsUser(
-          _accountBob,
-          dataIds
-        );
-        
-        for (let index = 0; index < dataIds.length; index++) {
-          const arrayBuffer /* : ArrayBuffer */ = arrayBufferDict[dataIds[index]];
-          const dataContent /* : string */ = NUSDK.Buffer.from(arrayBuffer).toString();
-          console.log('batch test => dataContent: ', dataContent);
-          console.log('batch test => plainText: ', plainText);
-          assert(dataContent === plainText);
-        }
-
-
-        console.log('finish');
-      };
-
-      const test4 = async () => {
-        // Note: We only support one account currently.
-        if(NUSDK.isBlank(accountAlice))
-        {
-          await test1()
-        }
-
-        const accountManager /* : AccountManager */ = nuLinkHDWallet.getAccountManager();
-
-        let _accountBob = undefined;
-
-        // const _accountBob /* : Account  */ = await accountManager.createAccount(`Bob_Single`);
-
-        _accountBob = accountManager.getAccountByAddress("0xd587515f2ccbb3472f90d8895638a481a1e3ba9d")
-
-        if(NUSDK.isBlank(_accountBob))
-        {
-          _accountBob = await accountManager.createAccount(`Bob_Single`)
-        }
-
-        assert(!NUSDK.isBlank(_accountBob), '_accountBob is undefined or null');
-
-
-        const orderId = "604958157594629";
-        const applyId = 1212;
-        await NUSDK.cancelUserSubscription(_accountBob, applyId, orderId, refundUrl);
-        console.log("finish");
-      }
-
-      
-      const test7 = async () => {
-
-        const dataCallback = {
-          setData: NUSDK.setIPFSData,
-          getData: NUSDK.getIPFSData
-        };
-
-        //Set the external storage used by the Pre process to IPFS (for example, encrypted files uploaded by users will be stored in this storage, and users can customize the storage).
-        NUSDK.StorageManager.setDataCallback(dataCallback);
-
-        //we need set Project ID: differentiate the sources of data from different applications.
-        // which requires application to Nulink official.
-        const clientId = '593689189003333';
-
-        console.log('in test1 function before init clientId');
-        await NUSDK.init(clientId);
-
-        nuLinkHDWallet = await NUSDK.restoreWalletDataByMnemonic(password, "kiwi possible inner october unit casual first verb extend neglect wolf alien");
-
-        let _accountBob = await NUSDK.getWalletDefaultAccount(password);
-
-        debugger
-
-        //file id list
-        const dataIds /* : string[] */ = ["5DUcv694lSLfXdt-oKdr5"];
-        const applyId = 1247;
-        //Simulated order id.
-
-        const orderId /* : bigint */ =  "615033352777733"
-
-
-
-        //Apply for an extension of the policy validity period
-        await NUSDK.extendPolicysValidity(_accountBob, 
-        applyId, 
-        1, 
-        orderId, 
-        nlkV14Token,  
-        '1',
-        // "http://47.237.123.177:8083/subscribe/getOrderStatus?orderId=615033352777733"
-        'http://47.237.106.59:8083/subscribe/getOrderStatus?orderId=615033352777733' //v15 contract mapping app backend url
-        )
-
-
-      
-
-
-        console.log('finish');
-      };
-
-      const test8 = async () => {
-        //decrypt
-
-        const dataCallback = {
-          setData: NUSDK.setIPFSData,
-          getData: NUSDK.getIPFSData
-        };
-
-        //Set the external storage used by the Pre process to IPFS (for example, encrypted files uploaded by users will be stored in this storage, and users can customize the storage).
-        NUSDK.StorageManager.setDataCallback(dataCallback);
-
-        //we need set Project ID: differentiate the sources of data from different applications.
-        // which requires application to Nulink official.
-        const clientId = '593689189003333';
-
-        console.log('in test1 function before init clientId');
-        await NUSDK.init(clientId);
-
-
-        debugger;
-        const mnemonic = "run cram web theme library accuse size truth pumpkin embark square increase";
-        //const mnemonic = "knee viable spring region random danger crane despair explain patrol awful before";
-        nuLinkHDWallet = await NUSDK.restoreWalletDataByMnemonic(password, mnemonic);
-        let _accountBob = await NUSDK.getWalletDefaultAccount(password);
-
-        //file_id = "IXPmdYf0xxnHNTRkvpbBn"
-        file_id = "vO8myZAVwxvaHRfjbF8iT"
-        //file_id = "3qSbl5CuDrhm0u3zl7QdQ"
-        //file_id = "5DUcv694lSLfXdt-oKdr5"
-
-         //Test the decryption of each piece of data separately.
-            //Finally, Bob gets the contents of the data/file
-            const arrayBuffer /* : ArrayBuffer */ = await NUSDK.getDataContentByDataIdAsUser(
-              _accountBob,
-              file_id
-            );
-
-            const dataContent /* : string */ = NUSDK.Buffer.from(arrayBuffer).toString();
-            console.log('dataContent: ', dataContent);
-            console.log('plainText: ', plainText);
-            assert(dataContent === plainText);
-
-
-      }
-
-      document.querySelector('#create').addEventListener('click', test1);
-      document.querySelector('#run_next1').addEventListener('click', () => test2(2));
-      document.querySelector('#run_next2').addEventListener('click', () => test2(1));
-      document.querySelector('#run_next5').addEventListener('click', () => test2(3));
-      document.querySelector('#run_next3').addEventListener('click', () => test3()/*test7()*/);
-      document.querySelector('#run_next4').addEventListener('click', () => test4());
-      document.querySelector('#run_next7').addEventListener('click', () => test8());
-      
-
-      
       const asyncInit = async () => {
         try {
           const clientId = '593689189003333';
@@ -1096,6 +844,33 @@
         const result = await asyncInit();
         console.log('init result:', result);
       })();
+
+
+      
+      document.querySelector('#run_next1').addEventListener('click', () => test2());
+      // TypeScript 部分
+    const fileInput = document.getElementById('fileInput') /* as HTMLInputElement */;
+
+    fileInput.addEventListener('change', (event) => {
+        const file = (event.target/*  as HTMLInputElement */).files?.[0];
+
+        if (file) {
+            const reader = new FileReader();
+
+            // 定义读取完成后的回调
+            reader.onload = (e) => {
+                const arrayBuffer = e.target?.result /* as ArrayBuffer */;
+                //console.log(arrayBuffer); // 这里可以使用 ArrayBuffer
+                debugger
+                test2(arrayBuffer);
+            };
+
+            // 读取文件为 ArrayBuffer
+            reader.readAsArrayBuffer(file);
+        } else {
+            console.error('未选择文件');
+        }
+    });
     </script>
   </body>
 </html>

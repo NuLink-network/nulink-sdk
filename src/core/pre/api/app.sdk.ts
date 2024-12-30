@@ -43,6 +43,8 @@ import { setCurrentNetworkWeb3RpcUrl } from '../../../core/chainnet/api/saveData
 import { ChunkDataInfo, ChunkDataTaskInfo, ChunkStartMetaInfo, DataInfo } from '../types';
 import { arrayBuffer2HexString, hexString2ArrayBuffer } from '../../../core/utils/hexstring.arraybuffer';
 import {
+  getChunkDataContentByDataIdAsPublisher,
+  getChunkDataContentByDataIdAsUser,
   getDataByStatus,
   getDataContentByDataIdAsPublisher,
   getDataContentByDataIdAsUser,
@@ -78,6 +80,8 @@ export const registerMessageHandler = async () => {
   await registerOnAppMessageHandler('uploadChunkedDataStartForIndividualPaid', _uploadChunkedDataStartForIndividualPaid);
   await registerOnAppMessageHandler('uploadChunkedDataForIndividualPaid', _uploadChunkedDataForIndividualPaid);
   await registerOnAppMessageHandler('uploadChunkedDataOverForIndividualPaid', _uploadChunkedDataOverForIndividualPaid);
+  await registerOnAppMessageHandler('getChunkDataContentByDataIdAsUser', _getChunkDataContentByDataIdAsUser);
+  await registerOnAppMessageHandler('getChunkDataContentByDataIdAsPublisher', _getChunkDataContentByDataIdAsPublisher);
   await registerOnAppMessageHandler('getChunkDataTaskInfo', _getChunkDataTaskInfo);
   await registerOnAppMessageHandler('getUploadedChunkInfo', _getUploadedChunkInfo);
   await registerOnAppMessageHandler('applyForSubscriptionAccess', _applyForSubscriptionAccess);
@@ -444,8 +448,8 @@ type AndroidDataInfo = {
 };
 
 type AndroidChunkDataInfoForPaidSubscriberVisible = {
-  task_id: number; //the id of this task
-  chunk_index: number; //Chunk index, starting from 0, with the maximum index being file_chunk_count - 1.
+  taskId: number; //the id of this task
+  chunkIndex: number; //Chunk index, starting from 0, with the maximum index being file_chunk_count - 1.
   chunkDataHexString: string; //The binary representation of the contents of files/data By invoke 'FileReader.ReadAsArrayBuffer(file)' callback return the value: e.target.result
 };
 
@@ -509,7 +513,13 @@ const _publishDataForPaidSubscriberVisible = async (data: any) => {
  * @internal
  * Start Chunked Upload For Large content that subscribed users can view.
  * Only one large file can be uploaded."
- *
+ * @returns {Promise<object>} - Returns account, strategy info and taskId
+ * {    address: accountAddress,
+ *      strategyId: strategyId,
+ *      pk: accountPublicKey,
+ *      taskId: task id,
+ *      strategyIndex: strategyIndex,
+ * }
  */
 const _uploadChunkedDataStartForPaidSubscriberVisible = async (data: any) => {
   const password: string = data['password'];
@@ -552,12 +562,16 @@ const _uploadChunkedDataStartForPaidSubscriberVisible = async (data: any) => {
   const dataOverview = await uploadChunkedDataStartForPaidSubscriberVisible(account, dataInfo);
 
   //Note that all registered functions must return a JSON object.
-  return { dataOverview: dataOverview };
+  return dataOverview || {};
 };
 
 /**
  * @internal
  * Upload Chunked Data For Large content that subscribed users can view.
+ * @returns {Promise<object>} - Returns the chunk ipfs address
+ * {
+ *   chunk_address: the chunk ipfs address
+ * }
  */
 
 const _uploadChunkedDataForPaidSubscriberVisible = async (data: any) => {
@@ -580,23 +594,36 @@ const _uploadChunkedDataForPaidSubscriberVisible = async (data: any) => {
   }
 
   const chunkDataInfo: ChunkDataInfo = {
-    task_id: androidChunkDataInfo.task_id,
-    chunk_index: androidChunkDataInfo.chunk_index,
+    taskId: androidChunkDataInfo.taskId,
+    chunkIndex: androidChunkDataInfo.chunkIndex,
     chunkDataArrayBuffer: hexString2ArrayBuffer(androidChunkDataInfo.chunkDataHexString),
     strategyIndex: 0
   };
 
-  return await uploadChunkedDataForPaidSubscriberVisible(account, chunkDataInfo);
+  const chunk_address: string = await uploadChunkedDataForPaidSubscriberVisible(account, chunkDataInfo);
+  return {chunk_address: chunk_address};
 };
 
 /**
  * @internal
  * Upload all chunked Data finish for Large content that subscribed users can view.
+ *  @returns {Promise<object>} - Returns
+ *  {
+ *    "chunk_missing_indexes": [0, 1, 8], // If the number of uploaded chunks is insufficient, return a list of the missing chunk indexes.
+ *    "file_label": "",
+ *    "file_md5": "",
+ *    "file_category": "",
+ *    "file_thumbnail": "",
+ *    "file_mimetype": "",
+ *    "file_chunk_size": 0,
+ *    "file_chunk_count": 0,
+ *    "file_id": the id of this file,
+ *  }
  */
 
 const _uploadChunkedDataOverForPaidSubscriberVisible = async (data: any) => {
   const password: string = data['password'];
-  const task_id: number = Number(data['task_id']);
+  const taskId: number = Number(data['taskId']);
 
   // we can get the account by user password that we have created
   const account: Account = (await getWalletDefaultAccount(password, true)) as Account;
@@ -613,14 +640,20 @@ const _uploadChunkedDataOverForPaidSubscriberVisible = async (data: any) => {
     };
   }
 
-  return await uploadChunkedDataOverForPaidSubscriberVisible(account, task_id);
+  return await uploadChunkedDataOverForPaidSubscriberVisible(account, taskId);
 };
 
 /**
  * @internal
  * Start Chunked Upload For Large content that subscribed users can view.
  * Only one large file can be uploaded."
- *
+ * @returns {Promise<object>} - Returns account, strategy id and taskId
+ * {    address: accountAddress,
+ *      strategyId: strategyId,
+ *      pk: accountPublicKey,
+ *      taskId: data?.task_id,
+ *      strategyIndex: strategyIndex,
+ * }
  */
 const _uploadChunkedDataStartForIndividualPaid = async (data: any) => {
   const password: string = data['password'];
@@ -669,6 +702,10 @@ const _uploadChunkedDataStartForIndividualPaid = async (data: any) => {
 /**
  * @internal
  * Upload Chunked Data For Large content that subscribed users can view.
+ * @returns {Promise<object>} - Returns the chunk ipfs address
+ * {
+ *   chunk_address: the chunk ipfs address
+ * }
  */
 
 const _uploadChunkedDataForIndividualPaid = async (data: any) => {
@@ -691,18 +728,31 @@ const _uploadChunkedDataForIndividualPaid = async (data: any) => {
   }
 
   const chunkDataInfo: ChunkDataInfo = {
-    task_id: androidChunkDataInfo.task_id,
-    chunk_index: androidChunkDataInfo.chunk_index,
+    taskId: androidChunkDataInfo.taskId,
+    chunkIndex: androidChunkDataInfo.chunkIndex,
     chunkDataArrayBuffer: hexString2ArrayBuffer(androidChunkDataInfo.chunkDataHexString),
     strategyIndex: androidChunkDataInfo.strategyIndex
   };
 
-  return await uploadChunkedDataForIndividualPaid(account, chunkDataInfo);
+  const chunk_address: string = await uploadChunkedDataForIndividualPaid(account, chunkDataInfo);
+  return {chunk_address: chunk_address};
 };
 
 /**
  * @internal
  * Upload all chunked Data finish for Large content that subscribed users can view.
+ * @returns {Promise<object>} - Returns
+ *  {
+ *    "chunk_missing_indexes": [0, 1, 8], // If the number of uploaded chunks is insufficient, return a list of the missing chunk indexes.
+ *    "file_label": "",
+ *    "file_md5": "",
+ *    "file_category": "",
+ *    "file_thumbnail": "",
+ *    "file_mimetype": "",
+ *    "file_chunk_size": 0,
+ *    "file_chunk_count": 0
+ *    "file_id": the id of this file
+ *  }
  */
 
 const _uploadChunkedDataOverForIndividualPaid = async (data: any) => {
@@ -930,7 +980,7 @@ const _cancelUserSubscription = async (data: any) => {
  */
 const _getDataContentListByDataIdAsUser = async (data: any) => {
   const password: string = data['password'];
-  const dataIds: string[] = data['fileIds'];
+  const dataIds: string[] = data['fileIds'] || data['dataIds'];
 
   const account: Account = (await getWalletDefaultAccount(password, true)) as Account;
 
@@ -968,7 +1018,7 @@ const _getDataContentListByDataIdAsUser = async (data: any) => {
  */
 const _getDataContentByDataIdAsUser = async (data: any) => {
   const password: string = data['password'];
-  const dataId: string = data['fileId'];
+  const dataId: string = data['fileId'] || data['dataId'];
 
   const account: Account = (await getWalletDefaultAccount(password, true)) as Account;
 
@@ -991,6 +1041,7 @@ const _getDataContentByDataIdAsUser = async (data: any) => {
   const dataHexString = arrayBuffer2HexString(dataContent);
 
   //Note that all registered functions must return a JSON object.
+  //return { [dataId]: dataHexString };
   return { dataId: dataHexString };
 };
 
@@ -1000,7 +1051,7 @@ const _getDataContentByDataIdAsUser = async (data: any) => {
  */
 const _getDataContentListByDataIdAsPublisher = async (data: any) => {
   const password: string = data['password'];
-  const dataIds: string[] = data['fileIds'];
+  const dataIds: string[] = data['fileIds'] || data['dataIds'];
 
   const account: Account = (await getWalletDefaultAccount(password, true)) as Account;
 
@@ -1038,7 +1089,7 @@ const _getDataContentListByDataIdAsPublisher = async (data: any) => {
  */
 const _getDataContentByDataIdAsPublisher = async (data: any) => {
   const password: string = data['password'];
-  const dataId: string = data['fileId'];
+  const dataId: string = data['fileId'] || data['dataId'];
 
   const account: Account = (await getWalletDefaultAccount(password, true)) as Account;
 
@@ -1061,6 +1112,85 @@ const _getDataContentByDataIdAsPublisher = async (data: any) => {
   const dataHexString = arrayBuffer2HexString(dataContent);
 
   //Note that all registered functions must return a JSON object.
+  //return { [dataId]: dataHexString };
+  return { dataId: dataHexString };
+};
+
+/**
+ * @internal
+ * Alice batch decrypt a chunk file she uploaded
+ * @param {string} password - the password of account
+ * @param {string} dataId - file/data's id
+ * @param {string} chunkAddress -(Optional) the (ipfs) address of the chunk data/file
+ *                               Note: If this parameter is not provided, the content of the index file will be retrieved (which records the addresses of all chunk files). If this parameter is provided, the content of a single chunk file will be retrieved
+ * @returns {Promise<ArrayBuffer>}
+ */
+const _getChunkDataContentByDataIdAsPublisher = async (data: any) => {
+  const password: string = data['password'];
+  const dataId: string = data['dataId'];
+  const chunkAddress: string | undefined = data?.chunkAddress || undefined;
+
+  const account: Account = (await getWalletDefaultAccount(password, true)) as Account;
+
+  if (isBlank(account)) {
+    if (isBlank(password)) {
+      return { code: -8, msg: 'getChunkDataContentByDataIdAsPublisher error: Password is empty' };
+    }
+
+    //Note that all registered functions must return a JSON object.
+    return {
+      code: -1,
+      msg: 'getChunkDataContentByDataIdAsPublisher error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.'
+    };
+  }
+
+  //format: {fileId1: dataContent1, fileId2: dataContent2, ....}
+  //dataContent is the type of ArrayBuffer
+
+  const dataContent: ArrayBuffer = await getChunkDataContentByDataIdAsPublisher(account, dataId, chunkAddress);
+  const dataHexString = arrayBuffer2HexString(dataContent);
+
+  //Note that all registered functions must return a JSON object.
+  // return { [dataId]: dataHexString };
+  return { dataId: dataHexString };
+};
+
+/**
+ * @internal
+ * Get chunk data of approved document content (downloadable). The file/data applicant retrieves the content of a file/data that has been approved for their usage.
+ * @param {string} password - the password of account
+ * @param {string} dataId - file/data's id
+ * @param {string} chunkAddress -(Optional) the (ipfs) address of the chunk data/file
+ *                               Note: If this parameter is not provided, the content of the index file will be retrieved (which records the addresses of all chunk files). If this parameter is provided, the content of a single chunk file will be retrieved
+ * @returns {Promise<ArrayBuffer>}
+ */
+const _getChunkDataContentByDataIdAsUser = async (data: any) => {
+  const password: string = data['password'];
+  const dataId: string = data['fileId'] || data['dataId'];
+  const chunkAddress: string | undefined = data?.chunkAddress || undefined;
+
+  const account: Account = (await getWalletDefaultAccount(password, true)) as Account;
+
+  if (isBlank(account)) {
+    if (isBlank(password)) {
+      return { code: -8, msg: 'getChunkDataContentByDataIdAsUser error: Password is empty' };
+    }
+
+    //Note that all registered functions must return a JSON object.
+    return {
+      code: -1,
+      msg: 'getChunkDataContentByDataIdAsUser error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.'
+    };
+  }
+
+  //format: {fileId1: dataContent1, fileId2: dataContent2, ....}
+  //dataContent is the type of ArrayBuffer
+
+  const dataContent: ArrayBuffer = await getChunkDataContentByDataIdAsUser(account, dataId, chunkAddress);
+  const dataHexString = arrayBuffer2HexString(dataContent);
+
+  //Note that all registered functions must return a JSON object.
+  // return { [dataId]: dataHexString };
   return { dataId: dataHexString };
 };
 
@@ -1229,9 +1359,9 @@ const _getApplyListAsPublisher = async (data: any) => {
 
 /**
  * @internal
- * Query the uploaded data metadata based on task_id.
+ * Query the uploaded data metadata based on task id.
  * @category upload chunked data 
- * @param {number} task_id
+ * @param {number} taskId
  * @returns Returns 
     * {
           "account_id":
@@ -1251,7 +1381,7 @@ const _getApplyListAsPublisher = async (data: any) => {
  *
  */
 const _getChunkDataTaskInfo = async (data: any) => {
-  const taskId: number = Number(data['task_id']);
+  const taskId: number = Number(data['taskId']);
 
   const returnData = await getDataTaskInfo(taskId);
 
@@ -1261,10 +1391,10 @@ const _getChunkDataTaskInfo = async (data: any) => {
 
 /**
  * @internal
- * Get all uploaded chunk information for task_id.
+ * Get all uploaded chunk information for task id.
  * @category upload chunked data 
- * @param {number} task_id
- * @param {number} chunk_index - (Optional) If this parameter is not passed, it is the information that gets all the uploaded chunk of task_id. If the transfer is to get a single uploaded chunk information
+ * @param {number} taskId
+ * @param {number} chunkIndex - (Optional) If this parameter is not passed, it is the information that gets all the uploaded chunk of task id. If the transfer is to get a single uploaded chunk information
  * @returns Returns 
  * 
  *    If the chunk_index parameter has a value, return:
@@ -1277,12 +1407,12 @@ const _getChunkDataTaskInfo = async (data: any) => {
       Otherwise, return:
 
       {
-				uploaded_chunk_list:[  //All uploaded chunk information, sorted in ascending order by chunk_index. If the queried chunk index has not been uploaded, return an empty list
-					{
-						chunk_address: The ipfs address of the file
-            chunk_index: The chunk index, starting from 0, with the maximum index being file_chunk_count - 1."
-					}
-				]
+				uploaded_chunk_list:  [  //All uploaded chunk information, sorted in ascending order by chunk_index. If the queried chunk index has not been uploaded, return an empty list
+                                {
+                                  chunk_address: The ipfs address of the file
+                                  chunk_index: The chunk index, starting from 0, with the maximum index being file_chunk_count - 1."
+                                }
+                              ]
         account_id
         policy_label_id
         policy_label
@@ -1299,12 +1429,12 @@ const _getChunkDataTaskInfo = async (data: any) => {
  *
  */
 const _getUploadedChunkInfo = async (data: any) => {
-  const taskId: number = Number(data['task_id']);
+  const taskId: number = Number(data['taskId']);
 
   //chunkIndex is Optional
   let chunkIndex: number = -1;
   try {
-    chunkIndex = Number(data['chunk_index']);
+    chunkIndex = Number(data['chunkIndex']);
   } catch (error) {}
 
   const returnData = await getUploadedChunkInfo(taskId, chunkIndex);

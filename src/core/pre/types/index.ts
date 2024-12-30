@@ -658,11 +658,11 @@ export type ChunkStartMetaInfo = {
 };
 
 export type ChunkDataTaskInfo = {
-  task_id: number; //the id of this task
+  taskId: number; //the id of this task
 };
 
 export type ChunkDataMetaInfo = ChunkDataTaskInfo & {
-  chunk_index: number; //Chunk index, starting from 0, with the maximum index being file_chunk_count - 1.
+  chunkIndex: number; //Chunk index, starting from 0, with the maximum index being file_chunk_count - 1.
   strategyIndex: number;
 };
 
@@ -675,7 +675,7 @@ export type ChunkDataInfo = ChunkDataMetaInfo & {
  * @internal
  */
 export type ChunkDataUploadMetaInfo = ChunkDataMetaInfo & {
-  chunk_address: string;
+  chunkAddress: string;
 };
 
 export type GasInfo = {

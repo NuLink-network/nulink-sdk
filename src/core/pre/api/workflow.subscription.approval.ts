@@ -172,11 +172,11 @@ export const initClientId = async (clientId: string) => {
  * @category Data Publisher(Alice) Upload Data
  * @param {Account} account - The account to use to create the policy and upload the files/data.
  * @param {ChunkStartMetaInfo} dataInfo - Metadata of the chunk upload data.
- * @returns {Promise<object>} - Returns account, strategy id and taskId
+ * @returns {Promise<object>} - Returns account, strategy info and taskId
  * {    address: accountAddress,
  *      strategyId: strategyId,
  *      pk: accountPublicKey,
- *      taskId: data?.task_id,
+ *      taskId: task id,
  *      strategyIndex: strategyIndex,
  * }
  */
@@ -263,12 +263,12 @@ export const uploadChunkedDataForPaidSubscriberVisible = async (
   }
   strategy = strategy as Strategy;
 
-  console.log('uploadChunkedDataForPaidSubscriberVisible task id: ', chunkDataInfo.task_id);
+  console.log('uploadChunkedDataForPaidSubscriberVisible task id: ', chunkDataInfo.taskId);
 
-  // const taskInfo = await getDataTaskInfo(chunkDataInfo.task_id);
+  // const taskInfo = await getDataTaskInfo(chunkDataInfo.taskId);
 
   // if (isBlank(taskInfo)) {
-  //   throw new Error(`get task info failed task id ${chunkDataInfo.task_id}`);
+  //   throw new Error(`get task info failed task id ${chunkDataInfo.taskId}`);
   // }
 
   return await uploadChunkDataBySpecifiedLocalPolicy(account, strategy, chunkDataInfo);
@@ -288,7 +288,8 @@ export const uploadChunkedDataForPaidSubscriberVisible = async (
  *    "file_thumbnail": "",
  *    "file_mimetype": "",
  *    "file_chunk_size": 0,
- *    "file_chunk_count": 0
+ *    "file_chunk_count": 0,
+ *    "file_id": the id of this file,
  *  }
  */
 export const uploadChunkedDataOverForPaidSubscriberVisible = async (account: Account, taskId: number): Promise<any> => {
@@ -331,10 +332,10 @@ export const uploadChunkedDataOverForPaidSubscriberVisible = async (account: Acc
       )} function: uploadChunkedDataOverForPaidSubscriberVisible`
     );
   }
-  // const taskInfo = await getDataTaskInfo(task_id);
+  // const taskInfo = await getDataTaskInfo(taskId);
 
   // if (isBlank(taskInfo)) {
-  //   throw new Error(`get task info failed task id ${task_id}`);
+  //   throw new Error(`get task info failed task id ${taskId}`);
   // }
 
   const uploadedDataInfo = await getUploadedChunkInfo(taskId);
@@ -351,7 +352,7 @@ export const uploadChunkedDataOverForPaidSubscriberVisible = async (account: Acc
   // sort in ascending order based on chunk_index
   uploadChunkMetaInfoList.sort((a, b) => a.chunk_index - b.chunk_index);
 
-  const allChunkedPlainText = 'CHUNK_JSON_DATA::' + JSON.stringify(uploadChunkMetaInfoList);
+  const allChunkedPlainText = /* 'CHUNK_JSON_DATA::' +  */JSON.stringify(uploadChunkMetaInfoList);
   const enc = new TextEncoder(); // always utf-8
   const allChunkedContent: Uint8Array = enc.encode(allChunkedPlainText);
 
@@ -365,9 +366,9 @@ export const uploadChunkedDataOverForPaidSubscriberVisible = async (account: Acc
   };
 
   //The content of the overall index file for chunked uploads is not encrypted. Increase the decryption speed
-  const fileInfo = await uploadChunkDataOverSpecifiedLocalPolicy(account, strategy, dataInfo);
+  const fileInfo: any = await uploadChunkDataOverSpecifiedLocalPolicy(account, strategy, dataInfo);
 
-  return checkOverDataInfo;
+  return { ...checkOverDataInfo, file_id: fileInfo.id };
 };
 
 /**
@@ -509,12 +510,12 @@ export const uploadChunkedDataForIndividualPaid = async (
   }
   strategy = strategy as Strategy;
 
-  console.log('uploadChunkedDataForIndividualPaid task id: ', chunkDataInfo.task_id);
+  console.log('uploadChunkedDataForIndividualPaid task id: ', chunkDataInfo.taskId);
 
-  // const taskInfo = await getDataTaskInfo(chunkDataInfo.task_id);
+  // const taskInfo = await getDataTaskInfo(chunkDataInfo.taskId);
 
   // if (isBlank(taskInfo)) {
-  //   throw new Error(`get task info failed task id ${chunkDataInfo.task_id}`);
+  //   throw new Error(`get task info failed task id ${chunkDataInfo.taskId}`);
   // }
 
   return await uploadChunkDataBySpecifiedLocalPolicy(account, strategy, chunkDataInfo);
@@ -535,6 +536,7 @@ export const uploadChunkedDataForIndividualPaid = async (
  *    "file_mimetype": "",
  *    "file_chunk_size": 0,
  *    "file_chunk_count": 0
+ *    "file_id": the id of this file
  *  }
  */
 export const uploadChunkedDataOverForIndividualPaid = async (
@@ -579,10 +581,10 @@ export const uploadChunkedDataOverForIndividualPaid = async (
       )} function: uploadChunkedDataOverForIndividualPaid`
     );
   }
-  // const taskInfo = await getDataTaskInfo(task_id);
+  // const taskInfo = await getDataTaskInfo(taskId);
 
   // if (isBlank(taskInfo)) {
-  //   throw new Error(`get task info failed task id ${task_id}`);
+  //   throw new Error(`get task info failed task id ${taskId}`);
   // }
 
   const uploadedDataInfo = await getUploadedChunkInfo(taskId);
@@ -599,7 +601,7 @@ export const uploadChunkedDataOverForIndividualPaid = async (
   // sort in ascending order based on chunk_index
   uploadChunkMetaInfoList.sort((a, b) => a.chunk_index - b.chunk_index);
 
-  const allChunkedPlainText = 'CHUNK_JSON_DATA::' + JSON.stringify(uploadChunkMetaInfoList);
+  const allChunkedPlainText = /* 'CHUNK_JSON_DATA::' +  */JSON.stringify(uploadChunkMetaInfoList);
   const enc = new TextEncoder(); // always utf-8
   const allChunkedContent: Uint8Array = enc.encode(allChunkedPlainText);
 
@@ -613,9 +615,9 @@ export const uploadChunkedDataOverForIndividualPaid = async (
   };
 
   //The content of the overall index file for chunked uploads is not encrypted. Increase the decryption speed
-  const file = await uploadChunkDataOverSpecifiedLocalPolicy(account, strategy, dataInfo);
+  const fileInfo: any = await uploadChunkDataOverSpecifiedLocalPolicy(account, strategy, dataInfo);
 
-  return checkOverDataInfo;
+  return { ...checkOverDataInfo, file_id: fileInfo.id };
 };
 
 /** 
@@ -723,7 +725,7 @@ export const uploadChunkDataBySpecifiedLocalPolicy = async (
 
   await uploadChunkData(account, {
     ...chunkDataInfo,
-    chunk_address: mockIPFSAddress
+    chunkAddress: mockIPFSAddress
   });
 
   return mockIPFSAddress;

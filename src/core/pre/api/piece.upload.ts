@@ -76,9 +76,9 @@ export const uploadChunkStart = async (
 export const uploadChunkData = async (account: Account, chunkMetaData: ChunkDataUploadMetaInfo): Promise<any> => {
   const sendData = {
     account_id: account.id,
-    task_id: chunkMetaData.task_id,
-    chunk_address: chunkMetaData.chunk_address,
-    chunk_index: chunkMetaData.chunk_index,
+    task_id: chunkMetaData.taskId,
+    chunk_address: chunkMetaData.chunkAddress,
+    chunk_index: chunkMetaData.chunkIndex,
     policy_label_index: String(chunkMetaData.strategyIndex),
   };
 
@@ -95,7 +95,7 @@ export const uploadChunkData = async (account: Account, chunkMetaData: ChunkData
     // }
 
     console.error(
-      `uploadChunkData error account_id ${account.id}, chunk_address ${chunkMetaData.chunk_address}, chunk_index ${chunkMetaData.chunk_index}
+      `uploadChunkData error account_id ${account.id}, chunk_address ${chunkMetaData.chunkAddress}, chunk_index ${chunkMetaData.chunkIndex}
 `,
       error?.data?.msg || error?.message || error
     );
@@ -108,7 +108,7 @@ export const uploadChunkData = async (account: Account, chunkMetaData: ChunkData
  * Start chunked uploading of a large file. Chunked uploading of large files must first call this interface
  * @category upload chunked data
  * @param account {Account}
- * @param task_id {number}
+ * @param taskId {number}
  * @param dataInfo {ChunkStartMetaInfo}
  * @returns Returns
  *      {
@@ -123,10 +123,10 @@ export const uploadChunkData = async (account: Account, chunkMetaData: ChunkData
  *      }
  *      on success, throws an exception on failure (The code does not return 2000; it returns 3xxx or 4xxx.)
  */
-export const uploadChunkOver = async (account: Account, task_id: number): Promise<any> => {
+export const uploadChunkOver = async (account: Account, taskId: number): Promise<any> => {
   const sendData = {
     account_id: account.id,
-    task_id: Number(task_id)
+    task_id: Number(taskId)
   };
 
   sendData['signature'] = await signUpdateServerDataMessage(account, sendData);
@@ -142,7 +142,7 @@ export const uploadChunkOver = async (account: Account, task_id: number): Promis
     // }
 
     console.error(
-      `uploadChunkOver error account_id ${account.id} task id ${task_id}`,
+      `uploadChunkOver error account_id ${account.id} task id ${taskId}`,
       error?.data?.msg || error?.message || error
     );
     throw error;
@@ -151,9 +151,9 @@ export const uploadChunkOver = async (account: Account, task_id: number): Promis
 
 /**
  * @internal
- * Query the uploaded data metadata based on task_id.
+ * Query the uploaded data metadata based on task id.
  * @category upload chunked data 
- * @param {number} task_id
+ * @param {number} taskId
  * @returns Returns 
     * {
           "account_id":
@@ -172,12 +172,12 @@ export const uploadChunkOver = async (account: Account, task_id: number): Promis
       on success, throws an exception on failure (The code does not return 2000; it returns 3xxx or 4xxx.)
  *
  */
-export const getDataTaskInfo = async (task_id: number): Promise<any> => {
+export const getDataTaskInfo = async (taskId: number): Promise<any> => {
   // const clientId = await getClientId(true);
 
   const sendData = {
     // client_id: clientId,
-    task_id: Number(task_id)
+    task_id: Number(taskId)
   };
 
   //Add a random number to prevent browser caching
@@ -189,10 +189,10 @@ export const getDataTaskInfo = async (task_id: number): Promise<any> => {
 
 /**
  * @internal
- * Get all uploaded chunk information for task_id.
+ * Get all uploaded chunk information for task id.
  * @category upload chunked data 
- * @param {number} task_id
- * @param {number} chunk_index - (Optional) If this parameter is not passed, it is the information that gets all the uploaded chunk of task_id. If the transfer is to get a single uploaded chunk information
+ * @param {number} taskId
+ * @param {number} chunkIndex - (Optional) If this parameter is not passed, it is the information that gets all the uploaded chunk of task id. If the transfer is to get a single uploaded chunk information
  * @returns Returns 
  * 
  *    If the chunk_index parameter has a value, return:
@@ -205,7 +205,8 @@ export const getDataTaskInfo = async (task_id: number): Promise<any> => {
       Otherwise, return:
 
       {
-				uploaded_chunk_list:[  //All uploaded chunk information, sorted in ascending order by chunk_index. If the queried chunk index has not been uploaded, return an empty list
+				uploaded_chunk_list:
+        [  //All uploaded chunk information, sorted in ascending order by chunk_index. If the queried chunk index has not been uploaded, return an empty list
 					{
 						chunk_address: The ipfs address of the file
             chunk_index: The chunk index, starting from 0, with the maximum index being file_chunk_count - 1."
@@ -226,16 +227,16 @@ export const getDataTaskInfo = async (task_id: number): Promise<any> => {
       on success, throws an exception on failure (The code does not return 2000; it returns 3xxx or 4xxx.)
  *
  */
-export const getUploadedChunkInfo = async (task_id: number, chunk_index?: number): Promise<any> => {
+export const getUploadedChunkInfo = async (taskId: number, chunkIndex?: number): Promise<any> => {
   // const clientId = await getClientId(true);
 
   const sendData = {
     // client_id: clientId,
-    task_id: Number(task_id)
+    task_id: Number(taskId)
   };
 
-  if (!isBlank(chunk_index) && Number(chunk_index) >= 0) {
-    sendData['chunk_index'] = Number(chunk_index);
+  if (!isBlank(chunkIndex) && Number(chunkIndex) >= 0) {
+    sendData['chunk_index'] = Number(chunkIndex);
   }
 
   //Add a random number to prevent browser caching

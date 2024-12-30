@@ -410,3 +410,5 @@ export class CryptoBroker {
     return CryptoBroker.decryptWithPassword(ciphertext, password)
   }
 }
+
+export const fileMD5 = md5;
