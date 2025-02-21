@@ -117,7 +117,7 @@
 //         bridge.postMessage(JSON.stringify({ id: "4", method: 'getAccountInfo', data: {"password": password} }), '/');
 //         await sleep(1000)
         
-         bridge.postMessage(JSON.stringify({ id: "5", method: 'restoreWallet', data: {"newPassword": password, "mnemonic": "deliver virus way mandate then story knock involve invite blade cancel spray"} }), '/');
+         bridge.postMessage(JSON.stringify({ id: "5", method: 'restoreWallet', data: {"newPassword": password, "mnemonic": "scare tent nature company over tone lunar elbow prize curtain weather matter"} }), '/');
          await sleep(3000)
         
 //         bridge.postMessage(JSON.stringify({ id: "6", method: 'setRpcUrl', data: {"rpcUrl": "https://data-seed-prebsc-1-s2.bnbchain.org:8545"} }), '/');
@@ -215,9 +215,9 @@
         
         // await sleep(3000)
 
-        bridge.postMessage(
-                             JSON.stringify({ id: "7", method: 'applyForSubscriptionAccess', data: {"password":"11111111","orderId":"621264362090501","fileId":"5T4VYuXW4fFYKN78mR_uX","usageDays":30,"payTokenAddress":"0x8A95eF66ef0b5bCD10cb8aB433c768f50B5822a8","payAmountInWei":"10000000000000000000","payCheckUrl":"http://47.237.123.177:8083/subscribe/getOrderStatus?orderId=621264362090501"} }), 
-                           '/');
+        // bridge.postMessage(
+        //                      JSON.stringify({ id: "7", method: 'applyForSubscriptionAccess', data: {"password":"11111111","orderId":"621264362090501","fileId":"5T4VYuXW4fFYKN78mR_uX","usageDays":30,"payTokenAddress":"0x8A95eF66ef0b5bCD10cb8aB433c768f50B5822a8","payAmountInWei":"10000000000000000000","payCheckUrl":"http://47.237.123.177:8083/subscribe/getOrderStatus?orderId=621264362090501"} }), 
+        //                    '/');
         // bridge.postMessage(
         //                      JSON.stringify({ id: "7", method: 'extendPolicysValidity', data: {"password": password, "applyId":"1247","orderId":"615033352777733","fileId":"5DUcv694lSLfXdt-oKdr5","extendedDays":1,"payTokenAddress":"0x8A95eF66ef0b5bCD10cb8aB433c768f50B5822a8","payAmountInWei":"1","payCheckUrl":"http://47.237.123.177:8083/subscribe/getOrderStatus?orderId=615033352777733"} }), 
         //                    '/');
@@ -226,6 +226,16 @@
         //                    JSON.stringify({ id: "7", method: 'approveUserSubscription', data: {"password": password, "applyIds":["1327","1326","1325","1324","1323","1322","1321","1320","1319","1318", "1317"]} }), 
         //                    '/');
         // await sleep(3000)
+
+        // bridge.postMessage(
+        //                     JSON.stringify({ id: "7", method: 'approveUserSubscription', data: {"password": password, "applyIds":["1494","1492","1491","1490","1489","1488","1487","1486","1485","1484","1483","1482","1481","1480","1479","1478","1477","1476","1475","1474","1473","1472","1471","1470","1469","1468","1467","1466","1465","1464","1463","1462","1461","1460","1459","1458","1457","1456","1455","1454","1453","1452","1451","1450","1449","1448","1447","1446","1445","1444","1443","1442","1441","1440","1439","1438","1437","1436","1435","1434","1433","1432","1431","1430","1429","1428","1427","1426","1425","1424","1423","1422","1421","1420","1419","1418","1417","1416","1415","1414","1413","1412","1411","1410","1409","1408","1407","1406","1405","1404","1403","1402","1401","1400","1399","1398","1397","1396","1395","1394"]} }), 
+        //                     '/');
+        // await sleep(3000)
+
+        bridge.postMessage(
+                            JSON.stringify({ id: "7", method: 'getDataContentByDataIdAsPublisher', data: {"password": password, "fileId":"SQtvSAZU2LgJerz7oQVXh"} }), 
+                            '/');
+        await sleep(3000)
         
       })();
       

@@ -3214,7 +3214,7 @@ export const getDataContentByDataIdAsUser = async (userAccount: Account, dataId:
 
   const chunked: number = Number(data['chunked']);
 
-  if (chunked == 1) {
+  if (chunked) {
     const dataIpfsData: Uint8Array | null | undefined /*| Buffer*/ = await StorageManager.getData(dataIPFSAddress);
 
     // console.log("dataIpfsData: ", dataIpfsData);
@@ -3271,7 +3271,7 @@ export const getChunkDataContentByDataIdAsUser = async (
 
   const chunked: number = Number(data['chunked']);
 
-  if (chunked == 1 && isBlank(chunkAddress)) {
+  if (chunked && isBlank(chunkAddress)) {
     //If the parameter of `chunkAddress` is not provided, the content of the index file will be retrieved (which records the addresses of all chunk files).
 
     if (
@@ -3311,7 +3311,7 @@ export const getChunkDataContentByDataIdAsUser = async (
   } else {
     //If the parameter of `chunkAddress` is provided, the content of a single chunk file will be retrieved.
 
-    if (chunked == 0) {
+    if (!chunked) {
       dataIPFSAddress = data['file_ipfs_address'];
     } else {
       //get the content of chunk data
@@ -3375,7 +3375,7 @@ export const getDataContentByDataIdAsPublisher = async (userAccount: Account, da
   const chunked: number = Number(data['chunked']);
   const dataIPFSAddress = data['file_ipfs_address'];
 
-  if (chunked == 1) {
+  if (chunked) {
     const dataIpfsData: Uint8Array | null | undefined /*| Buffer*/ = await StorageManager.getData(dataIPFSAddress);
 
     // console.log("dataIpfsData: ", dataIpfsData);
@@ -3454,7 +3454,7 @@ export const getChunkDataContentByDataIdAsPublisher = async (
   const chunked: number = Number(data['chunked']);
   let dataIPFSAddress = data['file_ipfs_address'];
 
-  if (chunked == 1 && isBlank(chunkAddress)) {
+  if (chunked && isBlank(chunkAddress)) {
     //If the parameter of `chunkAddress` is not provided, the content of the index file will be retrieved (which records the addresses of all chunk files).
 
     const dataIpfsData: Uint8Array | null | undefined /*| Buffer*/ = await StorageManager.getData(dataIPFSAddress);
@@ -3477,7 +3477,7 @@ export const getChunkDataContentByDataIdAsPublisher = async (
       throw new Error('Illegal request: you must be the file/data uploader to decrypt'); // data recovery failed
     }
 
-    if (chunked == 0) {
+    if (!chunked) {
       dataIPFSAddress = data['file_ipfs_address'];
     } else {
       //get the content of chunk data

@@ -205,8 +205,7 @@ export const getDataTaskInfo = async (taskId: number): Promise<any> => {
       Otherwise, return:
 
       {
-				uploaded_chunk_list:
-        [  //All uploaded chunk information, sorted in ascending order by chunk_index. If the queried chunk index has not been uploaded, return an empty list
+				list:  [  //All uploaded chunk information (it means uploaded_chunk_list), sorted in ascending order by chunk_index. If the queried chunk index has not been uploaded, return an empty list
 					{
 						chunk_address: The ipfs address of the file
             chunk_index: The chunk index, starting from 0, with the maximum index being file_chunk_count - 1."

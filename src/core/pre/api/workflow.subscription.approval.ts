@@ -341,13 +341,14 @@ export const uploadChunkedDataOverForSubscriberVisiblePaid = async (account: Acc
   const uploadedDataInfo = await getUploadedChunkInfo(taskId);
   if (
     isBlank(uploadedDataInfo) ||
-    isBlank(uploadedDataInfo?.uploaded_chunk_list?.length) ||
-    uploadedDataInfo?.uploaded_chunk_list?.length < uploadedDataInfo.file_chunk_count
+    isBlank(uploadedDataInfo?.list?.length) ||
+    uploadedDataInfo?.list?.length < uploadedDataInfo.file_chunk_count
   ) {
     throw new Error(`Get chunked data failed! task id ${taskId}`);
   }
 
-  const uploadChunkMetaInfoList = uploadedDataInfo.uploaded_chunk_list;
+  //uploaded_chunk_list
+  const uploadChunkMetaInfoList = uploadedDataInfo.list;
 
   // sort in ascending order based on chunk_index
   uploadChunkMetaInfoList.sort((a, b) => a.chunk_index - b.chunk_index);
@@ -590,13 +591,14 @@ export const uploadChunkedDataOverForIndividualPaid = async (
   const uploadedDataInfo = await getUploadedChunkInfo(taskId);
   if (
     isBlank(uploadedDataInfo) ||
-    isBlank(uploadedDataInfo?.uploaded_chunk_list?.length) ||
-    uploadedDataInfo?.uploaded_chunk_list?.length < uploadedDataInfo.file_chunk_count
+    isBlank(uploadedDataInfo?.list?.length) ||
+    uploadedDataInfo?.list?.length < uploadedDataInfo.file_chunk_count
   ) {
     throw new Error(`Get chunked data failed! task id ${taskId}`);
   }
 
-  const uploadChunkMetaInfoList = uploadedDataInfo.uploaded_chunk_list;
+  //uploaded_chunk_list
+  const uploadChunkMetaInfoList = uploadedDataInfo.list;
 
   // sort in ascending order based on chunk_index
   uploadChunkMetaInfoList.sort((a, b) => a.chunk_index - b.chunk_index);
