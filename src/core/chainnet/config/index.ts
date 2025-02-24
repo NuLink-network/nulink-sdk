@@ -98,3 +98,6 @@ export const GAS_LIMIT_FACTOR = 1;
 
 export const GAS_PRICE_FACTOR = 1.5; // not include holesky testnet, holesky testnet must be bigger than 2.0
 
+
+//clientId
+export const APP_CLIENTID = process.env.REACT_APP_CLIENTID;
