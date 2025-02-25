@@ -180,8 +180,9 @@ export const getDataTaskInfo = async (taskId: number): Promise<any> => {
     task_id: Number(taskId)
   };
 
+  //No data modification, no need to pass the signature.
   //Add a random number to prevent browser caching
-  const data = (await serverGet(`/chunk/task/info`, sendData)) as object;
+  const data = (await serverPost(`/chunk/task/info`, sendData)) as object;
 
   //return data['account_id'] as number;
   return data;
@@ -234,12 +235,16 @@ export const getUploadedChunkInfo = async (taskId: number, chunkIndex?: number):
     task_id: Number(taskId)
   };
 
+  let subPath: string  =`/chunk/task/piece-list`;
+
   if (!isBlank(chunkIndex) && Number(chunkIndex) >= 0) {
     sendData['chunk_index'] = Number(chunkIndex);
+    subPath = `/chunk/task/piece`;
   }
 
+   //No data modification, no need to pass the signature.
   //Add a random number to prevent browser caching
-  const data = (await serverGet(`/chunk/task/piece`, sendData)) as object;
+  const data = (await serverPost(subPath, sendData)) as object;
 
   //return data['account_id'] as number;
   return data;
