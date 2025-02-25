@@ -168,7 +168,7 @@ export const initClientId = async (clientId: string) => {
 
 /**
  * Start Chunked Uploads Large files/data for paid subscriber-only visible user.
- * The user needs to pass the strategy.id to invoke the `uploadChunkedDataForPaidSubscriberVisible` function
+ * The user needs to pass the strategy.id to invoke the `uploadChunkedDataForSubscriberVisiblePaid` function
  * @category Data Publisher(Alice) Upload Data
  * @param {Account} account - The account to use to create the policy and upload the files/data.
  * @param {ChunkStartMetaInfo} dataInfo - Metadata of the chunk upload data.
@@ -434,8 +434,9 @@ export const publishDataForSubscriberVisiblePaid = async (
 };
 
 /**
- * Start Chunked Uploads Large files/data for paid subscriber-only visible user.
- * The user needs to pass the strategy.id to invoke the `uploadChunkedDataForPaidSubscriberVisible` function
+ * Start Chunked Uploads Large files/data for paid separate-only visible user.
+ * The upload of large shard files is visible only to users who have made a separate payment.
+ * The user needs to pass the strategy.id to invoke the `uploadChunkedDataForIndividualPaid` function
  * @category Data Publisher(Alice) Upload Data
  * @param {Account} account - The account to use to create the policy and upload the files/data.
  * @param {ChunkStartMetaInfo} dataInfo - Metadata of the chunk upload data.
@@ -476,7 +477,7 @@ export const uploadChunkedDataStartForIndividualPaid = async (
 };
 
 /**
- * Uploads chunk data of the file/data for paid subscriber-only visible user
+ * Uploads chunk data of the file/data for paid separate-only visible user
  * @category Data Publisher(Alice) Upload Data
  * @param {Account} account - The account to use to create the policy and upload the files/data.
  * @param {ChunkDataInfo} chunkDataInfo - The file/data to upload. Each element of the array must be an object with properties 'label' and 'dataArrayBuffer'.
@@ -523,7 +524,7 @@ export const uploadChunkedDataForIndividualPaid = async (
 };
 
 /**
- * Uploads chunk data of the file/data for paid subscriber-only visible user
+ * Uploads chunk data of the file/data for paid separate-only visible user
  * @category Data Publisher(Alice) Upload Data
  * @param {Account} account - The account to use to create the policy and upload the files/data.
  * @param {number} taskId - The id of

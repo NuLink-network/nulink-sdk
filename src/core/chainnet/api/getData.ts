@@ -7,17 +7,17 @@ import { isNumeric } from '../../utils/math';
 /**
  * @internal
  */
-export const CLIENT_ID_LABEL = 'CLIENT_ID';
+export const CLIENT_ID_LABEL = 'CLIENT_ID' + "_"+ process.env.VERSION as string;
 
 /**
  * @internal
  */
-export const CHAIN_NETWORK_LABEL = 'chain_network_app_sdk';
+export const CHAIN_NETWORK_LABEL = 'chain_network_app_sdk' + "_"+ process.env.VERSION as string;
 
 /**
  * @internal
  */
-export const CHAIN_NETWORK_CONFIG = 'chain_network_config_app_sdk';
+export const CHAIN_NETWORK_CONFIG = 'chain_network_config_app_sdk' + "_"+ process.env.VERSION as string;
 
 /**
  * get current setting data

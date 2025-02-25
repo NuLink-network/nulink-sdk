@@ -10,3 +10,4 @@ export * from "./workflow.subscription.approval"
 export * from "../types";
 export type {DataInfo as DataInfo} from "../types"
 export type {Dictionary} from "../types"
+export * from "./piece.upload"

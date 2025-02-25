@@ -583,13 +583,13 @@ const _uploadChunkedDataForSubscriberVisiblePaid = async (data: any) => {
 
   if (isBlank(account)) {
     if (isBlank(password)) {
-      return { code: -8, msg: '_uploadChunkedDataForPaidSubscriberVisible error: Password is empty' };
+      return { code: -8, msg: '_uploadChunkedDataForSubscriberVisiblePaid error: Password is empty' };
     }
 
     //Note that all registered functions must return a JSON object.
     return {
       code: -1,
-      msg: '_uploadChunkedDataForPaidSubscriberVisible error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.'
+      msg: '_uploadChunkedDataForSubscriberVisiblePaid error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.'
     };
   }
 
@@ -630,13 +630,13 @@ const _uploadChunkedDataOverForSubscriberVisiblePaid = async (data: any) => {
 
   if (isBlank(account)) {
     if (isBlank(password)) {
-      return { code: -8, msg: '_uploadChunkedDataForPaidSubscriberVisible error: Password is empty' };
+      return { code: -8, msg: '_uploadChunkedDataOverForSubscriberVisiblePaid error: Password is empty' };
     }
 
     //Note that all registered functions must return a JSON object.
     return {
       code: -1,
-      msg: '_uploadChunkedDataForPaidSubscriberVisible error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.'
+      msg: '_uploadChunkedDataOverForSubscriberVisiblePaid error: Password error or the wallet does not exist. Please check whether the password is entered correctly or import or create a new wallet.'
     };
   }
 

@@ -253,7 +253,9 @@
           * }
           */
         const dataMetaInfo = testModel == 1 ? await NUSDK.uploadChunkedDataStartForIndividualPaid(accountAlice, dataInfo) :
-                                              await NUSDK.uploadChunkedDataStartForPaidSubscriberVisible(accountAlice, dataInfo);
+                                              await NUSDK.uploadChunkedDataStartForSubscriberVisiblePaid(accountAlice, dataInfo);
+
+                                                          
         
         const taskId/* : number */ = dataMetaInfo["taskId"];
         const strategyIndex/* : number */ =  dataMetaInfo["strategyIndex"];
@@ -277,20 +279,20 @@
         const chunkDataInfo/* : ChunkDataInfo */ = {
           taskId: taskId,
           chunkIndex: chunkIndex,
-          chunkDataArrayBuffer: hexString2ArrayBuffer(androidChunkDataInfo.chunkDataHexString),
-          strategyIndex: androidChunkDataInfo.strategyIndex
+          chunkDataArrayBuffer: chunkDataArrayBuffer, //NUSDK.hexString2ArrayBuffer(dataMetaInfo.chunkDataHexString),
+          strategyIndex: dataMetaInfo.strategyIndex
         };
 
         const dataChunkInfo = testModel == 1 ?  await NUSDK.uploadChunkedDataForIndividualPaid(accountAlice, chunkDataInfo):
-                                                await NUSDK.uploadChunkedDataForPaidSubscriberVisible(accountAlice, chunkDataInfo);
-
+                                                await NUSDK.uploadChunkedDataForSubscriberVisiblePaid(accountAlice, chunkDataInfo);
+                                                            
         console.log(`uploaded chunk data chunkIndex: ${chunkIndex} `, dataChunkInfo);
 
         uploadedChunkInfos.push(dataChunkInfo);
 
       }
 
-      const _uploadedChunkInfo = await NUSDK.getUploadedChunkInfo(taskId, chunkIndex);
+      const _uploadedChunkInfo = await NUSDK.getUploadedChunkInfo(taskId);
       //查看是否这里上传成功的文件是否正确，与 uploadedChunkInfos比较
       debugger;
       
@@ -312,7 +314,7 @@
        *  }
        */
       const returnUploadDataInfo = testModel == 1 ? await NUSDK.uploadChunkedDataOverForIndividualPaid(account, taskId, strategyIndex):
-                                                    await NUSDK.uploadChunkedDataOverForPaidSubscriberVisible(account, taskId);
+                                                    await NUSDK.uploadChunkedDataOverForSubscriberVisiblePaid(account, taskId);
       
 
       const fileId/* : string */ = returnUploadDataInfo.file_id;
@@ -867,7 +869,7 @@
             reader.onload = (e) => {
                 const arrayBuffer = e.target?.result /* as ArrayBuffer */;
                 //console.log(arrayBuffer); // 这里可以使用 ArrayBuffer
-                debugger
+                //debugger
                 test2(arrayBuffer);
             };
 
