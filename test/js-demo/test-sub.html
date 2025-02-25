@@ -112,7 +112,7 @@
       
       const asyncInit = async () => {
         try {
-          const clientId = '593689189003333';
+          const clientId = NUSDK.APP_CLIENT_ID;
           await NUSDK.init(clientId);
           console.log('init finish');
           document.getElementById('text').textContent = 'Component initialization complete';

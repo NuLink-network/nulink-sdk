@@ -100,4 +100,4 @@ export const GAS_PRICE_FACTOR = 1.5; // not include holesky testnet, holesky tes
 
 
 //clientId
-export const APP_CLIENTID = process.env.REACT_APP_CLIENTID;
+export const APP_CLIENT_ID = process.env.REACT_APP_CLIENT_ID as string;

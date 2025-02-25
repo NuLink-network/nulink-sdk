@@ -8,8 +8,9 @@
       .text-box {
           margin-left: 23px;
       }
-  </style>
+    </style>
   </head>
+  <body>
     <div id="text" class="text-box">这是一段文本显示框</div>
     <br><br><br>
     <!-- &nbsp;&nbsp;&nbsp;&nbsp;<button id="run_next1">订阅单独付费动态</button>&nbsp;&nbsp;&nbsp;&nbsp; -->
@@ -122,7 +123,7 @@
 
         //we need set Project ID: differentiate the sources of data from different applications.
         // which requires application to Nulink official.
-        const clientId = '593689189003333';
+        const clientId = NUSDK.APP_CLIENT_ID;
 
         console.log('in test1 function before init clientId');
         await NUSDK.init(clientId);
@@ -222,7 +223,7 @@
       console.log('data arraybuffer chunks array:', chunksData);
 
       const dataUint8Array = new Uint8Array(fileArrayBuffer);
-      const dataBinaryString = String.fromCharCode(...dataUint8Array);
+      const dataBinaryString = String.fromCharCode.apply(null, dataUint8Array);
 
       const publicKey = accountAlice.encryptedKeyPair._publicKey;
         
@@ -824,13 +825,14 @@
 
             //finish
           }
+        }
 
         console.log('finish');
       };
 
       const asyncInit = async () => {
         try {
-          const clientId = '593689189003333';
+          const clientId = NUSDK.APP_CLIENT_ID;
           await NUSDK.init(clientId);
           console.log('init finish');
           document.getElementById('text').textContent = 'Component initialization complete';
@@ -852,9 +854,6 @@
         console.log('init result:', result);
       })();
 
-
-      
-      document.querySelector('#run_next1').addEventListener('click', () => test2());
       // TypeScript 部分
     const fileInput = document.getElementById('fileInput') /* as HTMLInputElement */;
 

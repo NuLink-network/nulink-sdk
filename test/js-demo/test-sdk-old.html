@@ -50,7 +50,7 @@
       const test1 = async () => {
         //we need set Project ID: differentiate the sources of data from different applications.
         // which requires application to Nulink official.
-        const clientId = '593689189003333';
+        const clientId = NUSDK.REACT_APP_CLIENT_ID;
 
         console.log("in test1 function before init clientId");
         await NUSDK.init(clientId);
@@ -539,7 +539,7 @@
 
       const asyncInit = async () => {
         try {
-          const clientId = '593689189003333';
+          const clientId = NUSDK.REACT_APP_CLIENT_ID;
           await NUSDK.init(clientId);
           console.log('init finish');
           document.getElementById('text').textContent = 'initialization complete';

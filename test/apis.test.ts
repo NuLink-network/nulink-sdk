@@ -1,7 +1,7 @@
 // First define a concept:
 //  Alice: as the publisher of the data/file (data/file uploader).
 //  Bob: as the user of the data/file (data/file requester)
-import { NuLinkHDWallet, Account, Strategy, AccountManager, GasInfo} from '../src'
+import { NuLinkHDWallet, Account, Strategy, AccountManager, GasInfo, APP_CLIENT_ID} from '../src'
 
 import assert from 'assert-ts'
 import {
@@ -37,7 +37,7 @@ export const run = async () => {
 
   //we need set Project ID: differentiate the sources of data from different applications. 
   // which requires application to Nulink official.
-  await initClientId("593689189003333");
+  await initClientId(APP_CLIENT_ID);
 
   // eslint-disable-next-line no-debugger
   debugger
