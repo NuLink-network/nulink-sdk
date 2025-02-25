@@ -313,8 +313,8 @@
        *    "file_id": the id of this file
        *  }
        */
-      const returnUploadDataInfo = testModel == 1 ? await NUSDK.uploadChunkedDataOverForIndividualPaid(account, taskId, strategyIndex):
-                                                    await NUSDK.uploadChunkedDataOverForSubscriberVisiblePaid(account, taskId);
+      const returnUploadDataInfo = testModel == 1 ? await NUSDK.uploadChunkedDataOverForIndividualPaid(accountAlice, taskId, strategyIndex):
+                                                    await NUSDK.uploadChunkedDataOverForSubscriberVisiblePaid(accountAlice, taskId);
       
 
       const fileId/* : string */ = returnUploadDataInfo.file_id;

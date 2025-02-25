@@ -11307,7 +11307,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   packageInfo: () => (/* binding */ packageInfo)\n/* harmony export */ });\nconst packageInfo = { name: '@polkadot/x-global', path: ( true) ? new URL(\"file:///D:/wangyi/code/code/nulink/code/nulink-sdk/node_modules/@polkadot/x-global/packageInfo.js\").pathname.substring(0, new URL(\"file:///D:/wangyi/code/code/nulink/code/nulink-sdk/node_modules/@polkadot/x-global/packageInfo.js\").pathname.lastIndexOf('/') + 1) : 0, type: 'esm', version: '12.6.2' };\n\n\n//# sourceURL=webpack://NUSDK/./node_modules/@polkadot/x-global/packageInfo.js?");
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   packageInfo: () => (/* binding */ packageInfo)\n/* harmony export */ });\nconst packageInfo = { name: '@polkadot/x-global', path: ( true) ? new URL(\"file:///E:/code/nulink/code/nulink-sdk/node_modules/@polkadot/x-global/packageInfo.js\").pathname.substring(0, new URL(\"file:///E:/code/nulink/code/nulink-sdk/node_modules/@polkadot/x-global/packageInfo.js\").pathname.lastIndexOf('/') + 1) : 0, type: 'esm', version: '12.6.2' };\n\n\n//# sourceURL=webpack://NUSDK/./node_modules/@polkadot/x-global/packageInfo.js?");
 
 /***/ }),
 
@@ -11340,7 +11340,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   packageInfo: () => (/* binding */ packageInfo)\n/* harmony export */ });\nconst packageInfo = { name: '@polkadot/x-textdecoder', path: ( true) ? new URL(\"file:///D:/wangyi/code/code/nulink/code/nulink-sdk/node_modules/@polkadot/x-textdecoder/packageInfo.js\").pathname.substring(0, new URL(\"file:///D:/wangyi/code/code/nulink/code/nulink-sdk/node_modules/@polkadot/x-textdecoder/packageInfo.js\").pathname.lastIndexOf('/') + 1) : 0, type: 'esm', version: '12.6.2' };\n\n\n//# sourceURL=webpack://NUSDK/./node_modules/@polkadot/x-textdecoder/packageInfo.js?");
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   packageInfo: () => (/* binding */ packageInfo)\n/* harmony export */ });\nconst packageInfo = { name: '@polkadot/x-textdecoder', path: ( true) ? new URL(\"file:///E:/code/nulink/code/nulink-sdk/node_modules/@polkadot/x-textdecoder/packageInfo.js\").pathname.substring(0, new URL(\"file:///E:/code/nulink/code/nulink-sdk/node_modules/@polkadot/x-textdecoder/packageInfo.js\").pathname.lastIndexOf('/') + 1) : 0, type: 'esm', version: '12.6.2' };\n\n\n//# sourceURL=webpack://NUSDK/./node_modules/@polkadot/x-textdecoder/packageInfo.js?");
 
 /***/ }),
 
