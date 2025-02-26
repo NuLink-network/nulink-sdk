@@ -425,7 +425,7 @@ export const uploadDataByCreatePolicy = async (
       category: dataInfo.category || 'unknown',
       thumbnail: dataInfo.thumbnail || '', //thumbnail || '',
       mimtype: dataInfo.mimetype || '',
-      chunked: dataInfo.chunked || 0
+      chunked: (dataInfo.chunked || 0) != 0
     };
     dataInfos.push(_data);
   }
@@ -545,7 +545,7 @@ export const uploadDataBySelectPolicy = async (
       category: dataInfo.category || 'unknown',
       thumbnail: dataInfo.thumbnail || '', //thumbnail || '',
       mimtype: dataInfo.mimetype || '',
-      chunked: dataInfo.chunked || 0
+      chunked: (dataInfo.chunked || 0) != 0
     };
 
     dataInfos.push(_data);
@@ -1938,7 +1938,7 @@ const getBlockchainPolicy = async (
     // length 66 public string to PublicKey Object
     //now @nulink_network/nulink-ts-app@0.7.0 must be the version 0.7.0
     for (const ursula of ursulas) {
-      ursula.encryptingKey = PublicKey.fromBytes(compressPublicKeyBuffer2(ursula.encryptingKey));
+      ursula.encryptingKey = PublicKey.fromBytes(new Uint8Array(compressPublicKeyBuffer2(ursula.encryptingKey)));
     }
 
     //get ursula end
@@ -2089,7 +2089,7 @@ export const getBlockchainPolicys = async (
     // length 66 public string to PublicKey Object
     //now @nulink_network/nulink-ts-app@0.7.0 must be the version 0.7.0
     for (const ursula of ursulas) {
-      ursula.encryptingKey = PublicKey.fromBytes(compressPublicKeyBuffer2(ursula.encryptingKey));
+      ursula.encryptingKey = PublicKey.fromBytes(new Uint8Array(compressPublicKeyBuffer2(ursula.encryptingKey)));
     }
 
     //get ursula end
@@ -3151,8 +3151,8 @@ export const getDataContentAsUser = async (
   // console.log("before retrievedMessage");
 
   const retrievedMessage = await bob.retrieveAndDecrypt(
-    PublicKey.fromBytes(compressPublicKeyBuffer(policyEncryptingKey)),
-    PublicKey.fromBytes(compressPublicKeyBuffer(aliceVerifyingKey)),
+    PublicKey.fromBytes(new Uint8Array(compressPublicKeyBuffer(policyEncryptingKey))),
+    PublicKey.fromBytes(new Uint8Array(compressPublicKeyBuffer(aliceVerifyingKey))),
     [encryptedMessage],
     encryptedTreasureMap,
     crossChainHrac
@@ -3212,7 +3212,7 @@ export const getDataContentByDataIdAsUser = async (userAccount: Account, dataId:
     );
   }
 
-  const chunked: number = Number(data['chunked']);
+  const chunked: boolean = Boolean(data['chunked']);
 
   if (chunked) {
     const dataIpfsData: Uint8Array | null | undefined /*| Buffer*/ = await StorageManager.getData(dataIPFSAddress);
@@ -3269,7 +3269,7 @@ export const getChunkDataContentByDataIdAsUser = async (
 
   let dataIPFSAddress = data['file_ipfs_address'];
 
-  const chunked: number = Number(data['chunked']);
+  const chunked: boolean = Boolean(data['chunked']);
 
   if (chunked && isBlank(chunkAddress)) {
     //If the parameter of `chunkAddress` is not provided, the content of the index file will be retrieved (which records the addresses of all chunk files).
@@ -3372,7 +3372,7 @@ export const getDataContentByDataIdAsPublisher = async (userAccount: Account, da
 
   assert(data && !isBlank(data));
 
-  const chunked: number = Number(data['chunked']);
+  const chunked: boolean = Boolean(data['chunked']);
   const dataIPFSAddress = data['file_ipfs_address'];
 
   if (chunked) {
@@ -3424,7 +3424,7 @@ export const getDataContentByDataIdAsPublisher = async (userAccount: Account, da
 
     // notice: bacause the encryptedMessage.decrypt( get by MessageKit) use the SecretKey import from nucypher-ts, so you  must be use the nucypher-ts's SecretKey PublicKey , not use the nucypher-core's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
 
-    const secretKey = NucypherTsSecretKey.fromBytes(privateKeyBuffer(privateKeyString));
+    const secretKey = NucypherTsSecretKey.fromBytes(new Uint8Array(privateKeyBuffer(privateKeyString)));
     const plainText: Uint8Array = encryptedMessage.decrypt(secretKey);
 
     return plainText.buffer as ArrayBuffer;
@@ -3451,7 +3451,7 @@ export const getChunkDataContentByDataIdAsPublisher = async (
 
   assert(data && !isBlank(data));
 
-  const chunked: number = Number(data['chunked']);
+  const chunked: boolean = Boolean(data['chunked']);
   let dataIPFSAddress = data['file_ipfs_address'];
 
   if (chunked && isBlank(chunkAddress)) {
@@ -3514,7 +3514,7 @@ export const getChunkDataContentByDataIdAsPublisher = async (
 
     // notice: bacause the encryptedMessage.decrypt( get by MessageKit) use the SecretKey import from nucypher-ts, so you  must be use the nucypher-ts's SecretKey PublicKey , not use the nucypher-core's SecretKey PublicKey (wasm code) to avoid the nucypher_core_wasm_bg.js Error: expected instance of e
 
-    const secretKey = NucypherTsSecretKey.fromBytes(privateKeyBuffer(privateKeyString));
+    const secretKey = NucypherTsSecretKey.fromBytes(new Uint8Array(privateKeyBuffer(privateKeyString)));
     const plainText: Uint8Array = encryptedMessage.decrypt(secretKey);
 
     return plainText.buffer as ArrayBuffer;

@@ -353,7 +353,7 @@ export const uploadChunkedDataOverForSubscriberVisiblePaid = async (account: Acc
   // sort in ascending order based on chunk_index
   uploadChunkMetaInfoList.sort((a, b) => a.chunk_index - b.chunk_index);
 
-  const allChunkedPlainText = /* 'CHUNK_JSON_DATA::' +  */JSON.stringify(uploadChunkMetaInfoList);
+  const allChunkedPlainText = /* 'CHUNK_JSON_DATA::' +  */ JSON.stringify(uploadChunkMetaInfoList);
   const enc = new TextEncoder(); // always utf-8
   const allChunkedContent: Uint8Array = enc.encode(allChunkedPlainText);
 
@@ -576,7 +576,7 @@ export const uploadChunkedDataOverForIndividualPaid = async (
   const checkOverDataInfo = await uploadChunkOver(account, taskId);
 
   const chunkMissingIndexList = checkOverDataInfo.chunk_missing_indexes;
-  if (!isBlank(chunkMissingIndexList)) {
+  if (!isBlank(chunkMissingIndexList) && chunkMissingIndexList.length > 0) {
     throw new Error(
       `The chunk data has not been fully uploaded! task id ${taskId}, The missing chunk data indexes are: ${JSON.stringify(
         chunkMissingIndexList
@@ -604,7 +604,7 @@ export const uploadChunkedDataOverForIndividualPaid = async (
   // sort in ascending order based on chunk_index
   uploadChunkMetaInfoList.sort((a, b) => a.chunk_index - b.chunk_index);
 
-  const allChunkedPlainText = /* 'CHUNK_JSON_DATA::' +  */JSON.stringify(uploadChunkMetaInfoList);
+  const allChunkedPlainText = /* 'CHUNK_JSON_DATA::' +  */ JSON.stringify(uploadChunkMetaInfoList);
   const enc = new TextEncoder(); // always utf-8
   const allChunkedContent: Uint8Array = enc.encode(allChunkedPlainText);
 
@@ -807,7 +807,7 @@ export const uploadChunkDataOverSpecifiedLocalPolicy = async (
     category: dataInfo.category || 'unknown',
     thumbnail: dataInfo.thumbnail || '',
     mimtype: dataInfo.mimetype || '',
-    chunked: dataInfo.chunked || 1
+    chunked: (dataInfo.chunked || 1) != 0
   };
   dataInfos.push(_data);
 
@@ -937,7 +937,7 @@ export const uploadDataSpecifiedLocalPolicy = async (
       category: dataInfo.category || 'unknown',
       thumbnail: dataInfo.thumbnail || '', //thumbnail || '',
       mimtype: dataInfo.mimetype || '',
-      chunked: dataInfo.chunked || 0
+      chunked: (dataInfo.chunked || 0) != 0
     };
     dataInfos.push(_data);
 

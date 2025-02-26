@@ -34,7 +34,7 @@ export abstract class IJson {
 }
 
 export const bufferEquals = (b1: Buffer, b2: Buffer): boolean => {
-  return equals(b1, b2);
+  return equals(new Uint8Array(b1), new Uint8Array(b2));
 };
 
 export const uint8ArrayEquals = (b1: Uint8Array, b2: Uint8Array): boolean => {
@@ -117,7 +117,7 @@ export const publicKeyBuffer65Bytes = (publicKeyString: string): Buffer => {
   //Some public keys are given in the same format as above, except that 04 is added in front, which means non-compression, and the length of the entire public key becomes 65 bytes.
   //publicKeyString must start with 0x
   const pk: Buffer = publicKeyBuffer64Bytes(publicKeyString);
-  return Buffer.concat([Buffer.from([4]), pk]); //eccryptoJS.encrypt public keys can only recieve 65 byte public keys.
+  return Buffer.concat([new Uint8Array(Buffer.from([4])), new Uint8Array(pk)]); //eccryptoJS.encrypt public keys can only recieve 65 byte public keys.
 };
 
 export const privateKeyBuffer = (privateKeyString: string): Buffer => {
