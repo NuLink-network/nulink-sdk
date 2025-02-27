@@ -196,33 +196,14 @@ export const getDataTaskInfo = async (taskId: number): Promise<any> => {
  * @param {number} chunkIndex - (Optional) If this parameter is not passed, it is the information that gets all the uploaded chunk of task id. If the transfer is to get a single uploaded chunk information
  * @returns Returns 
  * 
- *    If the chunk_index parameter has a value, return:
- * 
- *    {
-        chunk_address: The ipfs address of the file
-        chunk_index: The chunk index, starting from 0, with the maximum index being file_chunk_count - 1."
-      }
-
-      Otherwise, return:
-
+      return:
       {
-				list:  [  //All uploaded chunk information (it means uploaded_chunk_list), sorted in ascending order by chunk_index. If the queried chunk index has not been uploaded, return an empty list
+				list:  [  // All uploaded chunk information or single chunk information  (it means uploaded_chunk_list), sorted in ascending order by chunk_index. If the queried chunk index has not been uploaded, return an empty list
 					{
 						chunk_address: The ipfs address of the file
             chunk_index: The chunk index, starting from 0, with the maximum index being file_chunk_count - 1."
 					}
 				]
-        account_id
-        policy_label_id
-        policy_label
-        policy_label_index
-        file_label:
-        file_md5
-        file_category
-        file_thumbnail
-        file_mimetype
-        file_chunk_size
-        file_chunk_count
 			}
       on success, throws an exception on failure (The code does not return 2000; it returns 3xxx or 4xxx.)
  *

@@ -1414,17 +1414,6 @@ const _getChunkDataTaskInfo = async (data: any) => {
                                   chunk_index: The chunk index, starting from 0, with the maximum index being file_chunk_count - 1."
                                 }
                               ]
-        account_id
-        policy_label_id
-        policy_label
-        policy_label_index
-        file_label:
-        file_md5
-        file_category
-        file_thumbnail
-        file_mimetype
-        file_chunk_size
-        file_chunk_count
 			}
       on success, throws an exception on failure (The code does not return 2000; it returns 3xxx or 4xxx.)
  *
