@@ -1127,7 +1127,7 @@ const _getDataContentByDataIdAsPublisher = async (data: any) => {
  */
 const _getChunkDataContentByDataIdAsPublisher = async (data: any) => {
   const password: string = data['password'];
-  const dataId: string = data['dataId'];
+  const dataId: string =  data['fileId'] || data['dataId'] ;
   const chunkAddress: string | undefined = data?.chunkAddress || undefined;
 
   const account: Account = (await getWalletDefaultAccount(password, true)) as Account;
