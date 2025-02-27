@@ -81,7 +81,7 @@
       };
       // ----------------------Global variable area end ------------------------
 
-    const concatArrayBuffers = (...buffers/* : ArrayBuffer[] */)/* : ArrayBuffer */ => {
+    const concatArrayBuffers = (buffers/* : ArrayBuffer[] */)/* : ArrayBuffer */ => {
         // 计算总大小
         const totalLength = buffers.reduce((sum, buffer) => sum + buffer.byteLength, 0);
         
@@ -294,11 +294,11 @@
 
       const _uploadedChunkInfo = await NUSDK.getUploadedChunkInfo(taskId);
       //查看是否这里上传成功的文件是否正确，与 uploadedChunkInfos比较
-      debugger;
+      //debugger;
       
       //查看任务信息
       const dataTaskInfo = await NUSDK.getDataTaskInfo(taskId);
-      debugger;
+      //debugger;
 
       /**
        *  {
@@ -776,7 +776,7 @@
             dataIds.push(bobBeApprovedDataInfo['file_id']);
 
             //是否是分片上传的文件
-            const bChunkFile = String(bobBeApprovedDataInfo['chunked']) === '1';
+            const bChunkFile = bobBeApprovedDataInfo['chunked'];
             if(!bChunkFile)
             {
               debugger;
