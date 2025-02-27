@@ -164,7 +164,7 @@ export const run = async () => {
    */
 
   //2 Upload User Dynamics: Subscribers can view. (Alice encrypt and update a data/file to the ipfs network)
-  const uploadedInfos: any = await pre.publishDataForPaidSubscriberVisible(accountAlice, dataList)
+  const uploadedInfos: any = await pre.publishDataForSubscriberVisiblePaid(accountAlice, dataList)
   
 
 
