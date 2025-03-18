@@ -325,7 +325,8 @@ export const uploadChunkedDataOverForSubscriberVisiblePaid = async (account: Acc
   const checkOverDataInfo = await uploadChunkOver(account, taskId);
 
   const chunkMissingIndexList = checkOverDataInfo.chunk_missing_indexes;
-  if (!isBlank(chunkMissingIndexList)) {
+
+  if (!isBlank(chunkMissingIndexList) && chunkMissingIndexList.length > 0) {
     throw new Error(
       `The chunk data has not been fully uploaded! task id ${taskId}, The missing chunk data indexes are: ${JSON.stringify(
         chunkMissingIndexList
@@ -576,6 +577,7 @@ export const uploadChunkedDataOverForIndividualPaid = async (
   const checkOverDataInfo = await uploadChunkOver(account, taskId);
 
   const chunkMissingIndexList = checkOverDataInfo.chunk_missing_indexes;
+
   if (!isBlank(chunkMissingIndexList) && chunkMissingIndexList.length > 0) {
     throw new Error(
       `The chunk data has not been fully uploaded! task id ${taskId}, The missing chunk data indexes are: ${JSON.stringify(
