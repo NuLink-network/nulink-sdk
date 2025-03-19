@@ -31,17 +31,17 @@ export const uploadChunkStart = async (
     file_chunk_count: dataInfo.chunkCount,
     file_chunk_size: dataInfo.chunkSizeInByte
   };
-
+  
   if (!isBlank(dataInfo?.category)) {
-    dataInfo['file_category'] = dataInfo?.category;
+    sendData['file_category'] = dataInfo?.category;
   }
 
   if (!isBlank(dataInfo?.mimetype)) {
-    dataInfo['file_mimetype'] = dataInfo?.mimetype;
+    sendData['file_mimetype'] = dataInfo?.mimetype;
   }
 
   if (!isBlank(dataInfo?.thumbnail)) {
-    dataInfo['file_thumbnail'] = dataInfo?.thumbnail;
+    sendData['file_thumbnail'] = dataInfo?.thumbnail;
   }
 
   sendData['signature'] = await signUpdateServerDataMessage(account, sendData);
